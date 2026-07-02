@@ -1,0 +1,10 @@
+Copyright (c) 2026 Centraal Planbureau (CPB Netherlands Bureau for Economic
+Policy Analysis).
+
+This package is internal CPB tooling. It is not licensed for use,
+redistribution, or modification outside CPB without prior written
+permission from CPB. All rights reserved.
+
+The bundled Rijksoverheid Sans Text fonts in inst/fonts/ are subject to
+the Rijkshuisstijl font license and are distributed here for internal
+CPB use only; see README.md for details.

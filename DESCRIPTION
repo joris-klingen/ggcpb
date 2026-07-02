@@ -1,0 +1,42 @@
+Package: ggcpb
+Title: CPB House-Style Plotting on a ggplot2 Backend
+Version: 0.1.0
+Authors@R: c(
+    person("CPB Netherlands Bureau for Economic Policy Analysis", role = c("aut", "cre", "cph"),
+           email = "j.j.klingen@cpb.nl")
+    )
+Description: A composable ggplot2 extension encoding the CPB (Centraal
+    Planbureau) house plotting style: a theme, categorical and
+    sequential colour palettes and scales, Dutch-locale number
+    formatters, a figure export helper with CPB page-width presets,
+    and a thin layer of high-level wrapper functions for the most
+    common chart types used in CPB publications. The wrapper layer
+    returns real 'ggplot' objects that can be extended further with
+    the usual '+' syntax. This package is the 'ggplot2'-native
+    counterpart to the internal 'nicerplot' package and does not
+    depend on it.
+License: file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Depends:
+    R (>= 4.1)
+Imports:
+    ggplot2 (>= 3.5.0),
+    scales,
+    systemfonts,
+    sysfonts,
+    grid,
+    grDevices,
+    utils,
+    rlang,
+    ragg
+Suggests:
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown,
+    dplyr,
+    tidyr,
+    showtext
+VignetteBuilder: knitr
+Config/testthat/edition: 3
