@@ -3,3 +3,6 @@
 ^README\.Rmd$
 ^\.github$
 ^data-raw$
+^\.claude$
+^TODO\.md$
+^references$

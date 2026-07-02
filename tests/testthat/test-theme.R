@@ -1,6 +1,6 @@
 # test-theme.R ----
 
-test_that("theme_cpb sets the fixed 9/8/7 pt text sizes and faces", {
+test_that("theme_cpb sets the fixed 9/7/6 pt text sizes and faces", {
   th <- theme_cpb()
   expect_s3_class(th, "theme")
 
@@ -8,18 +8,18 @@ test_that("theme_cpb sets the fixed 9/8/7 pt text sizes and faces", {
   expect_equal(th$plot.title$face, "bold")
   expect_equal(th$plot.title$hjust, 0)
 
-  expect_equal(th$plot.subtitle$size, 8)
+  expect_equal(th$plot.subtitle$size, 7)
   expect_equal(th$plot.subtitle$face, "italic")
 
-  expect_equal(th$axis.title$size, 8)
+  expect_equal(th$axis.title$size, 7)
   expect_equal(th$axis.title$face, "italic")
   expect_equal(th$axis.title$hjust, 1)
 
-  expect_equal(th$legend.text$size, 8)
-  expect_equal(th$strip.text$size, 8)
+  expect_equal(th$legend.text$size, 7)
+  expect_equal(th$strip.text$size, 7)
   expect_equal(th$strip.text$face, "bold")
 
-  expect_equal(th$axis.text$size, 7)
+  expect_equal(th$axis.text$size, 6)
   expect_equal(th$axis.text$colour, "black")
 })
 

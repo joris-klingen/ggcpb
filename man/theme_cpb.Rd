@@ -50,8 +50,8 @@ only (by default), and an optional CPB-blue plot background.
 \details{
 Text sizes are absolute and are never scaled -- there is no
 \code{base_size} argument. \code{plot.title} is 9 pt bold; \code{axis.title},
-\code{plot.subtitle}, \code{legend.text} and \code{strip.text} are 8 pt;
-\code{axis.text} is 7 pt.
+\code{plot.subtitle}, \code{legend.text} and \code{strip.text} are 7 pt;
+\code{axis.text} is 6 pt.
 }
 \examples{
 library(ggplot2)

@@ -18,10 +18,19 @@
 #' @param data A data.frame or data.table with one row per bar segment.
 #' @param x,y Columns mapped to the x and y aesthetics (tidy eval).
 #' @param fill Optional column mapped to the fill aesthetic (tidy
-#'   eval); if omitted, bars are drawn in a single colour.
+#'   eval); if omitted, bars are drawn in a single colour (`fill_colour`).
+#' @param fill_colour Constant bar fill used when no `fill` column is
+#'   mapped. Defaults to `NULL`, which resolves to the CPB primary blue
+#'   (`cpb_cols(6)`, `"#005faf"`). Ignored when `fill` is supplied.
 #' @param position One of `"stack"` (default), `"dodge"`, or `"fill"`.
 #' @param orientation `"vertical"` (default) or `"horizontal"` (adds
 #'   [ggplot2::coord_flip()] and is forwarded to [theme_cpb()]).
+#' @param value_limits Optional length-2 numeric vector giving the
+#'   value-axis range (the `y` axis, or the flipped axis when
+#'   `orientation = "horizontal"`). Applied as a coordinate-system zoom
+#'   ([ggplot2::coord_cartesian()] / [ggplot2::coord_flip()] `ylim`), so
+#'   bars are clipped for display but not dropped. `NULL` (default) lets
+#'   ggplot2 pick the range.
 #' @param palette CPB palette to use for `fill`; one of
 #'   `"qualitative"` (default), `"discr"`, or `"sequential"`.
 #' @param index Optional integer vector of palette positions, forwarded
@@ -36,9 +45,22 @@
 #' @param reverse_legend If `TRUE` (default), reverse the fill legend
 #'   order via `guide_legend(reverse = TRUE)` -- stacking otherwise
 #'   makes the legend order counter-intuitive.
-#' @param title,subtitle Plot title/subtitle.
-#' @param xlab,ylab,filllab Axis and legend title overrides; default
-#'   to `NULL` (no axis title), matching CPB house style.
+#' @param legend Legend position, forwarded to [theme_cpb()]; accepts
+#'   `"right"` (default), `"bottom"`, `"left"`, `"top"`, `"none"`, or a
+#'   two-element numeric vector of plot-relative coordinates.
+#' @param title Plot title.
+#' @param ylab Label for the **vertical** axis. Following CPB house
+#'   style it is rendered as the plot *subtitle* -- a left-aligned
+#'   italic caption at the top -- not as a rotated axis title. In a
+#'   horizontal bar chart (`orientation = "horizontal"`) the vertical
+#'   axis is the category axis; in a vertical one it is the value axis.
+#' @param xlab Label for the **horizontal** axis (bottom, right-aligned
+#'   italic). It is attached to the correct ggplot2 aesthetic
+#'   automatically: the value (`y`) aesthetic when
+#'   `orientation = "horizontal"` (after `coord_flip()`), the category
+#'   (`x`) aesthetic otherwise.
+#' @param filllab Legend title override; defaults to `NULL` (no legend
+#'   title), matching CPB house style.
 #' @param ... Further arguments passed to [ggplot2::geom_col()].
 #' @return A `ggplot` object.
 #' @examples
@@ -51,15 +73,17 @@
 #' cpb_col(df, x = year, y = value, fill = group)
 #' @export
 cpb_col <- function(data, x, y, fill = NULL,
+                     fill_colour = NULL,
                      position = c("stack", "dodge", "fill"),
                      orientation = c("vertical", "horizontal"),
                      palette = "qualitative",
                      index = NULL,
                      pct_axis = FALSE,
+                     value_limits = NULL,
                      value_labels = FALSE,
                      reverse_legend = TRUE,
+                     legend = "right",
                      title = NULL,
-                     subtitle = NULL,
                      xlab = NULL,
                      ylab = NULL,
                      filllab = NULL,
@@ -74,15 +98,25 @@ cpb_col <- function(data, x, y, fill = NULL,
 
   if (has_fill) {
     mapping <- ggplot2::aes(x = !!x, y = !!y, fill = !!fill)
+    p <- ggplot2::ggplot(data, mapping) +
+      ggplot2::geom_col(position = position, ...)
   } else {
+    # No fill mapping: draw one flat house-style colour (CPB primary blue
+    # by default) rather than ggplot2's grey.
+    single_fill <- if (is.null(fill_colour)) unname(cpb_cols(6)) else fill_colour
     mapping <- ggplot2::aes(x = !!x, y = !!y)
+    p <- ggplot2::ggplot(data, mapping) +
+      ggplot2::geom_col(position = position, fill = single_fill, ...)
   }
 
-  p <- ggplot2::ggplot(data, mapping) +
-    ggplot2::geom_col(position = position, ...)
-
   if (orientation == "horizontal") {
-    p <- p + ggplot2::coord_flip()
+    p <- p + if (!is.null(value_limits)) {
+      ggplot2::coord_flip(ylim = value_limits)
+    } else {
+      ggplot2::coord_flip()
+    }
+  } else if (!is.null(value_limits)) {
+    p <- p + ggplot2::coord_cartesian(ylim = value_limits)
   }
 
   if (isTRUE(pct_axis)) {
@@ -115,9 +149,21 @@ cpb_col <- function(data, x, y, fill = NULL,
     }
   }
 
+  # CPB convention: the vertical-axis label is the plot subtitle (`ylab`), and
+  # the horizontal-axis label (`xlab`) is the ordinary axis title. Under
+  # coord_flip() the value sits on the y aesthetic but is drawn horizontally,
+  # so `xlab` attaches to y when horizontal and to x when vertical.
+  if (orientation == "horizontal") {
+    lab_x <- NULL
+    lab_y <- xlab
+  } else {
+    lab_x <- xlab
+    lab_y <- NULL
+  }
+
   p +
-    ggplot2::labs(title = title, subtitle = subtitle, x = xlab, y = ylab, fill = filllab) +
-    theme_cpb(orientation = orientation)
+    ggplot2::labs(title = title, subtitle = ylab, x = lab_x, y = lab_y, fill = filllab) +
+    theme_cpb(orientation = orientation, legend = legend)
 }
 
 # stacked area ----

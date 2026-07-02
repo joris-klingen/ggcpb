@@ -54,9 +54,17 @@ cpb_font_files <- function() {
 #' @export
 cpb_register_fonts <- function() {
   files <- cpb_font_files()
-  have_files <- all(vapply(files, function(f) nzchar(f) && file.exists(f), logical(1)))
 
-  if (!have_files) {
+  # RijksoverheidSansText 2.0 ships regular, bold and italic but no
+  # bold-italic face. theme_cpb() only ever asks for those three (bold
+  # titles/strips, italic subtitle/axis/legend titles) and never combines
+  # bold + italic, so only these three are required.
+  required <- c("plain", "bold", "italic")
+  have_required <- all(vapply(
+    files[required], function(f) nzchar(f) && file.exists(f), logical(1)
+  ))
+
+  if (!have_required) {
     warning(
       "ggcpb: could not find the bundled RijksoverheidSansText font files ",
       "in inst/fonts/; falling back to the default ggplot2 font family. ",
@@ -68,6 +76,14 @@ cpb_register_fonts <- function() {
     return(invisible(FALSE))
   }
 
+  # No bold-italic file: reuse the bold face for that slot so a stray
+  # bold + italic request keeps the bold weight instead of erroring.
+  bolditalic <- if (nzchar(files$bolditalic) && file.exists(files$bolditalic)) {
+    files$bolditalic
+  } else {
+    files$bold
+  }
+
   ok_systemfonts <- tryCatch(
     {
       systemfonts::register_font(
@@ -75,7 +91,7 @@ cpb_register_fonts <- function() {
         plain      = files$plain,
         bold       = files$bold,
         italic     = files$italic,
-        bolditalic = files$bolditalic
+        bolditalic = bolditalic
       )
       TRUE
     },
@@ -89,7 +105,7 @@ cpb_register_fonts <- function() {
         regular    = files$plain,
         bold       = files$bold,
         italic     = files$italic,
-        bolditalic = files$bolditalic
+        bolditalic = bolditalic
       )
       TRUE
     },

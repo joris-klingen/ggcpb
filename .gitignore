@@ -4,3 +4,6 @@
 .Ruserdata
 inst/doc
 Rplots.pdf
+inst/examples/output
+references/
+ggcpb.Rproj

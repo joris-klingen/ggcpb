@@ -2,7 +2,7 @@
 #
 # The CPB house-style ggplot2 theme. Built on ggplot2::theme_minimal(),
 # reproducing the "energiecrisis_2026" theme overrides, but parameterised
-# rather than hardcoded. Font sizes are strict, fixed point sizes (9/8/7)
+# rather than hardcoded. Font sizes are strict, fixed point sizes (9/7/6)
 # -- they are never scaled by a base_size argument or rel().
 
 #' The CPB house-style ggplot2 theme
@@ -14,8 +14,8 @@
 #'
 #' Text sizes are absolute and are never scaled -- there is no
 #' `base_size` argument. `plot.title` is 9 pt bold; `axis.title`,
-#' `plot.subtitle`, `legend.text` and `strip.text` are 8 pt;
-#' `axis.text` is 7 pt.
+#' `plot.subtitle`, `legend.text` and `strip.text` are 7 pt;
+#' `axis.text` is 6 pt.
 #'
 #' @param base_family Font family for all text. Defaults to
 #'   [cpb_font_family()], which resolves to `"RijksoverheidSansText"`
@@ -84,25 +84,27 @@ theme_cpb <- function(base_family = cpb_font_family(),
     ggplot2::element_blank()
   }
 
-  # plot.subtitle.position and legend.key.spacing.y were only added in
-  # ggplot2 3.5.0; guard them so theme_cpb() degrades gracefully (silently
-  # dropping those two settings) on an older ggplot2 instead of erroring
-  # at render time.
+  # legend.key.spacing.y was only added in ggplot2 3.5.0; guard it so
+  # theme_cpb() degrades gracefully (silently dropping that setting) on an
+  # older ggplot2 instead of erroring at render time. The title/subtitle are
+  # both aligned to the plot edge via plot.title.position = "plot" (which
+  # governs the subtitle too), so no separate plot.subtitle.position is set --
+  # that element does not exist in ggplot2 and setting it only warns.
   theme_args <- list(
     plot.title.position = "plot",
 
     plot.title    = ggplot2::element_text(face = "bold", hjust = 0, size = 9),
-    plot.subtitle = ggplot2::element_text(face = "italic", hjust = 0, size = 8),
+    plot.subtitle = ggplot2::element_text(face = "italic", hjust = 0, size = 7),
 
-    axis.title = ggplot2::element_text(face = "italic", hjust = 1, size = 8),
-    axis.text  = ggplot2::element_text(colour = "black", size = 7),
+    axis.title = ggplot2::element_text(face = "italic", hjust = 1, size = 7),
+    axis.text  = ggplot2::element_text(colour = "black", size = 6),
 
     legend.position   = legend,
-    legend.text       = ggplot2::element_text(face = "italic", size = 8),
+    legend.text       = ggplot2::element_text(face = "italic", size = 7),
     legend.key.height = grid::unit(0.25, "cm"),
     legend.key.width  = grid::unit(0.30, "cm"),
 
-    strip.text       = ggplot2::element_text(face = "bold", hjust = 0, size = 8),
+    strip.text       = ggplot2::element_text(face = "bold", hjust = 0, size = 7),
     strip.background = ggplot2::element_blank(),
 
     panel.grid.major.x = if (show_grid_x) gridline else blankline,
@@ -116,7 +118,6 @@ theme_cpb <- function(base_family = cpb_font_family(),
   )
 
   if (utils::packageVersion("ggplot2") >= "3.5.0") {
-    theme_args$plot.subtitle.position <- "plot"
     theme_args$legend.key.spacing.y <- grid::unit(0.05, "cm")
   }
 

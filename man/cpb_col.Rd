@@ -9,15 +9,17 @@ cpb_col(
   x,
   y,
   fill = NULL,
+  fill_colour = NULL,
   position = c("stack", "dodge", "fill"),
   orientation = c("vertical", "horizontal"),
   palette = "qualitative",
   index = NULL,
   pct_axis = FALSE,
+  value_limits = NULL,
   value_labels = FALSE,
   reverse_legend = TRUE,
+  legend = "right",
   title = NULL,
-  subtitle = NULL,
   xlab = NULL,
   ylab = NULL,
   filllab = NULL,
@@ -30,7 +32,11 @@ cpb_col(
 \item{x, y}{Columns mapped to the x and y aesthetics (tidy eval).}
 
 \item{fill}{Optional column mapped to the fill aesthetic (tidy
-eval); if omitted, bars are drawn in a single colour.}
+eval); if omitted, bars are drawn in a single colour (\code{fill_colour}).}
+
+\item{fill_colour}{Constant bar fill used when no \code{fill} column is
+mapped. Defaults to \code{NULL}, which resolves to the CPB primary blue
+(\code{cpb_cols(6)}, \code{"#005faf"}). Ignored when \code{fill} is supplied.}
 
 \item{position}{One of \code{"stack"} (default), \code{"dodge"}, or \code{"fill"}.}
 
@@ -49,6 +55,13 @@ to \code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} instead of the 
 \code{position = "fill"} (proportions), and \code{scale = 1} otherwise
 (values already in percentage points).}
 
+\item{value_limits}{Optional length-2 numeric vector giving the
+value-axis range (the \code{y} axis, or the flipped axis when
+\code{orientation = "horizontal"}). Applied as a coordinate-system zoom
+(\code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} / \code{\link[ggplot2:coord_flip]{ggplot2::coord_flip()}} \code{ylim}), so
+bars are clipped for display but not dropped. \code{NULL} (default) lets
+ggplot2 pick the range.}
+
 \item{value_labels}{If \code{TRUE}, add \code{\link[ggplot2:geom_text]{ggplot2::geom_text()}} value
 labels using \code{y}, positioned to match \code{position}.}
 
@@ -56,10 +69,26 @@ labels using \code{y}, positioned to match \code{position}.}
 order via \code{guide_legend(reverse = TRUE)} -- stacking otherwise
 makes the legend order counter-intuitive.}
 
-\item{title, subtitle}{Plot title/subtitle.}
+\item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; accepts
+\code{"right"} (default), \code{"bottom"}, \code{"left"}, \code{"top"}, \code{"none"}, or a
+two-element numeric vector of plot-relative coordinates.}
 
-\item{xlab, ylab, filllab}{Axis and legend title overrides; default
-to \code{NULL} (no axis title), matching CPB house style.}
+\item{title}{Plot title.}
+
+\item{xlab}{Label for the \strong{horizontal} axis (bottom, right-aligned
+italic). It is attached to the correct ggplot2 aesthetic
+automatically: the value (\code{y}) aesthetic when
+\code{orientation = "horizontal"} (after \code{coord_flip()}), the category
+(\code{x}) aesthetic otherwise.}
+
+\item{ylab}{Label for the \strong{vertical} axis. Following CPB house
+style it is rendered as the plot \emph{subtitle} -- a left-aligned
+italic caption at the top -- not as a rotated axis title. In a
+horizontal bar chart (\code{orientation = "horizontal"}) the vertical
+axis is the category axis; in a vertical one it is the value axis.}
+
+\item{filllab}{Legend title override; defaults to \code{NULL} (no legend
+title), matching CPB house style.}
 
 \item{...}{Further arguments passed to \code{\link[ggplot2:geom_bar]{ggplot2::geom_col()}}.}
 }
