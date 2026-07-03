@@ -9,6 +9,28 @@
 
 # columns / bars ----
 
+#' One-sided value-axis expansion for the nplot look
+#'
+#' nplot draws bars and areas sitting directly on the zero axis: the
+#' panel edge *is* the axis line, so the zero side of the value scale
+#' gets no padding when the data does not cross zero. Returns an
+#' [ggplot2::expansion()] spec, or `NULL` (keep the ggplot2 default)
+#' for mixed-sign or non-numeric data.
+#'
+#' @noRd
+cpb_zero_flush_expand <- function(values) {
+  if (!is.numeric(values) || !length(values) || all(is.na(values))) return(NULL)
+  lo <- min(values, na.rm = TRUE)
+  hi <- max(values, na.rm = TRUE)
+  if (lo >= 0) {
+    ggplot2::expansion(mult = c(0, 0.05))
+  } else if (hi <= 0) {
+    ggplot2::expansion(mult = c(0.05, 0))
+  } else {
+    NULL
+  }
+}
+
 #' A CPB-styled column (bar) chart
 #'
 #' Thin wrapper around [ggplot2::geom_col()] with CPB theming and
@@ -40,6 +62,10 @@
 #'   [label_pct_nl()]. Uses `scale = 100` automatically when
 #'   `position = "fill"` (proportions), and `scale = 1` otherwise
 #'   (values already in percentage points).
+#' @param value_breaks Optional breaks for the value axis (passed to
+#'   the wrapper-built [ggplot2::scale_y_continuous()]). Use this
+#'   instead of adding a second y scale, which would discard the
+#'   wrapper's axis formatting and expansion.
 #' @param value_labels If `TRUE`, add [ggplot2::geom_text()] value
 #'   labels using `y`, positioned to match `position`.
 #' @param reverse_legend If `TRUE` (default), reverse the fill legend
@@ -93,6 +119,7 @@ cpb_col <- function(data, x, y, fill = NULL,
                      palette = "qualitative",
                      index = NULL,
                      pct_axis = FALSE,
+                     value_breaks = NULL,
                      value_limits = NULL,
                      value_labels = FALSE,
                      reverse_legend = TRUE,
@@ -150,9 +177,22 @@ cpb_col <- function(data, x, y, fill = NULL,
     p <- p + ggplot2::coord_cartesian(ylim = value_limits)
   }
 
+  # the value-axis scale is assembled once, so labels, breaks and the
+  # nplot zero-flush expansion can coexist
+  scale_args <- list()
   if (isTRUE(pct_axis)) {
     pct_scale <- if (position == "fill") 100 else 1
-    p <- p + ggplot2::scale_y_continuous(labels = label_pct_nl(scale = pct_scale))
+    scale_args$labels <- label_pct_nl(scale = pct_scale)
+  }
+  if (!is.null(value_breaks)) {
+    scale_args$breaks <- value_breaks
+  }
+  if (style == "nplot") {
+    expand <- cpb_zero_flush_expand(rlang::eval_tidy(y, data))
+    if (!is.null(expand)) scale_args$expand <- expand
+  }
+  if (length(scale_args)) {
+    p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
   }
 
   if (isTRUE(value_labels)) {
@@ -294,8 +334,17 @@ cpb_area <- function(data, x, y, fill,
     p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black", linewidth = 0.25)
   }
 
+  # assembled once, as in cpb_col()
+  scale_args <- list()
   if (isTRUE(pct_axis)) {
-    p <- p + ggplot2::scale_y_continuous(labels = label_pct_nl())
+    scale_args$labels <- label_pct_nl()
+  }
+  if (style == "nplot") {
+    expand <- cpb_zero_flush_expand(rlang::eval_tidy(y, data))
+    if (!is.null(expand)) scale_args$expand <- expand
+  }
+  if (length(scale_args)) {
+    p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
   }
 
   p <- p + if (!is.null(index)) {

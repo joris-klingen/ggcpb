@@ -327,12 +327,12 @@ render(8, "col: horizontal, dodged (fill)",
     orientation  = "horizontal",
     style        = "nplot",
     index        = c(2, 6),
+    value_breaks = seq(0, 70, 10),
     value_limits = c(0, 70),
     width        = 0.85,
     title = "Zonnepanelen naar inkomen",
     ylab  = "inkomensgroepen",
     xlab  = "aandeel binnen inkomensgroep (%)") +
-    ggplot2::scale_y_continuous(breaks = seq(0, 70, 10)) +
     ggplot2::theme(plot.margin = ggplot2::margin(8, 10, 6, 10)),
   "08_col_horizontal_dodged.png", page = "half")
 
@@ -349,6 +349,7 @@ render(9, "line: two series, nplot look",
     ggplot2::scale_x_continuous(
       breaks       = c(seq(2000, 2020, 5), 2024),
       minor_breaks = 2000:2024,
+      expand       = ggplot2::expansion(mult = 0.01),
       guide        = ggplot2::guide_axis(minor.ticks = TRUE)
     ),
   "09_line_nplot.png", page = "half")
@@ -392,12 +393,12 @@ render(11, "col: horizontal, dodged, 3 series",
     orientation  = "horizontal",
     style        = "nplot",
     index        = c(8, 2, 6),
+    value_breaks = seq(0, 70, 10),
     value_limits = c(0, 70),
     width        = 0.85,
     title = "Percentage met reiskostenvergoeding voor auto",
     ylab  = "inkomensgroepen",
-    xlab  = "% met reiskostenvergoeding voor auto") +
-    ggplot2::scale_y_continuous(breaks = seq(0, 70, 10)),
+    xlab  = "% met reiskostenvergoeding voor auto"),
   "11_col_horizontal_dodged3.png", page = "half")
 
 # recreation of reference figure p10_img07: horizontal dodged boxplot,

@@ -15,6 +15,7 @@ cpb_col(
   palette = "qualitative",
   index = NULL,
   pct_axis = FALSE,
+  value_breaks = NULL,
   value_limits = NULL,
   value_labels = FALSE,
   reverse_legend = TRUE,
@@ -63,6 +64,11 @@ to \code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} instead of the 
 \code{\link[=label_pct_nl]{label_pct_nl()}}. Uses \code{scale = 100} automatically when
 \code{position = "fill"} (proportions), and \code{scale = 1} otherwise
 (values already in percentage points).}
+
+\item{value_breaks}{Optional breaks for the value axis (passed to
+the wrapper-built \code{\link[ggplot2:scale_continuous]{ggplot2::scale_y_continuous()}}). Use this
+instead of adding a second y scale, which would discard the
+wrapper's axis formatting and expansion.}
 
 \item{value_limits}{Optional length-2 numeric vector giving the
 value-axis range (the \code{y} axis, or the flipped axis when

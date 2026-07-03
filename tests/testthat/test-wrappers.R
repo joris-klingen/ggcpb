@@ -170,3 +170,26 @@ test_that("cpb_box fills unmapped boxes in CPB blue with thin strokes", {
   expect_equal(box$aes_params$fill, unname(cpb_cols(6)))
   expect_equal(box$aes_params$linewidth, 0.25)
 })
+
+test_that("nplot style trims value-axis expansion on the zero side", {
+  df_pos <- data.frame(x = c("a", "b"), y = c(1, 2))
+  sc <- cpb_col(df_pos, x = x, y = y, style = "nplot")$scales$get_scales("y")
+  expect_equal(sc$expand, ggplot2::expansion(mult = c(0, 0.05)))
+
+  df_neg <- data.frame(x = c("a", "b"), y = c(-1, -2))
+  sc2 <- cpb_col(df_neg, x = x, y = y, style = "nplot")$scales$get_scales("y")
+  expect_equal(sc2$expand, ggplot2::expansion(mult = c(0.05, 0)))
+
+  # mixed-sign data and the ggplot style keep the default expansion
+  df_mix <- data.frame(x = c("a", "b"), y = c(-1, 2))
+  expect_null(cpb_col(df_mix, x = x, y = y, style = "nplot")$scales$get_scales("y"))
+  expect_null(cpb_col(df_pos, x = x, y = y)$scales$get_scales("y"))
+})
+
+test_that("cpb_col value_breaks land on the wrapper-built value scale", {
+  df <- data.frame(x = c("a", "b"), y = c(10, 60))
+  sc <- cpb_col(df, x = x, y = y, pct_axis = TRUE,
+                value_breaks = seq(0, 70, 10))$scales$get_scales("y")
+  expect_equal(sc$breaks, seq(0, 70, 10))
+  expect_true(is.function(sc$labels))
+})

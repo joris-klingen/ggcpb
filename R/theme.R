@@ -164,7 +164,12 @@ theme_cpb <- function(base_family = cpb_font_family(),
     axis.text  = ggplot2::element_text(colour = "black", size = axis_text_size),
 
     legend.position   = legend,
-    legend.text       = ggplot2::element_text(face = "italic", size = 7),
+    # nplot sets the label close to its key (~3.5 pt vs the ggplot2
+    # default of ~5.5 pt)
+    legend.text       = ggplot2::element_text(
+      face = "italic", size = 7,
+      margin = if (nplot) ggplot2::margin(l = 3.5) else NULL
+    ),
     legend.key.height = grid::unit(
       if (is.null(legend_key_size)) 0.25 else legend_key_size, "cm"),
     legend.key.width  = grid::unit(

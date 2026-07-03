@@ -37,6 +37,14 @@ draws a single unmapped series in CPB blue at nplot line weight
 render `ylab` as the subtitle -- the unit caption above the panel --
 matching `cpb_col()`.
 
+Under the preset the value axis is also *zero-flush*: when the data
+does not cross zero, the zero side of the scale gets no expansion, so
+bars/areas sit directly on the axis line and the category ticks touch
+it -- the panel edge is the axis, as in nplot output. `cpb_col()`
+takes `value_breaks` so custom breaks go on the wrapper-built scale
+instead of a second (conflicting) `scale_y_continuous()`. The nplot
+legend also uses a tighter key-to-label gap (3.5 pt).
+
 ## Remaining ideas
 
 - Sequential blue palette: reference p17_img19 (deciles) uses a 10-step
