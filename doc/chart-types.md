@@ -4,6 +4,8 @@ CPB chart types
 ``` r
 library(ggcpb)
 library(ggplot2)
+library(dplyr)
+library(tidyr)
 set.seed(42)
 ```
 
@@ -33,7 +35,7 @@ A single series needs only `x` and `y`; it is drawn in the CPB primary
 blue:
 
 ``` r
-bbp <- data.frame(
+bbp <- tibble(
   jaar  = 2015:2027,
   index = 100 + cumsum(rnorm(13, mean = 1.5, sd = 1.2))
 )
@@ -41,7 +43,9 @@ bbp <- data.frame(
 cpb_line(bbp, x = jaar, y = index,
   style = "nplot",
   title = "Bruto binnenlands product",
-  ylab  = "index (2015 = 100)")
+  ylab  = "index (2015 = 100)") +
+  scale_x_continuous(breaks = seq(2015, 2027, 3), minor_breaks = 2015:2027,
+                     guide = guide_axis(minor.ticks = TRUE))
 ```
 
 <img src="chart-types_files/figure-gfm/line-single-1.png" width="447px" />
@@ -51,9 +55,9 @@ palette position with `index` – `c(6, 2)` is the recurring blue/magenta
 pair. Growth rates span zero, so the black zero line appears by itself:
 
 ``` r
-groei <- expand.grid(jaar = 2000:2024,
-                     reeks = c("arbeidsproductiviteit", "tfp"))
-groei$waarde <- round(rnorm(nrow(groei), mean = 1, sd = 1.6), 1)
+groei <- expand_grid(reeks = c("arbeidsproductiviteit", "tfp"),
+                     jaar  = 2000:2024) |>
+  mutate(waarde = round(rnorm(n(), mean = 1, sd = 1.6), 1))
 
 cpb_line(groei, x = jaar, y = waarde, colour = reeks,
   style = "nplot",
@@ -80,9 +84,9 @@ default `position`:
 
 ``` r
 sectoren <- c("industrie", "diensten", "landbouw", "overheid")
-tw <- expand.grid(jaar = 2023:2027,
-                  sector = factor(sectoren, levels = sectoren))
-tw$waarde <- round(runif(nrow(tw), 5, 25), 1)
+tw <- expand_grid(jaar   = 2023:2027,
+                  sector = factor(sectoren, levels = sectoren)) |>
+  mutate(waarde = round(runif(n(), 5, 25), 1))
 
 cpb_col(tw, x = jaar, y = waarde, fill = sector,
   style = "nplot",
@@ -98,9 +102,9 @@ reads in the same top-to-bottom order as the stack. For dodged bars,
 switch that off so the legend follows the series order:
 
 ``` r
-scenario <- expand.grid(regio    = c("Noord", "Oost", "Zuid", "West"),
-                        scenario = c("basispad", "beleidsvariant"))
-scenario$effect <- round(runif(nrow(scenario), -2, 6), 1)
+scenario <- expand_grid(regio    = c("Noord", "Oost", "Zuid", "West"),
+                        scenario = c("basispad", "beleidsvariant")) |>
+  mutate(effect = round(runif(n(), -2, 6), 1))
 
 cpb_col(scenario, x = regio, y = effect, fill = scenario,
   position = "dodge",
@@ -125,7 +129,7 @@ starts exactly at the zero axis:
 ``` r
 groepen <- c("tot 120% wml", "120% wml - mod.", "1 - 1,5x mod.",
              "1,5 - 2x mod.", "2 - 3x mod.", "boven 3x mod.")
-auto <- data.frame(
+auto <- tibble(
   # reversed levels put the first-named group at the top after the flip
   inkomensgroep = factor(groepen, levels = rev(groepen)),
   share         = c(62, 35, 26, 19, 14, 13)
@@ -151,12 +155,12 @@ show (say) 2021 above 2024 you reverse the `jaar` levels, swap the
 the reading order:
 
 ``` r
-pv <- expand.grid(
-  inkomensgroep = factor(groepen, levels = rev(groepen)),
-  jaar          = factor(c(2021, 2024), levels = c(2024, 2021))
-)
-pv$share <- c(10, 14, 19, 22, 26, 33,   # 2021
-              19, 25, 31, 38, 47, 59)   # 2024
+pv <- expand_grid(
+  jaar          = factor(c(2021, 2024), levels = c(2024, 2021)),
+  inkomensgroep = factor(groepen, levels = rev(groepen))
+) |>
+  mutate(share = c(10, 14, 19, 22, 26, 33,   # 2021
+                   19, 25, 31, 38, 47, 59))  # 2024
 
 cpb_col(pv, x = inkomensgroep, y = share, fill = jaar,
   position     = "dodge",
@@ -185,10 +189,10 @@ expansion.
 
 ``` r
 bronnen <- c("gas", "elektriciteit", "warmte", "overig")
-mix <- expand.grid(jaar = 2018:2027,
-                   bron = factor(bronnen, levels = bronnen))
-mix$ruw <- runif(nrow(mix), 1, 10)
-mix$aandeel <- with(mix, 100 * ruw / ave(ruw, jaar, FUN = sum))
+mix <- expand_grid(jaar = 2018:2027,
+                   bron = factor(bronnen, levels = bronnen)) |>
+  mutate(ruw = runif(n(), 1, 10)) |>
+  mutate(aandeel = 100 * ruw / sum(ruw), .by = jaar)
 
 cpb_area(mix, x = jaar, y = aandeel, fill = bron,
   pct_axis = TRUE,
@@ -208,15 +212,19 @@ layers use `stat = "identity"`), so aggregate your microdata first:
 
 ``` r
 groepen5 <- c("laagste 20%", "2e 20%", "midden 20%", "4e 20%", "hoogste 20%")
-raw <- data.frame(
+raw <- tibble(
   groep      = factor(rep(groepen5, each = 400), levels = groepen5),
   koopkracht = rnorm(2000, mean = rep(c(-3, -1.5, 0, 1.5, 3.5), each = 400), sd = 2)
 )
-kk <- do.call(rbind, lapply(split(raw, raw$groep), function(d) {
-  q <- quantile(d$koopkracht, c(0.05, 0.25, 0.5, 0.75, 0.95))
-  data.frame(groep = d$groep[1],
-             p5 = q[1], p25 = q[2], p50 = q[3], p75 = q[4], p95 = q[5])
-}))
+kk <- raw |>
+  summarise(
+    p5  = quantile(koopkracht, 0.05),
+    p25 = quantile(koopkracht, 0.25),
+    p50 = quantile(koopkracht, 0.50),
+    p75 = quantile(koopkracht, 0.75),
+    p95 = quantile(koopkracht, 0.95),
+    .by = groep
+  )
 
 cpb_box(kk, x = groep,
   p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
@@ -233,10 +241,8 @@ Boxes without a `fill` mapping are drawn in the CPB primary blue. Map
 pair of years per income group:
 
 ``` r
-kk2 <- merge(kk, data.frame(jaar = factor(c(2026, 2027))))
-shift <- ifelse(kk2$jaar == "2027", 0.8, 0)
-kk2[c("p5", "p25", "p50", "p75", "p95")] <-
-  kk2[c("p5", "p25", "p50", "p75", "p95")] + shift
+kk2 <- expand_grid(kk, jaar = factor(c(2026, 2027))) |>
+  mutate(across(p5:p95, \(q) q + (jaar == "2027") * 0.8))
 
 cpb_box(kk2, x = groep,
   p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
@@ -260,11 +266,12 @@ series:
 
 ``` r
 componenten <- c("kapitaal/uren", "arbeidssamenstelling", "tfp")
-dec <- expand.grid(jaar = 2000:2024,
+dec <- expand_grid(jaar = 2000:2024,
                    # reversed levels stack the first component nearest zero
-                   component = factor(componenten, levels = rev(componenten)))
-dec$bijdrage <- round(rnorm(nrow(dec), mean = 0.4, sd = 0.9), 1)
-totaal <- aggregate(bijdrage ~ jaar, dec, sum)
+                   component = factor(componenten, levels = rev(componenten))) |>
+  mutate(bijdrage = round(rnorm(n(), mean = 0.4, sd = 0.9), 1))
+totaal <- dec |>
+  summarise(bijdrage = sum(bijdrage), .by = jaar)
 
 cpb_col(dec, x = jaar, y = bijdrage, fill = component,
   position = "stack",
@@ -286,6 +293,65 @@ cpb_col(dec, x = jaar, y = bijdrage, fill = component,
 ```
 
 <img src="chart-types_files/figure-gfm/overlay-1.png" width="447px" />
+
+# Everything is a ggplot object
+
+The wrappers do not draw anything – they *return* a `ggplot` object with
+the theme and scales already applied. That means the full `ggplot2`
+grammar stays available through `+`: extra geoms, annotations, scale
+tweaks and further `theme()` overrides all layer on top of what the
+wrapper built.
+
+A dashed reference line with an italic annotation, on top of the
+horizontal bar chart from before:
+
+``` r
+cpb_col(auto, x = inkomensgroep, y = share,
+  orientation  = "horizontal",
+  style        = "nplot",
+  pct_axis     = TRUE,
+  value_limits = c(0, 70),
+  width        = 0.6,
+  title = "Aandeel huishoudens zonder auto naar inkomen",
+  ylab  = "inkomensgroep",
+  xlab  = "huishoudens zonder auto") +
+  geom_hline(yintercept = 24, linetype = "dashed",
+             colour = "#666666", linewidth = 0.4) +
+  annotate("text", x = 6.45, y = 24, label = "landelijk gemiddelde",
+           hjust = -0.05, size = 2.0, colour = "#666666",
+           family = cpb_font_family(), fontface = "italic")
+```
+
+<img src="chart-types_files/figure-gfm/layer-refline-1.png" width="447px" />
+
+Note that under `coord_flip()` the value axis is still the `y`
+aesthetic, so a reference line on the value axis is a `geom_hline()`.
+
+Or mark a forecast window on a line chart with a shaded region, as the
+published scenario figures do:
+
+``` r
+cpb_line(bbp, x = jaar, y = index,
+  style = "nplot",
+  title = "Bruto binnenlands product",
+  ylab  = "index (2015 = 100)") +
+  annotate("rect", xmin = 2024.5, xmax = Inf, ymin = -Inf, ymax = Inf,
+           fill = "white", alpha = 0.4) +
+  annotate("text", x = 2026, y = 104, label = "raming",
+           size = 2.2, colour = "#666666",
+           family = cpb_font_family(), fontface = "italic") +
+  geom_vline(xintercept = 2024.5, linetype = "dashed", linewidth = 0.3) +
+  scale_x_continuous(breaks = seq(2015, 2027, 3), minor_breaks = 2015:2027,
+                     guide = guide_axis(minor.ticks = TRUE))
+```
+
+<img src="chart-types_files/figure-gfm/layer-raming-1.png" width="447px" />
+
+Later `+ theme(...)` calls override individual elements of `theme_cpb()`
+the same way – see the per-figure margin and legend tweaks in
+`inst/examples/smoke_test_plots.R`. The one thing *not* to add is a
+second value-axis scale: use the wrapper’s `value_breaks`,
+`value_limits` and `pct_axis` arguments instead, as noted above.
 
 # The two styles
 
