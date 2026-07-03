@@ -16,7 +16,8 @@
 #'
 #' Text sizes are absolute and are never scaled -- there is no
 #' `base_size` argument. `plot.title` is 9 pt bold; `axis.title`,
-#' `plot.subtitle`, `legend.text` and `strip.text` are 7 pt;
+#' `plot.subtitle`, `legend.title`, `legend.text` and `strip.text`
+#' are 7 pt;
 #' `axis.text` is 7 pt (`"cpb_default"`) or 6 pt (`"ggplot"`).
 #'
 #' @param base_family Font family for all text. Defaults to
@@ -169,6 +170,7 @@ theme_cpb <- function(base_family = cpb_font_family(),
     axis.text  = ggplot2::element_text(colour = "black", size = axis_text_size),
 
     legend.position   = legend,
+    legend.title      = ggplot2::element_text(face = "italic", size = 7),
     # nplot sets the label close to its key (~3.5 pt vs the ggplot2
     # default of ~5.5 pt)
     legend.text       = ggplot2::element_text(

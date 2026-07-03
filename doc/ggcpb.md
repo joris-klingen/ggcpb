@@ -31,20 +31,32 @@ pv_counts <- tibble(
 
 ggplot(pv_counts, aes(jaar, aantal)) +
   geom_col(fill = cpb_cols(6)) +
-  labs(title = "Aantal PV-meldingen per jaar", x = NULL, y = "aantal") +
+  labs(title = "Aantal PV-meldingen per jaar",
+       subtitle = "aantal", x = NULL, y = NULL) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
   theme_cpb()
 ```
 
 <img src="ggcpb_files/figure-gfm/theme-basic-1.png" width="447px" />
 
+Note the CPB label convention, visible in every example below: the
+value-axis unit (“aantal”) goes in `subtitle` – the italic caption above
+the panel – never in a rotated y-axis title (`y = NULL`). Bars also sit
+directly on the axis line: the value scale gets no expansion on the zero
+side (`expand = expansion(mult = c(0, 0.05))`). The wrappers do both for
+you (via `ylab` and automatically).
+
 For a chart built with `coord_flip()`, pass `orientation = "horizontal"`
-so the gridlines (and ticks) move to the right axes:
+so the gridlines (and ticks) move to the right axes. Here the value axis
+ends up at the bottom, where a real axis title (`y = "aantal"`, drawn
+right-aligned italic) is the house style:
 
 ``` r
 ggplot(pv_counts, aes(factor(jaar), aantal)) +
   geom_col(fill = cpb_cols(6)) +
   coord_flip() +
   labs(title = "Aantal PV-meldingen per jaar", x = NULL, y = "aantal") +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
   theme_cpb(orientation = "horizontal")
 ```
 
@@ -57,7 +69,8 @@ axis text, legend on the right:
 ``` r
 ggplot(pv_counts, aes(jaar, aantal)) +
   geom_col(fill = cpb_cols(6)) +
-  labs(title = "Aantal PV-meldingen per jaar", x = NULL, y = "aantal") +
+  labs(title = "Aantal PV-meldingen per jaar",
+       subtitle = "aantal", x = NULL, y = NULL) +
   theme_cpb(style = "ggplot")
 ```
 
@@ -87,8 +100,10 @@ pv_by_group <- tibble(
 
 ggplot(pv_by_group, aes(jaar, aantal, fill = groep)) +
   geom_col(position = "stack") +
-  labs(title = "PV-meldingen naar groep", x = NULL, y = "aantal", fill = NULL) +
+  labs(title = "PV-meldingen naar groep",
+       subtitle = "aantal", x = NULL, y = NULL, fill = NULL) +
   scale_fill_cpb_d() +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
   theme_cpb()
 ```
 
@@ -103,7 +118,8 @@ entry.
 ``` r
 ggplot(mtcars, aes(wt, mpg, colour = hp)) +
   geom_point(size = 2) +
-  labs(title = "Gewicht versus verbruik", x = "gewicht", y = "mpg", colour = "pk") +
+  labs(title = "Gewicht versus verbruik",
+       subtitle = "mpg", x = "gewicht", y = NULL, colour = "pk") +
   scale_colour_cpb_c() +
   theme_cpb(legend = "right")
 ```
@@ -126,7 +142,8 @@ raming_vergelijking <- tibble(
 ggplot(raming_vergelijking, aes(scenario, effect, fill = scenario)) +
   geom_col() +
   geom_hline(yintercept = 0, colour = "black", linewidth = 0.25) +
-  labs(title = "Effect op koopkracht", x = NULL, y = "%-punt", fill = NULL) +
+  labs(title = "Effect op koopkracht",
+       subtitle = "%-punt", x = NULL, y = NULL, fill = NULL) +
   scale_fill_cpb_manual(index = c(6, 2)) +
   theme_cpb(legend = "none")
 ```
@@ -151,7 +168,8 @@ kosten_vergelijking <- tibble(
 ggplot(kosten_vergelijking, aes(maatregel, kosten, fill = maatregel)) +
   geom_col() +
   labs(title = "Geraamde kosten per maatregel", x = NULL, y = NULL, fill = NULL) +
-  scale_y_continuous(labels = label_euro_nl()) +
+  scale_y_continuous(labels = label_euro_nl(),
+                     expand = expansion(mult = c(0, 0.05))) +
   scale_fill_cpb_manual(index = c(6, 2)) +
   theme_cpb(legend = "none")
 ```
@@ -189,7 +207,8 @@ bundled CPB font renders correctly.
 ``` r
 p <- ggplot(pv_counts, aes(jaar, aantal)) +
   geom_col(fill = cpb_cols(6)) +
-  labs(title = "Aantal PV-meldingen per jaar", x = NULL, y = "aantal") +
+  labs(title = "Aantal PV-meldingen per jaar",
+       subtitle = "aantal", x = NULL, y = NULL) +
   theme_cpb()
 
 save_cpb("pv_counts.png", p, page = "half")
