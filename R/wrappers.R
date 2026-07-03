@@ -74,9 +74,9 @@ cpb_zero_flush_expand <- function(values) {
 #' @param style Style preset, forwarded to [theme_cpb()]: `"ggplot"`
 #'   (default, the hand-rolled CPB ggplot2 look) or `"nplot"` (the
 #'   legacy CPB plotter look: hairline black gridlines at labelled
-#'   breaks only, category-axis ticks, 7 pt axis text, 0.45 cm legend
-#'   keys, flush-left bottom legend, and a black zero line on the
-#'   value axis). Any knob set explicitly overrides the preset.
+#'   breaks only, category-axis ticks and axis line, 7 pt axis text,
+#'   flush-left bottom legend, and a black zero line on the value
+#'   axis). Any knob set explicitly overrides the preset.
 #' @param legend Legend position, forwarded to [theme_cpb()]; accepts
 #'   `"right"`, `"bottom"`, `"left"`, `"top"`, `"none"`, or a
 #'   two-element numeric vector of plot-relative coordinates. `NULL`
@@ -232,8 +232,13 @@ cpb_col <- function(data, x, y, fill = NULL,
     lab_y <- NULL
   }
 
+  # a titled figure always reserves the subtitle line, so the gap
+  # between title and panel is stable whether or not a subtitle is set
+  subtitle <- ylab
+  if (!is.null(title) && is.null(subtitle)) subtitle <- " "
+
   p +
-    ggplot2::labs(title = title, subtitle = ylab, x = lab_x, y = lab_y, fill = filllab) +
+    ggplot2::labs(title = title, subtitle = subtitle, x = lab_x, y = lab_y, fill = filllab) +
     theme_cpb(
       orientation     = orientation,
       style           = style,
@@ -358,12 +363,14 @@ cpb_area <- function(data, x, y, fill,
   }
 
   # CPB convention: the value-axis label doubles as the subtitle (an
-  # italic caption above the panel) rather than a rotated axis title
+  # italic caption above the panel) rather than a rotated axis title.
+  # A titled figure always reserves the subtitle line for a stable gap.
   lab_y <- ylab
   if (is.null(subtitle) && !is.null(ylab)) {
     subtitle <- ylab
     lab_y <- NULL
   }
+  if (!is.null(title) && is.null(subtitle)) subtitle <- " "
 
   p +
     ggplot2::labs(title = title, subtitle = subtitle, x = xlab, y = lab_y, fill = filllab) +
@@ -406,7 +413,10 @@ cpb_area <- function(data, x, y, fill,
 #'   [scale_colour_cpb_d()] when supplied.
 #' @param pct_axis If `TRUE`, format the y axis with [label_pct_nl()].
 #' @param style Style preset, forwarded to [theme_cpb()]; see
-#'   [cpb_col()].
+#'   [cpb_col()]. For line charts `"nplot"` additionally draws the
+#'   panel tight around the data/limits
+#'   (`coord_cartesian(expand = FALSE)`), so the axis ticks meet the
+#'   outermost gridlines as in base-R nplot output.
 #' @param legend Legend position, forwarded to [theme_cpb()]; `NULL`
 #'   (default) resolves by `style`.
 #' @param zeroline If `TRUE`, draw a solid black line at zero on the
@@ -500,6 +510,13 @@ cpb_line <- function(data, x, y, colour = NULL,
     ggplot2::geom_line(linewidth = linewidth, colour = single_colour, ...)
   }
 
+  # nplot draws the panel tight around the data/limits, so the axis
+  # line and ticks meet the outermost gridlines instead of floating
+  # beyond them
+  if (style == "nplot") {
+    p <- p + ggplot2::coord_cartesian(expand = FALSE)
+  }
+
   if (isTRUE(pct_axis)) {
     p <- p + ggplot2::scale_y_continuous(labels = label_pct_nl())
   }
@@ -514,12 +531,14 @@ cpb_line <- function(data, x, y, colour = NULL,
 
   # CPB convention: the value-axis label doubles as the subtitle (an
   # italic caption above the panel, typically the unit) rather than a
-  # rotated axis title
+  # rotated axis title. A titled figure always reserves the subtitle
+  # line for a stable gap.
   lab_y <- ylab
   if (is.null(subtitle) && !is.null(ylab)) {
     subtitle <- ylab
     lab_y <- NULL
   }
+  if (!is.null(title) && is.null(subtitle)) subtitle <- " "
 
   p +
     ggplot2::labs(title = title, subtitle = subtitle, x = xlab, y = lab_y, colour = colourlab) +
@@ -708,12 +727,14 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
 
   # CPB convention for vertical charts: the value-axis label doubles as
   # the subtitle; horizontally the value axis is drawn at the bottom
-  # after coord_flip(), where a real axis title is appropriate
+  # after coord_flip(), where a real axis title is appropriate. A
+  # titled figure always reserves the subtitle line for a stable gap.
   lab_y <- ylab
   if (orientation == "vertical" && is.null(subtitle) && !is.null(ylab)) {
     subtitle <- ylab
     lab_y <- NULL
   }
+  if (!is.null(title) && is.null(subtitle)) subtitle <- " "
 
   p +
     ggplot2::labs(title = title, subtitle = subtitle, x = xlab, y = lab_y, fill = filllab) +

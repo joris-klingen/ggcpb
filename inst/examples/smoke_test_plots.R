@@ -312,10 +312,9 @@ render(7, "col: horizontal, single colour",
     pct_axis     = TRUE,
     value_limits = c(0, 70),
     width        = 0.6,
-    title = "Aandeel huishoudens zonder auto naar inkomen \n",
+    title = "Aandeel huishoudens zonder auto naar inkomen",
     ylab  = "inkomensgroep",
-    xlab  = "huishoudens zonder auto") +
-    ggplot2::theme(plot.margin = ggplot2::margin(10, 10, 30, 10)),
+    xlab  = "huishoudens zonder auto"),
   "07_col_horizontal.png", page = "half")
 
 # recreation of reference figure p20_img24: horizontal dodged bar, two
@@ -332,8 +331,7 @@ render(8, "col: horizontal, dodged (fill)",
     width        = 0.85,
     title = "Zonnepanelen naar inkomen",
     ylab  = "inkomensgroepen",
-    xlab  = "aandeel binnen inkomensgroep (%)") +
-    ggplot2::theme(plot.margin = ggplot2::margin(8, 10, 6, 10)),
+    xlab  = "aandeel binnen inkomensgroep (%)"),
   "08_col_horizontal_dodged.png", page = "half")
 
 # recreation of reference figure productivity-report p06_img01: two growth
@@ -349,7 +347,6 @@ render(9, "line: two series, nplot look",
     ggplot2::scale_x_continuous(
       breaks       = c(seq(2000, 2020, 5), 2024),
       minor_breaks = 2000:2024,
-      expand       = ggplot2::expansion(mult = 0.01),
       guide        = ggplot2::guide_axis(minor.ticks = TRUE)
     ),
   "09_line_nplot.png", page = "half")
@@ -418,7 +415,6 @@ render(12, "box: horizontal, dodged by year",
     reverse_legend  = TRUE,
     flush_legend    = TRUE,
     axis_text_size  = 7,
-    legend_key_size = 0.45,
     title = "Opbouw inkomenseffect: marktverwachtingen",
     subtitle = "inkomensgroepen",
     ylab  = "aandeel energie in inkomenseffect") +

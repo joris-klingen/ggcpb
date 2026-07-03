@@ -60,7 +60,10 @@ to \code{\link[=scale_colour_cpb_manual]{scale_colour_cpb_manual()}} instead of 
 \item{pct_axis}{If \code{TRUE}, format the y axis with \code{\link[=label_pct_nl]{label_pct_nl()}}.}
 
 \item{style}{Style preset, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; see
-\code{\link[=cpb_col]{cpb_col()}}.}
+\code{\link[=cpb_col]{cpb_col()}}. For line charts \code{"nplot"} additionally draws the
+panel tight around the data/limits
+(\code{coord_cartesian(expand = FALSE)}), so the axis ticks meet the
+outermost gridlines as in base-R nplot output.}
 
 \item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; \code{NULL}
 (default) resolves by \code{style}.}

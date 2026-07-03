@@ -47,9 +47,10 @@ minor gridlines always match the major gridlines.}
 gridlines with minors, no axis ticks, 6 pt axis text, small legend
 keys, legend on the right. \code{"nplot"} reproduces the legacy CPB
 \code{nplot()} look: hairline black gridlines at labelled breaks only,
-black tick marks on the category axis, 7 pt axis text, 0.45 cm
-legend keys, and a flush-left vertical legend at the bottom. Any
-knob set explicitly overrides the preset.}
+black tick marks (with an axis line) on the category axis, 7 pt
+axis text, a flush-left vertical legend at the bottom, and
+tighter bottom margins. Any knob set explicitly overrides the
+preset.}
 
 \item{legend}{Passed through to \code{legend.position}; accepts the
 usual \code{"right"}/\code{"left"}/\code{"top"}/\code{"bottom"}/\code{"none"} strings, or a
@@ -81,8 +82,8 @@ resolves by \code{style}: \code{6} for \code{"ggplot"} (the hand-rolled CPB
 scripts), \code{7} for \code{"nplot"}.}
 
 \item{legend_key_size}{Legend key size in cm. \code{NULL} (default)
-resolves by \code{style}: the classic 0.25 x 0.30 cm keys for
-\code{"ggplot"}, 0.45 cm squares for \code{"nplot"}.}
+keeps the house 0.25 x 0.30 cm keys (both styles; the published
+nplot figures use the same size).}
 
 \item{grid_colour}{Gridline colour. \code{NULL} (default) resolves by
 \code{style}: \code{cpb_tokens()$grid} (\code{"#c9d1da"}) for \code{"ggplot"},

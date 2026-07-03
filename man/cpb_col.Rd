@@ -87,9 +87,9 @@ makes the legend order counter-intuitive.}
 \item{style}{Style preset, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}: \code{"ggplot"}
 (default, the hand-rolled CPB ggplot2 look) or \code{"nplot"} (the
 legacy CPB plotter look: hairline black gridlines at labelled
-breaks only, category-axis ticks, 7 pt axis text, 0.45 cm legend
-keys, flush-left bottom legend, and a black zero line on the
-value axis). Any knob set explicitly overrides the preset.}
+breaks only, category-axis ticks and axis line, 7 pt axis text,
+flush-left bottom legend, and a black zero line on the value
+axis). Any knob set explicitly overrides the preset.}
 
 \item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; accepts
 \code{"right"}, \code{"bottom"}, \code{"left"}, \code{"top"}, \code{"none"}, or a

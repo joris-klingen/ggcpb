@@ -193,3 +193,19 @@ test_that("cpb_col value_breaks land on the wrapper-built value scale", {
   expect_equal(sc$breaks, seq(0, 70, 10))
   expect_true(is.function(sc$labels))
 })
+
+test_that("nplot line charts draw the panel without expansion", {
+  df <- data.frame(x = 1:3, y = 4:6)
+  p <- cpb_line(df, x = x, y = y, style = "nplot")
+  expect_false(p$coordinates$expand)
+  expect_true(cpb_line(df, x = x, y = y)$coordinates$expand)
+})
+
+test_that("titled wrappers reserve the subtitle line when none is given", {
+  df <- data.frame(x = c("a", "b"), y = c(1, 2))
+  expect_equal(cpb_col(df, x = x, y = y, title = "t")$labels$subtitle, " ")
+  expect_equal(cpb_line(df, x = x, y = y, title = "t")$labels$subtitle, " ")
+  # no title -> no reserved line; explicit ylab still wins
+  expect_null(cpb_col(df, x = x, y = y)$labels$subtitle)
+  expect_equal(cpb_col(df, x = x, y = y, title = "t", ylab = "u")$labels$subtitle, "u")
+})

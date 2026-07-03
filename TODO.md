@@ -43,7 +43,16 @@ bars/areas sit directly on the axis line and the category ticks touch
 it -- the panel edge is the axis, as in nplot output. `cpb_col()`
 takes `value_breaks` so custom breaks go on the wrapper-built scale
 instead of a second (conflicting) `scale_y_continuous()`. The nplot
-legend also uses a tighter key-to-label gap (3.5 pt).
+legend also uses a tighter key-to-label gap (3.5 pt), zero legend
+margins and a 6 pt gap to the panel, and the preset's bottom plot
+margin is 8 pt instead of the classic 25 pt (which existed for
+overlay legends drawn below the panel). nplot ticks come with a
+hairline axis line on the category axis so the tick strip never
+floats when the lowest break is not at zero, and nplot line charts
+draw the panel without expansion (`coord_cartesian(expand = FALSE)`),
+so ticks meet the outermost gridlines. Titled wrappers always reserve
+the subtitle line (a blank one if none is given), keeping the gap
+between title and panel stable.
 
 ## Remaining ideas
 

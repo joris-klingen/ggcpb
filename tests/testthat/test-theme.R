@@ -111,7 +111,11 @@ test_that("theme_cpb style = 'nplot' preset flips the knob defaults", {
   expect_equal(th$panel.grid.major.y$linewidth, 0.1)
   expect_s3_class(th$axis.ticks.x, "element_line")
   expect_equal(th$axis.text$size, 7)
-  expect_equal(as.numeric(th$legend.key.height), 0.45)
+  # key size is NOT changed by the preset: published nplot figures use
+  # the same 0.25 x 0.30 cm keys as the classic style
+  expect_equal(as.numeric(th$legend.key.height), 0.25)
+  expect_s3_class(th$axis.line.x, "element_line")
+  expect_equal(as.numeric(th$plot.margin)[3], 8)
   expect_equal(th$legend.position, "bottom")
   expect_equal(th$legend.justification, "left")
 

@@ -39,9 +39,10 @@
 #'   gridlines with minors, no axis ticks, 6 pt axis text, small legend
 #'   keys, legend on the right. `"nplot"` reproduces the legacy CPB
 #'   `nplot()` look: hairline black gridlines at labelled breaks only,
-#'   black tick marks on the category axis, 7 pt axis text, 0.45 cm
-#'   legend keys, and a flush-left vertical legend at the bottom. Any
-#'   knob set explicitly overrides the preset.
+#'   black tick marks (with an axis line) on the category axis, 7 pt
+#'   axis text, a flush-left vertical legend at the bottom, and
+#'   tighter bottom margins. Any knob set explicitly overrides the
+#'   preset.
 #' @param legend Passed through to `legend.position`; accepts the
 #'   usual `"right"`/`"left"`/`"top"`/`"bottom"`/`"none"` strings, or a
 #'   two-element numeric vector of plot-relative coordinates. `NULL`
@@ -67,8 +68,8 @@
 #'   resolves by `style`: `6` for `"ggplot"` (the hand-rolled CPB
 #'   scripts), `7` for `"nplot"`.
 #' @param legend_key_size Legend key size in cm. `NULL` (default)
-#'   resolves by `style`: the classic 0.25 x 0.30 cm keys for
-#'   `"ggplot"`, 0.45 cm squares for `"nplot"`.
+#'   keeps the house 0.25 x 0.30 cm keys (both styles; the published
+#'   nplot figures use the same size).
 #' @param grid_colour Gridline colour. `NULL` (default) resolves by
 #'   `style`: `cpb_tokens()$grid` (`"#c9d1da"`) for `"ggplot"`,
 #'   `"black"` for `"nplot"`.
@@ -112,7 +113,8 @@ theme_cpb <- function(base_family = cpb_font_family(),
   if (is.null(ticks))           ticks           <- nplot
   if (is.null(flush_legend))    flush_legend    <- nplot
   if (is.null(axis_text_size))  axis_text_size  <- if (nplot) 7 else 6
-  if (is.null(legend_key_size) && nplot) legend_key_size <- 0.45
+  # nplot keys measure 0.25 x 0.30 cm in the published references (p20),
+  # the same as the classic keys, so the preset leaves the size alone
   if (is.null(grid_colour))     grid_colour     <- if (nplot) "black" else cpb_grid
   if (is.null(grid_linewidth) && nplot) grid_linewidth <- 0.1
 
@@ -183,17 +185,34 @@ theme_cpb <- function(base_family = cpb_font_family(),
     panel.grid.major.y = if (show_grid_y) gridline else blankline,
     panel.grid.minor.y = if (show_grid_y) minorline else blankline,
 
-    plot.margin = ggplot2::margin(10, 10, 25, 10),
+    # the classic 25 pt bottom margin makes room for the snippet-style
+    # overlay legends (legend.position = c(x, -0.2)); nplot uses a real
+    # bottom legend, so the panel gets that space back
+    plot.margin = if (nplot) {
+      ggplot2::margin(10, 10, 8, 10)
+    } else {
+      ggplot2::margin(10, 10, 25, 10)
+    },
 
     plot.background = plot_bg
   )
 
+  if (nplot) {
+    theme_args$legend.margin      <- ggplot2::margin(0, 0, 0, 0)
+    theme_args$legend.box.spacing <- grid::unit(6, "pt")
+  }
+
   if (isTRUE(ticks)) {
     tickline <- ggplot2::element_line(colour = "black", linewidth = 0.2)
+    # nplot (base R) draws the axis line the ticks hang from, so the
+    # tick strip never floats when the lowest break is off the panel edge
+    axisline <- ggplot2::element_line(colour = "black", linewidth = 0.1)
     if (orientation == "vertical") {
       theme_args$axis.ticks.x <- tickline
+      theme_args$axis.line.x  <- axisline
     } else {
       theme_args$axis.ticks.y <- tickline
+      theme_args$axis.line.y  <- axisline
     }
     theme_args$axis.ticks.length <- grid::unit(2.2, "pt")
   }
