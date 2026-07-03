@@ -103,7 +103,7 @@ A \code{ggplot} object.
 }
 \description{
 Reproduces the p5/p25/p50/p75/p95 errorbar-plus-boxplot combination
-used in CPB energy-crisis distributional figures: a thin errorbar
+used in CPB distributional figures: a thin errorbar
 spanning the p5-p95 range, with a box spanning the p25-p75
 interquartile range and a median line at p50 drawn on top. Both
 layers use \code{stat = "identity"} -- pass precomputed quantile columns

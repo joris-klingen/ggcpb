@@ -4,9 +4,7 @@
 a `ggplot2` backend: a theme, colour palettes and scales, Dutch-locale
 number formatters, a figure export helper, and high-level wrappers for
 the common CPB chart types. Everything returns real `ggplot` objects
-that you can keep extending with `+`. It is the `ggplot2`-native
-counterpart to the internal `nicerplot` package (`nplot()`), without
-depending on it.
+that you can keep extending with `+`.
 
 > **Status: work in progress.** The style is calibrated against a set
 > of published reference figures, but robustness still needs to be
@@ -31,9 +29,9 @@ regenerated from `vignettes/` with `Rscript tools/render_vignettes.R`.
 ## Install / load
 
 ```r
-devtools::load_all("../Tech/ggcpb")   # develop-mode, like nicerplot
+devtools::load_all("path/to/ggcpb")   # develop-mode
 # or install from a checkout:
-devtools::install("../Tech/ggcpb")
+devtools::install("path/to/ggcpb")
 ```
 
 ## Quick start
@@ -70,14 +68,14 @@ missing, the theme falls back to the ggplot2 default with a single
 warning. `cpb_register_fonts()` re-runs registration,
 `cpb_font_family()` reports the family in use. **Note:** confirm with
 CPB that the bundled TTFs may be redistributed in this repository; if
-not, register them by path against the internal copy instead:
+not, register them by path against an internal copy instead:
 
 ```r
 systemfonts::register_font(
   name   = "RijksoverheidSansText",
-  plain  = "../Tech/rijks_font/RijksoverheidSansText-Regular_2_0.ttf",
-  bold   = "../Tech/rijks_font/RijksoverheidSansText-Bold_2_0.ttf",
-  italic = "../Tech/rijks_font/RijksoverheidSansText-Italic_2_0.ttf"
+  plain  = "path/to/RijksoverheidSansText-Regular_2_0.ttf",
+  bold   = "path/to/RijksoverheidSansText-Bold_2_0.ttf",
+  italic = "path/to/RijksoverheidSansText-Italic_2_0.ttf"
 )
 ```
 

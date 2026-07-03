@@ -68,8 +68,7 @@ cpb_register_fonts <- function() {
     warning(
       "ggcpb: could not find the bundled RijksoverheidSansText font files ",
       "in inst/fonts/; falling back to the default ggplot2 font family. ",
-      "See the ggcpb README for the path-based fallback against ",
-      "'../Tech/rijks_font/'.",
+      "See the ggcpb README for the path-based fallback.",
       call. = FALSE
     )
     .ggcpb_env$font_registered <- FALSE

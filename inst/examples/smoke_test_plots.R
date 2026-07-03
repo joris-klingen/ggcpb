@@ -113,8 +113,7 @@ box6_dt <- raw6[, .(
 inkomensgroepen <- c("tot 120% wml", "120% wml - mod.", "1 - 1,5x mod.",
                      "1,5 - 2x mod.", "2 - 3x mod.", "boven 3x mod.")
 
-# household-level car ownership by income group -> share without a car.
-# (style example based on references/code scripts/304_plot_autobezit.R.)
+# household-level car ownership by income group -> share without a car:
 # simulate a population (one row per household), then aggregate.
 nocar_n <- c(1.4e6, 1.0e6, 1.4e6, 1.1e6, 1.5e6, 1.5e6)
 nocar_p <- c(0.62, 0.35, 0.26, 0.19, 0.14, 0.13)
@@ -298,7 +297,7 @@ render(6, "box: split by year (2026/2027)",
   "06_box_by_year.png", page = "full")
 
 # recreation of reference figure p11_img11 (horizontal single-colour bar
-# with a percentage value axis), restyled to the nplot look. ylab is the
+# with a percentage value axis). ylab is the
 # vertical (category) axis -> rendered as the subtitle; xlab is the
 # horizontal (value) axis.
 render(7, "col: horizontal, single colour",
@@ -332,7 +331,7 @@ render(8, "col: horizontal, dodged (fill)",
 # series (blue = palette 6, magenta = palette 2) in the default style,
 # the unit ("%") as subtitle above the axis, and the zero line drawn
 # automatically because the growth rates span zero.
-render(9, "line: two series, nplot look",
+render(9, "line: two series",
   cpb_line(prod_dt, x = jaar, y = groei, colour = reeks,
     index = c(6, 2),
     title = "Productiviteitsgroei",
@@ -343,7 +342,7 @@ render(9, "line: two series, nplot look",
       minor_breaks = 2000:2024,
       guide        = ggplot2::guide_axis(minor.ticks = TRUE)
     ),
-  "09_line_nplot.png", page = "half")
+  "09_line_two_series.png", page = "half")
 
 # recreation of reference figure productivity-report p06_img02: stacked
 # growth-contribution columns spanning zero (blue / light blue / magenta)
@@ -377,7 +376,7 @@ render(10, "col: stacked +/- with line overlay",
 
 # recreation of reference figure p13_img15: three series dodged
 # horizontally (blue = palette 6, magenta = palette 2, grey-brown =
-# palette 8), nplot() look, flush-left bottom legend.
+# palette 8), flush-left bottom legend.
 render(11, "col: horizontal, dodged, 3 series",
   cpb_col(reisk_dt, x = inkomensgroep, y = share, fill = groep,
     position     = "dodge",

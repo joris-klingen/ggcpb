@@ -25,8 +25,7 @@ any stray bold + italic request from erroring.
 If the three required files are absent, `cpb_register_fonts()` fails
 gracefully with a single warning and `theme_cpb()` falls back to the ggplot2
 default font family (`cpb_font_family()` returns `""`) -- see the top-level
-README for the path-based registration fallback against
-`../Tech/rijks_font/`.
+README for the path-based registration fallback.
 
 **Licensing.** The Rijksoverheid house-style fonts are the property of the
 Dutch central government; use them only where you are permitted to. Confirm

@@ -438,7 +438,7 @@ cpb_line <- function(data, x, y, colour = NULL,
   colour <- rlang::enquo(colour)
   has_colour <- !rlang::quo_is_null(colour)
 
-  # nplot bolds the zero line only when zero is actually on the axis, so
+  # the house style bolds the zero line only when zero is on the axis, so
   # the auto setting checks whether the data spans (or touches) zero --
   # an unconditional hline at 0 would stretch the y range of an
   # all-positive chart (e.g. an index series) down to zero
@@ -517,7 +517,7 @@ cpb_line <- function(data, x, y, colour = NULL,
 #' A CPB-styled quantile box-and-errorbar chart
 #'
 #' Reproduces the p5/p25/p50/p75/p95 errorbar-plus-boxplot combination
-#' used in CPB energy-crisis distributional figures: a thin errorbar
+#' used in CPB distributional figures: a thin errorbar
 #' spanning the p5-p95 range, with a box spanning the p25-p75
 #' interquartile range and a median line at p50 drawn on top. Both
 #' layers use `stat = "identity"` -- pass precomputed quantile columns

@@ -1,7 +1,7 @@
 # palettes.R ----
 #
 # Palette generator functions and the swatch accessor cpb_cols(). These
-# operate on the internal token vectors defined in aaa-tokens.R via the
+# operate on the internal token vectors defined in tokens.R via the
 # cpb_palette_colours() helper, which excludes the trailing NA colour.
 
 #' A CPB colour palette generator

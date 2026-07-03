@@ -12,9 +12,7 @@ Description: A composable ggplot2 extension encoding the CPB (Centraal
     and a thin layer of high-level wrapper functions for the most
     common chart types used in CPB publications. The wrapper layer
     returns real 'ggplot' objects that can be extended further with
-    the usual '+' syntax. This package is the 'ggplot2'-native
-    counterpart to the internal 'nicerplot' package and does not
-    depend on it.
+    the usual '+' syntax.
 License: file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

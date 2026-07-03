@@ -1,12 +1,9 @@
-# aaa-tokens.R ----
+# tokens.R ----
 #
-# Canonical CPB design tokens (the "energiecrisis_2026" set). These are
-# the single source of truth for the CPB house style and are stored here
-# as internal package data -- they are not exported directly. Use the
-# exported accessors cpb_tokens(), cpb_pal() and cpb_cols() to read them
-# from outside the package. The file is named "aaa-tokens.R" so that it
-# is sourced first (alphabetically) and these objects exist before any
-# other R/ file that references them at parse time.
+# Canonical CPB design tokens: the single source of truth for the CPB
+# house style, stored as internal package data -- they are not exported
+# directly. Use the exported accessors cpb_tokens(), cpb_pal() and
+# cpb_cols() to read them from outside the package.
 
 # qualitative / categorical (primary discrete palette) ----
 cpb_colors <- c(
@@ -57,8 +54,7 @@ cpb_palette_colours <- function(palette = c("qualitative", "discr", "sequential"
 
 #' Read-only access to the CPB design tokens
 #'
-#' Returns the canonical CPB colour tokens (the "energiecrisis_2026" set)
-#' as a plain list. Use this to inspect the raw hex values, e.g. when
+#' Returns the canonical CPB colour tokens as a plain list. Use this to inspect the raw hex values, e.g. when
 #' building a custom scale that the package does not provide directly.
 #' The palette vectors are returned without their trailing NA colour;
 #' the NA colour is available separately as `na`.
