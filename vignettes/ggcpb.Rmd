@@ -64,7 +64,7 @@ quantile boxplot. `cpb_box()` wants precomputed quantiles, so
 aggregate first, then one call gives a complete house-style figure --
 theme, colours, zero line, flush legend layout, everything:
 
-```{r draft, fig.width = 5.96, fig.height = 3.2, out.width = "700px"}
+```{r draft}
 kk <- huishoudens |>
   summarise(
     p5  = quantile(koopkracht, 0.05),
@@ -91,15 +91,15 @@ the formatters), and a dashed reference line at the population median
 with an italic annotation -- coloured via `cpb_cols()`, the raw
 palette accessor, and set in the house font via `cpb_font_family()`:
 
-```{r refine, fig.width = 5.96, fig.height = 3.2, out.width = "700px"}
+```{r refine}
 mediaan <- median(huishoudens$koopkracht)
 
 p +
   scale_y_continuous(labels = label_number_nl()) +
   geom_hline(yintercept = mediaan, linetype = "dashed",
              colour = cpb_cols(2), linewidth = 0.4) +
-  annotate("text", x = 5.45, y = mediaan, label = "mediaan alle huishoudens",
-           hjust = -0.05, size = 2.0, colour = cpb_cols(2),
+  annotate("text", x = 5.45, y = mediaan, label = "mediaan",
+           hjust = -0.15, size = 2.0, colour = cpb_cols(2),
            family = cpb_font_family(), fontface = "italic")
 ```
 
@@ -131,7 +131,7 @@ ggplot(steekproef, aes(inkomen, energierekening, colour = koopkracht)) +
        y = NULL, colour = "koopkracht (%)") +
   scale_x_continuous(labels = label_euro_nl()) +
   scale_colour_cpb_c() +
-  theme_cpb(legend = "right")
+  theme_cpb()
 ```
 
 `theme_cpb()` takes the same `style`/knob arguments as the wrappers
@@ -139,18 +139,17 @@ ggplot(steekproef, aes(inkomen, energierekening, colour = koopkracht)) +
 (palettes, background `r cpb_tokens()$bg`, grid and NA colours) for
 anything the scales do not cover.
 
-For small multiples the full house dress is usually too heavy;
-`theme_cpb_min()` keeps the typography but drops the background and
-gridlines:
+Small multiples keep the same house dress -- gridlines, blue
+background and all -- with `facet_wrap()` on top of `theme_cpb()`:
 
-```{r facets, fig.width = 5.96, fig.height = 2.2, out.width = "700px"}
+```{r facets, fig.width = 5.96, fig.height = 2.4, out.width = "700px"}
 ggplot(steekproef, aes(inkomen, energierekening)) +
   geom_point(size = 0.5, colour = cpb_cols(6)) +
   facet_wrap(~ groep, nrow = 1) +
   labs(title = "Energierekening naar inkomen, per groep",
        subtitle = "energierekening (euro per maand)",
        x = NULL, y = NULL) +
-  theme_cpb_min()
+  theme_cpb()
 ```
 
 # Export
@@ -161,8 +160,8 @@ ggplot(steekproef, aes(inkomen, energierekening)) +
 automatically on load; see `cpb_register_fonts()`) renders correctly:
 
 ```{r save, eval = FALSE}
-save_cpb("koopkracht.png", p, page = "full", height = 3.2)
-save_cpb("koopkracht_half.png", p, page = "half")
+save_cpb("koopkracht.png", p, page = "half")
+save_cpb("koopkracht_breed.png", p, page = "full", height = 3.2)
 ```
 
 The half/full widths are the only ones `save_cpb()` accepts: a stray

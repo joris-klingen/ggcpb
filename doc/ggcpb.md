@@ -62,7 +62,7 @@ p <- cpb_box(kk, x = groep,
 p
 ```
 
-<img src="ggcpb_files/figure-gfm/draft-1.png" width="700px" />
+<img src="ggcpb_files/figure-gfm/draft-1.png" width="350px" />
 
 # Refine with layers
 
@@ -79,12 +79,12 @@ p +
   scale_y_continuous(labels = label_number_nl()) +
   geom_hline(yintercept = mediaan, linetype = "dashed",
              colour = cpb_cols(2), linewidth = 0.4) +
-  annotate("text", x = 5.45, y = mediaan, label = "mediaan alle huishoudens",
-           hjust = -0.05, size = 2.0, colour = cpb_cols(2),
+  annotate("text", x = 5.45, y = mediaan, label = "mediaan",
+           hjust = -0.15, size = 2.0, colour = cpb_cols(2),
            family = cpb_font_family(), fontface = "italic")
 ```
 
-<img src="ggcpb_files/figure-gfm/refine-1.png" width="700px" />
+<img src="ggcpb_files/figure-gfm/refine-1.png" width="350px" />
 
 (Under `coord_flip()` the value axis is still the `y` aesthetic, so the
 reference line is a `geom_hline()`. For bar and column charts, set
@@ -114,7 +114,7 @@ ggplot(steekproef, aes(inkomen, energierekening, colour = koopkracht)) +
        y = NULL, colour = "koopkracht (%)") +
   scale_x_continuous(labels = label_euro_nl()) +
   scale_colour_cpb_c() +
-  theme_cpb(legend = "right")
+  theme_cpb()
 ```
 
 <img src="ggcpb_files/figure-gfm/scatter-1.png" width="700px" />
@@ -124,9 +124,8 @@ ggplot(steekproef, aes(inkomen, energierekening, colour = koopkracht)) +
 (palettes, background \#eef8ff, grid and NA colours) for anything the
 scales do not cover.
 
-For small multiples the full house dress is usually too heavy;
-`theme_cpb_min()` keeps the typography but drops the background and
-gridlines:
+Small multiples keep the same house dress – gridlines, blue background
+and all – with `facet_wrap()` on top of `theme_cpb()`:
 
 ``` r
 ggplot(steekproef, aes(inkomen, energierekening)) +
@@ -135,7 +134,7 @@ ggplot(steekproef, aes(inkomen, energierekening)) +
   labs(title = "Energierekening naar inkomen, per groep",
        subtitle = "energierekening (euro per maand)",
        x = NULL, y = NULL) +
-  theme_cpb_min()
+  theme_cpb()
 ```
 
 <img src="ggcpb_files/figure-gfm/facets-1.png" width="700px" />
@@ -148,8 +147,8 @@ ggplot(steekproef, aes(inkomen, energierekening)) +
 automatically on load; see `cpb_register_fonts()`) renders correctly:
 
 ``` r
-save_cpb("koopkracht.png", p, page = "full", height = 3.2)
-save_cpb("koopkracht_half.png", p, page = "half")
+save_cpb("koopkracht.png", p, page = "half")
+save_cpb("koopkracht_breed.png", p, page = "full", height = 3.2)
 ```
 
 The half/full widths are the only ones `save_cpb()` accepts: a stray

@@ -214,7 +214,7 @@ errorbar whiskers out to p5 and p95. It expects **precomputed
 quantile columns** (both layers use `stat = "identity"`), so
 aggregate your microdata first:
 
-```{r box-single, fig.width = 5.96, fig.height = 3.2, out.width = "700px"}
+```{r box-single}
 groepen5 <- c("laagste 20%", "2e 20%", "midden 20%", "4e 20%", "hoogste 20%")
 raw <- tibble(
   groep      = factor(rep(groepen5, each = 400), levels = groepen5),

@@ -226,7 +226,7 @@ cpb_box(kk, x = groep,
   ylab  = "% koopkrachtmutatie")
 ```
 
-<img src="chart-types_files/figure-gfm/box-single-1.png" width="700px" />
+<img src="chart-types_files/figure-gfm/box-single-1.png" width="350px" />
 
 Boxes without a `fill` mapping are drawn in the CPB primary blue. Map
 `fill` and pass a `position_dodge()` for grouped boxes – for example one
