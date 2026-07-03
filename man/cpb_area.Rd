@@ -13,13 +13,15 @@ cpb_area(
   index = NULL,
   pct_axis = FALSE,
   reverse_legend = TRUE,
-  legend = "right",
-  minor = TRUE,
-  ticks = FALSE,
-  flush_legend = FALSE,
-  axis_text_size = 6,
+  style = c("ggplot", "nplot"),
+  legend = NULL,
+  zeroline = NULL,
+  minor = NULL,
+  ticks = NULL,
+  flush_legend = NULL,
+  axis_text_size = NULL,
   legend_key_size = NULL,
-  grid_colour = cpb_grid,
+  grid_colour = NULL,
   grid_linewidth = NULL,
   title = NULL,
   subtitle = NULL,
@@ -51,15 +53,28 @@ to \code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} instead of the 
 \item{reverse_legend}{If \code{TRUE} (default), reverse the fill legend
 order via \code{guide_legend(reverse = TRUE)}.}
 
-\item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}.}
+\item{style}{Style preset, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; see
+\code{\link[=cpb_col]{cpb_col()}}.}
 
-\item{minor, ticks, flush_legend, axis_text_size, legend_key_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; see \code{\link[=cpb_col]{cpb_col()}} for the
-\code{nplot()}-style settings.}
+\item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; \code{NULL}
+(default) resolves by \code{style}.}
+
+\item{zeroline}{If \code{TRUE}, draw a solid black line at zero on the
+value axis on top of the areas, as the CPB \code{nplot()} house style
+does. \code{NULL} (default) resolves by \code{style}.}
+
+\item{minor, ticks, flush_legend, axis_text_size, legend_key_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; \code{NULL} (the default) resolves by
+\code{style}.}
 
 \item{title, subtitle}{Plot title/subtitle.}
 
-\item{xlab, ylab, filllab}{Axis and legend title overrides; default
+\item{xlab, filllab}{Axis and legend title overrides; default
 to \code{NULL} (no axis title), matching CPB house style.}
+
+\item{ylab}{Label for the value (y) axis. Following CPB house style
+it is rendered as the plot \emph{subtitle} -- a left-aligned italic
+caption above the panel -- unless an explicit \code{subtitle} is also
+given, in which case it falls back to a rotated y-axis title.}
 
 \item{...}{Further arguments passed to \code{\link[ggplot2:geom_ribbon]{ggplot2::geom_area()}}.}
 }

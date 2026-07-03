@@ -9,13 +9,14 @@ theme_cpb(
   background = TRUE,
   orientation = c("vertical", "horizontal"),
   grid = c("value", "both", "none", "x", "y"),
-  legend = "right",
-  minor = TRUE,
-  ticks = FALSE,
-  flush_legend = FALSE,
-  axis_text_size = 6,
+  style = c("ggplot", "nplot"),
+  legend = NULL,
+  minor = NULL,
+  ticks = NULL,
+  flush_legend = NULL,
+  axis_text_size = NULL,
   legend_key_size = NULL,
-  grid_colour = cpb_grid,
+  grid_colour = NULL,
   grid_linewidth = NULL
 )
 }
@@ -41,40 +42,55 @@ gridlines only on the value axis implied by \code{orientation};
 \code{orientation}. Gridlines are drawn in \code{cpb_tokens()$grid}, and
 minor gridlines always match the major gridlines.}
 
+\item{style}{Style preset that sets the defaults of the knobs below.
+\code{"ggplot"} (default) is the hand-rolled CPB ggplot2 look: CPB-grey
+gridlines with minors, no axis ticks, 6 pt axis text, small legend
+keys, legend on the right. \code{"nplot"} reproduces the legacy CPB
+\code{nplot()} look: hairline black gridlines at labelled breaks only,
+black tick marks on the category axis, 7 pt axis text, 0.45 cm
+legend keys, and a flush-left vertical legend at the bottom. Any
+knob set explicitly overrides the preset.}
+
 \item{legend}{Passed through to \code{legend.position}; accepts the
 usual \code{"right"}/\code{"left"}/\code{"top"}/\code{"bottom"}/\code{"none"} strings, or a
-two-element numeric vector of plot-relative coordinates.}
+two-element numeric vector of plot-relative coordinates. \code{NULL}
+(default) resolves by \code{style}: \code{"right"} for \code{"ggplot"},
+\code{"bottom"} for \code{"nplot"}.}
 
-\item{minor}{If \code{TRUE} (default), minor gridlines are drawn (matching
-the major gridlines). Set to \code{FALSE} for the \code{nplot()} house look,
-which draws gridlines only at labelled breaks.}
+\item{minor}{If \code{TRUE}, minor gridlines are drawn (matching the
+major gridlines); if \code{FALSE}, gridlines appear only at labelled
+breaks. \code{NULL} (default) resolves by \code{style} (\code{TRUE} for
+\code{"ggplot"}, \code{FALSE} for \code{"nplot"}).}
 
 \item{ticks}{If \code{TRUE}, draw black axis tick marks on the \emph{category}
 axis (the x axis when \code{orientation = "vertical"}, the y axis when
-\code{"horizontal"}), as \code{nplot()} does. Defaults to \code{FALSE}.}
+\code{"horizontal"}), as \code{nplot()} does. \code{NULL} (default) resolves by
+\code{style} (\code{FALSE} for \code{"ggplot"}, \code{TRUE} for \code{"nplot"}).}
 
 \item{flush_legend}{If \code{TRUE}, anchor the legend to the left edge of
 the full plot area (\code{legend.location = "plot"} plus a left
 justification) and stack its keys vertically -- the \code{nplot()}
 bottom-left legend block. Most useful with \code{legend = "bottom"}.
-Defaults to \code{FALSE}. Requires ggplot2 >= 3.5.0 for the
+\code{NULL} (default) resolves by \code{style} (\code{FALSE} for \code{"ggplot"},
+\code{TRUE} for \code{"nplot"}). Requires ggplot2 >= 3.5.0 for the
 \code{legend.location} part; on older versions only the justification
 is applied.}
 
-\item{axis_text_size}{Axis text size in points. Defaults to \code{6}
-(the hand-rolled CPB ggplot scripts); \code{nplot()} figures use \code{7}.}
+\item{axis_text_size}{Axis text size in points. \code{NULL} (default)
+resolves by \code{style}: \code{6} for \code{"ggplot"} (the hand-rolled CPB
+scripts), \code{7} for \code{"nplot"}.}
 
 \item{legend_key_size}{Legend key size in cm. \code{NULL} (default)
-keeps the classic 0.25 x 0.30 cm keys; \code{nplot()} figures use
-squares of about \code{0.45}.}
+resolves by \code{style}: the classic 0.25 x 0.30 cm keys for
+\code{"ggplot"}, 0.45 cm squares for \code{"nplot"}.}
 
-\item{grid_colour}{Gridline colour. Defaults to \code{cpb_tokens()$grid}
-(\code{"#c9d1da"}); \code{nplot()} figures draw hairline black gridlines
-instead (\code{grid_colour = "black"} with a small \code{grid_linewidth}).}
+\item{grid_colour}{Gridline colour. \code{NULL} (default) resolves by
+\code{style}: \code{cpb_tokens()$grid} (\code{"#c9d1da"}) for \code{"ggplot"},
+\code{"black"} for \code{"nplot"}.}
 
 \item{grid_linewidth}{Gridline linewidth (mm). \code{NULL} (default)
-keeps the ggplot2 default; \code{nplot()} gridlines are hairlines of
-about \code{0.1}.}
+resolves by \code{style}: the ggplot2 default for \code{"ggplot"}, a \code{0.1}
+hairline for \code{"nplot"}.}
 }
 \value{
 A ggplot2 \code{theme} object.

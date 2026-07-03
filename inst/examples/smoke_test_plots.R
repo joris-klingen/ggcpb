@@ -232,37 +232,60 @@ opbouw_dt[, mid := NULL]
 
 # Figures ----
 
+# All figures use the nplot() style preset: hairline black gridlines at
+# labelled breaks only, black ticks on the category axis, 7 pt axis
+# text, a flush-left bottom legend with 0.45 cm keys, a black zero line
+# on the value axis where zero is in range, and the CPB primary blue as
+# the single-series colour. (The titles avoid the em dash: the bundled
+# Rijksoverheid font has no glyph for it.)
+
 render(1, "line: single series",
   cpb_line(line_dt, x = jaar, y = index,
-    title = "1) Simpele lijn — bbp-index",
-    ylab  = "index (2015 = 100)"),
+    style = "nplot",
+    title = "1) Simpele lijn - bbp-index",
+    ylab  = "index (2015 = 100)") +
+    ggplot2::scale_x_continuous(
+      breaks       = seq(2015, 2027, 3),
+      minor_breaks = 2015:2027,
+      guide        = ggplot2::guide_axis(minor.ticks = TRUE)
+    ),
   "01_line.png")
 
 render(2, "col: stacked",
   cpb_col(stack_dt, x = jaar, y = waarde, fill = sector, position = "stack",
-    title   = "2) Gestapelde kolommen — bijdrage per sector",
-    ylab    = "mld euro",
-    filllab = "sector"),
+    style = "nplot",
+    index = c(6, 5, 2, 4),
+    title = "2) Gestapelde kolommen - bijdrage per sector",
+    ylab  = "mld euro"),
   "02_col_stacked.png")
 
 render(3, "col: dodged",
   cpb_col(dodge_dt, x = regio, y = effect, fill = scenario, position = "dodge",
-    title   = "3) Gegroepeerde kolommen — effect per scenario",
-    ylab    = "% mutatie",
-    filllab = "scenario"),
+    style = "nplot",
+    index = c(6, 2),
+    reverse_legend = FALSE,   # dodged: legend follows the series order
+    title = "3) Gegroepeerde kolommen - effect per scenario",
+    ylab  = "% mutatie"),
   "03_col_dodged.png")
 
 render(4, "area: stacked shares",
   cpb_area(area_dt, x = jaar, y = aandeel, fill = bron, pct_axis = TRUE,
-    title   = "4) Vlakdiagram — energiemix (aandeel)",
-    filllab = "bron"),
+    style = "nplot",
+    index = c(6, 5, 2, 4),
+    title = "4) Vlakdiagram - energiemix (aandeel)") +
+    ggplot2::scale_x_continuous(
+      breaks       = seq(2018, 2027, 3),
+      minor_breaks = 2018:2027,
+      guide        = ggplot2::guide_axis(minor.ticks = TRUE)
+    ),
   "04_area.png")
 
 render(5, "box: horizontal, 5 categories",
   cpb_box(box5_dt, x = groep,
     p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
     orientation = "horizontal",
-    title = "5) Boxplot (horizontaal) — koopkracht per groep",
+    style = "nplot",
+    title = "5) Boxplot (horizontaal) - koopkracht per groep",
     ylab  = "% koopkrachtmutatie"),
   "05_box_horizontal.png", page = "full", height = 3.2)
 
@@ -271,18 +294,21 @@ render(6, "box: split by year (2026/2027)",
     p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
     fill     = jaar,
     position = ggplot2::position_dodge(width = 0.6),
-    title    = "6) Boxplot per jaar — 2026 vs 2027",
-    ylab     = "% koopkrachtmutatie",
-    filllab  = "jaar"),
+    style    = "nplot",
+    index    = c(6, 2),
+    title    = "6) Boxplot per jaar - 2026 vs 2027",
+    ylab     = "% koopkrachtmutatie") +
+    ggplot2::scale_y_continuous(labels = label_number_nl()),
   "06_box_by_year.png", page = "full")
 
-# recreation of reference figure p11_img11: horizontal single-colour bar
-# (CPB blue, the default fill) with a percentage value axis. ylab is the
+# recreation of reference figure p11_img11 (horizontal single-colour bar
+# with a percentage value axis), restyled to the nplot look. ylab is the
 # vertical (category) axis -> rendered as the subtitle; xlab is the
 # horizontal (value) axis.
 render(7, "col: horizontal, single colour",
   cpb_col(nocar_dt, x = inkomensgroep_label, y = share,
     orientation  = "horizontal",
+    style        = "nplot",
     pct_axis     = TRUE,
     value_limits = c(0, 70),
     width        = 0.6,
@@ -294,25 +320,15 @@ render(7, "col: horizontal, single colour",
 
 # recreation of reference figure p20_img24: horizontal dodged bar, two
 # years side by side per group (2021 blue = palette 6, 2024 magenta =
-# palette 2), nplot() look via the first-class knobs: hairline black
-# gridlines at labelled breaks only, black zero line, category-axis
-# ticks, 7 pt axis text, and a flush-left bottom legend with 0.45 cm keys.
+# palette 2), in the nplot() style preset.
 render(8, "col: horizontal, dodged (fill)",
   cpb_col(pv_dt, x = inkomensgroep, y = share, fill = jaar,
-    position        = "dodge",
-    orientation     = "horizontal",
-    index           = c(2, 6),
-    value_limits    = c(0, 70),
-    width           = 0.85,
-    legend          = "bottom",
-    flush_legend    = TRUE,
-    zeroline        = TRUE,
-    minor           = FALSE,
-    ticks           = TRUE,
-    axis_text_size  = 7,
-    legend_key_size = 0.45,
-    grid_colour     = "black",
-    grid_linewidth  = 0.1,
+    position     = "dodge",
+    orientation  = "horizontal",
+    style        = "nplot",
+    index        = c(2, 6),
+    value_limits = c(0, 70),
+    width        = 0.85,
     title = "Zonnepanelen naar inkomen",
     ylab  = "inkomensgroepen",
     xlab  = "aandeel binnen inkomensgroep (%)") +
@@ -321,23 +337,14 @@ render(8, "col: horizontal, dodged (fill)",
   "08_col_horizontal_dodged.png", page = "half")
 
 # recreation of reference figure productivity-report p06_img01: two growth
-# series (blue = palette 6, magenta = palette 2) in the nplot() look --
-# no title, the unit ("%") as subtitle above the axis, hairline black
-# gridlines at labelled breaks only, a black zero line under the data
-# lines, year ticks on the x axis and a flush-left bottom legend.
+# series (blue = palette 6, magenta = palette 2) in the nplot() style --
+# no title, the unit ("%") as subtitle above the axis, and the zero line
+# drawn automatically because the growth rates span zero.
 render(9, "line: two series, nplot look",
   cpb_line(prod_dt, x = jaar, y = groei, colour = reeks,
-    linewidth       = 0.55,
-    index           = c(6, 2),
-    legend          = "bottom",
-    flush_legend    = TRUE,
-    zeroline        = TRUE,
-    minor           = FALSE,
-    ticks           = TRUE,
-    axis_text_size  = 7,
-    grid_colour     = "black",
-    grid_linewidth  = 0.1,
-    subtitle = "%") +
+    style = "nplot",
+    index = c(6, 2),
+    ylab  = "%") +
     ggplot2::scale_y_continuous(breaks = seq(-4, 6, 2), limits = c(-4, 6)) +
     ggplot2::scale_x_continuous(
       breaks       = c(seq(2000, 2020, 5), 2024),
@@ -351,19 +358,11 @@ render(9, "line: two series, nplot look",
 # with the total drawn as a light-pink line (palette 1) on top.
 render(10, "col: stacked +/- with line overlay",
   cpb_col(decomp_dt, x = jaar, y = bijdrage, fill = component,
-    position        = "stack",
-    index           = c(2, 5, 6),
-    width           = 0.75,
-    legend          = "bottom",
-    flush_legend    = TRUE,
-    zeroline        = TRUE,
-    minor           = FALSE,
-    ticks           = TRUE,
-    axis_text_size  = 7,
-    legend_key_size = 0.45,
-    grid_colour     = "black",
-    grid_linewidth  = 0.1,
-    ylab = "%") +
+    position = "stack",
+    style    = "nplot",
+    index    = c(2, 5, 6),
+    width    = 0.75,
+    ylab     = "%") +
     ggplot2::geom_line(
       data    = totaal_dt,
       mapping = ggplot2::aes(x = jaar, y = totaal, colour = "arbeidsproductiviteit"),
@@ -389,20 +388,12 @@ render(10, "col: stacked +/- with line overlay",
 # palette 8), nplot() look, flush-left bottom legend.
 render(11, "col: horizontal, dodged, 3 series",
   cpb_col(reisk_dt, x = inkomensgroep, y = share, fill = groep,
-    position        = "dodge",
-    orientation     = "horizontal",
-    index           = c(8, 2, 6),
-    value_limits    = c(0, 70),
-    width           = 0.85,
-    legend          = "bottom",
-    flush_legend    = TRUE,
-    zeroline        = TRUE,
-    minor           = FALSE,
-    ticks           = TRUE,
-    axis_text_size  = 7,
-    legend_key_size = 0.45,
-    grid_colour     = "black",
-    grid_linewidth  = 0.1,
+    position     = "dodge",
+    orientation  = "horizontal",
+    style        = "nplot",
+    index        = c(8, 2, 6),
+    value_limits = c(0, 70),
+    width        = 0.85,
     title = "Percentage met reiskostenvergoeding voor auto",
     ylab  = "inkomensgroepen",
     xlab  = "% met reiskostenvergoeding voor auto") +

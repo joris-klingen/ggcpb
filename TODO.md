@@ -23,15 +23,27 @@ figures 8–12 in `inst/examples/smoke_test_plots.R`:
   (on top of bars, underneath lines/boxes), the nplot
   `hline_bold = 0` / `x_axis_bold_if_zero` behaviour.
 
-Defaults are unchanged, so the hand-rolled-ggplot recreations (e.g.
-figure 7, ref p11) still match.
+All of these are bundled in the `style = "nplot"` preset on
+`theme_cpb()` and the wrappers; any knob set explicitly overrides the
+preset. Defaults (`style = "ggplot"`) are unchanged, so existing plots
+keep the hand-rolled CPB ggplot look.
+
+`zeroline` resolves automatically under `style = "nplot"`: always for
+bars/areas (anchored at zero), and only when the data spans zero for
+lines and boxes (nplot's bold-axis-if-zero behaviour). `cpb_line()`
+draws a single unmapped series in CPB blue at nplot line weight
+(`0.55`), and `cpb_box()` fills unmapped boxes in CPB blue with thin
+(`0.25`) strokes. `cpb_line()`/`cpb_area()` (and vertical `cpb_box()`)
+render `ylab` as the subtitle -- the unit caption above the panel --
+matching `cpb_col()`.
 
 ## Remaining ideas
 
-- A `style = "nplot"` preset that flips all of the above in one
-  argument, if the per-call knob list proves too verbose in practice.
 - Sequential blue palette: reference p17_img19 (deciles) uses a 10-step
   blue ramp that the package palettes do not cover yet.
 - Minor tick marks on continuous (year) axes are currently added
   per-plot via `guide_axis(minor.ticks = TRUE)` (smoke-test figures
-  9/10); could be folded into `cpb_line()`/`cpb_col()`.
+  1/4/9/10); could be folded into `cpb_line()`/`cpb_col()`.
+- The bundled Rijksoverheid font has no em-dash glyph (it renders as
+  `...`); consider substituting en/em dashes in title strings
+  automatically.

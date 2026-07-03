@@ -34,33 +34,47 @@
 #'   `"x"`/`"y"` draw gridlines on that axis explicitly, regardless of
 #'   `orientation`. Gridlines are drawn in `cpb_tokens()$grid`, and
 #'   minor gridlines always match the major gridlines.
+#' @param style Style preset that sets the defaults of the knobs below.
+#'   `"ggplot"` (default) is the hand-rolled CPB ggplot2 look: CPB-grey
+#'   gridlines with minors, no axis ticks, 6 pt axis text, small legend
+#'   keys, legend on the right. `"nplot"` reproduces the legacy CPB
+#'   `nplot()` look: hairline black gridlines at labelled breaks only,
+#'   black tick marks on the category axis, 7 pt axis text, 0.45 cm
+#'   legend keys, and a flush-left vertical legend at the bottom. Any
+#'   knob set explicitly overrides the preset.
 #' @param legend Passed through to `legend.position`; accepts the
 #'   usual `"right"`/`"left"`/`"top"`/`"bottom"`/`"none"` strings, or a
-#'   two-element numeric vector of plot-relative coordinates.
-#' @param minor If `TRUE` (default), minor gridlines are drawn (matching
-#'   the major gridlines). Set to `FALSE` for the `nplot()` house look,
-#'   which draws gridlines only at labelled breaks.
+#'   two-element numeric vector of plot-relative coordinates. `NULL`
+#'   (default) resolves by `style`: `"right"` for `"ggplot"`,
+#'   `"bottom"` for `"nplot"`.
+#' @param minor If `TRUE`, minor gridlines are drawn (matching the
+#'   major gridlines); if `FALSE`, gridlines appear only at labelled
+#'   breaks. `NULL` (default) resolves by `style` (`TRUE` for
+#'   `"ggplot"`, `FALSE` for `"nplot"`).
 #' @param ticks If `TRUE`, draw black axis tick marks on the *category*
 #'   axis (the x axis when `orientation = "vertical"`, the y axis when
-#'   `"horizontal"`), as `nplot()` does. Defaults to `FALSE`.
+#'   `"horizontal"`), as `nplot()` does. `NULL` (default) resolves by
+#'   `style` (`FALSE` for `"ggplot"`, `TRUE` for `"nplot"`).
 #' @param flush_legend If `TRUE`, anchor the legend to the left edge of
 #'   the full plot area (`legend.location = "plot"` plus a left
 #'   justification) and stack its keys vertically -- the `nplot()`
 #'   bottom-left legend block. Most useful with `legend = "bottom"`.
-#'   Defaults to `FALSE`. Requires ggplot2 >= 3.5.0 for the
+#'   `NULL` (default) resolves by `style` (`FALSE` for `"ggplot"`,
+#'   `TRUE` for `"nplot"`). Requires ggplot2 >= 3.5.0 for the
 #'   `legend.location` part; on older versions only the justification
 #'   is applied.
-#' @param axis_text_size Axis text size in points. Defaults to `6`
-#'   (the hand-rolled CPB ggplot scripts); `nplot()` figures use `7`.
+#' @param axis_text_size Axis text size in points. `NULL` (default)
+#'   resolves by `style`: `6` for `"ggplot"` (the hand-rolled CPB
+#'   scripts), `7` for `"nplot"`.
 #' @param legend_key_size Legend key size in cm. `NULL` (default)
-#'   keeps the classic 0.25 x 0.30 cm keys; `nplot()` figures use
-#'   squares of about `0.45`.
-#' @param grid_colour Gridline colour. Defaults to `cpb_tokens()$grid`
-#'   (`"#c9d1da"`); `nplot()` figures draw hairline black gridlines
-#'   instead (`grid_colour = "black"` with a small `grid_linewidth`).
+#'   resolves by `style`: the classic 0.25 x 0.30 cm keys for
+#'   `"ggplot"`, 0.45 cm squares for `"nplot"`.
+#' @param grid_colour Gridline colour. `NULL` (default) resolves by
+#'   `style`: `cpb_tokens()$grid` (`"#c9d1da"`) for `"ggplot"`,
+#'   `"black"` for `"nplot"`.
 #' @param grid_linewidth Gridline linewidth (mm). `NULL` (default)
-#'   keeps the ggplot2 default; `nplot()` gridlines are hairlines of
-#'   about `0.1`.
+#'   resolves by `style`: the ggplot2 default for `"ggplot"`, a `0.1`
+#'   hairline for `"nplot"`.
 #'
 #' @return A ggplot2 `theme` object.
 #' @examples
@@ -78,16 +92,29 @@ theme_cpb <- function(base_family = cpb_font_family(),
                        background = TRUE,
                        orientation = c("vertical", "horizontal"),
                        grid = c("value", "both", "none", "x", "y"),
-                       legend = "right",
-                       minor = TRUE,
-                       ticks = FALSE,
-                       flush_legend = FALSE,
-                       axis_text_size = 6,
+                       style = c("ggplot", "nplot"),
+                       legend = NULL,
+                       minor = NULL,
+                       ticks = NULL,
+                       flush_legend = NULL,
+                       axis_text_size = NULL,
                        legend_key_size = NULL,
-                       grid_colour = cpb_grid,
+                       grid_colour = NULL,
                        grid_linewidth = NULL) {
   orientation <- match.arg(orientation)
   grid <- match.arg(grid)
+  style <- match.arg(style)
+
+  # resolve the style-dependent defaults; explicit arguments always win
+  nplot <- style == "nplot"
+  if (is.null(legend))          legend          <- if (nplot) "bottom" else "right"
+  if (is.null(minor))           minor           <- !nplot
+  if (is.null(ticks))           ticks           <- nplot
+  if (is.null(flush_legend))    flush_legend    <- nplot
+  if (is.null(axis_text_size))  axis_text_size  <- if (nplot) 7 else 6
+  if (is.null(legend_key_size) && nplot) legend_key_size <- 0.45
+  if (is.null(grid_colour))     grid_colour     <- if (nplot) "black" else cpb_grid
+  if (is.null(grid_linewidth) && nplot) grid_linewidth <- 0.1
 
   value_axis <- if (orientation == "vertical") "y" else "x"
 

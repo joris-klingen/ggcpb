@@ -23,7 +23,9 @@ gridlines the default \code{grid = "value"} shows.}
 
 \item{legend}{Passed through to \code{legend.position}; accepts the
 usual \code{"right"}/\code{"left"}/\code{"top"}/\code{"bottom"}/\code{"none"} strings, or a
-two-element numeric vector of plot-relative coordinates.}
+two-element numeric vector of plot-relative coordinates. \code{NULL}
+(default) resolves by \code{style}: \code{"right"} for \code{"ggplot"},
+\code{"bottom"} for \code{"nplot"}.}
 }
 \value{
 A ggplot2 \code{theme} object.

@@ -13,19 +13,22 @@ cpb_box(
   p75,
   p95,
   fill = NULL,
+  fill_colour = NULL,
   width = 0.5,
+  linewidth = 0.25,
   palette = "qualitative",
   index = NULL,
   orientation = c("vertical", "horizontal"),
-  legend = "right",
+  style = c("ggplot", "nplot"),
+  legend = NULL,
   reverse_legend = FALSE,
-  zeroline = FALSE,
-  minor = TRUE,
-  ticks = FALSE,
-  flush_legend = FALSE,
-  axis_text_size = 6,
+  zeroline = NULL,
+  minor = NULL,
+  ticks = NULL,
+  flush_legend = NULL,
+  axis_text_size = NULL,
   legend_key_size = NULL,
-  grid_colour = cpb_grid,
+  grid_colour = NULL,
   grid_linewidth = NULL,
   title = NULL,
   subtitle = NULL,
@@ -48,8 +51,16 @@ category each box belongs to.}
 \item{fill}{Optional column mapped to the fill aesthetic (tidy
 eval), e.g. for grouped boxes side by side.}
 
+\item{fill_colour}{Constant box fill used when no \code{fill} column is
+mapped. Defaults to \code{NULL}, which resolves to the CPB primary blue
+(\code{cpb_cols(6)}, \code{"#005faf"}). Ignored when \code{fill} is supplied.}
+
 \item{width}{Box width; the errorbar width is drawn at half this
 value. Defaults to \code{0.5}.}
+
+\item{linewidth}{Stroke width of the box outlines, median line and
+errorbars. Defaults to \code{0.25}, matching the thin strokes of the
+published CPB distributional figures.}
 
 \item{palette}{CPB palette to use for \code{fill}; one of
 \code{"qualitative"} (default), \code{"discr"}, or \code{"sequential"}.}
@@ -61,7 +72,11 @@ to \code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} instead of the 
 \item{orientation}{\code{"vertical"} (default) or \code{"horizontal"} (adds
 \code{\link[ggplot2:coord_flip]{ggplot2::coord_flip()}} and is forwarded to \code{\link[=theme_cpb]{theme_cpb()}}).}
 
-\item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}.}
+\item{style}{Style preset, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; see
+\code{\link[=cpb_col]{cpb_col()}}.}
+
+\item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; \code{NULL}
+(default) resolves by \code{style}.}
 
 \item{reverse_legend}{If \code{TRUE}, reverse the fill legend order via
 \code{guide_legend(reverse = TRUE)}. Defaults to \code{FALSE}; useful when
@@ -70,15 +85,23 @@ the fill levels were reversed to control the dodge order under
 
 \item{zeroline}{If \code{TRUE}, draw a solid black line at zero on the
 value axis underneath the boxes, as the CPB \code{nplot()} house style
-does. Defaults to \code{FALSE}.}
+does. \code{NULL} (default) resolves by \code{style}: for \code{"nplot"} the
+line is drawn when the p5-p95 data spans (or touches) zero; for
+\code{"ggplot"} it is not drawn.}
 
-\item{minor, ticks, flush_legend, axis_text_size, legend_key_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; see \code{\link[=cpb_col]{cpb_col()}} for the
-\code{nplot()}-style settings.}
+\item{minor, ticks, flush_legend, axis_text_size, legend_key_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; \code{NULL} (the default) resolves by
+\code{style}.}
 
 \item{title, subtitle}{Plot title/subtitle.}
 
-\item{xlab, ylab, filllab}{Axis and legend title overrides; default
+\item{xlab, filllab}{Axis and legend title overrides; default
 to \code{NULL} (no axis title), matching CPB house style.}
+
+\item{ylab}{Label for the value axis (the \code{y} aesthetic). When
+\code{orientation = "horizontal"} it is drawn as the bottom axis title
+(after \code{coord_flip()}). When \code{"vertical"}, CPB house style renders
+it as the plot \emph{subtitle} -- unless an explicit \code{subtitle} is also
+given, in which case it falls back to a rotated y-axis title.}
 
 \item{...}{Further arguments passed to both \code{\link[ggplot2:geom_linerange]{ggplot2::geom_errorbar()}}
 and \code{\link[ggplot2:geom_boxplot]{ggplot2::geom_boxplot()}}.}

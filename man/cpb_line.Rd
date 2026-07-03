@@ -9,18 +9,20 @@ cpb_line(
   x,
   y,
   colour = NULL,
-  linewidth = 1.2,
+  line_colour = NULL,
+  linewidth = NULL,
   palette = "qualitative",
   index = NULL,
   pct_axis = FALSE,
-  legend = "right",
-  zeroline = FALSE,
-  minor = TRUE,
-  ticks = FALSE,
-  flush_legend = FALSE,
-  axis_text_size = 6,
+  style = c("ggplot", "nplot"),
+  legend = NULL,
+  zeroline = NULL,
+  minor = NULL,
+  ticks = NULL,
+  flush_legend = NULL,
+  axis_text_size = NULL,
   legend_key_size = NULL,
-  grid_colour = cpb_grid,
+  grid_colour = NULL,
   grid_linewidth = NULL,
   title = NULL,
   subtitle = NULL,
@@ -37,10 +39,16 @@ combination.}
 \item{x, y}{Columns mapped to the x and y aesthetics (tidy eval).}
 
 \item{colour}{Optional column mapped to the colour aesthetic (tidy
-eval); if omitted, a single line is drawn.}
+eval); if omitted, a single line is drawn in \code{line_colour}.}
 
-\item{linewidth}{Line width; defaults to \code{1.2}, matching CPB source
-scripts.}
+\item{line_colour}{Constant line colour used when no \code{colour} column
+is mapped. Defaults to \code{NULL}, which resolves to the CPB primary
+blue (\code{cpb_cols(6)}, \code{"#005faf"}). Ignored when \code{colour} is
+supplied.}
+
+\item{linewidth}{Line width. \code{NULL} (default) resolves by \code{style}:
+\code{1.2} for \code{"ggplot"} (matching CPB source scripts), \code{0.55} for
+\code{"nplot"} (matching the published nplot figures).}
 
 \item{palette}{CPB palette to use for \code{colour}; one of
 \code{"qualitative"} (default), \code{"discr"}, or \code{"sequential"}.}
@@ -51,19 +59,32 @@ to \code{\link[=scale_colour_cpb_manual]{scale_colour_cpb_manual()}} instead of 
 
 \item{pct_axis}{If \code{TRUE}, format the y axis with \code{\link[=label_pct_nl]{label_pct_nl()}}.}
 
-\item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}.}
+\item{style}{Style preset, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; see
+\code{\link[=cpb_col]{cpb_col()}}.}
+
+\item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; \code{NULL}
+(default) resolves by \code{style}.}
 
 \item{zeroline}{If \code{TRUE}, draw a solid black line at zero on the
 value axis underneath the data lines, as the CPB \code{nplot()} house
-style does. Defaults to \code{FALSE}.}
+style does. \code{NULL} (default) resolves by \code{style}: for \code{"nplot"}
+the line is drawn when the \code{y} data spans (or touches) zero,
+mirroring nplot's bold-axis-if-zero behaviour; for \code{"ggplot"} it
+is not drawn.}
 
-\item{minor, ticks, flush_legend, axis_text_size, legend_key_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; see \code{\link[=cpb_col]{cpb_col()}} for the
-\code{nplot()}-style settings.}
+\item{minor, ticks, flush_legend, axis_text_size, legend_key_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; \code{NULL} (the default) resolves by
+\code{style}.}
 
 \item{title, subtitle}{Plot title/subtitle.}
 
-\item{xlab, ylab, colourlab}{Axis and legend title overrides; default
+\item{xlab, colourlab}{Axis and legend title overrides; default
 to \code{NULL} (no axis title), matching CPB house style.}
+
+\item{ylab}{Label for the value (y) axis. Following CPB house style
+it is rendered as the plot \emph{subtitle} -- a left-aligned italic
+caption above the panel (e.g. the unit, \code{"\%"}) -- unless an
+explicit \code{subtitle} is also given, in which case it falls back to
+a rotated y-axis title.}
 
 \item{...}{Further arguments passed to \code{\link[ggplot2:geom_path]{ggplot2::geom_line()}}.}
 }

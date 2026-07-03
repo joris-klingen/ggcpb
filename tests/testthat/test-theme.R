@@ -103,3 +103,20 @@ test_that("theme_cpb axis_text_size and legend_key_size are applied", {
   expect_equal(as.numeric(th$legend.key.height), 0.45)
   expect_equal(as.numeric(th$legend.key.width), 0.45)
 })
+
+test_that("theme_cpb style = 'nplot' preset flips the knob defaults", {
+  th <- theme_cpb(style = "nplot")
+  expect_s3_class(th$panel.grid.minor.y, "element_blank")
+  expect_equal(th$panel.grid.major.y$colour, "black")
+  expect_equal(th$panel.grid.major.y$linewidth, 0.1)
+  expect_s3_class(th$axis.ticks.x, "element_line")
+  expect_equal(th$axis.text$size, 7)
+  expect_equal(as.numeric(th$legend.key.height), 0.45)
+  expect_equal(th$legend.position, "bottom")
+  expect_equal(th$legend.justification, "left")
+
+  # explicit knobs override the preset
+  th2 <- theme_cpb(style = "nplot", minor = TRUE, axis_text_size = 6)
+  expect_s3_class(th2$panel.grid.minor.y, "element_line")
+  expect_equal(th2$axis.text$size, 6)
+})

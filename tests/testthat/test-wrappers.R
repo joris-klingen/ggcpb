@@ -126,3 +126,47 @@ test_that("cpb_box errorbars dodge by group without a fill warning", {
     )
   )
 })
+
+test_that("wrapper style = 'nplot' sets the zero line automatically", {
+  df <- data.frame(x = c("a", "b"), y = c(1, 2))
+  has_hline <- function(p) any(vapply(p$layers, function(l)
+    inherits(l$geom, "GeomHline"), logical(1)))
+
+  # bars are anchored at zero: always drawn under nplot, never by default
+  expect_true(has_hline(cpb_col(df, x = x, y = y, style = "nplot")))
+  expect_false(has_hline(cpb_col(df, x = x, y = y)))
+
+  # lines: only when the y data spans zero
+  expect_false(has_hline(cpb_line(df, x = x, y = y, style = "nplot")))
+  df2 <- data.frame(x = c("a", "b"), y = c(-1, 2))
+  expect_true(has_hline(cpb_line(df2, x = x, y = y, style = "nplot")))
+})
+
+test_that("cpb_line draws a single unmapped series in CPB blue", {
+  df <- data.frame(x = 1:3, y = 4:6)
+  p <- cpb_line(df, x = x, y = y)
+  expect_equal(p$layers[[1]]$aes_params$colour, unname(cpb_cols(6)))
+  p2 <- cpb_line(df, x = x, y = y, line_colour = "red")
+  expect_equal(p2$layers[[1]]$aes_params$colour, "red")
+})
+
+test_that("cpb_line and cpb_area render ylab as the subtitle", {
+  df <- data.frame(x = 1:3, y = 4:6, g = "a")
+  p <- cpb_line(df, x = x, y = y, ylab = "%")
+  expect_equal(p$labels$subtitle, "%")
+  p2 <- cpb_area(df, x = x, y = y, fill = g, ylab = "aandeel")
+  expect_equal(p2$labels$subtitle, "aandeel")
+  # an explicit subtitle keeps ylab on the axis
+  p3 <- cpb_line(df, x = x, y = y, ylab = "%", subtitle = "sub")
+  expect_equal(p3$labels$subtitle, "sub")
+  expect_equal(p3$labels$y, "%")
+})
+
+test_that("cpb_box fills unmapped boxes in CPB blue with thin strokes", {
+  df <- data.frame(groep = c("a", "b"),
+                   p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5)
+  p <- cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95)
+  box <- p$layers[[2]]
+  expect_equal(box$aes_params$fill, unname(cpb_cols(6)))
+  expect_equal(box$aes_params$linewidth, 0.25)
+})
