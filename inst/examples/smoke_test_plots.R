@@ -242,7 +242,7 @@ opbouw_dt[, mid := NULL]
 render(1, "line: single series",
   cpb_line(line_dt, x = jaar, y = index,
     style = "nplot",
-    title = "1) Simpele lijn - bbp-index",
+    title = "Bruto binnenlands product",
     ylab  = "index (2015 = 100)") +
     ggplot2::scale_x_continuous(
       breaks       = seq(2015, 2027, 3),
@@ -255,7 +255,7 @@ render(2, "col: stacked",
   cpb_col(stack_dt, x = jaar, y = waarde, fill = sector, position = "stack",
     style = "nplot",
     index = c(6, 5, 2, 4),
-    title = "2) Gestapelde kolommen - bijdrage per sector",
+    title = "Toegevoegde waarde per sector",
     ylab  = "mld euro"),
   "02_col_stacked.png")
 
@@ -264,7 +264,7 @@ render(3, "col: dodged",
     style = "nplot",
     index = c(6, 2),
     reverse_legend = FALSE,   # dodged: legend follows the series order
-    title = "3) Gegroepeerde kolommen - effect per scenario",
+    title = "Effect per regio en scenario",
     ylab  = "% mutatie"),
   "03_col_dodged.png")
 
@@ -272,7 +272,7 @@ render(4, "area: stacked shares",
   cpb_area(area_dt, x = jaar, y = aandeel, fill = bron, pct_axis = TRUE,
     style = "nplot",
     index = c(6, 5, 2, 4),
-    title = "4) Vlakdiagram - energiemix (aandeel)") +
+    title = "Energiemix van huishoudens") +
     ggplot2::scale_x_continuous(
       breaks       = seq(2018, 2027, 3),
       minor_breaks = 2018:2027,
@@ -285,7 +285,7 @@ render(5, "box: horizontal, 5 categories",
     p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
     orientation = "horizontal",
     style = "nplot",
-    title = "5) Boxplot (horizontaal) - koopkracht per groep",
+    title = "Koopkracht per inkomensgroep",
     ylab  = "% koopkrachtmutatie"),
   "05_box_horizontal.png", page = "full", height = 3.2)
 
@@ -296,7 +296,7 @@ render(6, "box: split by year (2026/2027)",
     position = ggplot2::position_dodge(width = 0.6),
     style    = "nplot",
     index    = c(6, 2),
-    title    = "6) Boxplot per jaar - 2026 vs 2027",
+    title    = "Koopkracht per jaar, 2026 en 2027",
     ylab     = "% koopkrachtmutatie") +
     ggplot2::scale_y_continuous(labels = label_number_nl()),
   "06_box_by_year.png", page = "full")
@@ -335,13 +335,14 @@ render(8, "col: horizontal, dodged (fill)",
   "08_col_horizontal_dodged.png", page = "half")
 
 # recreation of reference figure productivity-report p06_img01: two growth
-# series (blue = palette 6, magenta = palette 2) in the nplot() style --
-# no title, the unit ("%") as subtitle above the axis, and the zero line
-# drawn automatically because the growth rates span zero.
+# series (blue = palette 6, magenta = palette 2) in the nplot() style,
+# the unit ("%") as subtitle above the axis, and the zero line drawn
+# automatically because the growth rates span zero.
 render(9, "line: two series, nplot look",
   cpb_line(prod_dt, x = jaar, y = groei, colour = reeks,
     style = "nplot",
     index = c(6, 2),
+    title = "Productiviteitsgroei",
     ylab  = "%") +
     ggplot2::scale_y_continuous(breaks = seq(-4, 6, 2), limits = c(-4, 6)) +
     ggplot2::scale_x_continuous(
@@ -360,6 +361,7 @@ render(10, "col: stacked +/- with line overlay",
     style    = "nplot",
     index    = c(2, 5, 6),
     width    = 0.75,
+    title    = "Opbouw productiviteitsgroei",
     ylab     = "%") +
     ggplot2::geom_line(
       data    = totaal_dt,

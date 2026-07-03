@@ -92,7 +92,9 @@ cpb_col(mpg, x = class, fill = class) +
   number formatters.
 - `save_cpb()` -- figure export at the CPB half/full page width presets.
 
-See `vignette("ggcpb")` for a full walkthrough.
+See `vignette("ggcpb")` for a full walkthrough of the composable
+core, and `vignette("chart-types")` for a cookbook with one worked
+example per CPB chart type.
 
 ## Wrapper layer
 
