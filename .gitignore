@@ -5,5 +5,13 @@
 inst/doc
 Rplots.pdf
 inst/examples/output
-references/
+# reference material: the internal originals stay untracked; only the
+# anonymised plot snippets and the (already published) reference PNGs are
+# committed. reference_code.txt and the nicerplot/ clone remain ignored.
+references/*
+!references/README.md
+!references/plots/
+!references/code/
+references/code/*
+!references/code/reference_plot_snippets.R
 ggcpb.Rproj
