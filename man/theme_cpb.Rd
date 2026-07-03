@@ -9,7 +9,14 @@ theme_cpb(
   background = TRUE,
   orientation = c("vertical", "horizontal"),
   grid = c("value", "both", "none", "x", "y"),
-  legend = "right"
+  legend = "right",
+  minor = TRUE,
+  ticks = FALSE,
+  flush_legend = FALSE,
+  axis_text_size = 6,
+  legend_key_size = NULL,
+  grid_colour = cpb_grid,
+  grid_linewidth = NULL
 )
 }
 \arguments{
@@ -37,6 +44,37 @@ minor gridlines always match the major gridlines.}
 \item{legend}{Passed through to \code{legend.position}; accepts the
 usual \code{"right"}/\code{"left"}/\code{"top"}/\code{"bottom"}/\code{"none"} strings, or a
 two-element numeric vector of plot-relative coordinates.}
+
+\item{minor}{If \code{TRUE} (default), minor gridlines are drawn (matching
+the major gridlines). Set to \code{FALSE} for the \code{nplot()} house look,
+which draws gridlines only at labelled breaks.}
+
+\item{ticks}{If \code{TRUE}, draw black axis tick marks on the \emph{category}
+axis (the x axis when \code{orientation = "vertical"}, the y axis when
+\code{"horizontal"}), as \code{nplot()} does. Defaults to \code{FALSE}.}
+
+\item{flush_legend}{If \code{TRUE}, anchor the legend to the left edge of
+the full plot area (\code{legend.location = "plot"} plus a left
+justification) and stack its keys vertically -- the \code{nplot()}
+bottom-left legend block. Most useful with \code{legend = "bottom"}.
+Defaults to \code{FALSE}. Requires ggplot2 >= 3.5.0 for the
+\code{legend.location} part; on older versions only the justification
+is applied.}
+
+\item{axis_text_size}{Axis text size in points. Defaults to \code{6}
+(the hand-rolled CPB ggplot scripts); \code{nplot()} figures use \code{7}.}
+
+\item{legend_key_size}{Legend key size in cm. \code{NULL} (default)
+keeps the classic 0.25 x 0.30 cm keys; \code{nplot()} figures use
+squares of about \code{0.45}.}
+
+\item{grid_colour}{Gridline colour. Defaults to \code{cpb_tokens()$grid}
+(\code{"#c9d1da"}); \code{nplot()} figures draw hairline black gridlines
+instead (\code{grid_colour = "black"} with a small \code{grid_linewidth}).}
+
+\item{grid_linewidth}{Gridline linewidth (mm). \code{NULL} (default)
+keeps the ggplot2 default; \code{nplot()} gridlines are hairlines of
+about \code{0.1}.}
 }
 \value{
 A ggplot2 \code{theme} object.

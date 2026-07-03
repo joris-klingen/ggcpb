@@ -13,6 +13,15 @@ cpb_line(
   palette = "qualitative",
   index = NULL,
   pct_axis = FALSE,
+  legend = "right",
+  zeroline = FALSE,
+  minor = TRUE,
+  ticks = FALSE,
+  flush_legend = FALSE,
+  axis_text_size = 6,
+  legend_key_size = NULL,
+  grid_colour = cpb_grid,
+  grid_linewidth = NULL,
   title = NULL,
   subtitle = NULL,
   xlab = NULL,
@@ -41,6 +50,15 @@ to \code{\link[=scale_colour_cpb_manual]{scale_colour_cpb_manual()}} instead of 
 \code{\link[=scale_colour_cpb_d]{scale_colour_cpb_d()}} when supplied.}
 
 \item{pct_axis}{If \code{TRUE}, format the y axis with \code{\link[=label_pct_nl]{label_pct_nl()}}.}
+
+\item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}.}
+
+\item{zeroline}{If \code{TRUE}, draw a solid black line at zero on the
+value axis underneath the data lines, as the CPB \code{nplot()} house
+style does. Defaults to \code{FALSE}.}
+
+\item{minor, ticks, flush_legend, axis_text_size, legend_key_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; see \code{\link[=cpb_col]{cpb_col()}} for the
+\code{nplot()}-style settings.}
 
 \item{title, subtitle}{Plot title/subtitle.}
 

@@ -63,6 +63,34 @@ ggplot(pv_counts, aes(factor(jaar), aantal)) +
 shorthand) drops the CPB background fill entirely -- useful for small
 multiples.
 
+Most CPB publication figures were historically produced with the
+internal base-R `nplot()` function, whose look differs in a few
+systematic ways from the hand-rolled ggplot2 defaults above. Those
+conventions are available as opt-in knobs, on `theme_cpb()` and on
+every wrapper:
+
+```{r theme-nplot}
+ggplot(pv_counts, aes(factor(jaar), aantal)) +
+  geom_col(fill = cpb_cols(6)) +
+  labs(title = "Aantal PV-meldingen per jaar", x = NULL, y = "aantal") +
+  theme_cpb(
+    minor           = FALSE,    # gridlines only at labelled breaks
+    grid_colour     = "black",  # nplot hairline-black gridlines ...
+    grid_linewidth  = 0.1,      # ... instead of the CPB grey
+    ticks           = TRUE,     # tick marks on the category axis
+    axis_text_size  = 7,        # nplot uses 7 pt axis text
+    legend_key_size = 0.45      # bigger legend squares (cm)
+  )
+```
+
+Combined with `legend = "bottom"` and `flush_legend = TRUE` (the
+bottom-left legend block flush with the plot edge), this reproduces the
+`nplot()` legend layout. The wrappers additionally take
+`zeroline = TRUE`, which draws the solid black line at zero on the
+value axis that `nplot()` adds to bar, line and box figures -- see
+figures 8-12 of `inst/examples/smoke_test_plots.R` for full
+recreations of published nplot figures.
+
 # Discrete scales ----
 
 `scale_fill_cpb_d()` / `scale_colour_cpb_d()` draw from one of the

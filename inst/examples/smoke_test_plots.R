@@ -159,6 +159,77 @@ pv_dt[, inkomensgroep := factor(inkomensgroep, levels = rev(inkomensgroepen), or
 # keeps 2021 blue / 2024 magenta, and reverse_legend restores 2021-above-2024.
 pv_dt[, jaar := factor(jaar, levels = c(2024L, 2021L))]
 
+# productivity growth 2000-2024, two series (style of productivity-report
+# p06_img01): mildly positive growth with crisis dips in 2009/2020 and a
+# rebound in 2021.
+prod_jaren <- 2000:2024
+prod_reeksen <- c("arbeidsproductiviteit", "tfp")
+sim_groei <- function() {
+  g <- rnorm(length(prod_jaren), mean = 1.2, sd = 1.0)
+  g[prod_jaren == 2009] <- g[prod_jaren == 2009] - 4
+  g[prod_jaren == 2020] <- g[prod_jaren == 2020] - 3
+  g[prod_jaren == 2021] <- g[prod_jaren == 2021] + 2.5
+  g[prod_jaren == 2024] <- g[prod_jaren == 2024] - 2
+  round(pmax(pmin(g, 5.8), -3.8), 1)
+}
+prod_dt <- rbindlist(lapply(prod_reeksen, function(r) {
+  data.table(jaar = prod_jaren,
+             reeks = factor(r, levels = prod_reeksen),
+             groei = sim_groei())
+}))
+
+# growth decomposition (style of productivity-report p06_img02): three
+# stacked contribution components per year, and their sum as the total
+# labour-productivity line drawn on top.
+# levels are reversed so that "kapitaal/uren" stacks nearest the zero
+# line and "tfp" outermost, as in the reference; reverse_legend restores
+# the canonical legend order and the index is reversed to match.
+componenten <- c("kapitaal/uren", "arbeidssamenstelling", "tfp")
+decomp_dt <- CJ(jaar = prod_jaren,
+                component = factor(componenten, levels = rev(componenten)))
+decomp_dt[, bijdrage := fcase(
+  component == "kapitaal/uren",        round(rnorm(.N, 0.6, 0.35), 1),
+  component == "arbeidssamenstelling", round(rnorm(.N, 0.1, 0.45), 1),
+  component == "tfp",                  round(rnorm(.N, 0.6, 1.4), 1)
+)]
+decomp_dt[jaar == 2009 & component == "tfp", bijdrage := -3.7]
+decomp_dt[jaar == 2020 & component == "tfp", bijdrage := -2.7]
+decomp_dt[jaar == 2021 & component == "tfp", bijdrage := 3.0]
+totaal_dt <- decomp_dt[, .(totaal = sum(bijdrage)), by = jaar]
+
+# share with a commuting allowance by income group x household group
+# (style of reference p13_img15): three dodged series per income group.
+# levels are reversed twice, as in the pv_dt figure: the reversed factor
+# levels make the first-named series land on top within each dodge group
+# after coord_flip(), and the matching reversed palette `index` plus
+# reverse_legend keep colours and legend in the canonical order.
+reisk_groepen <- c("alle huishoudens", "werkenden", "werkenden met auto")
+reisk_dt <- CJ(inkomensgroep = factor(inkomensgroepen, levels = rev(inkomensgroepen)),
+               groep         = factor(reisk_groepen, levels = rev(reisk_groepen)))
+reisk_basis <- c(3, 11, 23, 39, 55, 59)   # per income group, low -> high
+reisk_dt[, share := reisk_basis[match(inkomensgroep, inkomensgroepen)] +
+             fcase(groep == "alle huishoudens",   0,
+                   groep == "werkenden",          c(14, 17, 17, 12, 7, 4)[match(inkomensgroep, inkomensgroepen)],
+                   groep == "werkenden met auto", c(49, 48, 39, 25, 14, 8)[match(inkomensgroep, inkomensgroepen)])]
+
+# energy share of the income effect by income group x year (style of
+# reference p10_img07): precomputed quantiles on a 0-100% scale, dodged
+# 2026/2027 boxes per income group. jaar levels reversed for the same
+# coord_flip() dodge reason as above.
+opbouw_dt <- CJ(inkomensgroep = factor(inkomensgroepen, levels = rev(inkomensgroepen)),
+                jaar          = factor(c(2026L, 2027L), levels = c(2027L, 2026L)))
+opbouw_mid <- c(47, 47, 30, 22, 18, 18)   # 2026 medians, low -> high income
+opbouw_dt[, mid := opbouw_mid[match(inkomensgroep, inkomensgroepen)] +
+              (jaar == "2027") * 29]
+opbouw_dt[, `:=`(
+  p50 = mid,
+  p25 = pmax(mid - runif(.N, 10, 15), 0),
+  p75 = pmin(mid + runif(.N, 15, 25), 100),
+  p5  = pmax(mid - runif(.N, 25, 35), 0),
+  p95 = 100
+)]
+opbouw_dt[, mid := NULL]
+
 # Figures ----
 
 render(1, "line: single series",
@@ -223,29 +294,145 @@ render(7, "col: horizontal, single colour",
 
 # recreation of reference figure p20_img24: horizontal dodged bar, two
 # years side by side per group (2021 blue = palette 6, 2024 magenta =
-# palette 2), legend at the bottom.
+# palette 2), nplot() look via the first-class knobs: hairline black
+# gridlines at labelled breaks only, black zero line, category-axis
+# ticks, 7 pt axis text, and a flush-left bottom legend with 0.45 cm keys.
 render(8, "col: horizontal, dodged (fill)",
   cpb_col(pv_dt, x = inkomensgroep, y = share, fill = jaar,
-    position     = "dodge",
-    orientation  = "horizontal",
-    index        = c(2, 6),
-    value_limits = c(0, 70),
-    width        = 0.85,
-    legend       = "bottom",
+    position        = "dodge",
+    orientation     = "horizontal",
+    index           = c(2, 6),
+    value_limits    = c(0, 70),
+    width           = 0.85,
+    legend          = "bottom",
+    flush_legend    = TRUE,
+    zeroline        = TRUE,
+    minor           = FALSE,
+    ticks           = TRUE,
+    axis_text_size  = 7,
+    legend_key_size = 0.45,
+    grid_colour     = "black",
+    grid_linewidth  = 0.1,
     title = "Zonnepanelen naar inkomen",
     ylab  = "inkomensgroepen",
     xlab  = "aandeel binnen inkomensgroep (%)") +
     ggplot2::scale_y_continuous(breaks = seq(0, 70, 10)) +
-    ggplot2::theme(
-      panel.grid.minor.x   = ggplot2::element_blank(),
-      axis.text.y          = ggplot2::element_text(size = 7),
-      legend.direction     = "vertical",
-      legend.location      = "plot",
-      legend.justification = "left",
-      legend.key.size      = grid::unit(0.45, "cm"),
-      plot.margin          = ggplot2::margin(8, 10, 6, 10)
-    ),
+    ggplot2::theme(plot.margin = ggplot2::margin(8, 10, 6, 10)),
   "08_col_horizontal_dodged.png", page = "half")
+
+# recreation of reference figure productivity-report p06_img01: two growth
+# series (blue = palette 6, magenta = palette 2) in the nplot() look --
+# no title, the unit ("%") as subtitle above the axis, hairline black
+# gridlines at labelled breaks only, a black zero line under the data
+# lines, year ticks on the x axis and a flush-left bottom legend.
+render(9, "line: two series, nplot look",
+  cpb_line(prod_dt, x = jaar, y = groei, colour = reeks,
+    linewidth       = 0.55,
+    index           = c(6, 2),
+    legend          = "bottom",
+    flush_legend    = TRUE,
+    zeroline        = TRUE,
+    minor           = FALSE,
+    ticks           = TRUE,
+    axis_text_size  = 7,
+    grid_colour     = "black",
+    grid_linewidth  = 0.1,
+    subtitle = "%") +
+    ggplot2::scale_y_continuous(breaks = seq(-4, 6, 2), limits = c(-4, 6)) +
+    ggplot2::scale_x_continuous(
+      breaks       = c(seq(2000, 2020, 5), 2024),
+      minor_breaks = 2000:2024,
+      guide        = ggplot2::guide_axis(minor.ticks = TRUE)
+    ),
+  "09_line_nplot.png", page = "half")
+
+# recreation of reference figure productivity-report p06_img02: stacked
+# growth-contribution columns spanning zero (blue / light blue / magenta)
+# with the total drawn as a light-pink line (palette 1) on top.
+render(10, "col: stacked +/- with line overlay",
+  cpb_col(decomp_dt, x = jaar, y = bijdrage, fill = component,
+    position        = "stack",
+    index           = c(2, 5, 6),
+    width           = 0.75,
+    legend          = "bottom",
+    flush_legend    = TRUE,
+    zeroline        = TRUE,
+    minor           = FALSE,
+    ticks           = TRUE,
+    axis_text_size  = 7,
+    legend_key_size = 0.45,
+    grid_colour     = "black",
+    grid_linewidth  = 0.1,
+    ylab = "%") +
+    ggplot2::geom_line(
+      data    = totaal_dt,
+      mapping = ggplot2::aes(x = jaar, y = totaal, colour = "arbeidsproductiviteit"),
+      linewidth = 0.55, inherit.aes = FALSE
+    ) +
+    scale_colour_cpb_manual(index = 1) +
+    ggplot2::labs(colour = NULL) +
+    ggplot2::guides(
+      fill   = ggplot2::guide_legend(reverse = TRUE, order = 1),
+      colour = ggplot2::guide_legend(order = 2)
+    ) +
+    ggplot2::scale_y_continuous(breaks = seq(-4, 6, 2), limits = c(-4, 6)) +
+    ggplot2::scale_x_continuous(
+      breaks       = c(seq(2000, 2020, 5), 2024),
+      minor_breaks = 2000:2024,
+      guide        = ggplot2::guide_axis(minor.ticks = TRUE)
+    ) +
+    ggplot2::theme(legend.box = "horizontal", legend.box.just = "top"),
+  "10_col_stacked_line_overlay.png", page = "half")
+
+# recreation of reference figure p13_img15: three series dodged
+# horizontally (blue = palette 6, magenta = palette 2, grey-brown =
+# palette 8), nplot() look, flush-left bottom legend.
+render(11, "col: horizontal, dodged, 3 series",
+  cpb_col(reisk_dt, x = inkomensgroep, y = share, fill = groep,
+    position        = "dodge",
+    orientation     = "horizontal",
+    index           = c(8, 2, 6),
+    value_limits    = c(0, 70),
+    width           = 0.85,
+    legend          = "bottom",
+    flush_legend    = TRUE,
+    zeroline        = TRUE,
+    minor           = FALSE,
+    ticks           = TRUE,
+    axis_text_size  = 7,
+    legend_key_size = 0.45,
+    grid_colour     = "black",
+    grid_linewidth  = 0.1,
+    title = "Percentage met reiskostenvergoeding voor auto",
+    ylab  = "inkomensgroepen",
+    xlab  = "% met reiskostenvergoeding voor auto") +
+    ggplot2::scale_y_continuous(breaks = seq(0, 70, 10)),
+  "11_col_horizontal_dodged3.png", page = "half")
+
+# recreation of reference figure p10_img07: horizontal dodged boxplot,
+# 2026 blue above 2027 magenta per income group, percentage value axis.
+# This reference keeps the hand-rolled ggplot grid (CPB grey, with
+# minors), so only the box construction and colours matter here.
+render(12, "box: horizontal, dodged by year",
+  cpb_box(opbouw_dt, x = inkomensgroep,
+    p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+    fill        = jaar,
+    position    = ggplot2::position_dodge(width = 0.75),
+    width       = 0.6,
+    linewidth   = 0.25,
+    orientation = "horizontal",
+    index       = c(2, 6),
+    legend      = "bottom",
+    reverse_legend  = TRUE,
+    flush_legend    = TRUE,
+    axis_text_size  = 7,
+    legend_key_size = 0.45,
+    title = "Opbouw inkomenseffect: marktverwachtingen",
+    subtitle = "inkomensgroepen",
+    ylab  = "aandeel energie in inkomenseffect") +
+    ggplot2::scale_y_continuous(labels = label_pct_nl(scale = 1),
+                                breaks = seq(0, 100, 25)),
+  "12_box_horizontal_dodged.png", page = "half")
 
 # Summary ----
 

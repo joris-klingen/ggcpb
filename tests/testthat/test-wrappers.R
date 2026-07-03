@@ -81,3 +81,48 @@ test_that("all wrappers can be built into a gtable without error", {
   p <- cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95)
   expect_no_error(ggplot2::ggplotGrob(p))
 })
+
+test_that("zeroline adds a black hline at 0 to the wrappers", {
+  df <- data.frame(x = c("a", "b"), y = c(-1, 2))
+  p <- cpb_col(df, x = x, y = y, zeroline = TRUE)
+  is_hline <- vapply(p$layers, function(l) inherits(l$geom, "GeomHline"), logical(1))
+  expect_true(any(is_hline))
+  hl <- p$layers[[which(is_hline)]]
+  expect_equal(hl$aes_params$colour, "black")
+
+  # cpb_col draws it on top of the bars; cpb_line/cpb_box underneath
+  expect_gt(which(is_hline), which(vapply(p$layers, function(l)
+    inherits(l$geom, "GeomCol"), logical(1))))
+
+  p2 <- cpb_line(df, x = x, y = y, zeroline = TRUE)
+  is_hline2 <- vapply(p2$layers, function(l) inherits(l$geom, "GeomHline"), logical(1))
+  expect_equal(unname(which(is_hline2)), 1L)
+})
+
+test_that("wrappers forward the nplot-style knobs to theme_cpb", {
+  df <- data.frame(x = c("a", "b"), y = c(1, 2))
+  p <- cpb_col(df, x = x, y = y,
+               minor = FALSE, ticks = TRUE, axis_text_size = 7,
+               legend_key_size = 0.45, grid_colour = "black",
+               grid_linewidth = 0.1)
+  th <- p$theme
+  expect_s3_class(th$panel.grid.minor.y, "element_blank")
+  expect_s3_class(th$axis.ticks.x, "element_line")
+  expect_equal(th$axis.text$size, 7)
+  expect_equal(th$panel.grid.major.y$colour, "black")
+})
+
+test_that("cpb_box errorbars dodge by group without a fill warning", {
+  df <- data.frame(
+    groep = rep(c("a", "b"), each = 2),
+    jaar  = rep(c("2026", "2027"), 2),
+    p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5
+  )
+  expect_no_warning(
+    ggplot2::ggplotGrob(
+      cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+              fill = jaar, position = ggplot2::position_dodge(width = 0.75),
+              reverse_legend = TRUE)
+    )
+  )
+})

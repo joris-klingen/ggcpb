@@ -66,3 +66,40 @@ test_that("theme_cpb_min has no background and no gridlines", {
   expect_s3_class(th$panel.grid.major.x, "element_blank")
   expect_s3_class(th$panel.grid.major.y, "element_blank")
 })
+
+test_that("theme_cpb(minor = FALSE) blanks the minor gridlines only", {
+  th <- theme_cpb(orientation = "vertical", minor = FALSE)
+  expect_s3_class(th$panel.grid.major.y, "element_line")
+  expect_s3_class(th$panel.grid.minor.y, "element_blank")
+})
+
+test_that("theme_cpb grid_colour/grid_linewidth style the gridlines", {
+  th <- theme_cpb(grid_colour = "black", grid_linewidth = 0.1)
+  expect_equal(th$panel.grid.major.y$colour, "black")
+  expect_equal(th$panel.grid.major.y$linewidth, 0.1)
+})
+
+test_that("theme_cpb(ticks = TRUE) draws ticks on the category axis", {
+  th_v <- theme_cpb(orientation = "vertical", ticks = TRUE)
+  expect_s3_class(th_v$axis.ticks.x, "element_line")
+  expect_equal(th_v$axis.ticks.x$colour, "black")
+
+  th_h <- theme_cpb(orientation = "horizontal", ticks = TRUE)
+  expect_s3_class(th_h$axis.ticks.y, "element_line")
+})
+
+test_that("theme_cpb(flush_legend = TRUE) anchors the legend flush left", {
+  th <- theme_cpb(legend = "bottom", flush_legend = TRUE)
+  expect_equal(th$legend.justification, "left")
+  expect_equal(th$legend.direction, "vertical")
+  if (utils::packageVersion("ggplot2") >= "3.5.0") {
+    expect_equal(th$legend.location, "plot")
+  }
+})
+
+test_that("theme_cpb axis_text_size and legend_key_size are applied", {
+  th <- theme_cpb(axis_text_size = 7, legend_key_size = 0.45)
+  expect_equal(th$axis.text$size, 7)
+  expect_equal(as.numeric(th$legend.key.height), 0.45)
+  expect_equal(as.numeric(th$legend.key.width), 0.45)
+})

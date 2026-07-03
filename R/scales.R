@@ -16,7 +16,9 @@
 #' @noRd
 cpb_discrete_scale <- function(aesthetics, palette, na.value, ...) {
   args <- list(aesthetics = aesthetics, palette = palette, na.value = na.value, ...)
-  if ("scale_name" %in% names(formals(ggplot2::discrete_scale))) {
+  # the formal still exists (deprecated, warning) in 3.5.x/4.x, so gate on
+  # the version rather than on the signature
+  if (utils::packageVersion("ggplot2") < "3.5.0") {
     args$scale_name <- "cpb"
   }
   do.call(ggplot2::discrete_scale, args)

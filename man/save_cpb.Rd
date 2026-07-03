@@ -20,7 +20,7 @@ save_cpb(
 \arguments{
 \item{filename}{Path to write to; passed to \code{\link[ggplot2:ggsave]{ggplot2::ggsave()}}.}
 
-\item{plot}{The plot to save; defaults to \code{\link[ggplot2:last_plot]{ggplot2::last_plot()}}.}
+\item{plot}{The plot to save; defaults to \code{\link[ggplot2:get_last_plot]{ggplot2::last_plot()}}.}
 
 \item{page}{Either \code{"half"} (default, 2.98 in wide) or \code{"full"}
 (5.96 in wide). Ignored if \code{width} is supplied explicitly.}

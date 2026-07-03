@@ -48,6 +48,15 @@
 #' @param legend Legend position, forwarded to [theme_cpb()]; accepts
 #'   `"right"` (default), `"bottom"`, `"left"`, `"top"`, `"none"`, or a
 #'   two-element numeric vector of plot-relative coordinates.
+#' @param zeroline If `TRUE`, draw a solid black line at zero on the
+#'   value axis on top of the bars, as the CPB `nplot()` house style
+#'   does. Defaults to `FALSE`.
+#' @param minor,ticks,flush_legend,axis_text_size,legend_key_size,grid_colour,grid_linewidth
+#'   Forwarded to [theme_cpb()]. Their `nplot()`-style settings
+#'   (`minor = FALSE`, `ticks = TRUE`, `flush_legend = TRUE`,
+#'   `axis_text_size = 7`, `legend_key_size = 0.45`,
+#'   `grid_colour = "black"`, `grid_linewidth = 0.1`) reproduce the
+#'   legacy CPB plotter look in one call.
 #' @param title Plot title.
 #' @param ylab Label for the **vertical** axis. Following CPB house
 #'   style it is rendered as the plot *subtitle* -- a left-aligned
@@ -83,6 +92,14 @@ cpb_col <- function(data, x, y, fill = NULL,
                      value_labels = FALSE,
                      reverse_legend = TRUE,
                      legend = "right",
+                     zeroline = FALSE,
+                     minor = TRUE,
+                     ticks = FALSE,
+                     flush_legend = FALSE,
+                     axis_text_size = 6,
+                     legend_key_size = NULL,
+                     grid_colour = cpb_grid,
+                     grid_linewidth = NULL,
                      title = NULL,
                      xlab = NULL,
                      ylab = NULL,
@@ -107,6 +124,12 @@ cpb_col <- function(data, x, y, fill = NULL,
     mapping <- ggplot2::aes(x = !!x, y = !!y)
     p <- ggplot2::ggplot(data, mapping) +
       ggplot2::geom_col(position = position, fill = single_fill, ...)
+  }
+
+  # The zero line sits on the value axis (the y aesthetic even under
+  # coord_flip()) and is drawn on top of the bars, matching nplot().
+  if (isTRUE(zeroline)) {
+    p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black", linewidth = 0.25)
   }
 
   if (orientation == "horizontal") {
@@ -163,7 +186,17 @@ cpb_col <- function(data, x, y, fill = NULL,
 
   p +
     ggplot2::labs(title = title, subtitle = ylab, x = lab_x, y = lab_y, fill = filllab) +
-    theme_cpb(orientation = orientation, legend = legend)
+    theme_cpb(
+      orientation     = orientation,
+      legend          = legend,
+      minor           = minor,
+      ticks           = ticks,
+      flush_legend    = flush_legend,
+      axis_text_size  = axis_text_size,
+      legend_key_size = legend_key_size,
+      grid_colour     = grid_colour,
+      grid_linewidth  = grid_linewidth
+    )
 }
 
 # stacked area ----
@@ -188,6 +221,10 @@ cpb_col <- function(data, x, y, fill = NULL,
 #' @param pct_axis If `TRUE`, format the y axis with [label_pct_nl()].
 #' @param reverse_legend If `TRUE` (default), reverse the fill legend
 #'   order via `guide_legend(reverse = TRUE)`.
+#' @param legend Legend position, forwarded to [theme_cpb()].
+#' @param minor,ticks,flush_legend,axis_text_size,legend_key_size,grid_colour,grid_linewidth
+#'   Forwarded to [theme_cpb()]; see [cpb_col()] for the
+#'   `nplot()`-style settings.
 #' @param title,subtitle Plot title/subtitle.
 #' @param xlab,ylab,filllab Axis and legend title overrides; default
 #'   to `NULL` (no axis title), matching CPB house style.
@@ -207,6 +244,14 @@ cpb_area <- function(data, x, y, fill,
                       index = NULL,
                       pct_axis = FALSE,
                       reverse_legend = TRUE,
+                      legend = "right",
+                      minor = TRUE,
+                      ticks = FALSE,
+                      flush_legend = FALSE,
+                      axis_text_size = 6,
+                      legend_key_size = NULL,
+                      grid_colour = cpb_grid,
+                      grid_linewidth = NULL,
                       title = NULL,
                       subtitle = NULL,
                       xlab = NULL,
@@ -236,7 +281,16 @@ cpb_area <- function(data, x, y, fill,
 
   p +
     ggplot2::labs(title = title, subtitle = subtitle, x = xlab, y = ylab, fill = filllab) +
-    theme_cpb()
+    theme_cpb(
+      legend          = legend,
+      minor           = minor,
+      ticks           = ticks,
+      flush_legend    = flush_legend,
+      axis_text_size  = axis_text_size,
+      legend_key_size = legend_key_size,
+      grid_colour     = grid_colour,
+      grid_linewidth  = grid_linewidth
+    )
 }
 
 # lines ----
@@ -259,6 +313,13 @@ cpb_area <- function(data, x, y, fill,
 #'   to [scale_colour_cpb_manual()] instead of the default
 #'   [scale_colour_cpb_d()] when supplied.
 #' @param pct_axis If `TRUE`, format the y axis with [label_pct_nl()].
+#' @param legend Legend position, forwarded to [theme_cpb()].
+#' @param zeroline If `TRUE`, draw a solid black line at zero on the
+#'   value axis underneath the data lines, as the CPB `nplot()` house
+#'   style does. Defaults to `FALSE`.
+#' @param minor,ticks,flush_legend,axis_text_size,legend_key_size,grid_colour,grid_linewidth
+#'   Forwarded to [theme_cpb()]; see [cpb_col()] for the
+#'   `nplot()`-style settings.
 #' @param title,subtitle Plot title/subtitle.
 #' @param xlab,ylab,colourlab Axis and legend title overrides; default
 #'   to `NULL` (no axis title), matching CPB house style.
@@ -278,6 +339,15 @@ cpb_line <- function(data, x, y, colour = NULL,
                       palette = "qualitative",
                       index = NULL,
                       pct_axis = FALSE,
+                      legend = "right",
+                      zeroline = FALSE,
+                      minor = TRUE,
+                      ticks = FALSE,
+                      flush_legend = FALSE,
+                      axis_text_size = 6,
+                      legend_key_size = NULL,
+                      grid_colour = cpb_grid,
+                      grid_linewidth = NULL,
                       title = NULL,
                       subtitle = NULL,
                       xlab = NULL,
@@ -295,8 +365,14 @@ cpb_line <- function(data, x, y, colour = NULL,
     mapping <- ggplot2::aes(x = !!x, y = !!y)
   }
 
-  p <- ggplot2::ggplot(data, mapping) +
-    ggplot2::geom_line(linewidth = linewidth, ...)
+  p <- ggplot2::ggplot(data, mapping)
+
+  # underneath the data lines, matching nplot()
+  if (isTRUE(zeroline)) {
+    p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black", linewidth = 0.25)
+  }
+
+  p <- p + ggplot2::geom_line(linewidth = linewidth, ...)
 
   if (isTRUE(pct_axis)) {
     p <- p + ggplot2::scale_y_continuous(labels = label_pct_nl())
@@ -312,7 +388,16 @@ cpb_line <- function(data, x, y, colour = NULL,
 
   p +
     ggplot2::labs(title = title, subtitle = subtitle, x = xlab, y = ylab, colour = colourlab) +
-    theme_cpb()
+    theme_cpb(
+      legend          = legend,
+      minor           = minor,
+      ticks           = ticks,
+      flush_legend    = flush_legend,
+      axis_text_size  = axis_text_size,
+      legend_key_size = legend_key_size,
+      grid_colour     = grid_colour,
+      grid_linewidth  = grid_linewidth
+    )
 }
 
 # quantile box/errorbar combo ----
@@ -343,6 +428,17 @@ cpb_line <- function(data, x, y, colour = NULL,
 #'   [scale_fill_cpb_d()] when supplied.
 #' @param orientation `"vertical"` (default) or `"horizontal"` (adds
 #'   [ggplot2::coord_flip()] and is forwarded to [theme_cpb()]).
+#' @param legend Legend position, forwarded to [theme_cpb()].
+#' @param reverse_legend If `TRUE`, reverse the fill legend order via
+#'   `guide_legend(reverse = TRUE)`. Defaults to `FALSE`; useful when
+#'   the fill levels were reversed to control the dodge order under
+#'   `coord_flip()`.
+#' @param zeroline If `TRUE`, draw a solid black line at zero on the
+#'   value axis underneath the boxes, as the CPB `nplot()` house style
+#'   does. Defaults to `FALSE`.
+#' @param minor,ticks,flush_legend,axis_text_size,legend_key_size,grid_colour,grid_linewidth
+#'   Forwarded to [theme_cpb()]; see [cpb_col()] for the
+#'   `nplot()`-style settings.
 #' @param title,subtitle Plot title/subtitle.
 #' @param xlab,ylab,filllab Axis and legend title overrides; default
 #'   to `NULL` (no axis title), matching CPB house style.
@@ -367,6 +463,16 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                      palette = "qualitative",
                      index = NULL,
                      orientation = c("vertical", "horizontal"),
+                     legend = "right",
+                     reverse_legend = FALSE,
+                     zeroline = FALSE,
+                     minor = TRUE,
+                     ticks = FALSE,
+                     flush_legend = FALSE,
+                     axis_text_size = 6,
+                     legend_key_size = NULL,
+                     grid_colour = cpb_grid,
+                     grid_linewidth = NULL,
                      title = NULL,
                      subtitle = NULL,
                      xlab = NULL,
@@ -385,7 +491,9 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   has_fill <- !rlang::quo_is_null(fill)
 
   if (has_fill) {
-    mapping_errorbar <- ggplot2::aes(x = !!x, ymin = !!p5, ymax = !!p95, fill = !!fill)
+    # group (not fill) drives the errorbar dodge: errorbars have no fill
+    # aesthetic, and mapping one only triggers a warning
+    mapping_errorbar <- ggplot2::aes(x = !!x, ymin = !!p5, ymax = !!p95, group = !!fill)
     mapping_box <- ggplot2::aes(
       x = !!x, ymin = !!p25, lower = !!p25, middle = !!p50, upper = !!p75,
       ymax = !!p75, fill = !!fill
@@ -398,9 +506,19 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     )
   }
 
-  p <- ggplot2::ggplot(data) +
+  p <- ggplot2::ggplot(data)
+
+  # underneath the boxes, matching nplot()
+  if (isTRUE(zeroline)) {
+    p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black", linewidth = 0.25)
+  }
+
+  # key_glyph = "rect": CPB legends show plain colour squares, not
+  # miniature boxplots
+  p <- p +
     ggplot2::geom_errorbar(mapping = mapping_errorbar, width = width / 2, ...) +
-    ggplot2::geom_boxplot(mapping = mapping_box, stat = "identity", width = width, ...)
+    ggplot2::geom_boxplot(mapping = mapping_box, stat = "identity", width = width,
+                          key_glyph = "rect", ...)
 
   if (orientation == "horizontal") {
     p <- p + ggplot2::coord_flip()
@@ -412,9 +530,22 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     } else {
       scale_fill_cpb_d(palette = palette)
     }
+    if (isTRUE(reverse_legend)) {
+      p <- p + ggplot2::guides(fill = ggplot2::guide_legend(reverse = TRUE))
+    }
   }
 
   p +
     ggplot2::labs(title = title, subtitle = subtitle, x = xlab, y = ylab, fill = filllab) +
-    theme_cpb(orientation = orientation)
+    theme_cpb(
+      orientation     = orientation,
+      legend          = legend,
+      minor           = minor,
+      ticks           = ticks,
+      flush_legend    = flush_legend,
+      axis_text_size  = axis_text_size,
+      legend_key_size = legend_key_size,
+      grid_colour     = grid_colour,
+      grid_linewidth  = grid_linewidth
+    )
 }

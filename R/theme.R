@@ -37,6 +37,30 @@
 #' @param legend Passed through to `legend.position`; accepts the
 #'   usual `"right"`/`"left"`/`"top"`/`"bottom"`/`"none"` strings, or a
 #'   two-element numeric vector of plot-relative coordinates.
+#' @param minor If `TRUE` (default), minor gridlines are drawn (matching
+#'   the major gridlines). Set to `FALSE` for the `nplot()` house look,
+#'   which draws gridlines only at labelled breaks.
+#' @param ticks If `TRUE`, draw black axis tick marks on the *category*
+#'   axis (the x axis when `orientation = "vertical"`, the y axis when
+#'   `"horizontal"`), as `nplot()` does. Defaults to `FALSE`.
+#' @param flush_legend If `TRUE`, anchor the legend to the left edge of
+#'   the full plot area (`legend.location = "plot"` plus a left
+#'   justification) and stack its keys vertically -- the `nplot()`
+#'   bottom-left legend block. Most useful with `legend = "bottom"`.
+#'   Defaults to `FALSE`. Requires ggplot2 >= 3.5.0 for the
+#'   `legend.location` part; on older versions only the justification
+#'   is applied.
+#' @param axis_text_size Axis text size in points. Defaults to `6`
+#'   (the hand-rolled CPB ggplot scripts); `nplot()` figures use `7`.
+#' @param legend_key_size Legend key size in cm. `NULL` (default)
+#'   keeps the classic 0.25 x 0.30 cm keys; `nplot()` figures use
+#'   squares of about `0.45`.
+#' @param grid_colour Gridline colour. Defaults to `cpb_tokens()$grid`
+#'   (`"#c9d1da"`); `nplot()` figures draw hairline black gridlines
+#'   instead (`grid_colour = "black"` with a small `grid_linewidth`).
+#' @param grid_linewidth Gridline linewidth (mm). `NULL` (default)
+#'   keeps the ggplot2 default; `nplot()` gridlines are hairlines of
+#'   about `0.1`.
 #'
 #' @return A ggplot2 `theme` object.
 #' @examples
@@ -54,7 +78,14 @@ theme_cpb <- function(base_family = cpb_font_family(),
                        background = TRUE,
                        orientation = c("vertical", "horizontal"),
                        grid = c("value", "both", "none", "x", "y"),
-                       legend = "right") {
+                       legend = "right",
+                       minor = TRUE,
+                       ticks = FALSE,
+                       flush_legend = FALSE,
+                       axis_text_size = 6,
+                       legend_key_size = NULL,
+                       grid_colour = cpb_grid,
+                       grid_linewidth = NULL) {
   orientation <- match.arg(orientation)
   grid <- match.arg(grid)
 
@@ -75,8 +106,14 @@ theme_cpb <- function(base_family = cpb_font_family(),
     y     = TRUE
   )
 
-  gridline  <- ggplot2::element_line(colour = cpb_grid)
+  gridline <- if (is.null(grid_linewidth)) {
+    ggplot2::element_line(colour = grid_colour)
+  } else {
+    ggplot2::element_line(colour = grid_colour, linewidth = grid_linewidth)
+  }
   blankline <- ggplot2::element_blank()
+
+  minorline <- if (isTRUE(minor)) gridline else blankline
 
   plot_bg <- if (isTRUE(background)) {
     ggplot2::element_rect(fill = cpb_bg, colour = NA)
@@ -97,28 +134,48 @@ theme_cpb <- function(base_family = cpb_font_family(),
     plot.subtitle = ggplot2::element_text(face = "italic", hjust = 0, size = 7),
 
     axis.title = ggplot2::element_text(face = "italic", hjust = 1, size = 7),
-    axis.text  = ggplot2::element_text(colour = "black", size = 6),
+    axis.text  = ggplot2::element_text(colour = "black", size = axis_text_size),
 
     legend.position   = legend,
     legend.text       = ggplot2::element_text(face = "italic", size = 7),
-    legend.key.height = grid::unit(0.25, "cm"),
-    legend.key.width  = grid::unit(0.30, "cm"),
+    legend.key.height = grid::unit(
+      if (is.null(legend_key_size)) 0.25 else legend_key_size, "cm"),
+    legend.key.width  = grid::unit(
+      if (is.null(legend_key_size)) 0.30 else legend_key_size, "cm"),
 
     strip.text       = ggplot2::element_text(face = "bold", hjust = 0, size = 7),
     strip.background = ggplot2::element_blank(),
 
     panel.grid.major.x = if (show_grid_x) gridline else blankline,
-    panel.grid.minor.x = if (show_grid_x) gridline else blankline,
+    panel.grid.minor.x = if (show_grid_x) minorline else blankline,
     panel.grid.major.y = if (show_grid_y) gridline else blankline,
-    panel.grid.minor.y = if (show_grid_y) gridline else blankline,
+    panel.grid.minor.y = if (show_grid_y) minorline else blankline,
 
     plot.margin = ggplot2::margin(10, 10, 25, 10),
 
     plot.background = plot_bg
   )
 
+  if (isTRUE(ticks)) {
+    tickline <- ggplot2::element_line(colour = "black", linewidth = 0.2)
+    if (orientation == "vertical") {
+      theme_args$axis.ticks.x <- tickline
+    } else {
+      theme_args$axis.ticks.y <- tickline
+    }
+    theme_args$axis.ticks.length <- grid::unit(2.2, "pt")
+  }
+
+  if (isTRUE(flush_legend)) {
+    theme_args$legend.justification <- "left"
+    theme_args$legend.direction     <- "vertical"
+  }
+
   if (utils::packageVersion("ggplot2") >= "3.5.0") {
     theme_args$legend.key.spacing.y <- grid::unit(0.05, "cm")
+    if (isTRUE(flush_legend)) {
+      theme_args$legend.location <- "plot"
+    }
   }
 
   ggplot2::theme_minimal(base_family = base_family) +

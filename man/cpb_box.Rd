@@ -17,6 +17,16 @@ cpb_box(
   palette = "qualitative",
   index = NULL,
   orientation = c("vertical", "horizontal"),
+  legend = "right",
+  reverse_legend = FALSE,
+  zeroline = FALSE,
+  minor = TRUE,
+  ticks = FALSE,
+  flush_legend = FALSE,
+  axis_text_size = 6,
+  legend_key_size = NULL,
+  grid_colour = cpb_grid,
+  grid_linewidth = NULL,
   title = NULL,
   subtitle = NULL,
   xlab = NULL,
@@ -50,6 +60,20 @@ to \code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} instead of the 
 
 \item{orientation}{\code{"vertical"} (default) or \code{"horizontal"} (adds
 \code{\link[ggplot2:coord_flip]{ggplot2::coord_flip()}} and is forwarded to \code{\link[=theme_cpb]{theme_cpb()}}).}
+
+\item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}.}
+
+\item{reverse_legend}{If \code{TRUE}, reverse the fill legend order via
+\code{guide_legend(reverse = TRUE)}. Defaults to \code{FALSE}; useful when
+the fill levels were reversed to control the dodge order under
+\code{coord_flip()}.}
+
+\item{zeroline}{If \code{TRUE}, draw a solid black line at zero on the
+value axis underneath the boxes, as the CPB \code{nplot()} house style
+does. Defaults to \code{FALSE}.}
+
+\item{minor, ticks, flush_legend, axis_text_size, legend_key_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; see \code{\link[=cpb_col]{cpb_col()}} for the
+\code{nplot()}-style settings.}
 
 \item{title, subtitle}{Plot title/subtitle.}
 

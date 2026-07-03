@@ -70,6 +70,15 @@ cpb_col(mpg, x = class, fill = class) +
 
 - `theme_cpb()` / `theme_cpb_min()` -- the house theme, with
   `orientation`/`grid` controlling which gridlines are drawn.
+  Additional knobs reproduce the legacy `nplot()` look per figure:
+  `minor = FALSE` (gridlines only at labelled breaks),
+  `grid_colour = "black"` + `grid_linewidth = 0.1` (hairline black
+  gridlines), `ticks = TRUE` (category-axis tick marks),
+  `flush_legend = TRUE` (bottom-left legend block flush with the plot
+  edge), `axis_text_size = 7` and `legend_key_size = 0.45`. The
+  wrappers forward all of these, and additionally take
+  `zeroline = TRUE` for the bold black line at zero on the value
+  axis.
 - `cpb_pal()`, `cpb_cols()`, `cpb_tokens()` -- palette generators and
   raw hex-value accessors.
 - `scale_fill_cpb_d()` / `scale_colour_cpb_d()` / `scale_color_cpb_d()`

@@ -13,6 +13,14 @@ cpb_area(
   index = NULL,
   pct_axis = FALSE,
   reverse_legend = TRUE,
+  legend = "right",
+  minor = TRUE,
+  ticks = FALSE,
+  flush_legend = FALSE,
+  axis_text_size = 6,
+  legend_key_size = NULL,
+  grid_colour = cpb_grid,
+  grid_linewidth = NULL,
   title = NULL,
   subtitle = NULL,
   xlab = NULL,
@@ -42,6 +50,11 @@ to \code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} instead of the 
 
 \item{reverse_legend}{If \code{TRUE} (default), reverse the fill legend
 order via \code{guide_legend(reverse = TRUE)}.}
+
+\item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}.}
+
+\item{minor, ticks, flush_legend, axis_text_size, legend_key_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; see \code{\link[=cpb_col]{cpb_col()}} for the
+\code{nplot()}-style settings.}
 
 \item{title, subtitle}{Plot title/subtitle.}
 

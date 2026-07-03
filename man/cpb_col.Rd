@@ -19,6 +19,14 @@ cpb_col(
   value_labels = FALSE,
   reverse_legend = TRUE,
   legend = "right",
+  zeroline = FALSE,
+  minor = TRUE,
+  ticks = FALSE,
+  flush_legend = FALSE,
+  axis_text_size = 6,
+  legend_key_size = NULL,
+  grid_colour = cpb_grid,
+  grid_linewidth = NULL,
   title = NULL,
   xlab = NULL,
   ylab = NULL,
@@ -72,6 +80,16 @@ makes the legend order counter-intuitive.}
 \item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; accepts
 \code{"right"} (default), \code{"bottom"}, \code{"left"}, \code{"top"}, \code{"none"}, or a
 two-element numeric vector of plot-relative coordinates.}
+
+\item{zeroline}{If \code{TRUE}, draw a solid black line at zero on the
+value axis on top of the bars, as the CPB \code{nplot()} house style
+does. Defaults to \code{FALSE}.}
+
+\item{minor, ticks, flush_legend, axis_text_size, legend_key_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}}. Their \code{nplot()}-style settings
+(\code{minor = FALSE}, \code{ticks = TRUE}, \code{flush_legend = TRUE},
+\code{axis_text_size = 7}, \code{legend_key_size = 0.45},
+\code{grid_colour = "black"}, \code{grid_linewidth = 0.1}) reproduce the
+legacy CPB plotter look in one call.}
 
 \item{title}{Plot title.}
 
