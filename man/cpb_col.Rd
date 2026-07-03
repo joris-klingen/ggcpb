@@ -19,16 +19,15 @@ cpb_col(
   value_limits = NULL,
   value_labels = FALSE,
   reverse_legend = TRUE,
-  style = c("cpb_default", "ggplot"),
-  legend = NULL,
-  zeroline = NULL,
-  minor = NULL,
-  ticks = NULL,
-  flush_legend = NULL,
-  axis_text_size = NULL,
+  legend = "bottom",
+  zeroline = TRUE,
+  minor = FALSE,
+  ticks = TRUE,
+  flush_legend = TRUE,
+  axis_text_size = 7,
   legend_key_size = NULL,
-  grid_colour = NULL,
-  grid_linewidth = NULL,
+  grid_colour = "black",
+  grid_linewidth = 0.1,
   title = NULL,
   xlab = NULL,
   ylab = NULL,
@@ -84,26 +83,16 @@ labels using \code{y}, positioned to match \code{position}.}
 order via \code{guide_legend(reverse = TRUE)} -- stacking otherwise
 makes the legend order counter-intuitive.}
 
-\item{style}{Style preset, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}:
-\code{"cpb_default"} (the default; the published CPB figure look:
-hairline black gridlines at labelled breaks only, category-axis
-ticks and axis line, 7 pt axis text, flush-left bottom legend,
-and a black zero line on the value axis) or \code{"ggplot"} (the
-lighter hand-rolled CPB ggplot2 look). Any knob set explicitly
-overrides the preset.}
-
 \item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; accepts
-\code{"right"}, \code{"bottom"}, \code{"left"}, \code{"top"}, \code{"none"}, or a
-two-element numeric vector of plot-relative coordinates. \code{NULL}
-(default) resolves by \code{style}.}
+\code{"bottom"} (default), \code{"right"}, \code{"left"}, \code{"top"}, \code{"none"}, or
+a two-element numeric vector of plot-relative coordinates.}
 
 \item{zeroline}{If \code{TRUE}, draw a solid black line at zero on the
 value axis on top of the bars, as the CPB house style does.
-\code{NULL} (default) resolves by \code{style}: \code{TRUE} for \code{"cpb_default"},
-\code{FALSE} for \code{"ggplot"}.}
+Defaults to \code{TRUE} (bars are anchored at zero).}
 
-\item{minor, ticks, flush_legend, axis_text_size, legend_key_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; \code{NULL} (the default) resolves by
-\code{style}.}
+\item{minor, ticks, flush_legend, axis_text_size, legend_key_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}} for per-figure deviations from the
+house defaults.}
 
 \item{title}{Plot title.}
 

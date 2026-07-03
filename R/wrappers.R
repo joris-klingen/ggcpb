@@ -9,9 +9,9 @@
 
 # columns / bars ----
 
-#' One-sided value-axis expansion for the nplot look
+#' One-sided value-axis expansion for the house look
 #'
-#' nplot draws bars and areas sitting directly on the zero axis: the
+#' CPB figures draw bars and areas sitting directly on the zero axis: the
 #' panel edge *is* the axis line, so the zero side of the value scale
 #' gets no padding when the data does not cross zero. Returns an
 #' [ggplot2::expansion()] spec, or `NULL` (keep the ggplot2 default)
@@ -71,24 +71,15 @@ cpb_zero_flush_expand <- function(values) {
 #' @param reverse_legend If `TRUE` (default), reverse the fill legend
 #'   order via `guide_legend(reverse = TRUE)` -- stacking otherwise
 #'   makes the legend order counter-intuitive.
-#' @param style Style preset, forwarded to [theme_cpb()]:
-#'   `"cpb_default"` (the default; the published CPB figure look:
-#'   hairline black gridlines at labelled breaks only, category-axis
-#'   ticks and axis line, 7 pt axis text, flush-left bottom legend,
-#'   and a black zero line on the value axis) or `"ggplot"` (the
-#'   lighter hand-rolled CPB ggplot2 look). Any knob set explicitly
-#'   overrides the preset.
 #' @param legend Legend position, forwarded to [theme_cpb()]; accepts
-#'   `"right"`, `"bottom"`, `"left"`, `"top"`, `"none"`, or a
-#'   two-element numeric vector of plot-relative coordinates. `NULL`
-#'   (default) resolves by `style`.
+#'   `"bottom"` (default), `"right"`, `"left"`, `"top"`, `"none"`, or
+#'   a two-element numeric vector of plot-relative coordinates.
 #' @param zeroline If `TRUE`, draw a solid black line at zero on the
 #'   value axis on top of the bars, as the CPB house style does.
-#'   `NULL` (default) resolves by `style`: `TRUE` for `"cpb_default"`,
-#'   `FALSE` for `"ggplot"`.
+#'   Defaults to `TRUE` (bars are anchored at zero).
 #' @param minor,ticks,flush_legend,axis_text_size,legend_key_size,grid_colour,grid_linewidth
-#'   Forwarded to [theme_cpb()]; `NULL` (the default) resolves by
-#'   `style`.
+#'   Forwarded to [theme_cpb()] for per-figure deviations from the
+#'   house defaults.
 #' @param title Plot title.
 #' @param ylab Label for the **vertical** axis. Following CPB house
 #'   style it is rendered as the plot *subtitle* -- a left-aligned
@@ -124,16 +115,15 @@ cpb_col <- function(data, x, y, fill = NULL,
                      value_limits = NULL,
                      value_labels = FALSE,
                      reverse_legend = TRUE,
-                     style = c("cpb_default", "ggplot"),
-                     legend = NULL,
-                     zeroline = NULL,
-                     minor = NULL,
-                     ticks = NULL,
-                     flush_legend = NULL,
-                     axis_text_size = NULL,
+                     legend = "bottom",
+                     zeroline = TRUE,
+                     minor = FALSE,
+                     ticks = TRUE,
+                     flush_legend = TRUE,
+                     axis_text_size = 7,
                      legend_key_size = NULL,
-                     grid_colour = NULL,
-                     grid_linewidth = NULL,
+                     grid_colour = "black",
+                     grid_linewidth = 0.1,
                      title = NULL,
                      xlab = NULL,
                      ylab = NULL,
@@ -141,8 +131,6 @@ cpb_col <- function(data, x, y, fill = NULL,
                      ...) {
   position <- match.arg(position)
   orientation <- match.arg(orientation)
-  style <- match.arg(style)
-  if (is.null(zeroline)) zeroline <- style == "cpb_default"
 
   x <- rlang::enquo(x)
   y <- rlang::enquo(y)
@@ -163,7 +151,7 @@ cpb_col <- function(data, x, y, fill = NULL,
   }
 
   # The zero line sits on the value axis (the y aesthetic even under
-  # coord_flip()) and is drawn on top of the bars, matching nplot().
+  # coord_flip()) and is drawn on top of the bars.
   if (isTRUE(zeroline)) {
     p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black", linewidth = 0.25)
   }
@@ -179,7 +167,7 @@ cpb_col <- function(data, x, y, fill = NULL,
   }
 
   # the value-axis scale is assembled once, so labels, breaks and the
-  # nplot zero-flush expansion can coexist
+  # zero-flush expansion can coexist
   scale_args <- list()
   if (isTRUE(pct_axis)) {
     pct_scale <- if (position == "fill") 100 else 1
@@ -188,10 +176,8 @@ cpb_col <- function(data, x, y, fill = NULL,
   if (!is.null(value_breaks)) {
     scale_args$breaks <- value_breaks
   }
-  if (style == "cpb_default") {
-    expand <- cpb_zero_flush_expand(rlang::eval_tidy(y, data))
-    if (!is.null(expand)) scale_args$expand <- expand
-  }
+  expand <- cpb_zero_flush_expand(rlang::eval_tidy(y, data))
+  if (!is.null(expand)) scale_args$expand <- expand
   if (length(scale_args)) {
     p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
   }
@@ -242,7 +228,6 @@ cpb_col <- function(data, x, y, fill = NULL,
     ggplot2::labs(title = title, subtitle = subtitle, x = lab_x, y = lab_y, fill = filllab) +
     theme_cpb(
       orientation     = orientation,
-      style           = style,
       legend          = legend,
       minor           = minor,
       ticks           = ticks,
@@ -276,16 +261,12 @@ cpb_col <- function(data, x, y, fill = NULL,
 #' @param pct_axis If `TRUE`, format the y axis with [label_pct_nl()].
 #' @param reverse_legend If `TRUE` (default), reverse the fill legend
 #'   order via `guide_legend(reverse = TRUE)`.
-#' @param style Style preset, forwarded to [theme_cpb()]; see
-#'   [cpb_col()].
-#' @param legend Legend position, forwarded to [theme_cpb()]; `NULL`
-#'   (default) resolves by `style`.
-#' @param zeroline If `TRUE`, draw a solid black line at zero on the
-#'   value axis on top of the areas, as the CPB `nplot()` house style
-#'   does. `NULL` (default) resolves by `style`.
+#' @param zeroline If `TRUE` (default), draw a solid black line at
+#'   zero on the value axis on top of the areas, as the CPB house
+#'   style does.
 #' @param minor,ticks,flush_legend,axis_text_size,legend_key_size,grid_colour,grid_linewidth
-#'   Forwarded to [theme_cpb()]; `NULL` (the default) resolves by
-#'   `style`.
+#'   Forwarded to [theme_cpb()] for per-figure deviations from the
+#'   house defaults.
 #' @param title,subtitle Plot title/subtitle.
 #' @param xlab,filllab Axis and legend title overrides; default
 #'   to `NULL` (no axis title), matching CPB house style.
@@ -309,25 +290,21 @@ cpb_area <- function(data, x, y, fill,
                       index = NULL,
                       pct_axis = FALSE,
                       reverse_legend = TRUE,
-                      style = c("cpb_default", "ggplot"),
-                      legend = NULL,
-                      zeroline = NULL,
-                      minor = NULL,
-                      ticks = NULL,
-                      flush_legend = NULL,
-                      axis_text_size = NULL,
+                      legend = "bottom",
+                      zeroline = TRUE,
+                      minor = FALSE,
+                      ticks = TRUE,
+                      flush_legend = TRUE,
+                      axis_text_size = 7,
                       legend_key_size = NULL,
-                      grid_colour = NULL,
-                      grid_linewidth = NULL,
+                      grid_colour = "black",
+                      grid_linewidth = 0.1,
                       title = NULL,
                       subtitle = NULL,
                       xlab = NULL,
                       ylab = NULL,
                       filllab = NULL,
                       ...) {
-  style <- match.arg(style)
-  if (is.null(zeroline)) zeroline <- style == "cpb_default"
-
   x <- rlang::enquo(x)
   y <- rlang::enquo(y)
   fill <- rlang::enquo(fill)
@@ -335,7 +312,7 @@ cpb_area <- function(data, x, y, fill,
   p <- ggplot2::ggplot(data, ggplot2::aes(x = !!x, y = !!y, fill = !!fill)) +
     ggplot2::geom_area(...)
 
-  # on top of the areas, matching nplot()
+  # on top of the areas
   if (isTRUE(zeroline)) {
     p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black", linewidth = 0.25)
   }
@@ -345,10 +322,8 @@ cpb_area <- function(data, x, y, fill,
   if (isTRUE(pct_axis)) {
     scale_args$labels <- label_pct_nl()
   }
-  if (style == "cpb_default") {
-    expand <- cpb_zero_flush_expand(rlang::eval_tidy(y, data))
-    if (!is.null(expand)) scale_args$expand <- expand
-  }
+  expand <- cpb_zero_flush_expand(rlang::eval_tidy(y, data))
+  if (!is.null(expand)) scale_args$expand <- expand
   if (length(scale_args)) {
     p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
   }
@@ -376,7 +351,6 @@ cpb_area <- function(data, x, y, fill,
   p +
     ggplot2::labs(title = title, subtitle = subtitle, x = xlab, y = lab_y, fill = filllab) +
     theme_cpb(
-      style           = style,
       legend          = legend,
       minor           = minor,
       ticks           = ticks,
@@ -404,31 +378,21 @@ cpb_area <- function(data, x, y, fill,
 #'   is mapped. Defaults to `NULL`, which resolves to the CPB primary
 #'   blue (`cpb_cols(6)`, `"#005faf"`). Ignored when `colour` is
 #'   supplied.
-#' @param linewidth Line width. `NULL` (default) resolves by `style`:
-#'   `0.55` for `"cpb_default"` (matching the published figures),
-#'   `1.2` for `"ggplot"` (matching CPB source scripts).
+#' @param linewidth Line width; defaults to `0.55`, matching the
+#'   published CPB figures.
 #' @param palette CPB palette to use for `colour`; one of
 #'   `"qualitative"` (default), `"discr"`, or `"sequential"`.
 #' @param index Optional integer vector of palette positions, forwarded
 #'   to [scale_colour_cpb_manual()] instead of the default
 #'   [scale_colour_cpb_d()] when supplied.
 #' @param pct_axis If `TRUE`, format the y axis with [label_pct_nl()].
-#' @param style Style preset, forwarded to [theme_cpb()]; see
-#'   [cpb_col()]. For line charts `"cpb_default"` additionally draws
-#'   the panel tight around the data/limits
-#'   (`coord_cartesian(expand = FALSE)`), so the axis ticks meet the
-#'   outermost gridlines as in the published figures.
-#' @param legend Legend position, forwarded to [theme_cpb()]; `NULL`
-#'   (default) resolves by `style`.
 #' @param zeroline If `TRUE`, draw a solid black line at zero on the
-#'   value axis underneath the data lines, as the CPB house style
-#'   does. `NULL` (default) resolves by `style`: for `"cpb_default"`
-#'   the line is drawn when the `y` data spans (or touches) zero,
-#'   mirroring nplot's bold-axis-if-zero behaviour; for `"ggplot"` it
-#'   is not drawn.
+#'   value axis underneath the data lines. `NULL` (default) draws it
+#'   automatically when the `y` data spans (or touches) zero, the
+#'   house bold-axis-if-zero convention.
 #' @param minor,ticks,flush_legend,axis_text_size,legend_key_size,grid_colour,grid_linewidth
-#'   Forwarded to [theme_cpb()]; `NULL` (the default) resolves by
-#'   `style`.
+#'   Forwarded to [theme_cpb()] for per-figure deviations from the
+#'   house defaults.
 #' @param title,subtitle Plot title/subtitle.
 #' @param xlab,colourlab Axis and legend title overrides; default
 #'   to `NULL` (no axis title), matching CPB house style.
@@ -450,29 +414,25 @@ cpb_area <- function(data, x, y, fill,
 #' @export
 cpb_line <- function(data, x, y, colour = NULL,
                       line_colour = NULL,
-                      linewidth = NULL,
+                      linewidth = 0.55,
                       palette = "qualitative",
                       index = NULL,
                       pct_axis = FALSE,
-                      style = c("cpb_default", "ggplot"),
-                      legend = NULL,
+                      legend = "bottom",
                       zeroline = NULL,
-                      minor = NULL,
-                      ticks = NULL,
-                      flush_legend = NULL,
-                      axis_text_size = NULL,
+                      minor = FALSE,
+                      ticks = TRUE,
+                      flush_legend = TRUE,
+                      axis_text_size = 7,
                       legend_key_size = NULL,
-                      grid_colour = NULL,
-                      grid_linewidth = NULL,
+                      grid_colour = "black",
+                      grid_linewidth = 0.1,
                       title = NULL,
                       subtitle = NULL,
                       xlab = NULL,
                       ylab = NULL,
                       colourlab = NULL,
                       ...) {
-  style <- match.arg(style)
-  if (is.null(linewidth)) linewidth <- if (style == "cpb_default") 0.55 else 1.2
-
   x <- rlang::enquo(x)
   y <- rlang::enquo(y)
   colour <- rlang::enquo(colour)
@@ -484,8 +444,7 @@ cpb_line <- function(data, x, y, colour = NULL,
   # all-positive chart (e.g. an index series) down to zero
   if (is.null(zeroline)) {
     yvals <- rlang::eval_tidy(y, data)
-    zeroline <- style == "cpb_default" &&
-      is.numeric(yvals) &&
+    zeroline <- is.numeric(yvals) &&
       min(yvals, na.rm = TRUE) <= 0 && max(yvals, na.rm = TRUE) >= 0
   }
 
@@ -497,7 +456,7 @@ cpb_line <- function(data, x, y, colour = NULL,
 
   p <- ggplot2::ggplot(data, mapping)
 
-  # underneath the data lines, matching nplot()
+  # underneath the data lines
   if (isTRUE(zeroline)) {
     p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black", linewidth = 0.25)
   }
@@ -511,12 +470,10 @@ cpb_line <- function(data, x, y, colour = NULL,
     ggplot2::geom_line(linewidth = linewidth, colour = single_colour, ...)
   }
 
-  # nplot draws the panel tight around the data/limits, so the axis
-  # line and ticks meet the outermost gridlines instead of floating
-  # beyond them
-  if (style == "cpb_default") {
-    p <- p + ggplot2::coord_cartesian(expand = FALSE)
-  }
+  # the panel is drawn tight around the data/limits, so the axis line
+  # and ticks meet the outermost gridlines instead of floating beyond
+  # them
+  p <- p + ggplot2::coord_cartesian(expand = FALSE)
 
   if (isTRUE(pct_axis)) {
     p <- p + ggplot2::scale_y_continuous(labels = label_pct_nl())
@@ -544,7 +501,6 @@ cpb_line <- function(data, x, y, colour = NULL,
   p +
     ggplot2::labs(title = title, subtitle = subtitle, x = xlab, y = lab_y, colour = colourlab) +
     theme_cpb(
-      style           = style,
       legend          = legend,
       minor           = minor,
       ticks           = ticks,
@@ -590,22 +546,17 @@ cpb_line <- function(data, x, y, colour = NULL,
 #'   [scale_fill_cpb_d()] when supplied.
 #' @param orientation `"vertical"` (default) or `"horizontal"` (adds
 #'   [ggplot2::coord_flip()] and is forwarded to [theme_cpb()]).
-#' @param style Style preset, forwarded to [theme_cpb()]; see
-#'   [cpb_col()].
-#' @param legend Legend position, forwarded to [theme_cpb()]; `NULL`
-#'   (default) resolves by `style`.
 #' @param reverse_legend If `TRUE`, reverse the fill legend order via
 #'   `guide_legend(reverse = TRUE)`. Defaults to `FALSE`; useful when
 #'   the fill levels were reversed to control the dodge order under
 #'   `coord_flip()`.
 #' @param zeroline If `TRUE`, draw a solid black line at zero on the
-#'   value axis underneath the boxes, as the CPB house style does.
-#'   `NULL` (default) resolves by `style`: for `"cpb_default"` the
-#'   line is drawn when the p5-p95 data spans (or touches) zero; for
-#'   `"ggplot"` it is not drawn.
+#'   value axis underneath the boxes. `NULL` (default) draws it
+#'   automatically when the p5-p95 data spans (or touches) zero, the
+#'   house bold-axis-if-zero convention.
 #' @param minor,ticks,flush_legend,axis_text_size,legend_key_size,grid_colour,grid_linewidth
-#'   Forwarded to [theme_cpb()]; `NULL` (the default) resolves by
-#'   `style`.
+#'   Forwarded to [theme_cpb()] for per-figure deviations from the
+#'   house defaults.
 #' @param title,subtitle Plot title/subtitle.
 #' @param xlab,filllab Axis and legend title overrides; default
 #'   to `NULL` (no axis title), matching CPB house style.
@@ -637,17 +588,16 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                      palette = "qualitative",
                      index = NULL,
                      orientation = c("vertical", "horizontal"),
-                     style = c("cpb_default", "ggplot"),
-                     legend = NULL,
+                     legend = "bottom",
                      reverse_legend = FALSE,
                      zeroline = NULL,
-                     minor = NULL,
-                     ticks = NULL,
-                     flush_legend = NULL,
-                     axis_text_size = NULL,
+                     minor = FALSE,
+                     ticks = TRUE,
+                     flush_legend = TRUE,
+                     axis_text_size = 7,
                      legend_key_size = NULL,
-                     grid_colour = NULL,
-                     grid_linewidth = NULL,
+                     grid_colour = "black",
+                     grid_linewidth = 0.1,
                      title = NULL,
                      subtitle = NULL,
                      xlab = NULL,
@@ -655,7 +605,6 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                      filllab = NULL,
                      ...) {
   orientation <- match.arg(orientation)
-  style <- match.arg(style)
 
   x <- rlang::enquo(x)
   p5  <- rlang::enquo(p5)
@@ -670,8 +619,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   if (is.null(zeroline)) {
     lo <- rlang::eval_tidy(p5, data)
     hi <- rlang::eval_tidy(p95, data)
-    zeroline <- style == "cpb_default" &&
-      is.numeric(lo) && is.numeric(hi) &&
+    zeroline <- is.numeric(lo) && is.numeric(hi) &&
       min(lo, na.rm = TRUE) <= 0 && max(hi, na.rm = TRUE) >= 0
   }
 
@@ -693,7 +641,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
 
   p <- ggplot2::ggplot(data)
 
-  # underneath the boxes, matching nplot()
+  # underneath the boxes
   if (isTRUE(zeroline)) {
     p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black", linewidth = 0.25)
   }
@@ -741,7 +689,6 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     ggplot2::labs(title = title, subtitle = subtitle, x = xlab, y = lab_y, fill = filllab) +
     theme_cpb(
       orientation     = orientation,
-      style           = style,
       legend          = legend,
       minor           = minor,
       ticks           = ticks,

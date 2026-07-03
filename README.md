@@ -8,6 +8,12 @@ that you can keep extending with `+`. It is the `ggplot2`-native
 counterpart to the internal `nicerplot` package (`nplot()`), without
 depending on it.
 
+> **Status: work in progress.** The style is calibrated against a set
+> of published reference figures, but robustness still needs to be
+> checked and improved (edge cases, unusual data shapes, device/font
+> environments), and wrappers for more chart types will be added
+> later.
+
 ## Documentation
 
 - **[Chart types](doc/chart-types.md)** --
@@ -45,12 +51,10 @@ cpb_col(df, x = jaar, y = waarde, fill = groep,
 
 The wrappers -- `cpb_line()`, `cpb_col()`, `cpb_area()`, `cpb_box()`
 -- accept a data.frame or data.table plus tidy-eval column arguments,
-and apply `theme_cpb()` and a CPB scale. The default
-`style = "cpb_default"` is the published-figure look (hairline black
-gridlines at labelled breaks, category-axis ticks, black zero line,
-flush-left bottom legend); `style = "ggplot"` switches to the lighter
-hand-rolled look. Every preset element is also an individual
-argument.
+and apply `theme_cpb()` and a CPB scale: the published-figure look
+(hairline black gridlines at labelled breaks, category-axis ticks,
+black zero line, flush-left bottom legend). Every style element is
+also an individual argument for per-figure deviations.
 
 On top of the wrappers sits the composable core: `theme_cpb()`,
 `cpb_pal()`/`cpb_cols()`/`cpb_tokens()`, discrete/continuous/manual

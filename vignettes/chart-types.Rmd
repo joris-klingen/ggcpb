@@ -35,11 +35,8 @@ set.seed(42)
 This vignette is a cookbook: one section per CPB chart type, each with
 the simulated data it needs and the wrapper call that draws it. All
 wrappers return a plain `ggplot` object, so anything here can be
-extended further with `+`. The figures use the default
-`style = "cpb_default"`, the house look of published CPB figures;
-`style = "ggplot"` gives the lighter hand-rolled ggplot look (see the
-last section, and `vignette("ggcpb")` for the composable core the
-wrappers build on).
+extended further with `+`. See `vignette("ggcpb")` for the
+composable core the wrappers build on.
 
 Two house conventions to know up front:
 
@@ -345,25 +342,6 @@ Later `+ theme(...)` calls override individual elements of
 tweaks in `inst/examples/smoke_test_plots.R`. The one thing *not* to
 add is a second value-axis scale: use the wrapper's `value_breaks`,
 `value_limits` and `pct_axis` arguments instead, as noted above.
-
-# The two styles
-
-Everything above used the default `style = "cpb_default"`, the look
-of published CPB figures. `style = "ggplot"` switches to the lighter
-hand-rolled look -- CPB-grey gridlines with minors, no ticks or zero
-line, 6 pt axis text, legend on the right:
-
-```{r styles}
-cpb_col(tw, x = jaar, y = waarde, fill = sector,
-  style = "ggplot",
-  index = c(6, 5, 2, 4),
-  title = "Toegevoegde waarde per sector",
-  ylab  = "mld euro")
-```
-
-Both presets are just defaults: every knob (`minor`, `ticks`,
-`grid_colour`, `flush_legend`, `zeroline`, ...) can be set per call,
-see `?theme_cpb`.
 
 # Export
 

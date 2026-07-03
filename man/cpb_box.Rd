@@ -19,17 +19,16 @@ cpb_box(
   palette = "qualitative",
   index = NULL,
   orientation = c("vertical", "horizontal"),
-  style = c("cpb_default", "ggplot"),
-  legend = NULL,
+  legend = "bottom",
   reverse_legend = FALSE,
   zeroline = NULL,
-  minor = NULL,
-  ticks = NULL,
-  flush_legend = NULL,
-  axis_text_size = NULL,
+  minor = FALSE,
+  ticks = TRUE,
+  flush_legend = TRUE,
+  axis_text_size = 7,
   legend_key_size = NULL,
-  grid_colour = NULL,
-  grid_linewidth = NULL,
+  grid_colour = "black",
+  grid_linewidth = 0.1,
   title = NULL,
   subtitle = NULL,
   xlab = NULL,
@@ -72,25 +71,18 @@ to \code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} instead of the 
 \item{orientation}{\code{"vertical"} (default) or \code{"horizontal"} (adds
 \code{\link[ggplot2:coord_flip]{ggplot2::coord_flip()}} and is forwarded to \code{\link[=theme_cpb]{theme_cpb()}}).}
 
-\item{style}{Style preset, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; see
-\code{\link[=cpb_col]{cpb_col()}}.}
-
-\item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; \code{NULL}
-(default) resolves by \code{style}.}
-
 \item{reverse_legend}{If \code{TRUE}, reverse the fill legend order via
 \code{guide_legend(reverse = TRUE)}. Defaults to \code{FALSE}; useful when
 the fill levels were reversed to control the dodge order under
 \code{coord_flip()}.}
 
 \item{zeroline}{If \code{TRUE}, draw a solid black line at zero on the
-value axis underneath the boxes, as the CPB house style does.
-\code{NULL} (default) resolves by \code{style}: for \code{"cpb_default"} the
-line is drawn when the p5-p95 data spans (or touches) zero; for
-\code{"ggplot"} it is not drawn.}
+value axis underneath the boxes. \code{NULL} (default) draws it
+automatically when the p5-p95 data spans (or touches) zero, the
+house bold-axis-if-zero convention.}
 
-\item{minor, ticks, flush_legend, axis_text_size, legend_key_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; \code{NULL} (the default) resolves by
-\code{style}.}
+\item{minor, ticks, flush_legend, axis_text_size, legend_key_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}} for per-figure deviations from the
+house defaults.}
 
 \item{title, subtitle}{Plot title/subtitle.}
 

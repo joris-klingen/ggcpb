@@ -232,13 +232,12 @@ opbouw_dt[, mid := NULL]
 
 # Figures ----
 
-# All figures use the default "cpb_default" style: hairline black
-# gridlines at labelled breaks only, black ticks on the category axis,
-# 7 pt axis text, a flush-left bottom legend, a black zero line on the
-# value axis where zero is in range, and the CPB primary blue as the
+# All figures use the CPB house style: hairline black gridlines at
+# labelled breaks only, black ticks on the category axis, 7 pt axis
+# text, a flush-left bottom legend, a black zero line on the value
+# axis where zero is in range, and the CPB primary blue as the
 # single-series colour. (The titles avoid the em dash: the bundled
-# Rijksoverheid font has no glyph for it.) Figure 12 pins
-# style = "ggplot" to keep matching its hand-rolled reference.
+# Rijksoverheid font has no glyph for it.)
 
 render(1, "line: single series",
   cpb_line(line_dt, x = jaar, y = index,
@@ -394,22 +393,19 @@ render(11, "col: horizontal, dodged, 3 series",
 
 # recreation of reference figure p10_img07: horizontal dodged boxplot,
 # 2026 blue above 2027 magenta per income group, percentage value axis.
-# This reference keeps the hand-rolled ggplot grid (CPB grey, with
-# minors), so only the box construction and colours matter here.
+# (The published original used the grey hand-rolled ggplot grid; this
+# version renders it in the house style, so only the box construction
+# and colours match the reference.)
 render(12, "box: horizontal, dodged by year",
   cpb_box(opbouw_dt, x = inkomensgroep,
     p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-    style       = "ggplot",
     fill        = jaar,
     position    = ggplot2::position_dodge(width = 0.75),
     width       = 0.6,
     linewidth   = 0.25,
     orientation = "horizontal",
     index       = c(2, 6),
-    legend      = "bottom",
-    reverse_legend  = TRUE,
-    flush_legend    = TRUE,
-    axis_text_size  = 7,
+    reverse_legend = TRUE,
     title = "Opbouw inkomenseffect: marktverwachtingen",
     subtitle = "inkomensgroepen",
     ylab  = "aandeel energie in inkomenseffect") +

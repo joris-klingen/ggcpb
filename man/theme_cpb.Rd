@@ -9,15 +9,14 @@ theme_cpb(
   background = TRUE,
   orientation = c("vertical", "horizontal"),
   grid = c("value", "both", "none", "x", "y"),
-  style = c("cpb_default", "ggplot"),
-  legend = NULL,
-  minor = NULL,
-  ticks = NULL,
-  flush_legend = NULL,
-  axis_text_size = NULL,
+  legend = "bottom",
+  minor = FALSE,
+  ticks = TRUE,
+  flush_legend = TRUE,
+  axis_text_size = 7,
   legend_key_size = NULL,
-  grid_colour = NULL,
-  grid_linewidth = NULL
+  grid_colour = "black",
+  grid_linewidth = 0.1
 )
 }
 \arguments{
@@ -33,66 +32,43 @@ the plot background is left blank/transparent.}
 \item{orientation}{Either \code{"vertical"} (default; the value axis is
 y, e.g. a normal column chart) or \code{"horizontal"} (the value axis
 is x, e.g. a chart built with \code{coord_flip()}). Determines which
-gridlines the default \code{grid = "value"} shows.}
+gridlines the default \code{grid = "value"} shows and which axis gets
+the category ticks.}
 
 \item{grid}{Which gridlines to draw: \code{"value"} (default) draws
 gridlines only on the value axis implied by \code{orientation};
 \code{"both"} draws both x and y gridlines; \code{"none"} draws none;
 \code{"x"}/\code{"y"} draw gridlines on that axis explicitly, regardless of
-\code{orientation}. Gridlines are drawn in \code{cpb_tokens()$grid}, and
-minor gridlines always match the major gridlines.}
-
-\item{style}{Style preset that sets the defaults of the knobs below.
-\code{"cpb_default"} (the default) is the CPB house look of published
-figures (historically produced with the internal base-R \code{nplot()}
-plotter): hairline black gridlines at labelled breaks only, black
-tick marks (with an axis line) on the category axis, 7 pt axis
-text, a flush-left vertical legend at the bottom, and tight
-bottom margins. \code{"ggplot"} is the lighter hand-rolled CPB ggplot2
-look: CPB-grey gridlines with minors, no axis ticks, 6 pt axis
-text, legend on the right. Any knob set explicitly overrides the
-preset.}
+\code{orientation}.}
 
 \item{legend}{Passed through to \code{legend.position}; accepts the
-usual \code{"right"}/\code{"left"}/\code{"top"}/\code{"bottom"}/\code{"none"} strings, or a
-two-element numeric vector of plot-relative coordinates. \code{NULL}
-(default) resolves by \code{style}: \code{"bottom"} for \code{"cpb_default"},
-\code{"right"} for \code{"ggplot"}.}
+usual \code{"bottom"} (default) /\code{"right"}/\code{"left"}/\code{"top"}/\code{"none"}
+strings, or a two-element numeric vector of plot-relative
+coordinates.}
 
 \item{minor}{If \code{TRUE}, minor gridlines are drawn (matching the
-major gridlines); if \code{FALSE}, gridlines appear only at labelled
-breaks. \code{NULL} (default) resolves by \code{style} (\code{FALSE} for
-\code{"cpb_default"}, \code{TRUE} for \code{"ggplot"}).}
+major gridlines). Defaults to \code{FALSE}: gridlines appear only at
+labelled breaks.}
 
-\item{ticks}{If \code{TRUE}, draw black axis tick marks on the \emph{category}
-axis (the x axis when \code{orientation = "vertical"}, the y axis when
-\code{"horizontal"}), as \code{nplot()} does. \code{NULL} (default) resolves by
-\code{style} (\code{TRUE} for \code{"cpb_default"}, \code{FALSE} for \code{"ggplot"}).}
+\item{ticks}{If \code{TRUE} (default), draw black axis tick marks, and
+the axis line they hang from, on the \emph{category} axis (the x axis
+when \code{orientation = "vertical"}, the y axis when
+\code{"horizontal"}).}
 
-\item{flush_legend}{If \code{TRUE}, anchor the legend to the left edge of
-the full plot area (\code{legend.location = "plot"} plus a left
-justification) and stack its keys vertically -- the \code{nplot()}
-bottom-left legend block. Most useful with \code{legend = "bottom"}.
-\code{NULL} (default) resolves by \code{style} (\code{TRUE} for \code{"cpb_default"},
-\code{FALSE} for \code{"ggplot"}). Requires ggplot2 >= 3.5.0 for the
-\code{legend.location} part; on older versions only the justification
-is applied.}
+\item{flush_legend}{If \code{TRUE} (default), anchor the legend to the
+left edge of the full plot area (\code{legend.location = "plot"} plus
+a left justification) and stack its keys vertically -- the fixed
+bottom-left legend block of CPB figures.}
 
-\item{axis_text_size}{Axis text size in points. \code{NULL} (default)
-resolves by \code{style}: \code{7} for \code{"cpb_default"}, \code{6} for \code{"ggplot"}
-(the hand-rolled CPB scripts).}
+\item{axis_text_size}{Axis text size in points. Defaults to \code{7}.}
 
 \item{legend_key_size}{Legend key size in cm. \code{NULL} (default)
-keeps the house 0.25 x 0.30 cm keys (both styles; the published
-figures use the same size).}
+keeps the house 0.25 x 0.30 cm keys.}
 
-\item{grid_colour}{Gridline colour. \code{NULL} (default) resolves by
-\code{style}: \code{"black"} for \code{"cpb_default"}, \code{cpb_tokens()$grid}
-(\code{"#c9d1da"}) for \code{"ggplot"}.}
+\item{grid_colour}{Gridline colour. Defaults to \code{"black"}.}
 
-\item{grid_linewidth}{Gridline linewidth (mm). \code{NULL} (default)
-resolves by \code{style}: a \code{0.1} hairline for \code{"cpb_default"}, the
-ggplot2 default for \code{"ggplot"}.}
+\item{grid_linewidth}{Gridline linewidth (mm). Defaults to the
+\code{0.1} house hairline; \code{NULL} keeps the ggplot2 default.}
 }
 \value{
 A ggplot2 \code{theme} object.
@@ -100,16 +76,16 @@ A ggplot2 \code{theme} object.
 \description{
 Applies the CPB house style on top of \code{\link[ggplot2:ggtheme]{ggplot2::theme_minimal()}}:
 a left-aligned bold title, italic right-aligned axis titles,
-gridlines on the value axis only (by default), the CPB-blue plot
-background, and the \code{style} preset's gridline/tick/legend
-treatment.
+hairline black gridlines at labelled breaks on the value axis only
+(by default), black tick marks with an axis line on the category
+axis, a flush-left vertical legend at the bottom, and the CPB-blue
+plot background.
 }
 \details{
 Text sizes are absolute and are never scaled -- there is no
 \code{base_size} argument. \code{plot.title} is 9 pt bold; \code{axis.title},
-\code{plot.subtitle}, \code{legend.title}, \code{legend.text} and \code{strip.text}
-are 7 pt;
-\code{axis.text} is 7 pt (\code{"cpb_default"}) or 6 pt (\code{"ggplot"}).
+\code{plot.subtitle}, \code{axis.text}, \code{legend.title}, \code{legend.text} and
+\code{strip.text} are 7 pt.
 }
 \examples{
 library(ggplot2)

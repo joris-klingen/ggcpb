@@ -120,7 +120,7 @@ ggplot(steekproef, aes(inkomen, energierekening, colour = koopkracht)) +
 
 <img src="ggcpb_files/figure-gfm/scatter-1.png" width="700px" />
 
-`theme_cpb()` takes the same `style`/knob arguments as the wrappers
+`theme_cpb()` takes the same layout arguments as the wrappers
 (`?theme_cpb`), and `cpb_tokens()` exposes the raw design tokens
 (palettes, background \#eef8ff, grid and NA colours) for anything the
 scales do not cover.

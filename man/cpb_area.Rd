@@ -13,16 +13,15 @@ cpb_area(
   index = NULL,
   pct_axis = FALSE,
   reverse_legend = TRUE,
-  style = c("cpb_default", "ggplot"),
-  legend = NULL,
-  zeroline = NULL,
-  minor = NULL,
-  ticks = NULL,
-  flush_legend = NULL,
-  axis_text_size = NULL,
+  legend = "bottom",
+  zeroline = TRUE,
+  minor = FALSE,
+  ticks = TRUE,
+  flush_legend = TRUE,
+  axis_text_size = 7,
   legend_key_size = NULL,
-  grid_colour = NULL,
-  grid_linewidth = NULL,
+  grid_colour = "black",
+  grid_linewidth = 0.1,
   title = NULL,
   subtitle = NULL,
   xlab = NULL,
@@ -53,18 +52,12 @@ to \code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} instead of the 
 \item{reverse_legend}{If \code{TRUE} (default), reverse the fill legend
 order via \code{guide_legend(reverse = TRUE)}.}
 
-\item{style}{Style preset, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; see
-\code{\link[=cpb_col]{cpb_col()}}.}
+\item{zeroline}{If \code{TRUE} (default), draw a solid black line at
+zero on the value axis on top of the areas, as the CPB house
+style does.}
 
-\item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; \code{NULL}
-(default) resolves by \code{style}.}
-
-\item{zeroline}{If \code{TRUE}, draw a solid black line at zero on the
-value axis on top of the areas, as the CPB \code{nplot()} house style
-does. \code{NULL} (default) resolves by \code{style}.}
-
-\item{minor, ticks, flush_legend, axis_text_size, legend_key_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; \code{NULL} (the default) resolves by
-\code{style}.}
+\item{minor, ticks, flush_legend, axis_text_size, legend_key_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}} for per-figure deviations from the
+house defaults.}
 
 \item{title, subtitle}{Plot title/subtitle.}
 

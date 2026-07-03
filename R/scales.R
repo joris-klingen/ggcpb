@@ -6,24 +6,6 @@
 
 # discrete scales ----
 
-#' Call ggplot2::discrete_scale() across the scale_name deprecation
-#'
-#' ggplot2 3.4.x requires a `scale_name` argument to
-#' [ggplot2::discrete_scale()]; ggplot2 >= 3.5.0 deprecated and removed
-#' it. This internal helper detects which signature is in use so the
-#' CPB discrete scales work unchanged on either version.
-#'
-#' @noRd
-cpb_discrete_scale <- function(aesthetics, palette, na.value, ...) {
-  args <- list(aesthetics = aesthetics, palette = palette, na.value = na.value, ...)
-  # the formal still exists (deprecated, warning) in 3.5.x/4.x, so gate on
-  # the version rather than on the signature
-  if (utils::packageVersion("ggplot2") < "3.5.0") {
-    args$scale_name <- "cpb"
-  }
-  do.call(ggplot2::discrete_scale, args)
-}
-
 #' CPB discrete fill/colour scales
 #'
 #' Discrete ggplot2 scales drawing from a CPB palette via [cpb_pal()].
@@ -46,7 +28,7 @@ scale_fill_cpb_d <- function(palette = c("qualitative", "discr", "sequential"),
                               na.value = cpb_na,
                               ...) {
   palette <- match.arg(palette)
-  cpb_discrete_scale(
+  ggplot2::discrete_scale(
     aesthetics = "fill",
     palette    = cpb_pal(palette, reverse = reverse),
     na.value   = na.value,
@@ -61,7 +43,7 @@ scale_colour_cpb_d <- function(palette = c("qualitative", "discr", "sequential")
                                 na.value = cpb_na,
                                 ...) {
   palette <- match.arg(palette)
-  cpb_discrete_scale(
+  ggplot2::discrete_scale(
     aesthetics = "colour",
     palette    = cpb_pal(palette, reverse = reverse),
     na.value   = na.value,

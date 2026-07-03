@@ -1,7 +1,7 @@
 # test-theme.R ----
 
-test_that("theme_cpb sets the fixed 9/7/6 pt text sizes and faces", {
-  th <- theme_cpb(style = "ggplot")
+test_that("theme_cpb sets the fixed house text sizes and faces", {
+  th <- theme_cpb()
   expect_s3_class(th, "theme")
 
   expect_equal(th$plot.title$size, 9)
@@ -15,16 +15,14 @@ test_that("theme_cpb sets the fixed 9/7/6 pt text sizes and faces", {
   expect_equal(th$axis.title$face, "italic")
   expect_equal(th$axis.title$hjust, 1)
 
+  expect_equal(th$axis.text$size, 7)
+  expect_equal(th$legend.title$size, 7)
   expect_equal(th$legend.text$size, 7)
   expect_equal(th$strip.text$size, 7)
-  expect_equal(th$strip.text$face, "bold")
-
-  expect_equal(th$axis.text$size, 6)
-  expect_equal(th$axis.text$colour, "black")
 })
 
 test_that("theme_cpb fills the plot background with the CPB colour by default", {
-  th <- theme_cpb(style = "ggplot")
+  th <- theme_cpb()
   expect_s3_class(th$plot.background, "element_rect")
   expect_equal(th$plot.background$fill, cpb_tokens()$bg)
 })
@@ -34,14 +32,15 @@ test_that("theme_cpb(background = FALSE) blanks the plot background", {
   expect_s3_class(th$plot.background, "element_blank")
 })
 
-test_that("theme_cpb draws gridlines on the value axis implied by orientation", {
-  th_v <- theme_cpb(orientation = "vertical", style = "ggplot")
+test_that("theme_cpb draws hairline black gridlines on the value axis only", {
+  th_v <- theme_cpb(orientation = "vertical")
   expect_s3_class(th_v$panel.grid.major.y, "element_line")
-  expect_s3_class(th_v$panel.grid.minor.y, "element_line")
+  expect_equal(th_v$panel.grid.major.y$colour, "black")
+  expect_equal(th_v$panel.grid.major.y$linewidth, 0.1)
+  expect_s3_class(th_v$panel.grid.minor.y, "element_blank")
   expect_s3_class(th_v$panel.grid.major.x, "element_blank")
-  expect_equal(th_v$panel.grid.major.y$colour, cpb_tokens()$grid)
 
-  th_h <- theme_cpb(orientation = "horizontal", style = "ggplot")
+  th_h <- theme_cpb(orientation = "horizontal")
   expect_s3_class(th_h$panel.grid.major.x, "element_line")
   expect_s3_class(th_h$panel.grid.major.y, "element_blank")
 })
@@ -60,67 +59,57 @@ test_that("theme_cpb grid argument overrides the orientation default", {
   expect_s3_class(th_x$panel.grid.major.y, "element_blank")
 })
 
-test_that("theme_cpb_min has no background and no gridlines", {
-  th <- theme_cpb_min()
-  expect_s3_class(th$plot.background, "element_blank")
-  expect_s3_class(th$panel.grid.major.x, "element_blank")
-  expect_s3_class(th$panel.grid.major.y, "element_blank")
-})
-
-test_that("theme_cpb(minor = FALSE) blanks the minor gridlines only", {
-  th <- theme_cpb(orientation = "vertical", style = "ggplot", minor = FALSE)
-  expect_s3_class(th$panel.grid.major.y, "element_line")
-  expect_s3_class(th$panel.grid.minor.y, "element_blank")
+test_that("theme_cpb(minor = TRUE) draws minor gridlines", {
+  th <- theme_cpb(orientation = "vertical", minor = TRUE)
+  expect_s3_class(th$panel.grid.minor.y, "element_line")
 })
 
 test_that("theme_cpb grid_colour/grid_linewidth style the gridlines", {
-  th <- theme_cpb(grid_colour = "black", grid_linewidth = 0.1)
-  expect_equal(th$panel.grid.major.y$colour, "black")
-  expect_equal(th$panel.grid.major.y$linewidth, 0.1)
+  th <- theme_cpb(grid_colour = cpb_tokens()$grid, grid_linewidth = NULL)
+  expect_equal(th$panel.grid.major.y$colour, cpb_tokens()$grid)
+  expect_null(th$panel.grid.major.y$linewidth)
 })
 
-test_that("theme_cpb(ticks = TRUE) draws ticks on the category axis", {
-  th_v <- theme_cpb(orientation = "vertical", ticks = TRUE)
+test_that("theme_cpb draws ticks and an axis line on the category axis", {
+  th_v <- theme_cpb(orientation = "vertical")
   expect_s3_class(th_v$axis.ticks.x, "element_line")
   expect_equal(th_v$axis.ticks.x$colour, "black")
+  expect_s3_class(th_v$axis.line.x, "element_line")
 
-  th_h <- theme_cpb(orientation = "horizontal", ticks = TRUE)
+  th_h <- theme_cpb(orientation = "horizontal")
   expect_s3_class(th_h$axis.ticks.y, "element_line")
+  expect_s3_class(th_h$axis.line.y, "element_line")
+
+  th_off <- theme_cpb(ticks = FALSE)
+  expect_null(th_off$axis.ticks.x)
+  expect_null(th_off$axis.line.x)
 })
 
-test_that("theme_cpb(flush_legend = TRUE) anchors the legend flush left", {
-  th <- theme_cpb(legend = "bottom", flush_legend = TRUE)
+test_that("theme_cpb anchors the legend flush left at the bottom", {
+  th <- theme_cpb()
+  expect_equal(th$legend.position, "bottom")
   expect_equal(th$legend.justification, "left")
   expect_equal(th$legend.direction, "vertical")
-  if (utils::packageVersion("ggplot2") >= "3.5.0") {
-    expect_equal(th$legend.location, "plot")
-  }
+  expect_equal(th$legend.location, "plot")
+
+  th_off <- theme_cpb(legend = "right", flush_legend = FALSE)
+  expect_equal(th_off$legend.position, "right")
+  expect_null(th_off$legend.location)
 })
 
 test_that("theme_cpb axis_text_size and legend_key_size are applied", {
-  th <- theme_cpb(axis_text_size = 7, legend_key_size = 0.45)
-  expect_equal(th$axis.text$size, 7)
+  th <- theme_cpb(axis_text_size = 6, legend_key_size = 0.45)
+  expect_equal(th$axis.text$size, 6)
   expect_equal(as.numeric(th$legend.key.height), 0.45)
   expect_equal(as.numeric(th$legend.key.width), 0.45)
+
+  # default keeps the house 0.25 x 0.30 cm keys
+  th_def <- theme_cpb()
+  expect_equal(as.numeric(th_def$legend.key.height), 0.25)
+  expect_equal(as.numeric(th_def$legend.key.width), 0.30)
 })
 
-test_that("the cpb_default preset (the default style) sets the house knobs", {
+test_that("theme_cpb uses the tight house margins", {
   th <- theme_cpb()
-  expect_s3_class(th$panel.grid.minor.y, "element_blank")
-  expect_equal(th$panel.grid.major.y$colour, "black")
-  expect_equal(th$panel.grid.major.y$linewidth, 0.1)
-  expect_s3_class(th$axis.ticks.x, "element_line")
-  expect_equal(th$axis.text$size, 7)
-  # key size is NOT changed by the preset: published nplot figures use
-  # the same 0.25 x 0.30 cm keys as the classic style
-  expect_equal(as.numeric(th$legend.key.height), 0.25)
-  expect_s3_class(th$axis.line.x, "element_line")
-  expect_equal(as.numeric(th$plot.margin)[3], 8)
-  expect_equal(th$legend.position, "bottom")
-  expect_equal(th$legend.justification, "left")
-
-  # explicit knobs override the preset
-  th2 <- theme_cpb(minor = TRUE, axis_text_size = 6)
-  expect_s3_class(th2$panel.grid.minor.y, "element_line")
-  expect_equal(th2$axis.text$size, 6)
+  expect_equal(as.numeric(th$plot.margin), c(10, 10, 8, 10))
 })
