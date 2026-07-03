@@ -191,7 +191,10 @@ mix <- expand_grid(jaar = 2018:2027,
 cpb_area(mix, x = jaar, y = aandeel, fill = bron,
   pct_axis = TRUE,
   index    = c(6, 5, 2, 4),
-  title    = "Energiemix van huishoudens")
+  title    = "Energiemix van huishoudens",
+  ylab     = "aandeel") +
+  scale_x_continuous(breaks = seq(2018, 2027, 3), minor_breaks = 2018:2027,
+                     guide = guide_axis(minor.ticks = TRUE))
 ```
 
 <img src="chart-types_files/figure-gfm/area-1.png" width="350px" />
@@ -222,8 +225,9 @@ kk <- raw |>
 cpb_box(kk, x = groep,
   p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
   orientation = "horizontal",
-  title = "Koopkracht per inkomensgroep",
-  ylab  = "% koopkrachtmutatie")
+  title    = "Koopkracht per inkomensgroep",
+  subtitle = "inkomensgroep",
+  ylab     = "% koopkrachtmutatie")
 ```
 
 <img src="chart-types_files/figure-gfm/box-single-1.png" width="350px" />

@@ -78,8 +78,9 @@ kk <- huishoudens |>
 p <- cpb_box(kk, x = groep,
   p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
   orientation = "horizontal",
-  title = "Koopkracht per inkomensgroep",
-  ylab  = "% koopkrachtmutatie")
+  title    = "Koopkracht per inkomensgroep",
+  subtitle = "inkomensgroep",
+  ylab     = "% koopkrachtmutatie")
 p
 ```
 

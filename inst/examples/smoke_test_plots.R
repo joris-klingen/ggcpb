@@ -269,7 +269,8 @@ render(3, "col: dodged",
 render(4, "area: stacked shares",
   cpb_area(area_dt, x = jaar, y = aandeel, fill = bron, pct_axis = TRUE,
     index = c(6, 5, 2, 4),
-    title = "Energiemix van huishoudens") +
+    title = "Energiemix van huishoudens",
+    ylab  = "aandeel") +
     ggplot2::scale_x_continuous(
       breaks       = seq(2018, 2027, 3),
       minor_breaks = 2018:2027,
@@ -281,8 +282,9 @@ render(5, "box: horizontal, 5 categories",
   cpb_box(box5_dt, x = groep,
     p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
     orientation = "horizontal",
-    title = "Koopkracht per inkomensgroep",
-    ylab  = "% koopkrachtmutatie"),
+    title    = "Koopkracht per inkomensgroep",
+    subtitle = "inkomensgroep",
+    ylab     = "% koopkrachtmutatie"),
   "05_box_horizontal.png", page = "full", height = 3.2)
 
 render(6, "box: split by year (2026/2027)",
