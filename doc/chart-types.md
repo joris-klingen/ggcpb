@@ -44,7 +44,7 @@ cpb_line(bbp, x = jaar, y = index,
   ylab  = "index (2015 = 100)")
 ```
 
-![](chart-types_files/figure-gfm/line-single-1.png)<!-- -->
+<img src="chart-types_files/figure-gfm/line-single-1.png" width="447px" />
 
 Map a column to `colour` for multiple series, and pick house colours by
 palette position with `index` – `c(6, 2)` is the recurring blue/magenta
@@ -67,7 +67,7 @@ cpb_line(groei, x = jaar, y = waarde, colour = reeks,
   )
 ```
 
-![](chart-types_files/figure-gfm/line-multi-1.png)<!-- -->
+<img src="chart-types_files/figure-gfm/line-multi-1.png" width="447px" />
 
 The added `scale_x_continuous()` shows the usual refinements for a year
 axis: labelled breaks every few years plus small minor ticks for the
@@ -91,7 +91,7 @@ cpb_col(tw, x = jaar, y = waarde, fill = sector,
   ylab  = "mld euro")
 ```
 
-![](chart-types_files/figure-gfm/col-stacked-1.png)<!-- -->
+<img src="chart-types_files/figure-gfm/col-stacked-1.png" width="447px" />
 
 By default the fill legend is reversed (`reverse_legend = TRUE`), so it
 reads in the same top-to-bottom order as the stack. For dodged bars,
@@ -111,7 +111,7 @@ cpb_col(scenario, x = regio, y = effect, fill = scenario,
   ylab  = "% mutatie")
 ```
 
-![](chart-types_files/figure-gfm/col-dodged-1.png)<!-- -->
+<img src="chart-types_files/figure-gfm/col-dodged-1.png" width="447px" />
 
 ## Horizontal bars
 
@@ -142,7 +142,7 @@ cpb_col(auto, x = inkomensgroep, y = share,
   xlab  = "huishoudens zonder auto")
 ```
 
-![](chart-types_files/figure-gfm/col-horizontal-1.png)<!-- -->
+<img src="chart-types_files/figure-gfm/col-horizontal-1.png" width="447px" />
 
 A horizontal *dodged* bar needs one extra trick. Under `coord_flip()`
 the dodge draws the *last* factor level on top within each group, so to
@@ -171,7 +171,7 @@ cpb_col(pv, x = inkomensgroep, y = share, fill = jaar,
   xlab  = "aandeel binnen inkomensgroep (%)")
 ```
 
-![](chart-types_files/figure-gfm/col-horizontal-dodged-1.png)<!-- -->
+<img src="chart-types_files/figure-gfm/col-horizontal-dodged-1.png" width="447px" />
 
 Note `value_breaks`: custom breaks for the value axis go through the
 wrapper, not through a second `scale_y_continuous()`, which would
@@ -197,7 +197,7 @@ cpb_area(mix, x = jaar, y = aandeel, fill = bron,
   title    = "Energiemix van huishoudens")
 ```
 
-![](chart-types_files/figure-gfm/area-1.png)<!-- -->
+<img src="chart-types_files/figure-gfm/area-1.png" width="447px" />
 
 # Quantile boxplots
 
@@ -226,7 +226,7 @@ cpb_box(kk, x = groep,
   ylab  = "% koopkrachtmutatie")
 ```
 
-![](chart-types_files/figure-gfm/box-single-1.png)<!-- -->
+<img src="chart-types_files/figure-gfm/box-single-1.png" width="100%" />
 
 Boxes without a `fill` mapping are drawn in the CPB primary blue. Map
 `fill` and pass a `position_dodge()` for grouped boxes – for example one
@@ -249,7 +249,7 @@ cpb_box(kk2, x = groep,
   scale_y_continuous(labels = label_number_nl())
 ```
 
-![](chart-types_files/figure-gfm/box-dodged-1.png)<!-- -->
+<img src="chart-types_files/figure-gfm/box-dodged-1.png" width="100%" />
 
 # Composing: a line over stacked columns
 
@@ -285,7 +285,7 @@ cpb_col(dec, x = jaar, y = bijdrage, fill = component,
   theme(legend.box = "horizontal", legend.box.just = "top")
 ```
 
-![](chart-types_files/figure-gfm/overlay-1.png)<!-- -->
+<img src="chart-types_files/figure-gfm/overlay-1.png" width="447px" />
 
 # The two styles
 
@@ -300,7 +300,7 @@ cpb_col(tw, x = jaar, y = waarde, fill = sector,
   ylab  = "mld euro")
 ```
 
-![](chart-types_files/figure-gfm/styles-1.png)<!-- -->
+<img src="chart-types_files/figure-gfm/styles-1.png" width="447px" />
 
 Both presets are just defaults: every knob (`minor`, `ticks`,
 `grid_colour`, `flush_legend`, `zeroline`, …) can be set per call, see

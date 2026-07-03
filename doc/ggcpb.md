@@ -43,7 +43,7 @@ ggplot(pv_counts, aes(jaar, aantal)) +
   theme_cpb()
 ```
 
-![](ggcpb_files/figure-gfm/theme-basic-1.png)<!-- -->
+<img src="ggcpb_files/figure-gfm/theme-basic-1.png" width="447px" />
 
 For a chart built with `coord_flip()`, pass `orientation = "horizontal"`
 so the gridlines move to the value axis (now x) instead:
@@ -56,7 +56,7 @@ ggplot(pv_counts, aes(factor(jaar), aantal)) +
   theme_cpb(orientation = "horizontal")
 ```
 
-![](ggcpb_files/figure-gfm/theme-horizontal-1.png)<!-- -->
+<img src="ggcpb_files/figure-gfm/theme-horizontal-1.png" width="447px" />
 
 `grid` overrides the axis selection explicitly (`"both"`, `"none"`,
 `"x"`, `"y"`), and `background = FALSE` (or the `theme_cpb_min()`
@@ -76,7 +76,7 @@ ggplot(pv_counts, aes(factor(jaar), aantal)) +
   theme_cpb(style = "nplot")
 ```
 
-![](ggcpb_files/figure-gfm/theme-nplot-1.png)<!-- -->
+<img src="ggcpb_files/figure-gfm/theme-nplot-1.png" width="447px" />
 
 The preset stands for: hairline black gridlines at labelled breaks only
 (`minor = FALSE`, `grid_colour = "black"`, `grid_linewidth = 0.1`),
@@ -110,7 +110,7 @@ ggplot(pv_by_group, aes(jaar, aantal, fill = groep)) +
   theme_cpb()
 ```
 
-![](ggcpb_files/figure-gfm/scales-discrete-1.png)<!-- -->
+<img src="ggcpb_files/figure-gfm/scales-discrete-1.png" width="447px" />
 
 # Continuous scales —-
 
@@ -126,7 +126,7 @@ ggplot(mtcars, aes(wt, mpg, colour = hp)) +
   theme_cpb()
 ```
 
-![](ggcpb_files/figure-gfm/scales-continuous-1.png)<!-- -->
+<img src="ggcpb_files/figure-gfm/scales-continuous-1.png" width="447px" />
 
 # Manual palette selection —-
 
@@ -149,7 +149,7 @@ ggplot(raming_vergelijking, aes(scenario, effect, fill = scenario)) +
   theme_cpb()
 ```
 
-![](ggcpb_files/figure-gfm/scales-manual-1.png)<!-- -->
+<img src="ggcpb_files/figure-gfm/scales-manual-1.png" width="447px" />
 
 # Dutch-locale formatters —-
 
@@ -171,7 +171,7 @@ ggplot(kosten_vergelijking, aes(maatregel, kosten, fill = maatregel)) +
   theme_cpb()
 ```
 
-![](ggcpb_files/figure-gfm/formatters-1.png)<!-- -->
+<img src="ggcpb_files/figure-gfm/formatters-1.png" width="447px" />
 
 # Saving figures —-
 
@@ -203,7 +203,7 @@ cpb_col(pv_by_group, x = jaar, y = aantal, fill = groep) +
   labs(title = "PV-meldingen naar groep")
 ```
 
-![](ggcpb_files/figure-gfm/wrapper-col-1.png)<!-- -->
+<img src="ggcpb_files/figure-gfm/wrapper-col-1.png" width="447px" />
 
 ## `cpb_area()`: a quantile stacked-share area
 
@@ -218,7 +218,7 @@ cpb_area(energiebronnen, x = jaar, y = aandeel, fill = bron, pct_axis = TRUE) +
   labs(title = "Aandeel energiebronnen huishoudens")
 ```
 
-![](ggcpb_files/figure-gfm/wrapper-area-1.png)<!-- -->
+<img src="ggcpb_files/figure-gfm/wrapper-area-1.png" width="447px" />
 
 ## `cpb_line()`: a raming comparison over time
 
@@ -233,7 +233,7 @@ cpb_line(ramingen, x = jaar, y = bbp_groei, colour = raming) +
   labs(title = "BBP-groeiraming, CEP versus MEV", y = "% groei")
 ```
 
-![](ggcpb_files/figure-gfm/wrapper-line-1.png)<!-- -->
+<img src="ggcpb_files/figure-gfm/wrapper-line-1.png" width="447px" />
 
 ## `cpb_box()`: a euro-formatted comparison, and a p5-p95 distribution
 
@@ -243,7 +243,7 @@ cpb_col(kosten_vergelijking, x = maatregel, y = kosten, fill = maatregel, index 
   labs(title = "Geraamde kosten per maatregel")
 ```
 
-![](ggcpb_files/figure-gfm/wrapper-box-euro-1.png)<!-- -->
+<img src="ggcpb_files/figure-gfm/wrapper-box-euro-1.png" width="447px" />
 
 ``` r
 koopkracht_verdeling <- tibble(
@@ -265,4 +265,4 @@ cpb_box(
   labs(title = "Koopkrachteffect naar inkomensgroep", y = "%-punt")
 ```
 
-![](ggcpb_files/figure-gfm/wrapper-box-1.png)<!-- -->
+<img src="ggcpb_files/figure-gfm/wrapper-box-1.png" width="447px" />

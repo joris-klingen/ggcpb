@@ -8,12 +8,17 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
+# Figures are drawn on the REAL CPB canvas (page = "half" is 2.98 in
+# wide; text sizes in theme_cpb() are absolute points, so any other
+# canvas distorts the text-to-figure proportion) and only *displayed*
+# larger via out.width.
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.width = 5,
-  fig.height = 4.2,
-  dpi = 110,
+  fig.width = 2.98,
+  fig.height = 2.98,
+  dpi = 300,
+  out.width = "447px",
   dev = if (requireNamespace("ragg", quietly = TRUE)) "ragg_png" else "png"
 )
 ```
@@ -132,7 +137,7 @@ bottom. `pct_axis` formats the value axis with Dutch percentage
 labels, `value_limits` fixes its range, and under `style = "nplot"`
 the panel starts exactly at the zero axis:
 
-```{r col-horizontal, fig.height = 4.6}
+```{r col-horizontal}
 groepen <- c("tot 120% wml", "120% wml - mod.", "1 - 1,5x mod.",
              "1,5 - 2x mod.", "2 - 3x mod.", "boven 3x mod.")
 auto <- data.frame(
@@ -158,7 +163,7 @@ to show (say) 2021 above 2024 you reverse the `jaar` levels, swap the
 `index` to keep each year its colour, and let `reverse_legend`
 restore the reading order:
 
-```{r col-horizontal-dodged, fig.height = 4.6}
+```{r col-horizontal-dodged}
 pv <- expand.grid(
   inkomensgroep = factor(groepen, levels = rev(groepen)),
   jaar          = factor(c(2021, 2024), levels = c(2024, 2021))
@@ -211,7 +216,7 @@ errorbar whiskers out to p5 and p95. It expects **precomputed
 quantile columns** (both layers use `stat = "identity"`), so
 aggregate your microdata first:
 
-```{r box-single, fig.width = 6, fig.height = 3.2}
+```{r box-single, fig.width = 5.96, fig.height = 3.2, out.width = "100%"}
 groepen5 <- c("laagste 20%", "2e 20%", "midden 20%", "4e 20%", "hoogste 20%")
 raw <- data.frame(
   groep      = factor(rep(groepen5, each = 400), levels = groepen5),
@@ -235,7 +240,7 @@ Boxes without a `fill` mapping are drawn in the CPB primary blue.
 Map `fill` and pass a `position_dodge()` for grouped boxes -- for
 example one pair of years per income group:
 
-```{r box-dodged, fig.width = 6, fig.height = 3.6}
+```{r box-dodged, fig.width = 5.96, fig.height = 2.98, out.width = "100%"}
 kk2 <- merge(kk, data.frame(jaar = factor(c(2026, 2027))))
 shift <- ifelse(kk2$jaar == "2027", 0.8, 0)
 kk2[c("p5", "p25", "p50", "p75", "p95")] <-
@@ -292,7 +297,7 @@ Everything above used `style = "nplot"`. The default
 `style = "ggplot"` keeps the lighter hand-rolled look -- CPB-grey
 gridlines with minors, no ticks or zero line, legend on the right:
 
-```{r styles, fig.height = 3.4}
+```{r styles}
 cpb_col(tw, x = jaar, y = waarde, fill = sector,
   index = c(6, 5, 2, 4),
   title = "Toegevoegde waarde per sector",

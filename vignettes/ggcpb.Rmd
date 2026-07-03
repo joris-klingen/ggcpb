@@ -11,8 +11,14 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.width = 6,
-  fig.height = 3.5
+  # the real CPB half-page canvas: theme_cpb() text sizes are absolute
+  # points, so rendering on a larger canvas shrinks the text relative
+  # to the figure; out.width upscales the display instead
+  fig.width = 2.98,
+  fig.height = 2.98,
+  dpi = 300,
+  out.width = "447px",
+  dev = if (requireNamespace("ragg", quietly = TRUE)) "ragg_png" else "png"
 )
 ```
 
