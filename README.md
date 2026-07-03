@@ -10,14 +10,17 @@ depending on it.
 
 ## Documentation
 
-- **[Chart types](vignettes/chart-types.Rmd)** --
+- **[Chart types](doc/chart-types.md)** --
   `vignette("chart-types")`: a cookbook with one worked example per
   CPB chart type (lines, stacked/dodged columns, horizontal bars,
   areas, quantile boxplots, overlays) and the house conventions they
   follow.
-- **[Walkthrough](vignettes/ggcpb.Rmd)** -- `vignette("ggcpb")`: the
+- **[Walkthrough](doc/ggcpb.md)** -- `vignette("ggcpb")`: the
   composable core -- theme, scales, palettes, formatters, fonts and
   export -- for building figures from raw `ggplot2`.
+
+The links point to rendered versions (with figures) in `doc/`,
+regenerated from `vignettes/` with `Rscript tools/render_vignettes.R`.
 
 ## Install / load
 

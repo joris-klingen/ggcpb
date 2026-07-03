@@ -6,3 +6,5 @@
 ^\.claude$
 ^TODO\.md$
 ^references$
+^doc$
+^tools$
