@@ -8,17 +8,18 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-# Figures are drawn on the REAL CPB canvas (page = "half" is 2.98 in
-# wide; text sizes in theme_cpb() are absolute points, so any other
-# canvas distorts the text-to-figure proportion) and only *displayed*
-# larger via out.width.
+# Figures are drawn on the REAL CPB canvas (page = "half" is 2.98 in,
+# "full" is 5.96 in; text sizes in theme_cpb() are absolute points, so
+# any other canvas distorts the text-to-figure proportion) and only
+# *displayed* smaller via out.width, at a consistent 2:1 scale:
+# half-page figures at 350px, full-page figures at 700px.
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.width = 2.98,
   fig.height = 2.98,
   dpi = 300,
-  out.width = "447px",
+  out.width = "350px",
   dev = if (requireNamespace("ragg", quietly = TRUE)) "ragg_png" else "png"
 )
 ```
@@ -213,7 +214,7 @@ errorbar whiskers out to p5 and p95. It expects **precomputed
 quantile columns** (both layers use `stat = "identity"`), so
 aggregate your microdata first:
 
-```{r box-single, fig.width = 5.96, fig.height = 3.2, out.width = "100%"}
+```{r box-single, fig.width = 5.96, fig.height = 3.2, out.width = "700px"}
 groepen5 <- c("laagste 20%", "2e 20%", "midden 20%", "4e 20%", "hoogste 20%")
 raw <- tibble(
   groep      = factor(rep(groepen5, each = 400), levels = groepen5),
@@ -240,7 +241,7 @@ Boxes without a `fill` mapping are drawn in the CPB primary blue.
 Map `fill` and pass a `position_dodge()` for grouped boxes -- for
 example one pair of years per income group:
 
-```{r box-dodged, fig.width = 5.96, fig.height = 2.98, out.width = "100%"}
+```{r box-dodged, fig.width = 5.96, fig.height = 2.98, out.width = "700px"}
 kk2 <- expand_grid(kk, jaar = factor(c(2026, 2027))) |>
   mutate(across(p5:p95, \(q) q + (jaar == "2027") * 0.8))
 

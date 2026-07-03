@@ -1,216 +1,159 @@
-ggcpb
+ggcpb: from data to publication-ready figure
 ================
+
+This vignette follows one analysis from raw microdata to exported,
+publication-ready figures. Along the way it uses each layer of the
+package in the order you reach for them in practice: a **wrapper** for
+the first draft, `+` layers with the **formatters and palette
+accessors** to refine it, the **theme and scales directly** for a chart
+type the wrappers do not cover, and `save_cpb()` to export at the strict
+CPB page widths. For a catalogue of all chart types and their wrapper
+calls, see `vignette("chart-types")`.
 
 ``` r
 library(ggcpb)
 library(ggplot2)
 library(dplyr)
+set.seed(7)
 ```
 
-This vignette walks through the composable core of `ggcpb` – the theme,
-the discrete and continuous colour scales, manual palette selection, the
-Dutch-locale formatters, and `save_cpb()` – the building blocks for
-styling figures you construct from raw `ggplot2`. For the high-level
-chart wrappers (`cpb_line()`, `cpb_col()`, `cpb_area()`, `cpb_box()`),
-which apply all of this in one call, see `vignette("chart-types")`.
+# The case: purchasing power by income group
 
-# The theme —-
-
-`theme_cpb()` applies the CPB house style on top of
-`ggplot2::theme_minimal()`. The default `style = "cpb_default"` is the
-look of published CPB figures: hairline black gridlines at labelled
-breaks only, black tick marks (with an axis line) on the category axis,
-absolute text sizes (9 pt bold title, 7 pt axis text), a flush-left
-bottom legend, and the CPB-blue plot background.
+Simulated household microdata: five income quintiles with a
+purchasing-power change, disposable income and a monthly energy bill per
+household.
 
 ``` r
-pv_counts <- tibble(
-  jaar = 2019:2023,
-  aantal = c(120, 135, 128, 150, 162)
-)
+groepen <- c("laagste 20%", "2e 20%", "midden 20%", "4e 20%", "hoogste 20%")
 
-ggplot(pv_counts, aes(jaar, aantal)) +
-  geom_col(fill = cpb_cols(6)) +
-  labs(title = "Aantal PV-meldingen per jaar",
-       subtitle = "aantal", x = NULL, y = NULL) +
-  scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
-  theme_cpb()
+huishoudens <- tibble(
+  groep = factor(rep(groepen, each = 1000), levels = groepen)
+) |>
+  mutate(
+    inkomen         = round(rlnorm(n(), log(2200) + 0.30 * (as.integer(groep) - 3), 0.20)),
+    energierekening = round(90 + 0.04 * inkomen + rnorm(n(), 0, 35)),
+    koopkracht      = rnorm(n(), mean = (as.integer(groep) - 3) * 1.2, sd = 2)
+  )
 ```
 
-<img src="ggcpb_files/figure-gfm/theme-basic-1.png" width="447px" />
+# First draft: one wrapper call
 
-Note the CPB label convention, visible in every example below: the
-value-axis unit (“aantal”) goes in `subtitle` – the italic caption above
-the panel – never in a rotated y-axis title (`y = NULL`). Bars also sit
-directly on the axis line: the value scale gets no expansion on the zero
-side (`expand = expansion(mult = c(0, 0.05))`). The wrappers do both for
-you (via `ylab` and automatically).
-
-For a chart built with `coord_flip()`, pass `orientation = "horizontal"`
-so the gridlines (and ticks) move to the right axes. Here the value axis
-ends up at the bottom, where a real axis title (`y = "aantal"`, drawn
-right-aligned italic) is the house style:
+The distributional figure CPB uses for this is the p5/p25/p50/p75/p95
+quantile boxplot. `cpb_box()` wants precomputed quantiles, so aggregate
+first, then one call gives a complete house-style figure – theme,
+colours, zero line, flush legend layout, everything:
 
 ``` r
-ggplot(pv_counts, aes(factor(jaar), aantal)) +
-  geom_col(fill = cpb_cols(6)) +
-  coord_flip() +
-  labs(title = "Aantal PV-meldingen per jaar", x = NULL, y = "aantal") +
-  scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
-  theme_cpb(orientation = "horizontal")
+kk <- huishoudens |>
+  summarise(
+    p5  = quantile(koopkracht, 0.05),
+    p25 = quantile(koopkracht, 0.25),
+    p50 = quantile(koopkracht, 0.50),
+    p75 = quantile(koopkracht, 0.75),
+    p95 = quantile(koopkracht, 0.95),
+    .by = groep
+  )
+
+p <- cpb_box(kk, x = groep,
+  p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  orientation = "horizontal",
+  title = "Koopkracht per inkomensgroep",
+  ylab  = "% koopkrachtmutatie")
+p
 ```
 
-<img src="ggcpb_files/figure-gfm/theme-horizontal-1.png" width="447px" />
+<img src="ggcpb_files/figure-gfm/draft-1.png" width="700px" />
 
-`style = "ggplot"` switches to the lighter look of the hand-rolled CPB
-ggplot2 scripts: CPB-grey gridlines including minors, no ticks, 6 pt
-axis text, legend on the right:
+# Refine with layers
+
+The wrapper returned a plain `ggplot` object, so refinements are `+`
+layers. Here: Dutch-locale value labels (`label_number_nl()`, one of the
+formatters), and a dashed reference line at the population median with
+an italic annotation – coloured via `cpb_cols()`, the raw palette
+accessor, and set in the house font via `cpb_font_family()`:
 
 ``` r
-ggplot(pv_counts, aes(jaar, aantal)) +
-  geom_col(fill = cpb_cols(6)) +
-  labs(title = "Aantal PV-meldingen per jaar",
-       subtitle = "aantal", x = NULL, y = NULL) +
-  theme_cpb(style = "ggplot")
+mediaan <- median(huishoudens$koopkracht)
+
+p +
+  scale_y_continuous(labels = label_number_nl()) +
+  geom_hline(yintercept = mediaan, linetype = "dashed",
+             colour = cpb_cols(2), linewidth = 0.4) +
+  annotate("text", x = 5.45, y = mediaan, label = "mediaan alle huishoudens",
+           hjust = -0.05, size = 2.0, colour = cpb_cols(2),
+           family = cpb_font_family(), fontface = "italic")
 ```
 
-<img src="ggcpb_files/figure-gfm/theme-ggplot-style-1.png" width="447px" />
+<img src="ggcpb_files/figure-gfm/refine-1.png" width="700px" />
 
-Both presets are only defaults. Each element is an individual argument
-that overrides the preset: `minor` (minor gridlines), `ticks`
-(category-axis tick marks), `grid_colour`/`grid_linewidth`,
-`axis_text_size`, `legend`/`flush_legend` (position and the flush-left
-bottom block), and `legend_key_size`. `grid` selects which axes get
-gridlines (`"value"`, `"both"`, `"none"`, `"x"`, `"y"`), and
-`background = FALSE` (or the `theme_cpb_min()` shorthand) drops the CPB
-background fill – useful for small multiples.
+(Under `coord_flip()` the value axis is still the `y` aesthetic, so the
+reference line is a `geom_hline()`. For bar and column charts, set
+custom value-axis breaks through the wrapper’s `value_breaks` argument
+rather than a second `scale_y_continuous()` – see
+`vignette("chart-types")`.)
 
-# Discrete scales —-
+# When there is no wrapper: the composable core
 
-`scale_fill_cpb_d()` / `scale_colour_cpb_d()` draw from one of the three
-CPB palettes (`"qualitative"`, `"discr"`, `"sequential"`) and route `NA`
-values to the CPB NA colour automatically.
-
-``` r
-pv_by_group <- tibble(
-  jaar = rep(2021:2023, each = 2),
-  groep = rep(c("huishoudens", "bedrijven"), 3),
-  aantal = c(60, 40, 68, 52, 74, 58)
-)
-
-ggplot(pv_by_group, aes(jaar, aantal, fill = groep)) +
-  geom_col(position = "stack") +
-  labs(title = "PV-meldingen naar groep",
-       subtitle = "aantal", x = NULL, y = NULL, fill = NULL) +
-  scale_fill_cpb_d() +
-  scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
-  theme_cpb()
-```
-
-<img src="ggcpb_files/figure-gfm/scales-discrete-1.png" width="447px" />
-
-# Continuous scales —-
-
-`scale_fill_cpb_c()` / `scale_colour_cpb_c()` build a full gradient
-across the CPB sequential palette, from its lightest to its darkest
-entry.
+Not every figure is a line, column, area or boxplot. For anything else –
+here a scatter of income against the energy bill – you build from raw
+`ggplot2` and apply the same core pieces the wrappers use:
+`theme_cpb()`, a CPB colour scale (`scale_colour_cpb_c()` for a
+continuous gradient), and the formatters on the axes. Two house
+conventions to carry over yourself: the value-axis unit goes in
+`subtitle` (never a rotated y-axis title), and the horizontal axis title
+sits at the bottom right.
 
 ``` r
-ggplot(mtcars, aes(wt, mpg, colour = hp)) +
-  geom_point(size = 2) +
-  labs(title = "Gewicht versus verbruik",
-       subtitle = "mpg", x = "gewicht", y = NULL, colour = "pk") +
+steekproef <- slice_sample(huishoudens, n = 400)
+
+ggplot(steekproef, aes(inkomen, energierekening, colour = koopkracht)) +
+  geom_point(size = 0.8) +
+  labs(title = "Energierekening naar inkomen",
+       subtitle = "energierekening (euro per maand)",
+       x = "besteedbaar inkomen (euro per maand)",
+       y = NULL, colour = "koopkracht (%)") +
+  scale_x_continuous(labels = label_euro_nl()) +
   scale_colour_cpb_c() +
   theme_cpb(legend = "right")
 ```
 
-<img src="ggcpb_files/figure-gfm/scales-continuous-1.png" width="447px" />
+<img src="ggcpb_files/figure-gfm/scatter-1.png" width="700px" />
 
-# Manual palette selection —-
+`theme_cpb()` takes the same `style`/knob arguments as the wrappers
+(`?theme_cpb`), and `cpb_tokens()` exposes the raw design tokens
+(palettes, background \#eef8ff, grid and NA colours) for anything the
+scales do not cover.
 
-`scale_fill_cpb_manual()` / `scale_colour_cpb_manual()` (and the
-`cpb_cols()` accessor) select and order specific palette positions, for
-the common case of a small, deliberately ordered subset – e.g.
-`index = c(6, 2)` for the recurring CPB blue/magenta pair.
-
-``` r
-raming_vergelijking <- tibble(
-  scenario = factor(c("basispad", "hoog scenario"), levels = c("basispad", "hoog scenario")),
-  effect = c(-1.2, 2.4)
-)
-
-ggplot(raming_vergelijking, aes(scenario, effect, fill = scenario)) +
-  geom_col() +
-  geom_hline(yintercept = 0, colour = "black", linewidth = 0.25) +
-  labs(title = "Effect op koopkracht",
-       subtitle = "%-punt", x = NULL, y = NULL, fill = NULL) +
-  scale_fill_cpb_manual(index = c(6, 2)) +
-  theme_cpb(legend = "none")
-```
-
-<img src="ggcpb_files/figure-gfm/scales-manual-1.png" width="447px" />
-
-(The wrappers add that black zero line for you; when composing from raw
-`ggplot2` it is a one-line `geom_hline()`.)
-
-# Dutch-locale formatters —-
-
-`label_euro_nl()`, `label_pct_nl()` and `label_number_nl()` wrap
-`scales::label_*()` with the Dutch thousands separator (`.`) and decimal
-mark (`,`).
+For small multiples the full house dress is usually too heavy;
+`theme_cpb_min()` keeps the typography but drops the background and
+gridlines:
 
 ``` r
-kosten_vergelijking <- tibble(
-  maatregel = factor(c("optie A", "optie B"), levels = c("optie A", "optie B")),
-  kosten = c(1250000, 2100000)
-)
-
-ggplot(kosten_vergelijking, aes(maatregel, kosten, fill = maatregel)) +
-  geom_col() +
-  labs(title = "Geraamde kosten per maatregel", x = NULL, y = NULL, fill = NULL) +
-  scale_y_continuous(labels = label_euro_nl(),
-                     expand = expansion(mult = c(0, 0.05))) +
-  scale_fill_cpb_manual(index = c(6, 2)) +
-  theme_cpb(legend = "none")
+ggplot(steekproef, aes(inkomen, energierekening)) +
+  geom_point(size = 0.5, colour = cpb_cols(6)) +
+  facet_wrap(~ groep, nrow = 1) +
+  labs(title = "Energierekening naar inkomen, per groep",
+       subtitle = "energierekening (euro per maand)",
+       x = NULL, y = NULL) +
+  theme_cpb_min()
 ```
 
-<img src="ggcpb_files/figure-gfm/formatters-1.png" width="447px" />
+<img src="ggcpb_files/figure-gfm/facets-1.png" width="700px" />
 
-# Raw values and tokens —-
+# Export
 
-`cpb_tokens()` exposes the raw design tokens (palettes, background, grid
-and NA colours) and `cpb_pal()`/`cpb_cols()` generate palette subsets,
-for anything the scales above do not cover:
+`save_cpb()` writes the figure at the strict CPB page widths –
+`page = "half"` (2.98 in) or `page = "full"` (5.96 in) – through the
+`ragg` device, so the bundled Rijksoverheid font (registered
+automatically on load; see `cpb_register_fonts()`) renders correctly:
 
 ``` r
-cpb_cols(c(6, 2))
-#>         6         2 
-#> "#005faf" "#e6006e"
-cpb_tokens()$bg
-#> [1] "#eef8ff"
+save_cpb("koopkracht.png", p, page = "full", height = 3.2)
+save_cpb("koopkracht_half.png", p, page = "half")
 ```
 
-# Fonts —-
-
-The bundled Rijksoverheid Sans Text family registers automatically when
-the package loads; `cpb_font_family()` reports the family name
-`theme_cpb()` resolves to (`"RijksoverheidSansText"`, or `""` when
-falling back to the ggplot2 default), and `cpb_register_fonts()` re-runs
-registration in a fresh worker process.
-
-# Saving figures —-
-
-`save_cpb()` enforces the CPB page widths (half page: 2.98 in, full
-page: 5.96 in) and renders with `ragg::agg_png()` by default, so the
-bundled CPB font renders correctly.
-
-``` r
-p <- ggplot(pv_counts, aes(jaar, aantal)) +
-  geom_col(fill = cpb_cols(6)) +
-  labs(title = "Aantal PV-meldingen per jaar",
-       subtitle = "aantal", x = NULL, y = NULL) +
-  theme_cpb()
-
-save_cpb("pv_counts.png", p, page = "half")
-save_cpb("pv_counts_presentatie.png", p, page = "half", preset = "presentation")
-```
+The half/full widths are the only ones `save_cpb()` accepts: a stray
+`width = 8` fails loudly instead of silently producing an off-spec
+figure. Text sizes in `theme_cpb()` are absolute points, so the canvas
+size is part of the design – draw at 2.98/5.96 in and scale the
+*display*, never the figure.
