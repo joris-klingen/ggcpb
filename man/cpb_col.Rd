@@ -19,7 +19,7 @@ cpb_col(
   value_limits = NULL,
   value_labels = FALSE,
   reverse_legend = TRUE,
-  style = c("ggplot", "nplot"),
+  style = c("cpb_default", "ggplot"),
   legend = NULL,
   zeroline = NULL,
   minor = NULL,
@@ -84,12 +84,13 @@ labels using \code{y}, positioned to match \code{position}.}
 order via \code{guide_legend(reverse = TRUE)} -- stacking otherwise
 makes the legend order counter-intuitive.}
 
-\item{style}{Style preset, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}: \code{"ggplot"}
-(default, the hand-rolled CPB ggplot2 look) or \code{"nplot"} (the
-legacy CPB plotter look: hairline black gridlines at labelled
-breaks only, category-axis ticks and axis line, 7 pt axis text,
-flush-left bottom legend, and a black zero line on the value
-axis). Any knob set explicitly overrides the preset.}
+\item{style}{Style preset, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}:
+\code{"cpb_default"} (the default; the published CPB figure look:
+hairline black gridlines at labelled breaks only, category-axis
+ticks and axis line, 7 pt axis text, flush-left bottom legend,
+and a black zero line on the value axis) or \code{"ggplot"} (the
+lighter hand-rolled CPB ggplot2 look). Any knob set explicitly
+overrides the preset.}
 
 \item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; accepts
 \code{"right"}, \code{"bottom"}, \code{"left"}, \code{"top"}, \code{"none"}, or a
@@ -97,8 +98,8 @@ two-element numeric vector of plot-relative coordinates. \code{NULL}
 (default) resolves by \code{style}.}
 
 \item{zeroline}{If \code{TRUE}, draw a solid black line at zero on the
-value axis on top of the bars, as the CPB \code{nplot()} house style
-does. \code{NULL} (default) resolves by \code{style}: \code{TRUE} for \code{"nplot"},
+value axis on top of the bars, as the CPB house style does.
+\code{NULL} (default) resolves by \code{style}: \code{TRUE} for \code{"cpb_default"},
 \code{FALSE} for \code{"ggplot"}.}
 
 \item{minor, ticks, flush_legend, axis_text_size, legend_key_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; \code{NULL} (the default) resolves by

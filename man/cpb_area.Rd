@@ -13,7 +13,7 @@ cpb_area(
   index = NULL,
   pct_axis = FALSE,
   reverse_legend = TRUE,
-  style = c("ggplot", "nplot"),
+  style = c("cpb_default", "ggplot"),
   legend = NULL,
   zeroline = NULL,
   minor = NULL,

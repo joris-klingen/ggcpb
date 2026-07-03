@@ -39,18 +39,18 @@ df <- data.frame(jaar = 2021:2024, groep = rep(c("a", "b"), 4),
                  waarde = c(10, 15, 12, 18, 14, 20, 16, 22))
 
 cpb_col(df, x = jaar, y = waarde, fill = groep,
-  style = "nplot",
   title = "Waarde per groep",
   ylab  = "mld euro")
 ```
 
 The wrappers -- `cpb_line()`, `cpb_col()`, `cpb_area()`, `cpb_box()`
 -- accept a data.frame or data.table plus tidy-eval column arguments,
-and apply `theme_cpb()` and a CPB scale. `style = "nplot"` gives the
-published-figure look (hairline black gridlines at labelled breaks,
-category-axis ticks, black zero line, flush-left bottom legend);
-the default `"ggplot"` style keeps the lighter hand-rolled look.
-Every preset element is also an individual argument.
+and apply `theme_cpb()` and a CPB scale. The default
+`style = "cpb_default"` is the published-figure look (hairline black
+gridlines at labelled breaks, category-axis ticks, black zero line,
+flush-left bottom legend); `style = "ggplot"` switches to the lighter
+hand-rolled look. Every preset element is also an individual
+argument.
 
 On top of the wrappers sits the composable core: `theme_cpb()`,
 `cpb_pal()`/`cpb_cols()`/`cpb_tokens()`, discrete/continuous/manual

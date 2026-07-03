@@ -19,7 +19,7 @@ cpb_box(
   palette = "qualitative",
   index = NULL,
   orientation = c("vertical", "horizontal"),
-  style = c("ggplot", "nplot"),
+  style = c("cpb_default", "ggplot"),
   legend = NULL,
   reverse_legend = FALSE,
   zeroline = NULL,
@@ -84,8 +84,8 @@ the fill levels were reversed to control the dodge order under
 \code{coord_flip()}.}
 
 \item{zeroline}{If \code{TRUE}, draw a solid black line at zero on the
-value axis underneath the boxes, as the CPB \code{nplot()} house style
-does. \code{NULL} (default) resolves by \code{style}: for \code{"nplot"} the
+value axis underneath the boxes, as the CPB house style does.
+\code{NULL} (default) resolves by \code{style}: for \code{"cpb_default"} the
 line is drawn when the p5-p95 data spans (or touches) zero; for
 \code{"ggplot"} it is not drawn.}
 

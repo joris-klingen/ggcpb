@@ -71,19 +71,20 @@ cpb_zero_flush_expand <- function(values) {
 #' @param reverse_legend If `TRUE` (default), reverse the fill legend
 #'   order via `guide_legend(reverse = TRUE)` -- stacking otherwise
 #'   makes the legend order counter-intuitive.
-#' @param style Style preset, forwarded to [theme_cpb()]: `"ggplot"`
-#'   (default, the hand-rolled CPB ggplot2 look) or `"nplot"` (the
-#'   legacy CPB plotter look: hairline black gridlines at labelled
-#'   breaks only, category-axis ticks and axis line, 7 pt axis text,
-#'   flush-left bottom legend, and a black zero line on the value
-#'   axis). Any knob set explicitly overrides the preset.
+#' @param style Style preset, forwarded to [theme_cpb()]:
+#'   `"cpb_default"` (the default; the published CPB figure look:
+#'   hairline black gridlines at labelled breaks only, category-axis
+#'   ticks and axis line, 7 pt axis text, flush-left bottom legend,
+#'   and a black zero line on the value axis) or `"ggplot"` (the
+#'   lighter hand-rolled CPB ggplot2 look). Any knob set explicitly
+#'   overrides the preset.
 #' @param legend Legend position, forwarded to [theme_cpb()]; accepts
 #'   `"right"`, `"bottom"`, `"left"`, `"top"`, `"none"`, or a
 #'   two-element numeric vector of plot-relative coordinates. `NULL`
 #'   (default) resolves by `style`.
 #' @param zeroline If `TRUE`, draw a solid black line at zero on the
-#'   value axis on top of the bars, as the CPB `nplot()` house style
-#'   does. `NULL` (default) resolves by `style`: `TRUE` for `"nplot"`,
+#'   value axis on top of the bars, as the CPB house style does.
+#'   `NULL` (default) resolves by `style`: `TRUE` for `"cpb_default"`,
 #'   `FALSE` for `"ggplot"`.
 #' @param minor,ticks,flush_legend,axis_text_size,legend_key_size,grid_colour,grid_linewidth
 #'   Forwarded to [theme_cpb()]; `NULL` (the default) resolves by
@@ -123,7 +124,7 @@ cpb_col <- function(data, x, y, fill = NULL,
                      value_limits = NULL,
                      value_labels = FALSE,
                      reverse_legend = TRUE,
-                     style = c("ggplot", "nplot"),
+                     style = c("cpb_default", "ggplot"),
                      legend = NULL,
                      zeroline = NULL,
                      minor = NULL,
@@ -141,7 +142,7 @@ cpb_col <- function(data, x, y, fill = NULL,
   position <- match.arg(position)
   orientation <- match.arg(orientation)
   style <- match.arg(style)
-  if (is.null(zeroline)) zeroline <- style == "nplot"
+  if (is.null(zeroline)) zeroline <- style == "cpb_default"
 
   x <- rlang::enquo(x)
   y <- rlang::enquo(y)
@@ -187,7 +188,7 @@ cpb_col <- function(data, x, y, fill = NULL,
   if (!is.null(value_breaks)) {
     scale_args$breaks <- value_breaks
   }
-  if (style == "nplot") {
+  if (style == "cpb_default") {
     expand <- cpb_zero_flush_expand(rlang::eval_tidy(y, data))
     if (!is.null(expand)) scale_args$expand <- expand
   }
@@ -308,7 +309,7 @@ cpb_area <- function(data, x, y, fill,
                       index = NULL,
                       pct_axis = FALSE,
                       reverse_legend = TRUE,
-                      style = c("ggplot", "nplot"),
+                      style = c("cpb_default", "ggplot"),
                       legend = NULL,
                       zeroline = NULL,
                       minor = NULL,
@@ -325,7 +326,7 @@ cpb_area <- function(data, x, y, fill,
                       filllab = NULL,
                       ...) {
   style <- match.arg(style)
-  if (is.null(zeroline)) zeroline <- style == "nplot"
+  if (is.null(zeroline)) zeroline <- style == "cpb_default"
 
   x <- rlang::enquo(x)
   y <- rlang::enquo(y)
@@ -344,7 +345,7 @@ cpb_area <- function(data, x, y, fill,
   if (isTRUE(pct_axis)) {
     scale_args$labels <- label_pct_nl()
   }
-  if (style == "nplot") {
+  if (style == "cpb_default") {
     expand <- cpb_zero_flush_expand(rlang::eval_tidy(y, data))
     if (!is.null(expand)) scale_args$expand <- expand
   }
@@ -404,8 +405,8 @@ cpb_area <- function(data, x, y, fill,
 #'   blue (`cpb_cols(6)`, `"#005faf"`). Ignored when `colour` is
 #'   supplied.
 #' @param linewidth Line width. `NULL` (default) resolves by `style`:
-#'   `1.2` for `"ggplot"` (matching CPB source scripts), `0.55` for
-#'   `"nplot"` (matching the published nplot figures).
+#'   `0.55` for `"cpb_default"` (matching the published figures),
+#'   `1.2` for `"ggplot"` (matching CPB source scripts).
 #' @param palette CPB palette to use for `colour`; one of
 #'   `"qualitative"` (default), `"discr"`, or `"sequential"`.
 #' @param index Optional integer vector of palette positions, forwarded
@@ -413,15 +414,15 @@ cpb_area <- function(data, x, y, fill,
 #'   [scale_colour_cpb_d()] when supplied.
 #' @param pct_axis If `TRUE`, format the y axis with [label_pct_nl()].
 #' @param style Style preset, forwarded to [theme_cpb()]; see
-#'   [cpb_col()]. For line charts `"nplot"` additionally draws the
-#'   panel tight around the data/limits
+#'   [cpb_col()]. For line charts `"cpb_default"` additionally draws
+#'   the panel tight around the data/limits
 #'   (`coord_cartesian(expand = FALSE)`), so the axis ticks meet the
-#'   outermost gridlines as in base-R nplot output.
+#'   outermost gridlines as in the published figures.
 #' @param legend Legend position, forwarded to [theme_cpb()]; `NULL`
 #'   (default) resolves by `style`.
 #' @param zeroline If `TRUE`, draw a solid black line at zero on the
-#'   value axis underneath the data lines, as the CPB `nplot()` house
-#'   style does. `NULL` (default) resolves by `style`: for `"nplot"`
+#'   value axis underneath the data lines, as the CPB house style
+#'   does. `NULL` (default) resolves by `style`: for `"cpb_default"`
 #'   the line is drawn when the `y` data spans (or touches) zero,
 #'   mirroring nplot's bold-axis-if-zero behaviour; for `"ggplot"` it
 #'   is not drawn.
@@ -453,7 +454,7 @@ cpb_line <- function(data, x, y, colour = NULL,
                       palette = "qualitative",
                       index = NULL,
                       pct_axis = FALSE,
-                      style = c("ggplot", "nplot"),
+                      style = c("cpb_default", "ggplot"),
                       legend = NULL,
                       zeroline = NULL,
                       minor = NULL,
@@ -470,7 +471,7 @@ cpb_line <- function(data, x, y, colour = NULL,
                       colourlab = NULL,
                       ...) {
   style <- match.arg(style)
-  if (is.null(linewidth)) linewidth <- if (style == "nplot") 0.55 else 1.2
+  if (is.null(linewidth)) linewidth <- if (style == "cpb_default") 0.55 else 1.2
 
   x <- rlang::enquo(x)
   y <- rlang::enquo(y)
@@ -483,7 +484,7 @@ cpb_line <- function(data, x, y, colour = NULL,
   # all-positive chart (e.g. an index series) down to zero
   if (is.null(zeroline)) {
     yvals <- rlang::eval_tidy(y, data)
-    zeroline <- style == "nplot" &&
+    zeroline <- style == "cpb_default" &&
       is.numeric(yvals) &&
       min(yvals, na.rm = TRUE) <= 0 && max(yvals, na.rm = TRUE) >= 0
   }
@@ -513,7 +514,7 @@ cpb_line <- function(data, x, y, colour = NULL,
   # nplot draws the panel tight around the data/limits, so the axis
   # line and ticks meet the outermost gridlines instead of floating
   # beyond them
-  if (style == "nplot") {
+  if (style == "cpb_default") {
     p <- p + ggplot2::coord_cartesian(expand = FALSE)
   }
 
@@ -598,8 +599,8 @@ cpb_line <- function(data, x, y, colour = NULL,
 #'   the fill levels were reversed to control the dodge order under
 #'   `coord_flip()`.
 #' @param zeroline If `TRUE`, draw a solid black line at zero on the
-#'   value axis underneath the boxes, as the CPB `nplot()` house style
-#'   does. `NULL` (default) resolves by `style`: for `"nplot"` the
+#'   value axis underneath the boxes, as the CPB house style does.
+#'   `NULL` (default) resolves by `style`: for `"cpb_default"` the
 #'   line is drawn when the p5-p95 data spans (or touches) zero; for
 #'   `"ggplot"` it is not drawn.
 #' @param minor,ticks,flush_legend,axis_text_size,legend_key_size,grid_colour,grid_linewidth
@@ -636,7 +637,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                      palette = "qualitative",
                      index = NULL,
                      orientation = c("vertical", "horizontal"),
-                     style = c("ggplot", "nplot"),
+                     style = c("cpb_default", "ggplot"),
                      legend = NULL,
                      reverse_legend = FALSE,
                      zeroline = NULL,
@@ -669,7 +670,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   if (is.null(zeroline)) {
     lo <- rlang::eval_tidy(p5, data)
     hi <- rlang::eval_tidy(p95, data)
-    zeroline <- style == "nplot" &&
+    zeroline <- style == "cpb_default" &&
       is.numeric(lo) && is.numeric(hi) &&
       min(lo, na.rm = TRUE) <= 0 && max(hi, na.rm = TRUE) >= 0
   }

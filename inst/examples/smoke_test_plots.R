@@ -232,16 +232,16 @@ opbouw_dt[, mid := NULL]
 
 # Figures ----
 
-# All figures use the nplot() style preset: hairline black gridlines at
-# labelled breaks only, black ticks on the category axis, 7 pt axis
-# text, a flush-left bottom legend with 0.45 cm keys, a black zero line
-# on the value axis where zero is in range, and the CPB primary blue as
-# the single-series colour. (The titles avoid the em dash: the bundled
-# Rijksoverheid font has no glyph for it.)
+# All figures use the default "cpb_default" style: hairline black
+# gridlines at labelled breaks only, black ticks on the category axis,
+# 7 pt axis text, a flush-left bottom legend, a black zero line on the
+# value axis where zero is in range, and the CPB primary blue as the
+# single-series colour. (The titles avoid the em dash: the bundled
+# Rijksoverheid font has no glyph for it.) Figure 12 pins
+# style = "ggplot" to keep matching its hand-rolled reference.
 
 render(1, "line: single series",
   cpb_line(line_dt, x = jaar, y = index,
-    style = "nplot",
     title = "Bruto binnenlands product",
     ylab  = "index (2015 = 100)") +
     ggplot2::scale_x_continuous(
@@ -253,7 +253,6 @@ render(1, "line: single series",
 
 render(2, "col: stacked",
   cpb_col(stack_dt, x = jaar, y = waarde, fill = sector, position = "stack",
-    style = "nplot",
     index = c(6, 5, 2, 4),
     title = "Toegevoegde waarde per sector",
     ylab  = "mld euro"),
@@ -261,7 +260,6 @@ render(2, "col: stacked",
 
 render(3, "col: dodged",
   cpb_col(dodge_dt, x = regio, y = effect, fill = scenario, position = "dodge",
-    style = "nplot",
     index = c(6, 2),
     reverse_legend = FALSE,   # dodged: legend follows the series order
     title = "Effect per regio en scenario",
@@ -270,7 +268,6 @@ render(3, "col: dodged",
 
 render(4, "area: stacked shares",
   cpb_area(area_dt, x = jaar, y = aandeel, fill = bron, pct_axis = TRUE,
-    style = "nplot",
     index = c(6, 5, 2, 4),
     title = "Energiemix van huishoudens") +
     ggplot2::scale_x_continuous(
@@ -284,7 +281,6 @@ render(5, "box: horizontal, 5 categories",
   cpb_box(box5_dt, x = groep,
     p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
     orientation = "horizontal",
-    style = "nplot",
     title = "Koopkracht per inkomensgroep",
     ylab  = "% koopkrachtmutatie"),
   "05_box_horizontal.png", page = "full", height = 3.2)
@@ -294,7 +290,6 @@ render(6, "box: split by year (2026/2027)",
     p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
     fill     = jaar,
     position = ggplot2::position_dodge(width = 0.6),
-    style    = "nplot",
     index    = c(6, 2),
     title    = "Koopkracht per jaar, 2026 en 2027",
     ylab     = "% koopkrachtmutatie") +
@@ -308,7 +303,6 @@ render(6, "box: split by year (2026/2027)",
 render(7, "col: horizontal, single colour",
   cpb_col(nocar_dt, x = inkomensgroep_label, y = share,
     orientation  = "horizontal",
-    style        = "nplot",
     pct_axis     = TRUE,
     value_limits = c(0, 70),
     width        = 0.6,
@@ -319,12 +313,11 @@ render(7, "col: horizontal, single colour",
 
 # recreation of reference figure p20_img24: horizontal dodged bar, two
 # years side by side per group (2021 blue = palette 6, 2024 magenta =
-# palette 2), in the nplot() style preset.
+# palette 2), in the default style.
 render(8, "col: horizontal, dodged (fill)",
   cpb_col(pv_dt, x = inkomensgroep, y = share, fill = jaar,
     position     = "dodge",
     orientation  = "horizontal",
-    style        = "nplot",
     index        = c(2, 6),
     value_breaks = seq(0, 70, 10),
     value_limits = c(0, 70),
@@ -335,12 +328,11 @@ render(8, "col: horizontal, dodged (fill)",
   "08_col_horizontal_dodged.png", page = "half")
 
 # recreation of reference figure productivity-report p06_img01: two growth
-# series (blue = palette 6, magenta = palette 2) in the nplot() style,
+# series (blue = palette 6, magenta = palette 2) in the default style,
 # the unit ("%") as subtitle above the axis, and the zero line drawn
 # automatically because the growth rates span zero.
 render(9, "line: two series, nplot look",
   cpb_line(prod_dt, x = jaar, y = groei, colour = reeks,
-    style = "nplot",
     index = c(6, 2),
     title = "Productiviteitsgroei",
     ylab  = "%") +
@@ -358,7 +350,6 @@ render(9, "line: two series, nplot look",
 render(10, "col: stacked +/- with line overlay",
   cpb_col(decomp_dt, x = jaar, y = bijdrage, fill = component,
     position = "stack",
-    style    = "nplot",
     index    = c(2, 5, 6),
     width    = 0.75,
     title    = "Opbouw productiviteitsgroei",
@@ -390,7 +381,6 @@ render(11, "col: horizontal, dodged, 3 series",
   cpb_col(reisk_dt, x = inkomensgroep, y = share, fill = groep,
     position     = "dodge",
     orientation  = "horizontal",
-    style        = "nplot",
     index        = c(8, 2, 6),
     value_breaks = seq(0, 70, 10),
     value_limits = c(0, 70),
@@ -407,6 +397,7 @@ render(11, "col: horizontal, dodged, 3 series",
 render(12, "box: horizontal, dodged by year",
   cpb_box(opbouw_dt, x = inkomensgroep,
     p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+    style       = "ggplot",
     fill        = jaar,
     position    = ggplot2::position_dodge(width = 0.75),
     width       = 0.6,

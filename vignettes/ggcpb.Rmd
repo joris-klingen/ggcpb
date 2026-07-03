@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+```{r setup, message = FALSE}
 library(ggcpb)
 library(ggplot2)
 library(dplyr)
@@ -30,16 +30,20 @@ library(dplyr)
 
 This vignette walks through the composable core of `ggcpb` -- the
 theme, the discrete and continuous colour scales, manual palette
-selection, the Dutch-locale formatters, and `save_cpb()` -- and then
-through each high-level wrapper function, reproducing a few
-representative figures from CPB projects.
+selection, the Dutch-locale formatters, and `save_cpb()` -- the
+building blocks for styling figures you construct from raw `ggplot2`.
+For the high-level chart wrappers (`cpb_line()`, `cpb_col()`,
+`cpb_area()`, `cpb_box()`), which apply all of this in one call, see
+`vignette("chart-types")`.
 
 # The theme ----
 
 `theme_cpb()` applies the CPB house style on top of
-`ggplot2::theme_minimal()`: a fixed 9/8/7 pt type scale, a left-aligned
-bold title, a CPB-blue plot background, and gridlines in the CPB grid
-colour drawn on the value axis only.
+`ggplot2::theme_minimal()`. The default `style = "cpb_default"` is the
+look of published CPB figures: hairline black gridlines at labelled
+breaks only, black tick marks (with an axis line) on the category
+axis, absolute text sizes (9 pt bold title, 7 pt axis text), a
+flush-left bottom legend, and the CPB-blue plot background.
 
 ```{r theme-basic}
 pv_counts <- tibble(
@@ -54,7 +58,7 @@ ggplot(pv_counts, aes(jaar, aantal)) +
 ```
 
 For a chart built with `coord_flip()`, pass `orientation = "horizontal"`
-so the gridlines move to the value axis (now x) instead:
+so the gridlines (and ticks) move to the right axes:
 
 ```{r theme-horizontal}
 ggplot(pv_counts, aes(factor(jaar), aantal)) +
@@ -64,36 +68,25 @@ ggplot(pv_counts, aes(factor(jaar), aantal)) +
   theme_cpb(orientation = "horizontal")
 ```
 
-`grid` overrides the axis selection explicitly (`"both"`, `"none"`,
-`"x"`, `"y"`), and `background = FALSE` (or the `theme_cpb_min()`
-shorthand) drops the CPB background fill entirely -- useful for small
-multiples.
+`style = "ggplot"` switches to the lighter look of the hand-rolled
+CPB ggplot2 scripts: CPB-grey gridlines including minors, no ticks,
+6 pt axis text, legend on the right:
 
-Most CPB publication figures were historically produced with the
-internal base-R `nplot()` function, whose look differs in a few
-systematic ways from the hand-rolled ggplot2 defaults above. The
-`style = "nplot"` preset switches to that look in one argument, on
-`theme_cpb()` and on every wrapper:
-
-```{r theme-nplot}
-ggplot(pv_counts, aes(factor(jaar), aantal)) +
+```{r theme-ggplot-style}
+ggplot(pv_counts, aes(jaar, aantal)) +
   geom_col(fill = cpb_cols(6)) +
   labs(title = "Aantal PV-meldingen per jaar", x = NULL, y = "aantal") +
-  theme_cpb(style = "nplot")
+  theme_cpb(style = "ggplot")
 ```
 
-The preset stands for: hairline black gridlines at labelled breaks
-only (`minor = FALSE`, `grid_colour = "black"`,
-`grid_linewidth = 0.1`), black tick marks on the category axis
-(`ticks = TRUE`), 7 pt axis text, 0.45 cm legend keys, and a
-flush-left vertical legend at the bottom (`legend = "bottom"`,
-`flush_legend = TRUE`). Each of these is also an individual argument
-that overrides the preset. The wrappers additionally take `zeroline`,
-the solid black line at zero on the value axis that `nplot()` adds to
-bar, line and box figures; under `style = "nplot"` it is drawn
-automatically whenever zero is on the value axis -- see
-`inst/examples/smoke_test_plots.R`, where every figure uses the
-preset, including full recreations of published nplot figures.
+Both presets are only defaults. Each element is an individual
+argument that overrides the preset: `minor` (minor gridlines),
+`ticks` (category-axis tick marks), `grid_colour`/`grid_linewidth`,
+`axis_text_size`, `legend`/`flush_legend` (position and the
+flush-left bottom block), and `legend_key_size`. `grid` selects which
+axes get gridlines (`"value"`, `"both"`, `"none"`, `"x"`, `"y"`), and
+`background = FALSE` (or the `theme_cpb_min()` shorthand) drops the
+CPB background fill -- useful for small multiples.
 
 # Discrete scales ----
 
@@ -126,7 +119,7 @@ ggplot(mtcars, aes(wt, mpg, colour = hp)) +
   geom_point(size = 2) +
   labs(title = "Gewicht versus verbruik", x = "gewicht", y = "mpg", colour = "pk") +
   scale_colour_cpb_c() +
-  theme_cpb()
+  theme_cpb(legend = "right")
 ```
 
 # Manual palette selection ----
@@ -134,9 +127,7 @@ ggplot(mtcars, aes(wt, mpg, colour = hp)) +
 `scale_fill_cpb_manual()` / `scale_colour_cpb_manual()` (and the
 `cpb_cols()` accessor) select and order specific palette positions,
 for the common case of a small, deliberately ordered subset -- e.g.
-CPB source scripts picking `cpb_colors[c(6, 2)]` for a blue/pink pair,
-or `cpb_colors_scale[5:1]` for a reversed subset of the sequential
-ramp.
+`index = c(6, 2)` for the recurring CPB blue/magenta pair.
 
 ```{r scales-manual}
 raming_vergelijking <- tibble(
@@ -146,10 +137,14 @@ raming_vergelijking <- tibble(
 
 ggplot(raming_vergelijking, aes(scenario, effect, fill = scenario)) +
   geom_col() +
+  geom_hline(yintercept = 0, colour = "black", linewidth = 0.25) +
   labs(title = "Effect op koopkracht", x = NULL, y = "%-punt", fill = NULL) +
   scale_fill_cpb_manual(index = c(6, 2)) +
-  theme_cpb()
+  theme_cpb(legend = "none")
 ```
+
+(The wrappers add that black zero line for you; when composing from
+raw `ggplot2` it is a one-line `geom_hline()`.)
 
 # Dutch-locale formatters ----
 
@@ -168,8 +163,27 @@ ggplot(kosten_vergelijking, aes(maatregel, kosten, fill = maatregel)) +
   labs(title = "Geraamde kosten per maatregel", x = NULL, y = NULL, fill = NULL) +
   scale_y_continuous(labels = label_euro_nl()) +
   scale_fill_cpb_manual(index = c(6, 2)) +
-  theme_cpb()
+  theme_cpb(legend = "none")
 ```
+
+# Raw values and tokens ----
+
+`cpb_tokens()` exposes the raw design tokens (palettes, background,
+grid and NA colours) and `cpb_pal()`/`cpb_cols()` generate palette
+subsets, for anything the scales above do not cover:
+
+```{r tokens}
+cpb_cols(c(6, 2))
+cpb_tokens()$bg
+```
+
+# Fonts ----
+
+The bundled Rijksoverheid Sans Text family registers automatically
+when the package loads; `cpb_font_family()` reports the family name
+`theme_cpb()` resolves to (`"RijksoverheidSansText"`, or `""` when
+falling back to the ggplot2 default), and `cpb_register_fonts()`
+re-runs registration in a fresh worker process.
 
 # Saving figures ----
 
@@ -185,72 +199,4 @@ p <- ggplot(pv_counts, aes(jaar, aantal)) +
 
 save_cpb("pv_counts.png", p, page = "half")
 save_cpb("pv_counts_presentatie.png", p, page = "half", preset = "presentation")
-```
-
-# Wrapper layer ----
-
-The wrapper functions take a data.frame (or data.table -- it inherits
-data.frame, so it works transparently), tidy-eval column arguments,
-and return a real `ggplot` object with `theme_cpb()` and a CPB scale
-already applied.
-
-## `cpb_col()`: PV counts by year
-
-```{r wrapper-col}
-cpb_col(pv_by_group, x = jaar, y = aantal, fill = groep) +
-  labs(title = "PV-meldingen naar groep")
-```
-
-## `cpb_area()`: a quantile stacked-share area
-
-```{r wrapper-area}
-energiebronnen <- tibble(
-  jaar = rep(2019:2023, each = 2),
-  bron = rep(c("gas", "elektriciteit"), 5),
-  aandeel = c(62, 38, 60, 40, 57, 43, 52, 48, 49, 51)
-)
-
-cpb_area(energiebronnen, x = jaar, y = aandeel, fill = bron, pct_axis = TRUE) +
-  labs(title = "Aandeel energiebronnen huishoudens")
-```
-
-## `cpb_line()`: a raming comparison over time
-
-```{r wrapper-line}
-ramingen <- tibble(
-  jaar = rep(2019:2023, 2),
-  raming = rep(c("CEP", "MEV"), each = 5),
-  bbp_groei = c(1.8, 1.7, -3.8, 4.9, 4.5, 1.9, 1.6, -3.6, 4.6, 4.2)
-)
-
-cpb_line(ramingen, x = jaar, y = bbp_groei, colour = raming) +
-  labs(title = "BBP-groeiraming, CEP versus MEV", y = "% groei")
-```
-
-## `cpb_box()`: a euro-formatted comparison, and a p5-p95 distribution
-
-```{r wrapper-box-euro}
-cpb_col(kosten_vergelijking, x = maatregel, y = kosten, fill = maatregel, index = c(6, 2)) +
-  scale_y_continuous(labels = label_euro_nl()) +
-  labs(title = "Geraamde kosten per maatregel")
-```
-
-```{r wrapper-box}
-koopkracht_verdeling <- tibble(
-  groep = factor(
-    c("laag inkomen", "midden inkomen", "hoog inkomen"),
-    levels = c("laag inkomen", "midden inkomen", "hoog inkomen")
-  ),
-  p5  = c(-8, -6, -4),
-  p25 = c(-4, -3, -2),
-  p50 = c(-2, -1, 0),
-  p75 = c(0, 1, 2),
-  p95 = c(3, 4, 5)
-)
-
-cpb_box(
-  koopkracht_verdeling,
-  x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95
-) +
-  labs(title = "Koopkrachteffect naar inkomensgroep", y = "%-punt")
 ```

@@ -6,7 +6,9 @@ test_that("cpb_col returns a ggplot with a GeomCol layer and a fill scale", {
     group = rep(c("a", "b"), 2),
     value = c(1, 2, 3, 4)
   )
-  p <- cpb_col(df, x = year, y = value, fill = group)
+  # style = "ggplot" pins the classic look: the default style adds a
+  # zero line layer and a value-axis scale
+  p <- cpb_col(df, x = year, y = value, fill = group, style = "ggplot")
 
   expect_s3_class(p, "ggplot")
   expect_length(p$layers, 1)
@@ -18,14 +20,14 @@ test_that("cpb_col returns a ggplot with a GeomCol layer and a fill scale", {
 
 test_that("cpb_col adds a value-label layer when requested", {
   df <- data.frame(year = 2021:2022, value = c(1, 2))
-  p <- cpb_col(df, x = year, y = value, value_labels = TRUE)
+  p <- cpb_col(df, x = year, y = value, value_labels = TRUE, style = "ggplot")
   expect_length(p$layers, 2)
   expect_true(inherits(p$layers[[2]]$geom, "GeomText"))
 })
 
 test_that("cpb_col without a fill column adds no colour/fill scale", {
   df <- data.frame(year = 2021:2022, value = c(1, 2))
-  p <- cpb_col(df, x = year, y = value)
+  p <- cpb_col(df, x = year, y = value, style = "ggplot")
   expect_length(p$scales$scales, 0)
 })
 
@@ -44,7 +46,7 @@ test_that("cpb_area returns a stacked-area ggplot with a fill scale", {
 
 test_that("cpb_line adds a colour scale only when colour is mapped", {
   df1 <- data.frame(jaar = 2018:2020, waarde = c(1, 2, 3))
-  p1 <- cpb_line(df1, x = jaar, y = waarde)
+  p1 <- cpb_line(df1, x = jaar, y = waarde, style = "ggplot")
   expect_true(inherits(p1$layers[[1]]$geom, "GeomLine"))
   expect_length(p1$scales$scales, 0)
 
@@ -67,7 +69,8 @@ test_that("cpb_box builds an errorbar-plus-boxplot combination", {
     p75 = c(0, 1),
     p95 = c(3, 4)
   )
-  p <- cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95)
+  p <- cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+               style = "ggplot")
   expect_length(p$layers, 2)
   expect_true(inherits(p$layers[[1]]$geom, "GeomErrorbar"))
   expect_true(inherits(p$layers[[2]]$geom, "GeomBoxplot"))
@@ -99,7 +102,7 @@ test_that("zeroline adds a black hline at 0 to the wrappers", {
   expect_equal(unname(which(is_hline2)), 1L)
 })
 
-test_that("wrappers forward the nplot-style knobs to theme_cpb", {
+test_that("wrappers forward the theme knobs to theme_cpb", {
   df <- data.frame(x = c("a", "b"), y = c(1, 2))
   p <- cpb_col(df, x = x, y = y,
                minor = FALSE, ticks = TRUE, axis_text_size = 7,
@@ -127,19 +130,19 @@ test_that("cpb_box errorbars dodge by group without a fill warning", {
   )
 })
 
-test_that("wrapper style = 'nplot' sets the zero line automatically", {
+test_that("the default style sets the zero line automatically", {
   df <- data.frame(x = c("a", "b"), y = c(1, 2))
   has_hline <- function(p) any(vapply(p$layers, function(l)
     inherits(l$geom, "GeomHline"), logical(1)))
 
-  # bars are anchored at zero: always drawn under nplot, never by default
-  expect_true(has_hline(cpb_col(df, x = x, y = y, style = "nplot")))
-  expect_false(has_hline(cpb_col(df, x = x, y = y)))
+  # bars are anchored at zero: always drawn by default, never under 'ggplot'
+  expect_true(has_hline(cpb_col(df, x = x, y = y, style = "cpb_default")))
+  expect_false(has_hline(cpb_col(df, x = x, y = y, style = "ggplot")))
 
   # lines: only when the y data spans zero
-  expect_false(has_hline(cpb_line(df, x = x, y = y, style = "nplot")))
+  expect_false(has_hline(cpb_line(df, x = x, y = y, style = "cpb_default")))
   df2 <- data.frame(x = c("a", "b"), y = c(-1, 2))
-  expect_true(has_hline(cpb_line(df2, x = x, y = y, style = "nplot")))
+  expect_true(has_hline(cpb_line(df2, x = x, y = y, style = "cpb_default")))
 })
 
 test_that("cpb_line draws a single unmapped series in CPB blue", {
@@ -171,19 +174,19 @@ test_that("cpb_box fills unmapped boxes in CPB blue with thin strokes", {
   expect_equal(box$aes_params$linewidth, 0.25)
 })
 
-test_that("nplot style trims value-axis expansion on the zero side", {
+test_that("the default style trims value-axis expansion on the zero side", {
   df_pos <- data.frame(x = c("a", "b"), y = c(1, 2))
-  sc <- cpb_col(df_pos, x = x, y = y, style = "nplot")$scales$get_scales("y")
+  sc <- cpb_col(df_pos, x = x, y = y, style = "cpb_default")$scales$get_scales("y")
   expect_equal(sc$expand, ggplot2::expansion(mult = c(0, 0.05)))
 
   df_neg <- data.frame(x = c("a", "b"), y = c(-1, -2))
-  sc2 <- cpb_col(df_neg, x = x, y = y, style = "nplot")$scales$get_scales("y")
+  sc2 <- cpb_col(df_neg, x = x, y = y, style = "cpb_default")$scales$get_scales("y")
   expect_equal(sc2$expand, ggplot2::expansion(mult = c(0.05, 0)))
 
   # mixed-sign data and the ggplot style keep the default expansion
   df_mix <- data.frame(x = c("a", "b"), y = c(-1, 2))
-  expect_null(cpb_col(df_mix, x = x, y = y, style = "nplot")$scales$get_scales("y"))
-  expect_null(cpb_col(df_pos, x = x, y = y)$scales$get_scales("y"))
+  expect_null(cpb_col(df_mix, x = x, y = y, style = "cpb_default")$scales$get_scales("y"))
+  expect_null(cpb_col(df_pos, x = x, y = y, style = "ggplot")$scales$get_scales("y"))
 })
 
 test_that("cpb_col value_breaks land on the wrapper-built value scale", {
@@ -194,11 +197,11 @@ test_that("cpb_col value_breaks land on the wrapper-built value scale", {
   expect_true(is.function(sc$labels))
 })
 
-test_that("nplot line charts draw the panel without expansion", {
+test_that("default-style line charts draw the panel without expansion", {
   df <- data.frame(x = 1:3, y = 4:6)
-  p <- cpb_line(df, x = x, y = y, style = "nplot")
+  p <- cpb_line(df, x = x, y = y, style = "cpb_default")
   expect_false(p$coordinates$expand)
-  expect_true(cpb_line(df, x = x, y = y)$coordinates$expand)
+  expect_true(cpb_line(df, x = x, y = y, style = "ggplot")$coordinates$expand)
 })
 
 test_that("titled wrappers reserve the subtitle line when none is given", {

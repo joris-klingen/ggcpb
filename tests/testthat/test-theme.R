@@ -1,7 +1,7 @@
 # test-theme.R ----
 
 test_that("theme_cpb sets the fixed 9/7/6 pt text sizes and faces", {
-  th <- theme_cpb()
+  th <- theme_cpb(style = "ggplot")
   expect_s3_class(th, "theme")
 
   expect_equal(th$plot.title$size, 9)
@@ -24,7 +24,7 @@ test_that("theme_cpb sets the fixed 9/7/6 pt text sizes and faces", {
 })
 
 test_that("theme_cpb fills the plot background with the CPB colour by default", {
-  th <- theme_cpb()
+  th <- theme_cpb(style = "ggplot")
   expect_s3_class(th$plot.background, "element_rect")
   expect_equal(th$plot.background$fill, cpb_tokens()$bg)
 })
@@ -35,13 +35,13 @@ test_that("theme_cpb(background = FALSE) blanks the plot background", {
 })
 
 test_that("theme_cpb draws gridlines on the value axis implied by orientation", {
-  th_v <- theme_cpb(orientation = "vertical")
+  th_v <- theme_cpb(orientation = "vertical", style = "ggplot")
   expect_s3_class(th_v$panel.grid.major.y, "element_line")
   expect_s3_class(th_v$panel.grid.minor.y, "element_line")
   expect_s3_class(th_v$panel.grid.major.x, "element_blank")
   expect_equal(th_v$panel.grid.major.y$colour, cpb_tokens()$grid)
 
-  th_h <- theme_cpb(orientation = "horizontal")
+  th_h <- theme_cpb(orientation = "horizontal", style = "ggplot")
   expect_s3_class(th_h$panel.grid.major.x, "element_line")
   expect_s3_class(th_h$panel.grid.major.y, "element_blank")
 })
@@ -68,7 +68,7 @@ test_that("theme_cpb_min has no background and no gridlines", {
 })
 
 test_that("theme_cpb(minor = FALSE) blanks the minor gridlines only", {
-  th <- theme_cpb(orientation = "vertical", minor = FALSE)
+  th <- theme_cpb(orientation = "vertical", style = "ggplot", minor = FALSE)
   expect_s3_class(th$panel.grid.major.y, "element_line")
   expect_s3_class(th$panel.grid.minor.y, "element_blank")
 })
@@ -104,8 +104,8 @@ test_that("theme_cpb axis_text_size and legend_key_size are applied", {
   expect_equal(as.numeric(th$legend.key.width), 0.45)
 })
 
-test_that("theme_cpb style = 'nplot' preset flips the knob defaults", {
-  th <- theme_cpb(style = "nplot")
+test_that("the cpb_default preset (the default style) sets the house knobs", {
+  th <- theme_cpb()
   expect_s3_class(th$panel.grid.minor.y, "element_blank")
   expect_equal(th$panel.grid.major.y$colour, "black")
   expect_equal(th$panel.grid.major.y$linewidth, 0.1)
@@ -120,7 +120,7 @@ test_that("theme_cpb style = 'nplot' preset flips the knob defaults", {
   expect_equal(th$legend.justification, "left")
 
   # explicit knobs override the preset
-  th2 <- theme_cpb(style = "nplot", minor = TRUE, axis_text_size = 6)
+  th2 <- theme_cpb(minor = TRUE, axis_text_size = 6)
   expect_s3_class(th2$panel.grid.minor.y, "element_line")
   expect_equal(th2$axis.text$size, 6)
 })

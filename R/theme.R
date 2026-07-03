@@ -1,21 +1,23 @@
 # theme.R ----
 #
 # The CPB house-style ggplot2 theme. Built on ggplot2::theme_minimal(),
-# reproducing the "energiecrisis_2026" theme overrides, but parameterised
-# rather than hardcoded. Font sizes are strict, fixed point sizes (9/7/6)
-# -- they are never scaled by a base_size argument or rel().
+# parameterised over two style presets: "cpb_default" (the published
+# nplot() look) and "ggplot" (the hand-rolled "energiecrisis_2026"
+# script look). Font sizes are strict, fixed point sizes -- they are
+# never scaled by a base_size argument or rel().
 
 #' The CPB house-style ggplot2 theme
 #'
 #' Applies the CPB house style on top of [ggplot2::theme_minimal()]:
-#' fixed 9/8/7 pt text sizes, a left-aligned bold title, italic
-#' right-aligned axis titles, CPB-coloured gridlines on the value axis
-#' only (by default), and an optional CPB-blue plot background.
+#' a left-aligned bold title, italic right-aligned axis titles,
+#' gridlines on the value axis only (by default), the CPB-blue plot
+#' background, and the `style` preset's gridline/tick/legend
+#' treatment.
 #'
 #' Text sizes are absolute and are never scaled -- there is no
 #' `base_size` argument. `plot.title` is 9 pt bold; `axis.title`,
 #' `plot.subtitle`, `legend.text` and `strip.text` are 7 pt;
-#' `axis.text` is 6 pt.
+#' `axis.text` is 7 pt (`"cpb_default"`) or 6 pt (`"ggplot"`).
 #'
 #' @param base_family Font family for all text. Defaults to
 #'   [cpb_font_family()], which resolves to `"RijksoverheidSansText"`
@@ -35,47 +37,48 @@
 #'   `orientation`. Gridlines are drawn in `cpb_tokens()$grid`, and
 #'   minor gridlines always match the major gridlines.
 #' @param style Style preset that sets the defaults of the knobs below.
-#'   `"ggplot"` (default) is the hand-rolled CPB ggplot2 look: CPB-grey
-#'   gridlines with minors, no axis ticks, 6 pt axis text, small legend
-#'   keys, legend on the right. `"nplot"` reproduces the legacy CPB
-#'   `nplot()` look: hairline black gridlines at labelled breaks only,
-#'   black tick marks (with an axis line) on the category axis, 7 pt
-#'   axis text, a flush-left vertical legend at the bottom, and
-#'   tighter bottom margins. Any knob set explicitly overrides the
+#'   `"cpb_default"` (the default) is the CPB house look of published
+#'   figures (historically produced with the internal base-R `nplot()`
+#'   plotter): hairline black gridlines at labelled breaks only, black
+#'   tick marks (with an axis line) on the category axis, 7 pt axis
+#'   text, a flush-left vertical legend at the bottom, and tight
+#'   bottom margins. `"ggplot"` is the lighter hand-rolled CPB ggplot2
+#'   look: CPB-grey gridlines with minors, no axis ticks, 6 pt axis
+#'   text, legend on the right. Any knob set explicitly overrides the
 #'   preset.
 #' @param legend Passed through to `legend.position`; accepts the
 #'   usual `"right"`/`"left"`/`"top"`/`"bottom"`/`"none"` strings, or a
 #'   two-element numeric vector of plot-relative coordinates. `NULL`
-#'   (default) resolves by `style`: `"right"` for `"ggplot"`,
-#'   `"bottom"` for `"nplot"`.
+#'   (default) resolves by `style`: `"bottom"` for `"cpb_default"`,
+#'   `"right"` for `"ggplot"`.
 #' @param minor If `TRUE`, minor gridlines are drawn (matching the
 #'   major gridlines); if `FALSE`, gridlines appear only at labelled
-#'   breaks. `NULL` (default) resolves by `style` (`TRUE` for
-#'   `"ggplot"`, `FALSE` for `"nplot"`).
+#'   breaks. `NULL` (default) resolves by `style` (`FALSE` for
+#'   `"cpb_default"`, `TRUE` for `"ggplot"`).
 #' @param ticks If `TRUE`, draw black axis tick marks on the *category*
 #'   axis (the x axis when `orientation = "vertical"`, the y axis when
 #'   `"horizontal"`), as `nplot()` does. `NULL` (default) resolves by
-#'   `style` (`FALSE` for `"ggplot"`, `TRUE` for `"nplot"`).
+#'   `style` (`TRUE` for `"cpb_default"`, `FALSE` for `"ggplot"`).
 #' @param flush_legend If `TRUE`, anchor the legend to the left edge of
 #'   the full plot area (`legend.location = "plot"` plus a left
 #'   justification) and stack its keys vertically -- the `nplot()`
 #'   bottom-left legend block. Most useful with `legend = "bottom"`.
-#'   `NULL` (default) resolves by `style` (`FALSE` for `"ggplot"`,
-#'   `TRUE` for `"nplot"`). Requires ggplot2 >= 3.5.0 for the
+#'   `NULL` (default) resolves by `style` (`TRUE` for `"cpb_default"`,
+#'   `FALSE` for `"ggplot"`). Requires ggplot2 >= 3.5.0 for the
 #'   `legend.location` part; on older versions only the justification
 #'   is applied.
 #' @param axis_text_size Axis text size in points. `NULL` (default)
-#'   resolves by `style`: `6` for `"ggplot"` (the hand-rolled CPB
-#'   scripts), `7` for `"nplot"`.
+#'   resolves by `style`: `7` for `"cpb_default"`, `6` for `"ggplot"`
+#'   (the hand-rolled CPB scripts).
 #' @param legend_key_size Legend key size in cm. `NULL` (default)
 #'   keeps the house 0.25 x 0.30 cm keys (both styles; the published
-#'   nplot figures use the same size).
+#'   figures use the same size).
 #' @param grid_colour Gridline colour. `NULL` (default) resolves by
-#'   `style`: `cpb_tokens()$grid` (`"#c9d1da"`) for `"ggplot"`,
-#'   `"black"` for `"nplot"`.
+#'   `style`: `"black"` for `"cpb_default"`, `cpb_tokens()$grid`
+#'   (`"#c9d1da"`) for `"ggplot"`.
 #' @param grid_linewidth Gridline linewidth (mm). `NULL` (default)
-#'   resolves by `style`: the ggplot2 default for `"ggplot"`, a `0.1`
-#'   hairline for `"nplot"`.
+#'   resolves by `style`: a `0.1` hairline for `"cpb_default"`, the
+#'   ggplot2 default for `"ggplot"`.
 #'
 #' @return A ggplot2 `theme` object.
 #' @examples
@@ -93,7 +96,7 @@ theme_cpb <- function(base_family = cpb_font_family(),
                        background = TRUE,
                        orientation = c("vertical", "horizontal"),
                        grid = c("value", "both", "none", "x", "y"),
-                       style = c("ggplot", "nplot"),
+                       style = c("cpb_default", "ggplot"),
                        legend = NULL,
                        minor = NULL,
                        ticks = NULL,
@@ -107,7 +110,7 @@ theme_cpb <- function(base_family = cpb_font_family(),
   style <- match.arg(style)
 
   # resolve the style-dependent defaults; explicit arguments always win
-  nplot <- style == "nplot"
+  nplot <- style == "cpb_default"   # the look of the legacy nplot() plotter
   if (is.null(legend))          legend          <- if (nplot) "bottom" else "right"
   if (is.null(minor))           minor           <- !nplot
   if (is.null(ticks))           ticks           <- nplot

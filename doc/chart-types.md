@@ -12,10 +12,11 @@ set.seed(42)
 This vignette is a cookbook: one section per CPB chart type, each with
 the simulated data it needs and the wrapper call that draws it. All
 wrappers return a plain `ggplot` object, so anything here can be
-extended further with `+`. The figures use `style = "nplot"`, the house
-look of published CPB figures; leave `style` unset for the lighter
-hand-rolled ggplot look (see the last section, and `vignette("ggcpb")`
-for the composable core the wrappers build on).
+extended further with `+`. The figures use the default
+`style = "cpb_default"`, the house look of published CPB figures;
+`style = "ggplot"` gives the lighter hand-rolled ggplot look (see the
+last section, and `vignette("ggcpb")` for the composable core the
+wrappers build on).
 
 Two house conventions to know up front:
 
@@ -24,10 +25,9 @@ Two house conventions to know up front:
   (the CPB “subtitle” position), not as a rotated axis title. A titled
   figure always reserves that caption line, so figures with and without
   a unit align.
-- **Zero line.** Under `style = "nplot"` a solid black zero line is
-  drawn automatically on the value axis: always for columns and areas
-  (which are anchored at zero), and for lines and boxplots whenever the
-  data spans zero.
+- **Zero line.** A solid black zero line is drawn automatically on the
+  value axis: always for columns and areas (which are anchored at zero),
+  and for lines and boxplots whenever the data spans zero.
 
 # Line charts
 
@@ -41,7 +41,6 @@ bbp <- tibble(
 )
 
 cpb_line(bbp, x = jaar, y = index,
-  style = "nplot",
   title = "Bruto binnenlands product",
   ylab  = "index (2015 = 100)") +
   scale_x_continuous(breaks = seq(2015, 2027, 3), minor_breaks = 2015:2027,
@@ -60,7 +59,6 @@ groei <- expand_grid(reeks = c("arbeidsproductiviteit", "tfp"),
   mutate(waarde = round(rnorm(n(), mean = 1, sd = 1.6), 1))
 
 cpb_line(groei, x = jaar, y = waarde, colour = reeks,
-  style = "nplot",
   index = c(6, 2),
   title = "Productiviteitsgroei",
   ylab  = "%") +
@@ -89,7 +87,6 @@ tw <- expand_grid(jaar   = 2023:2027,
   mutate(waarde = round(runif(n(), 5, 25), 1))
 
 cpb_col(tw, x = jaar, y = waarde, fill = sector,
-  style = "nplot",
   index = c(6, 5, 2, 4),
   title = "Toegevoegde waarde per sector",
   ylab  = "mld euro")
@@ -108,7 +105,6 @@ scenario <- expand_grid(regio    = c("Noord", "Oost", "Zuid", "West"),
 
 cpb_col(scenario, x = regio, y = effect, fill = scenario,
   position = "dodge",
-  style = "nplot",
   index = c(6, 2),
   reverse_legend = FALSE,
   title = "Effect per regio en scenario",
@@ -123,8 +119,8 @@ cpb_col(scenario, x = regio, y = effect, fill = scenario,
 the value axis. Here `ylab` labels the *category* axis (still the
 caption above the panel) and `xlab` labels the value axis at the bottom.
 `pct_axis` formats the value axis with Dutch percentage labels,
-`value_limits` fixes its range, and under `style = "nplot"` the panel
-starts exactly at the zero axis:
+`value_limits` fixes its range, and the panel starts exactly at the zero
+axis:
 
 ``` r
 groepen <- c("tot 120% wml", "120% wml - mod.", "1 - 1,5x mod.",
@@ -137,7 +133,6 @@ auto <- tibble(
 
 cpb_col(auto, x = inkomensgroep, y = share,
   orientation  = "horizontal",
-  style        = "nplot",
   pct_axis     = TRUE,
   value_limits = c(0, 70),
   width        = 0.6,
@@ -165,7 +160,6 @@ pv <- expand_grid(
 cpb_col(pv, x = inkomensgroep, y = share, fill = jaar,
   position     = "dodge",
   orientation  = "horizontal",
-  style        = "nplot",
   index        = c(2, 6),        # level order is (2024, 2021)
   value_breaks = seq(0, 70, 10),
   value_limits = c(0, 70),
@@ -196,7 +190,6 @@ mix <- expand_grid(jaar = 2018:2027,
 
 cpb_area(mix, x = jaar, y = aandeel, fill = bron,
   pct_axis = TRUE,
-  style    = "nplot",
   index    = c(6, 5, 2, 4),
   title    = "Energiemix van huishoudens")
 ```
@@ -229,7 +222,6 @@ kk <- raw |>
 cpb_box(kk, x = groep,
   p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
   orientation = "horizontal",
-  style = "nplot",
   title = "Koopkracht per inkomensgroep",
   ylab  = "% koopkrachtmutatie")
 ```
@@ -248,7 +240,6 @@ cpb_box(kk2, x = groep,
   p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
   fill     = jaar,
   position = position_dodge(width = 0.6),
-  style    = "nplot",
   index    = c(6, 2),
   title    = "Koopkracht per jaar, 2026 en 2027",
   ylab     = "% koopkrachtmutatie") +
@@ -275,7 +266,6 @@ totaal <- dec |>
 
 cpb_col(dec, x = jaar, y = bijdrage, fill = component,
   position = "stack",
-  style    = "nplot",
   index    = c(2, 5, 6),
   width    = 0.75,
   title    = "Opbouw productiviteitsgroei",
@@ -308,7 +298,6 @@ horizontal bar chart from before:
 ``` r
 cpb_col(auto, x = inkomensgroep, y = share,
   orientation  = "horizontal",
-  style        = "nplot",
   pct_axis     = TRUE,
   value_limits = c(0, 70),
   width        = 0.6,
@@ -332,7 +321,6 @@ published scenario figures do:
 
 ``` r
 cpb_line(bbp, x = jaar, y = index,
-  style = "nplot",
   title = "Bruto binnenlands product",
   ylab  = "index (2015 = 100)") +
   annotate("rect", xmin = 2024.5, xmax = Inf, ymin = -Inf, ymax = Inf,
@@ -355,12 +343,14 @@ second value-axis scale: use the wrapper’s `value_breaks`,
 
 # The two styles
 
-Everything above used `style = "nplot"`. The default `style = "ggplot"`
-keeps the lighter hand-rolled look – CPB-grey gridlines with minors, no
-ticks or zero line, legend on the right:
+Everything above used the default `style = "cpb_default"`, the look of
+published CPB figures. `style = "ggplot"` switches to the lighter
+hand-rolled look – CPB-grey gridlines with minors, no ticks or zero
+line, 6 pt axis text, legend on the right:
 
 ``` r
 cpb_col(tw, x = jaar, y = waarde, fill = sector,
+  style = "ggplot",
   index = c(6, 5, 2, 4),
   title = "Toegevoegde waarde per sector",
   ylab  = "mld euro")
@@ -380,7 +370,6 @@ Both presets are just defaults: every knob (`minor`, `ticks`,
 
 ``` r
 p <- cpb_line(bbp, x = jaar, y = index,
-  style = "nplot",
   title = "Bruto binnenlands product",
   ylab  = "index (2015 = 100)")
 

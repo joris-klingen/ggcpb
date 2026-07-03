@@ -14,7 +14,7 @@ cpb_line(
   palette = "qualitative",
   index = NULL,
   pct_axis = FALSE,
-  style = c("ggplot", "nplot"),
+  style = c("cpb_default", "ggplot"),
   legend = NULL,
   zeroline = NULL,
   minor = NULL,
@@ -47,8 +47,8 @@ blue (\code{cpb_cols(6)}, \code{"#005faf"}). Ignored when \code{colour} is
 supplied.}
 
 \item{linewidth}{Line width. \code{NULL} (default) resolves by \code{style}:
-\code{1.2} for \code{"ggplot"} (matching CPB source scripts), \code{0.55} for
-\code{"nplot"} (matching the published nplot figures).}
+\code{0.55} for \code{"cpb_default"} (matching the published figures),
+\code{1.2} for \code{"ggplot"} (matching CPB source scripts).}
 
 \item{palette}{CPB palette to use for \code{colour}; one of
 \code{"qualitative"} (default), \code{"discr"}, or \code{"sequential"}.}
@@ -60,17 +60,17 @@ to \code{\link[=scale_colour_cpb_manual]{scale_colour_cpb_manual()}} instead of 
 \item{pct_axis}{If \code{TRUE}, format the y axis with \code{\link[=label_pct_nl]{label_pct_nl()}}.}
 
 \item{style}{Style preset, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; see
-\code{\link[=cpb_col]{cpb_col()}}. For line charts \code{"nplot"} additionally draws the
-panel tight around the data/limits
+\code{\link[=cpb_col]{cpb_col()}}. For line charts \code{"cpb_default"} additionally draws
+the panel tight around the data/limits
 (\code{coord_cartesian(expand = FALSE)}), so the axis ticks meet the
-outermost gridlines as in base-R nplot output.}
+outermost gridlines as in the published figures.}
 
 \item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; \code{NULL}
 (default) resolves by \code{style}.}
 
 \item{zeroline}{If \code{TRUE}, draw a solid black line at zero on the
-value axis underneath the data lines, as the CPB \code{nplot()} house
-style does. \code{NULL} (default) resolves by \code{style}: for \code{"nplot"}
+value axis underneath the data lines, as the CPB house style
+does. \code{NULL} (default) resolves by \code{style}: for \code{"cpb_default"}
 the line is drawn when the \code{y} data spans (or touches) zero,
 mirroring nplot's bold-axis-if-zero behaviour; for \code{"ggplot"} it
 is not drawn.}

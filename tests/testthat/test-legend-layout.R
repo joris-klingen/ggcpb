@@ -60,26 +60,26 @@ test_that("flush legend lands on the same pixel across chart types and label len
   # the legend in every variant, so the lowest blue pixel is comparable
   rect_variants <- list(
     col_vertical   = cpb_col(short2, x = x, y = y, fill = g, position = "dodge",
-                             style = "nplot", index = c(6, 2), title = "t"),
+                             index = c(6, 2), title = "t"),
     col_horizontal = cpb_col(long_cats, x = x, y = y, fill = g, position = "dodge",
                              orientation = "horizontal",
-                             style = "nplot", index = c(6, 2), title = "t"),
+                             index = c(6, 2), title = "t"),
     col_five       = cpb_col(five, x = x, y = y, fill = g, position = "dodge",
-                             style = "nplot", index = c(6, 2, 3, 4, 5), title = "t"),
+                             index = c(6, 2, 3, 4, 5), title = "t"),
     box            = cpb_box(box_df,
                              x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                              fill = g, reverse_legend = TRUE,
-                             style = "nplot", index = c(6, 2), title = "t")
+                             index = c(6, 2), title = "t")
   )
   # line keys draw a stroke centred in the key, so their lowest blue
   # pixel sits ~half a key above the rect variants'; they are compared
   # within their own family
   line_variants <- list(
     line_short = cpb_line(short2, x = as.integer(factor(x)), y = y, colour = g,
-                          style = "nplot", index = c(6, 2), title = "t") +
+                          index = c(6, 2), title = "t") +
       ggplot2::guides(colour = ggplot2::guide_legend(reverse = TRUE)),
     line_long  = cpb_line(long_cats, x = as.integer(factor(x)), y = y, colour = g,
-                          style = "nplot", index = c(6, 2), title = "t") +
+                          index = c(6, 2), title = "t") +
       ggplot2::guides(colour = ggplot2::guide_legend(reverse = TRUE))
   )
 

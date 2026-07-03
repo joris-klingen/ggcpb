@@ -23,12 +23,12 @@ figures 8–12 in `inst/examples/smoke_test_plots.R`:
   (on top of bars, underneath lines/boxes), the nplot
   `hline_bold = 0` / `x_axis_bold_if_zero` behaviour.
 
-All of these are bundled in the `style = "nplot"` preset on
-`theme_cpb()` and the wrappers; any knob set explicitly overrides the
-preset. Defaults (`style = "ggplot"`) are unchanged, so existing plots
-keep the hand-rolled CPB ggplot look.
+All of these are bundled in the `style = "cpb_default"` preset on
+`theme_cpb()` and the wrappers, which is now the *default* style; any
+knob set explicitly overrides the preset. `style = "ggplot"` keeps
+the hand-rolled CPB ggplot look.
 
-`zeroline` resolves automatically under `style = "nplot"`: always for
+`zeroline` resolves automatically under the default style: always for
 bars/areas (anchored at zero), and only when the data spans zero for
 lines and boxes (nplot's bold-axis-if-zero behaviour). `cpb_line()`
 draws a single unmapped series in CPB blue at nplot line weight
