@@ -131,9 +131,28 @@ cpb_register_fonts <- function() {
 #'   successfully (see [cpb_register_fonts()]), or `""` otherwise -- an
 #'   empty string tells ggplot2 to use its built-in default family, so
 #'   plots still render correctly even without the CPB font.
+#'
+#' @section Devices without TTF lookup:
+#' The registration goes through \pkg{systemfonts}, which the modern
+#' devices (`ragg::agg_png()`, `svglite`, the RStudio device) consult.
+#' The base `pdf()` and `postscript()` devices instead look families up
+#' in their own Type1 font database and *error at draw time* on a
+#' family they do not know. When one of those devices is currently
+#' active, `cpb_font_family()` therefore also returns `""`, so plots
+#' built with the default `theme_cpb()` still render (in the device's
+#' default face) instead of failing. If text on such a device is
+#' handled elsewhere -- e.g. `showtext::showtext_auto()` is on, which
+#' draws text itself on any device -- set
+#' `options(ggcpb.force_font_family = TRUE)` to always get the CPB
+#' family name.
 #' @examples
 #' cpb_font_family()
 #' @export
 cpb_font_family <- function() {
-  if (isTRUE(.ggcpb_env$font_registered)) "RijksoverheidSansText" else ""
+  if (!isTRUE(.ggcpb_env$font_registered)) return("")
+  if (!isTRUE(getOption("ggcpb.force_font_family", FALSE))) {
+    dev <- names(grDevices::dev.cur())
+    if (dev %in% c("pdf", "postscript")) return("")
+  }
+  "RijksoverheidSansText"
 }

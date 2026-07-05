@@ -31,6 +31,7 @@ cpb_col(
   grid_colour = "black",
   grid_linewidth = 0.1,
   title = NULL,
+  subtitle = NULL,
   xlab = NULL,
   ylab = NULL,
   filllab = NULL,
@@ -105,7 +106,11 @@ Defaults to \code{TRUE} (bars are anchored at zero).}
 \item{minor, ticks, flush_legend, axis_text_size, legend_key_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}} for per-figure deviations from the
 house defaults.}
 
-\item{title}{Plot title.}
+\item{title, subtitle}{Plot title/subtitle. \code{subtitle} is normally
+left \code{NULL}: CPB house style fills the subtitle line with \code{ylab}
+(the value-axis caption). An explicit \code{subtitle} wins, in which
+case a vertical chart's \code{ylab} falls back to a rotated y-axis
+title.}
 
 \item{xlab}{Label for the \strong{horizontal} axis (bottom, right-aligned
 italic). It is attached to the correct ggplot2 aesthetic

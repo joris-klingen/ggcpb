@@ -356,3 +356,105 @@ test_that("james/modern box styles reject a fill mapping", {
     "single-colour"
   )
 })
+
+# API consistency across wrappers ----
+
+test_that("cpb_col supports an explicit subtitle with ylab falling back to the axis", {
+  df <- data.frame(x = c("a", "b"), y = 1:2)
+  p <- cpb_col(df, x = x, y = y, title = "t", subtitle = "sub", ylab = "unit")
+  expect_equal(p$labels$subtitle, "sub")
+  expect_equal(p$labels$y, "unit")
+  # horizontal charts keep xlab on the value axis; ylab stays the subtitle
+  p2 <- cpb_col(df, x = x, y = y, orientation = "horizontal",
+                title = "t", ylab = "unit", xlab = "mld euro")
+  expect_equal(p2$labels$subtitle, "unit")
+  expect_equal(p2$labels$y, "mld euro")
+})
+
+test_that("value_breaks and value_limits work in area, line and box", {
+  num <- data.frame(x = rep(2015:2017, 2), g = rep(c("s1", "s2"), each = 3),
+                    y = c(1:3, 2:4))
+  box_df <- data.frame(x = c("a", "b"), p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5)
+
+  sc <- cpb_area(num, x = x, y = y, fill = g,
+                 value_breaks = c(0, 2, 4))$scales$get_scales("y")
+  expect_equal(sc$breaks, c(0, 2, 4))
+  sc <- cpb_line(num, x = x, y = y, colour = g,
+                 value_breaks = c(1, 3))$scales$get_scales("y")
+  expect_equal(sc$breaks, c(1, 3))
+  sc <- cpb_box(box_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+                value_breaks = c(1, 3, 5))$scales$get_scales("y")
+  expect_equal(sc$breaks, c(1, 3, 5))
+
+  # limits go through the coordinate system (zoom), never dropping data
+  p <- cpb_area(num, x = x, y = y, fill = g, value_limits = c(0, 10))
+  expect_equal(p$coordinates$limits$y, c(0, 10))
+  p <- cpb_line(num, x = x, y = y, colour = g, value_limits = c(0, 10))
+  expect_equal(p$coordinates$limits$y, c(0, 10))
+  expect_false(p$coordinates$expand)
+  p <- cpb_box(box_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+               value_limits = c(0, 10))
+  expect_equal(p$coordinates$limits$y, c(0, 10))
+  # horizontal box: the limits ride along on coord_flip()
+  p <- cpb_box(box_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+               orientation = "horizontal", value_limits = c(0, 10))
+  expect_s3_class(p$coordinates, "CoordFlip")
+  expect_equal(p$coordinates$limits$y, c(0, 10))
+})
+
+test_that("pct_axis works in cpb_box", {
+  box_df <- data.frame(x = c("a", "b"), p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5)
+  sc <- cpb_box(box_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+                pct_axis = TRUE)$scales$get_scales("y")
+  expect_equal(sc$labels(c(2.5, 50)), c("2%", "50%"))
+})
+
+test_that("reverse_legend reverses the colour guide in line and scatter", {
+  num <- data.frame(x = rep(2015:2017, 2), g = rep(c("s1", "s2"), each = 3),
+                    y = c(1:3, 2:4))
+  p <- cpb_line(num, x = x, y = y, colour = g, reverse_legend = TRUE)
+  expect_true(p$guides$guides$colour$params$reverse)
+  p <- cpb_scatter(num, x = x, y = y, colour = g, reverse_legend = TRUE)
+  expect_true(p$guides$guides$colour$params$reverse)
+  # default stays FALSE: no stacking convention for lines/points
+  expect_null(cpb_line(num, x = x, y = y, colour = g)$guides$guides$colour)
+  # a numeric colour column keeps its continuous scale untouched
+  numc <- transform(num, g = as.numeric(factor(g)))
+  p <- cpb_scatter(numc, x = x, y = y, colour = g, reverse_legend = TRUE)
+  expect_null(p$guides$guides$colour)
+})
+
+test_that("cpb_scatter draws the forecast window like cpb_line", {
+  num <- data.frame(x = rep(2015:2019, 2), g = rep(c("s1", "s2"), each = 5),
+                    y = c(1:5, 2:6))
+  p <- cpb_scatter(num, x = x, y = y, colour = g, forecast_x = 2017.5)
+  classes <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  rect_i  <- which(classes == "GeomRect")
+  point_i <- which(classes == "GeomPoint")
+  text_i  <- which(classes == "GeomText")
+  expect_length(rect_i, 1)
+  expect_length(text_i, 1)
+  # window underneath the points, label on top
+  expect_lt(rect_i, min(point_i))
+  expect_gt(text_i, max(point_i))
+  expect_equal(p$layers[[text_i]]$aes_params$label, "raming")
+})
+
+test_that("every wrapper forwards the shared theme knobs (anti-drift)", {
+  df <- data.frame(x = c("a", "b"), y = 1:2)
+  num <- data.frame(x = 2015:2016, y = 1:2)
+  box_df <- data.frame(x = c("a", "b"), p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5)
+  plots <- list(
+    cpb_col(df, x = x, y = y, axis_text_size = 9, legend = "none"),
+    cpb_area(df, x = x, y = y, fill = x, axis_text_size = 9, legend = "none"),
+    cpb_line(num, x = x, y = y, axis_text_size = 9, legend = "none"),
+    cpb_box(box_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+            axis_text_size = 9, legend = "none"),
+    cpb_scatter(num, x = x, y = y, axis_text_size = 9, legend = "none"),
+    cpb_hist(df, x = y, bins = 2, axis_text_size = 9, legend = "none")
+  )
+  for (p in plots) {
+    expect_equal(p$theme$axis.text$size, 9)
+    expect_equal(p$theme$legend.position, "none")
+  }
+})

@@ -32,10 +32,12 @@ Imports:
 Suggests:
     testthat (>= 3.0.0),
     png,
+    withr,
     knitr,
     rmarkdown,
     dplyr,
     tidyr,
+    data.table,
     showtext
 VignetteBuilder: knitr
 Config/testthat/edition: 3

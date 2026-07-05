@@ -13,6 +13,9 @@ cpb_scatter(
   size = 0.8,
   palette = "qualitative",
   index = NULL,
+  forecast_x = NULL,
+  forecast_label = "raming",
+  reverse_legend = FALSE,
   legend = "bottom",
   zeroline = NULL,
   minor = FALSE,
@@ -52,6 +55,16 @@ one of \code{"qualitative"} (default), \code{"discr"}, or \code{"sequential"}.}
 \item{index}{Optional integer vector of palette positions for a
 discrete \code{colour} column, forwarded to
 \code{\link[=scale_colour_cpb_manual]{scale_colour_cpb_manual()}}.}
+
+\item{forecast_x}{Optional x value where the forecast window
+starts; overlaid and labelled as in \code{\link[=cpb_line]{cpb_line()}}.}
+
+\item{forecast_label}{Label for the forecast window; defaults to
+\code{"raming"}. Use \code{NULL} (or \code{""}) for no label.}
+
+\item{reverse_legend}{If \code{TRUE}, reverse the colour legend order
+via \code{guide_legend(reverse = TRUE)} (discrete \code{colour} only).
+Defaults to \code{FALSE}.}
 
 \item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}.}
 

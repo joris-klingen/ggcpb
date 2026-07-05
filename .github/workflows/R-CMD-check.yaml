@@ -1,0 +1,78 @@
+# CI for ggcpb: R CMD check (with tests and vignettes) on Linux and
+# Windows, plus the two rendered-pixel checks -- the visual smoke test
+# against the reference figures and the legend-position stability
+# sweep. The pixel checks upload their rendered output as artifacts so
+# failures can be inspected visually.
+name: R-CMD-check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions: read-all
+
+jobs:
+  R-CMD-check:
+    runs-on: ${{ matrix.config.os }}
+    name: check (${{ matrix.config.os }}, R ${{ matrix.config.r }})
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {os: ubuntu-latest, r: 'release'}
+          - {os: windows-latest, r: 'release'}
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.config.r }}
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck
+          needs: check
+
+      - uses: r-lib/actions/check-r-package@v2
+        with:
+          error-on: '"warning"'
+          upload-snapshots: true
+
+  visual-checks:
+    runs-on: ubuntu-latest
+    name: visual checks (smoke test + legend stability)
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'release'
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::devtools
+          needs: check
+
+      - name: Legend-position stability sweep
+        run: Rscript inst/examples/legend_stability_test.R
+
+      - name: Visual smoke test
+        run: Rscript inst/examples/smoke_test_plots.R
+
+      - name: Upload rendered figures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rendered-figures
+          path: inst/examples/output/
+          if-no-files-found: ignore

@@ -99,8 +99,6 @@ col2 <- function(df, ...) {
   cpb_col(df, x = x, y = y, fill = g, position = "dodge",
           index = c(6, 2), title = "t", ...)
 }
-rev_colour <- ggplot2::guides(colour = ggplot2::guide_legend(reverse = TRUE))
-
 # each variant: name, glyph family, plot and canvas size (inches)
 variant <- function(name, family, plot, width = 4, height = 4) {
   list(name = name, family = family, plot = plot, width = width, height = height)
@@ -163,20 +161,22 @@ variants <- c(variants, list(
                   fill = g, reverse_legend = TRUE, index = c(6, 2), title = "t")),
   variant("type_line_short", "line",
           cpb_line(num_df, x = x, y = y, colour = g,
-                   index = c(6, 2), title = "t") + rev_colour),
+                   index = c(6, 2), reverse_legend = TRUE, title = "t")),
   variant("type_line_long", "line",
           cpb_line(transform(num_df,
                              g = factor(g, labels = c("mediane koopkrachtontwikkeling",
                                                       "gemiddelde contractloonstijging"))),
-                   x = x, y = y, colour = g, index = c(6, 2), title = "t") + rev_colour),
+                   x = x, y = y, colour = g, index = c(6, 2),
+                   reverse_legend = TRUE, title = "t")),
   variant("type_scatter_short", "point",
           cpb_scatter(num_df, x = x, y = y, colour = g,
-                      index = c(6, 2), title = "t") + rev_colour),
+                      index = c(6, 2), reverse_legend = TRUE, title = "t")),
   variant("type_scatter_long", "point",
           cpb_scatter(transform(num_df,
                                 g = factor(g, labels = c("huishoudens met kinderen",
                                                          "huishoudens zonder kinderen"))),
-                      x = x, y = y, colour = g, index = c(6, 2), title = "t") + rev_colour)
+                      x = x, y = y, colour = g, index = c(6, 2),
+                      reverse_legend = TRUE, title = "t"))
 ))
 
 # 5) canvas sizes (CPB half/full page and off-grid sizes)

@@ -14,10 +14,13 @@ cpb_line(
   palette = "qualitative",
   index = NULL,
   pct_axis = FALSE,
+  value_breaks = NULL,
+  value_limits = NULL,
   ymin = NULL,
   ymax = NULL,
   forecast_x = NULL,
   forecast_label = "raming",
+  reverse_legend = FALSE,
   legend = "bottom",
   zeroline = NULL,
   minor = FALSE,
@@ -61,6 +64,15 @@ to \code{\link[=scale_colour_cpb_manual]{scale_colour_cpb_manual()}} instead of 
 
 \item{pct_axis}{If \code{TRUE}, format the y axis with \code{\link[=label_pct_nl]{label_pct_nl()}}.}
 
+\item{value_breaks}{Optional breaks for the value axis (passed to
+the wrapper-built \code{\link[ggplot2:scale_continuous]{ggplot2::scale_y_continuous()}}). Use this
+instead of adding a second y scale, which would discard the
+wrapper's axis formatting and expansion.}
+
+\item{value_limits}{Optional length-2 limits for the value axis,
+applied through the coordinate system (zoom) so no data is
+dropped.}
+
 \item{ymin, ymax}{Optional columns (tidy eval) bounding an
 uncertainty band, drawn as a translucent ribbon underneath the
 line(s). With a \code{colour} mapping each series gets a band in its
@@ -74,6 +86,12 @@ values.}
 
 \item{forecast_label}{Label for the forecast window; defaults to
 \code{"raming"}. Use \code{NULL} (or \code{""}) for no label.}
+
+\item{reverse_legend}{If \code{TRUE}, reverse the colour legend order
+via \code{guide_legend(reverse = TRUE)}. Defaults to \code{FALSE}: unlike
+the stacked wrappers, line order carries no stacking convention.}
+
+\item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}.}
 
 \item{zeroline}{If \code{TRUE}, draw a solid black line at zero on the
 value axis underneath the data lines. \code{NULL} (default) draws it
