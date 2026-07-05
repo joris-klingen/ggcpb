@@ -18,6 +18,8 @@ cpb_col(
   value_breaks = NULL,
   value_limits = NULL,
   value_labels = FALSE,
+  forecast_x = NULL,
+  forecast_label = "raming",
   reverse_legend = TRUE,
   legend = "bottom",
   zeroline = TRUE,
@@ -78,6 +80,15 @@ ggplot2 pick the range.}
 
 \item{value_labels}{If \code{TRUE}, add \code{\link[ggplot2:geom_text]{ggplot2::geom_text()}} value
 labels using \code{y}, positioned to match \code{position}.}
+
+\item{forecast_x}{Optional x value where the forecast window starts
+(vertical charts with a numeric/time x axis). Everything to its
+right is overlaid with a translucent white rectangle underneath
+the bars and labelled with \code{forecast_label}. Pick a value between
+two bars (e.g. \code{2025.5}) so no bar is cut.}
+
+\item{forecast_label}{Label for the forecast window; defaults to
+\code{"raming"}. Use \code{NULL} (or \code{""}) for no label.}
 
 \item{reverse_legend}{If \code{TRUE} (default), reverse the fill legend
 order via \code{guide_legend(reverse = TRUE)} -- stacking otherwise

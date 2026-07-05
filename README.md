@@ -47,12 +47,15 @@ cpb_col(df, x = jaar, y = waarde, fill = groep,
   ylab  = "mld euro")
 ```
 
-The wrappers -- `cpb_line()`, `cpb_col()`, `cpb_area()`, `cpb_box()`
--- accept a data.frame or data.table plus tidy-eval column arguments,
+The wrappers -- `cpb_line()`, `cpb_col()`, `cpb_area()`, `cpb_box()`,
+`cpb_scatter()`, `cpb_hist()` -- accept a data.frame or data.table
+plus tidy-eval column arguments,
 and apply `theme_cpb()` and a CPB scale: the published-figure look
 (hairline black gridlines at labelled breaks, category-axis ticks,
-black zero line, flush-left bottom legend). Every style element is
-also an individual argument for per-figure deviations.
+black zero line, flush-left bottom legend). Time-series wrappers can
+mark a forecast window (`forecast_x`) and `cpb_line()` can draw an
+uncertainty band (`ymin`/`ymax`). Every style element is also an
+individual argument for per-figure deviations.
 
 On top of the wrappers sits the composable core: `theme_cpb()`,
 `cpb_pal()`/`cpb_cols()`/`cpb_tokens()`, discrete/continuous/manual
@@ -87,4 +90,8 @@ devtools::test()
 
 A visual end-to-end check lives in `inst/examples/smoke_test_plots.R`,
 which renders every chart type against the published reference figures
-in `references/plots/`.
+in `references/plots/`. Next to it, `inst/examples/legend_stability_test.R`
+sweeps legend-label lengths, category-label lengths, legend item counts,
+chart types, canvas sizes and title combinations, and verifies in the
+rendered pixels that the flush legend stays anchored to the same
+bottom-left spot in every variant.
