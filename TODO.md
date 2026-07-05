@@ -11,7 +11,8 @@ published reference figures in `references/plots/` (see the smoke test
   date axes, missing font backends, unusual devices.
 - **More chart types**: `cpb_scatter()` and `cpb_hist()` are done, as
   are the forecast window (`forecast_x`, the nplot "raming" overlay)
-  and the `cpb_line()` uncertainty band (`ymin`/`ymax`). Still open:
+  and the `cpb_line()` uncertainty band (`ymin`/`ymax`). cpb_box() supports three box styles (ggcpb, the legacy james
+  construction, and the designer modern variant). Still open:
   heatmap (built from the core in the walkthrough for now), fan
   charts (the dedicated fan palette of the legacy plotter has not
   been recovered), the standardized purchasing-power plot, faceted

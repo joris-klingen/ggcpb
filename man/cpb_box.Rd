@@ -14,6 +14,9 @@ cpb_box(
   p95,
   fill = NULL,
   fill_colour = NULL,
+  box_style = c("ggcpb", "james", "modern"),
+  box_labels = NULL,
+  label_accuracy = 0.1,
   width = 0.5,
   linewidth = 0.25,
   palette = "qualitative",
@@ -48,18 +51,49 @@ category each box belongs to.}
 25th, 50th (median), 75th and 95th percentiles (tidy eval).}
 
 \item{fill}{Optional column mapped to the fill aesthetic (tidy
-eval), e.g. for grouped boxes side by side.}
+eval), e.g. for grouped boxes side by side. Only supported by
+\code{box_style = "ggcpb"}.}
 
 \item{fill_colour}{Constant box fill used when no \code{fill} column is
 mapped. Defaults to \code{NULL}, which resolves to the CPB primary blue
-(\code{cpb_cols(6)}, \code{"#005faf"}). Ignored when \code{fill} is supplied.}
+(\code{cpb_cols(6)}, \code{"#005faf"}) for \code{"ggcpb"}/\code{"james"} and the CPB
+light blue (\code{cpb_cols(5)}, \code{"#87d2ff"}) for \code{"modern"}. Ignored
+when \code{fill} is supplied.}
+
+\item{box_style}{How the boxes are constructed:
+\itemize{
+\item \code{"ggcpb"} (default): the style already used in CPB
+distributional figures -- capped errorbar whiskers plus an
+outlined box with a median line.
+\item \code{"james"}: the legacy \code{nplot()} box -- a borderless filled box,
+plain (capless) whiskers in the box colour, a black median line
+extending slightly beyond the box, and the median value printed
+above it.
+\item \code{"modern"}: the designer variant of \code{"james"} -- light-blue box
+and whiskers, a thick dark-blue median line, the median value
+in bold above it and the p25/p75 values printed below the box
+ends.
+}
+
+\code{"james"} and \code{"modern"} follow the house convention of
+horizontal boxes; combine them with
+\code{orientation = "horizontal"}.}
+
+\item{box_labels}{Whether to print the value labels of the
+\code{"james"}/\code{"modern"} styles. \code{NULL} (default) resolves by
+\code{box_style} (\code{TRUE} for \code{"james"}/\code{"modern"}, which always
+ignore it under a \code{fill} mapping); ignored for \code{"ggcpb"}.}
+
+\item{label_accuracy}{Rounding of the printed value labels, passed
+to \code{\link[=label_number_nl]{label_number_nl()}}; defaults to \code{0.1} (one decimal, Dutch
+comma).}
 
 \item{width}{Box width; the errorbar width is drawn at half this
 value. Defaults to \code{0.5}.}
 
 \item{linewidth}{Stroke width of the box outlines, median line and
-errorbars. Defaults to \code{0.25}, matching the thin strokes of the
-published CPB distributional figures.}
+errorbars in the \code{"ggcpb"} style. Defaults to \code{0.25}, matching
+the thin strokes of the published CPB distributional figures.}
 
 \item{palette}{CPB palette to use for \code{fill}; one of
 \code{"qualitative"} (default), \code{"discr"}, or \code{"sequential"}.}

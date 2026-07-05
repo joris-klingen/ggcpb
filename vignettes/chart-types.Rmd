@@ -256,6 +256,32 @@ cpb_box(kk2, x = groep,
   scale_y_continuous(labels = label_number_nl())
 ```
 
+## Box styles
+
+`box_style` selects how the boxes are drawn. Besides the default
+`"ggcpb"` construction above there is `"james"`, the legacy plotter's
+box -- borderless, plain capless whiskers, a black median line
+extending past the box, and the median value printed above it -- and
+`"modern"`, the designer variant with light-blue boxes, a thick
+dark-blue median and the quartile values printed below the box ends:
+
+```{r box-modern}
+cpb_box(kk, x = groep,
+  p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  box_style   = "modern",
+  orientation = "horizontal",
+  width       = 0.35,
+  title    = "Koopkracht per inkomensgroep",
+  subtitle = "inkomensgroep",
+  ylab     = "% koopkrachtmutatie") +
+  scale_y_continuous(labels = label_number_nl(accuracy = 0.1))
+```
+
+Both styles print value labels by default (`box_labels = FALSE` turns
+them off, `label_accuracy` controls their rounding) and draw
+single-colour boxes: a `fill` mapping is only supported by
+`"ggcpb"`.
+
 # Scatter plots
 
 `cpb_scatter()` draws points in the house style. Without a `colour`

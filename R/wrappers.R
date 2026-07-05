@@ -646,15 +646,41 @@ cpb_line <- function(data, x, y, colour = NULL,
 #' @param p5,p25,p50,p75,p95 Columns holding the precomputed 5th,
 #'   25th, 50th (median), 75th and 95th percentiles (tidy eval).
 #' @param fill Optional column mapped to the fill aesthetic (tidy
-#'   eval), e.g. for grouped boxes side by side.
+#'   eval), e.g. for grouped boxes side by side. Only supported by
+#'   `box_style = "ggcpb"`.
 #' @param fill_colour Constant box fill used when no `fill` column is
 #'   mapped. Defaults to `NULL`, which resolves to the CPB primary blue
-#'   (`cpb_cols(6)`, `"#005faf"`). Ignored when `fill` is supplied.
+#'   (`cpb_cols(6)`, `"#005faf"`) for `"ggcpb"`/`"james"` and the CPB
+#'   light blue (`cpb_cols(5)`, `"#87d2ff"`) for `"modern"`. Ignored
+#'   when `fill` is supplied.
+#' @param box_style How the boxes are constructed:
+#'   * `"ggcpb"` (default): the style already used in CPB
+#'     distributional figures -- capped errorbar whiskers plus an
+#'     outlined box with a median line.
+#'   * `"james"`: the legacy `nplot()` box -- a borderless filled box,
+#'     plain (capless) whiskers in the box colour, a black median line
+#'     extending slightly beyond the box, and the median value printed
+#'     above it.
+#'   * `"modern"`: the designer variant of `"james"` -- light-blue box
+#'     and whiskers, a thick dark-blue median line, the median value
+#'     in bold above it and the p25/p75 values printed below the box
+#'     ends.
+#'
+#'   `"james"` and `"modern"` follow the house convention of
+#'   horizontal boxes; combine them with
+#'   `orientation = "horizontal"`.
+#' @param box_labels Whether to print the value labels of the
+#'   `"james"`/`"modern"` styles. `NULL` (default) resolves by
+#'   `box_style` (`TRUE` for `"james"`/`"modern"`, which always
+#'   ignore it under a `fill` mapping); ignored for `"ggcpb"`.
+#' @param label_accuracy Rounding of the printed value labels, passed
+#'   to [label_number_nl()]; defaults to `0.1` (one decimal, Dutch
+#'   comma).
 #' @param width Box width; the errorbar width is drawn at half this
 #'   value. Defaults to `0.5`.
 #' @param linewidth Stroke width of the box outlines, median line and
-#'   errorbars. Defaults to `0.25`, matching the thin strokes of the
-#'   published CPB distributional figures.
+#'   errorbars in the `"ggcpb"` style. Defaults to `0.25`, matching
+#'   the thin strokes of the published CPB distributional figures.
 #' @param palette CPB palette to use for `fill`; one of
 #'   `"qualitative"` (default), `"discr"`, or `"sequential"`.
 #' @param index Optional integer vector of palette positions, forwarded
@@ -699,6 +725,9 @@ cpb_line <- function(data, x, y, colour = NULL,
 cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                      fill = NULL,
                      fill_colour = NULL,
+                     box_style = c("ggcpb", "james", "modern"),
+                     box_labels = NULL,
+                     label_accuracy = 0.1,
                      width = 0.5,
                      linewidth = 0.25,
                      palette = "qualitative",
@@ -721,6 +750,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                      filllab = NULL,
                      ...) {
   orientation <- match.arg(orientation)
+  box_style <- match.arg(box_style)
 
   x <- rlang::enquo(x)
   p5  <- rlang::enquo(p5)
@@ -730,6 +760,13 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   p95 <- rlang::enquo(p95)
   fill <- rlang::enquo(fill)
   has_fill <- !rlang::quo_is_null(fill)
+
+  if (has_fill && box_style != "ggcpb") {
+    stop("box_style = \"", box_style, "\" draws single-colour boxes and does ",
+         "not support a `fill` mapping; use box_style = \"ggcpb\" for ",
+         "fill-grouped boxes.", call. = FALSE)
+  }
+  if (is.null(box_labels)) box_labels <- box_style != "ggcpb"
 
   # as in cpb_line(): only bold the zero line when zero is on the axis
   if (is.null(zeroline)) {
@@ -762,18 +799,86 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black", linewidth = 0.25)
   }
 
-  # key_glyph = "rect": CPB legends show plain colour squares, not
-  # miniature boxplots. Without a fill mapping the boxes are drawn in
-  # one flat house-style colour (CPB primary blue by default).
-  box_args <- list(mapping = mapping_box, stat = "identity", width = width,
-                   linewidth = linewidth, key_glyph = "rect", ...)
-  if (!has_fill) {
-    box_args$fill <- if (is.null(fill_colour)) unname(cpb_cols(6)) else fill_colour
+  if (box_style == "ggcpb") {
+    # key_glyph = "rect": CPB legends show plain colour squares, not
+    # miniature boxplots. Without a fill mapping the boxes are drawn in
+    # one flat house-style colour (CPB primary blue by default).
+    box_args <- list(mapping = mapping_box, stat = "identity", width = width,
+                     linewidth = linewidth, key_glyph = "rect", ...)
+    if (!has_fill) {
+      box_args$fill <- if (is.null(fill_colour)) unname(cpb_cols(6)) else fill_colour
+    }
+    p <- p +
+      ggplot2::geom_errorbar(mapping = mapping_errorbar, width = width / 2,
+                             linewidth = linewidth, ...) +
+      do.call(ggplot2::geom_boxplot, box_args)
+  } else {
+    # "james" (the legacy nplot() box) and "modern" (its designer
+    # variant) share one construction: a borderless filled box over
+    # p25-p75, plain capless whiskers in the box colour, and a median
+    # line extending slightly beyond the box. They differ in colours,
+    # weights and which value labels are printed.
+    sty <- switch(box_style,
+      james = list(
+        box_col   = if (is.null(fill_colour)) unname(cpb_cols(6)) else fill_colour,
+        whisk_lw  = 0.4,
+        med_col   = "black", med_lw = 0.4, med_ext = 0.15,
+        med_lab_col = "black", med_lab_face = "plain", med_lab_size = 2.2,
+        q_labels  = FALSE
+      ),
+      modern = list(
+        box_col   = if (is.null(fill_colour)) unname(cpb_cols(5)) else fill_colour,
+        whisk_lw  = 0.55,
+        med_col   = unname(cpb_cols(6)), med_lw = 1.3, med_ext = 0.2,
+        med_lab_col = unname(cpb_cols(6)), med_lab_face = "bold", med_lab_size = 2.6,
+        q_labels  = TRUE, q_lab_col = "#00a5ff", q_lab_size = 2.2
+      )
+    )
+    fmt <- label_number_nl(accuracy = label_accuracy)
+
+    p <- p +
+      # plain whiskers: capless (width = 0) segments p5-p25 and p75-p95
+      ggplot2::geom_errorbar(ggplot2::aes(x = !!x, ymin = !!p5, ymax = !!p25),
+                             width = 0, linewidth = sty$whisk_lw,
+                             colour = sty$box_col, ...) +
+      ggplot2::geom_errorbar(ggplot2::aes(x = !!x, ymin = !!p75, ymax = !!p95),
+                             width = 0, linewidth = sty$whisk_lw,
+                             colour = sty$box_col, ...) +
+      # borderless box; colour = NA also hides the boxplot's own median
+      # line, which is drawn separately so it can extend past the box
+      ggplot2::geom_boxplot(mapping = mapping_box, stat = "identity",
+                            width = width, fill = sty$box_col, colour = NA,
+                            key_glyph = "rect", ...) +
+      # the median: a zero-span errorbar whose cap IS the median line,
+      # slightly wider than the box
+      ggplot2::geom_errorbar(ggplot2::aes(x = !!x, ymin = !!p50, ymax = !!p50),
+                             width = width * (1 + 2 * sty$med_ext),
+                             linewidth = sty$med_lw, colour = sty$med_col, ...)
+
+    if (isTRUE(box_labels)) {
+      # labels are offset along the category axis: the median value
+      # above the box, the quartile values (modern) below it
+      p <- p + ggplot2::geom_text(
+        ggplot2::aes(x = !!x, y = !!p50, label = fmt(!!p50)),
+        nudge_x = width * 0.95, size = sty$med_lab_size,
+        colour = sty$med_lab_col, fontface = sty$med_lab_face,
+        family = cpb_font_family()
+      )
+      if (isTRUE(sty$q_labels)) {
+        p <- p +
+          ggplot2::geom_text(
+            ggplot2::aes(x = !!x, y = !!p25, label = fmt(!!p25)),
+            nudge_x = -width * 0.85, hjust = 0.8, size = sty$q_lab_size,
+            colour = sty$q_lab_col, family = cpb_font_family()
+          ) +
+          ggplot2::geom_text(
+            ggplot2::aes(x = !!x, y = !!p75, label = fmt(!!p75)),
+            nudge_x = -width * 0.85, hjust = 0.2, size = sty$q_lab_size,
+            colour = sty$q_lab_col, family = cpb_font_family()
+          )
+      }
+    }
   }
-  p <- p +
-    ggplot2::geom_errorbar(mapping = mapping_errorbar, width = width / 2,
-                           linewidth = linewidth, ...) +
-    do.call(ggplot2::geom_boxplot, box_args)
 
   if (orientation == "horizontal") {
     p <- p + ggplot2::coord_flip()

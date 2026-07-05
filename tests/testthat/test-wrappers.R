@@ -302,3 +302,57 @@ test_that("cpb_line draws an uncertainty band under the lines", {
   expect_no_error(ggplot2::ggplotGrob(p2))
   expect_identical(p2$guides$guides$fill, "none")
 })
+
+test_that("cpb_box box_style = 'james' and 'modern' build the legacy box", {
+  df <- data.frame(groep = c("a", "b"),
+                   p5 = 0.2, p25 = 0.4, p50 = 0.6, p75 = 0.7, p95 = 0.9)
+  for (style in c("james", "modern")) {
+    p <- cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+                 box_style = style, orientation = "horizontal")
+    geoms <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+    # two capless whiskers, borderless box, median tick
+    expect_equal(sum(geoms == "GeomErrorbar"), 3)
+    expect_true("GeomBoxplot" %in% geoms)
+    box <- p$layers[[which(geoms == "GeomBoxplot")]]
+    expect_true(is.na(box$aes_params$colour))
+    # value labels on by default
+    expect_true("GeomText" %in% geoms)
+    expect_no_error(ggplot2::ggplotGrob(p))
+  }
+
+  # style-specific colours: james blue box/black median, modern light
+  # blue box/dark blue median
+  pj <- cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+                box_style = "james")
+  gj <- vapply(pj$layers, function(l) class(l$geom)[1], character(1))
+  expect_equal(pj$layers[[which(gj == "GeomBoxplot")]]$aes_params$fill,
+               unname(cpb_cols(6)))
+  med_j <- pj$layers[[max(which(gj == "GeomErrorbar"))]]
+  expect_equal(med_j$aes_params$colour, "black")
+
+  pm <- cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+                box_style = "modern")
+  gm <- vapply(pm$layers, function(l) class(l$geom)[1], character(1))
+  expect_equal(pm$layers[[which(gm == "GeomBoxplot")]]$aes_params$fill,
+               unname(cpb_cols(5)))
+  med_m <- pm$layers[[max(which(gm == "GeomErrorbar"))]]
+  expect_equal(med_m$aes_params$colour, unname(cpb_cols(6)))
+
+  # modern prints three label layers (median + both quartiles),
+  # james one; box_labels = FALSE drops them
+  expect_equal(sum(gm == "GeomText"), 3)
+  expect_equal(sum(gj == "GeomText"), 1)
+  p0 <- cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+                box_style = "modern", box_labels = FALSE)
+  expect_false("GeomText" %in% vapply(p0$layers, function(l) class(l$geom)[1], character(1)))
+})
+
+test_that("james/modern box styles reject a fill mapping", {
+  df <- data.frame(groep = c("a", "b"), g = c("x", "y"),
+                   p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5)
+  expect_error(
+    cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+            fill = g, box_style = "modern"),
+    "single-colour"
+  )
+})

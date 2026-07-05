@@ -276,6 +276,20 @@ band_dt[, `:=`(
   hi = groei + c(rep(0, 9), 0.4, 0.9, 1.4, 1.8)
 )]
 
+# effect estimates per income quintile for the james/modern boxplot
+# styles (attachment style: values around 0.2-0.9, medians labelled)
+kwintielen <- c("1-20% (<106% wml)", "21-40% (106-173% wml)",
+                "41-60% (173-256% wml)", "61-80% (256-378% wml)",
+                "81-100% (>378% wml)")
+mod_dt <- data.table(
+  groep = factor(kwintielen, levels = rev(kwintielen)),
+  p5    = c(0.30, 0.20, 0.15, 0.25, 0.45),
+  p25   = c(0.40, 0.30, 0.35, 0.35, 0.55),
+  p50   = c(0.60, 0.60, 0.60, 0.70, 0.80),
+  p75   = c(0.70, 0.80, 0.80, 0.80, 0.90),
+  p95   = c(0.85, 0.90, 0.90, 0.95, 1.30)
+)
+
 # Figures ----
 
 # All figures use the CPB house style: hairline black gridlines at
@@ -504,6 +518,32 @@ render(16, "line: uncertainty band + forecast",
     ggplot2::scale_x_continuous(breaks = seq(2015, 2027, 3), minor_breaks = band_jaren,
                                 guide = ggplot2::guide_axis(minor.ticks = TRUE)),
   "16_line_band.png", page = "half")
+
+render(17, "box: james style",
+  cpb_box(mod_dt, x = groep,
+    p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+    box_style   = "james",
+    orientation = "horizontal",
+    title    = "Effect per inkomensgroep",
+    subtitle = "inkomensgroep",
+    ylab     = "effect (%-punt)") +
+    ggplot2::scale_y_continuous(labels = label_number_nl(accuracy = 0.1)),
+  "17_box_james.png", page = "half")
+
+# designer variant (see the design handed in as reference): light-blue
+# boxes and whiskers, thick dark-blue median with a bold label above it
+# and the quartile values below the box ends
+render(18, "box: modern style",
+  cpb_box(mod_dt, x = groep,
+    p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+    box_style   = "modern",
+    orientation = "horizontal",
+    width       = 0.35,
+    title    = "Effect per inkomensgroep",
+    subtitle = "inkomensgroep",
+    ylab     = "effect (%-punt)") +
+    ggplot2::scale_y_continuous(labels = label_number_nl(accuracy = 0.1)),
+  "18_box_modern.png", page = "half")
 
 # Summary ----
 
