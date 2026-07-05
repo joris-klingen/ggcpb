@@ -9,9 +9,13 @@ published reference figures in `references/plots/` (see the smoke test
 - **Robustness**: check and improve behaviour on edge cases -- empty
   or single-row data, NA-heavy series, very long labels, many series,
   date axes, missing font backends, unusual devices.
-- **More chart types**: wrappers for additional recurring CPB figures
-  (e.g. scatter, histogram, faceted variants) -- for now these are
-  built from the composable core, see the walkthrough vignette.
+- **More chart types**: `cpb_scatter()` and `cpb_hist()` are done, as
+  are the forecast window (`forecast_x`, the nplot "raming" overlay)
+  and the `cpb_line()` uncertainty band (`ymin`/`ymax`). Still open:
+  heatmap (built from the core in the walkthrough for now), fan
+  charts (the dedicated fan palette of the legacy plotter has not
+  been recovered), the standardized purchasing-power plot, faceted
+  variants, and geographic maps.
 - **Sequential blue palette**: reference p17_img19 (deciles) uses a
   10-step blue ramp that the package palettes do not cover yet.
 - **Minor tick marks on continuous (year) axes** are currently added

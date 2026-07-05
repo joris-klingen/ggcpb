@@ -12,6 +12,8 @@ cpb_area(
   palette = "qualitative",
   index = NULL,
   pct_axis = FALSE,
+  forecast_x = NULL,
+  forecast_label = "raming",
   reverse_legend = TRUE,
   legend = "bottom",
   zeroline = TRUE,
@@ -48,6 +50,12 @@ to \code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} instead of the 
 \code{\link[=scale_fill_cpb_d]{scale_fill_cpb_d()}} when supplied.}
 
 \item{pct_axis}{If \code{TRUE}, format the y axis with \code{\link[=label_pct_nl]{label_pct_nl()}}.}
+
+\item{forecast_x}{Optional x value where the forecast window
+starts; overlaid and labelled as in \code{\link[=cpb_line]{cpb_line()}}.}
+
+\item{forecast_label}{Label for the forecast window; defaults to
+\code{"raming"}. Use \code{NULL} (or \code{""}) for no label.}
 
 \item{reverse_legend}{If \code{TRUE} (default), reverse the fill legend
 order via \code{guide_legend(reverse = TRUE)}.}

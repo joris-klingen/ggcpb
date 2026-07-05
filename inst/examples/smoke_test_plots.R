@@ -229,6 +229,53 @@ opbouw_dt[, `:=`(
 )]
 opbouw_dt[, mid := NULL]
 
+# gas prices per scenario (style of reference p06_img01, energy
+# publication): a realised series up to the forecast point, three
+# scenario paths after it, and a shaded forecast window. Monthly grid
+# expressed as fractional years.
+gas_maanden <- seq(2025, 2027 + 11 / 12, by = 1 / 12)
+gas_knik <- 2026 + 4 / 12   # last realised month
+gas_reeksen <- c("langer hoger", "marktverwachtingen", "CEP 2026", "realisatie")
+sim_pad <- function(niveau, vorm) {
+  # smooth path from ~1.35 at the kink towards `niveau`
+  t <- pmax(0, gas_maanden - gas_knik)
+  pmin(1.35 + (niveau - 1.35) * (1 - exp(-vorm * t)), niveau) +
+    rnorm(length(gas_maanden), 0, 0.004)
+}
+gas_dt <- rbindlist(list(
+  data.table(maand = gas_maanden, reeks = "langer hoger",
+             prijs = sim_pad(1.87, 4)),
+  data.table(maand = gas_maanden, reeks = "marktverwachtingen",
+             prijs = sim_pad(1.52, 3)),
+  data.table(maand = gas_maanden, reeks = "CEP 2026",
+             prijs = sim_pad(1.33, 3)),
+  data.table(maand = gas_maanden, reeks = "realisatie",
+             prijs = 1.35 + 0.02 * sin(6 * gas_maanden) + rnorm(length(gas_maanden), 0, 0.005))
+))
+gas_dt[, reeks := factor(reeks, levels = gas_reeksen)]
+# realisatie stops at the kink; the scenario paths only exist after it
+gas_dt[reeks != "realisatie" & maand < gas_knik, prijs := NA]
+gas_dt[reeks == "realisatie" & maand > gas_knik, prijs := NA]
+
+# household income vs energy bill for the scatter, coloured by a
+# continuous purchasing-power change
+scat_dt <- data.table(groep = rep(1:5, each = 80))
+scat_dt[, inkomen := round(rlnorm(.N, log(2200) + 0.3 * (groep - 3), 0.2))]
+scat_dt[, energierekening := round(90 + 0.04 * inkomen + rnorm(.N, 0, 35))]
+scat_dt[, koopkracht := round(rnorm(.N, (groep - 3) * 1.2, 2), 1)]
+
+# durations for the histogram
+hist_dt <- data.table(duur = round(rgamma(1200, 8, 0.6)))
+
+# growth path with a widening uncertainty band in the forecast years
+band_jaren <- 2015:2027
+band_dt <- data.table(jaar = band_jaren,
+                      groei = round(rnorm(13, 1.5, 0.8), 1))
+band_dt[, `:=`(
+  lo = groei - c(rep(0, 9), 0.4, 0.9, 1.4, 1.8),
+  hi = groei + c(rep(0, 9), 0.4, 0.9, 1.4, 1.8)
+)]
+
 # Figures ----
 
 # All figures use the CPB house style: hairline black gridlines at
@@ -411,6 +458,52 @@ render(12, "box: horizontal, dodged by year",
     ggplot2::scale_y_continuous(labels = label_pct_nl(scale = 1),
                                 breaks = seq(0, 100, 25)),
   "12_box_horizontal_dodged.png", page = "half")
+
+# recreation of reference figure p06_img01 (energy publication): gas
+# prices per scenario, with the forecast window shaded and labelled.
+render(13, "line: scenarios with forecast window",
+  cpb_line(gas_dt, x = maand, y = prijs, colour = reeks,
+    index = c(6, 5, 2, 1),
+    forecast_x = gas_knik,
+    forecast_label = "scenario's",
+    title = "Gasprijzen per scenario",
+    ylab  = "euro/kuub") +
+    ggplot2::scale_y_continuous(breaks = seq(0.5, 2, 0.5), limits = c(0.5, 2),
+                                labels = label_number_nl(accuracy = 0.1)) +
+    ggplot2::scale_x_continuous(
+      breaks = seq(2025.5, 2028, 0.5) - 1 / 12,
+      labels = function(b) paste0(ifelse(b %% 1 < 0.5, "6", "12"), "-", floor(b)),
+      minor_breaks = gas_maanden,
+      guide = ggplot2::guide_axis(minor.ticks = TRUE)
+    ) +
+    ggplot2::guides(colour = ggplot2::guide_legend(ncol = 2)) +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1)),
+  "13_line_forecast.png", page = "half")
+
+render(14, "scatter: continuous colour",
+  cpb_scatter(scat_dt, x = inkomen, y = energierekening, colour = koopkracht,
+    title = "Energierekening naar inkomen",
+    ylab  = "energierekening (euro per maand)",
+    xlab  = "besteedbaar inkomen (euro per maand)",
+    colourlab = "koopkracht (%)") +
+    ggplot2::scale_x_continuous(labels = label_euro_nl()),
+  "14_scatter.png", page = "full")
+
+render(15, "histogram",
+  cpb_hist(hist_dt, x = duur, binwidth = 2,
+    title = "Verdeling van de duur",
+    ylab  = "aantal",
+    xlab  = "duur (maanden)"),
+  "15_hist.png", page = "half")
+
+render(16, "line: uncertainty band + forecast",
+  cpb_line(band_dt, x = jaar, y = groei, ymin = lo, ymax = hi,
+    forecast_x = 2023.5,
+    title = "Economische groei met onzekerheid",
+    ylab  = "%") +
+    ggplot2::scale_x_continuous(breaks = seq(2015, 2027, 3), minor_breaks = band_jaren,
+                                guide = ggplot2::guide_axis(minor.ticks = TRUE)),
+  "16_line_band.png", page = "half")
 
 # Summary ----
 

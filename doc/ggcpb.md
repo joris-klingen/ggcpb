@@ -8,7 +8,8 @@ the first draft, `+` layers with the **formatters and palette
 accessors** to refine it, the **theme and scales directly** for a chart
 type the wrappers do not cover, and `save_cpb()` to export at the strict
 CPB page widths. For a catalogue of all chart types and their wrapper
-calls, see `vignette("chart-types")`.
+calls (`cpb_line()`, `cpb_col()`, `cpb_area()`, `cpb_box()`,
+`cpb_scatter()`, `cpb_hist()`), see `vignette("chart-types")`.
 
 ``` r
 library(ggcpb)
@@ -93,32 +94,49 @@ custom value-axis breaks through the wrapper’s `value_breaks` argument
 rather than a second `scale_y_continuous()` – see
 `vignette("chart-types")`.)
 
-# When there is no wrapper: the composable core
+# Another view, another wrapper
 
-Not every figure is a line, column, area or boxplot. For anything else –
-here a scatter of income against the energy bill – you build from raw
-`ggplot2` and apply the same core pieces the wrappers use:
-`theme_cpb()`, a CPB colour scale (`scale_colour_cpb_c()` for a
-continuous gradient), and the formatters on the axes. Two house
-conventions to carry over yourself: the value-axis unit goes in
-`subtitle` (never a rotated y-axis title), and the horizontal axis title
-sits at the bottom right.
+The same microdata seen as a scatter is one `cpb_scatter()` call – a
+numeric `colour` column automatically gets the continuous CPB gradient:
 
 ``` r
 steekproef <- slice_sample(huishoudens, n = 400)
 
-ggplot(steekproef, aes(inkomen, energierekening, colour = koopkracht)) +
-  geom_point(size = 0.8) +
-  labs(title = "Energierekening naar inkomen",
-       subtitle = "energierekening (euro per maand)",
-       x = "besteedbaar inkomen (euro per maand)",
-       y = NULL, colour = "koopkracht (%)") +
-  scale_x_continuous(labels = label_euro_nl()) +
-  scale_colour_cpb_c() +
-  theme_cpb()
+cpb_scatter(steekproef, x = inkomen, y = energierekening, colour = koopkracht,
+  title = "Energierekening naar inkomen",
+  ylab  = "energierekening (euro per maand)",
+  xlab  = "besteedbaar inkomen (euro per maand)",
+  colourlab = "koopkracht (%)") +
+  scale_x_continuous(labels = label_euro_nl())
 ```
 
 <img src="ggcpb_files/figure-gfm/scatter-1.png" width="700px" />
+
+# When there is no wrapper: the composable core
+
+Not every figure has a wrapper. For anything else – here a heatmap of
+the median purchasing-power change per income group and simulated year –
+you build from raw `ggplot2` and apply the same core pieces the wrappers
+use: `theme_cpb()`, a CPB colour scale (`scale_fill_cpb_c()` for a
+continuous gradient), and the formatters. Two house conventions to carry
+over yourself: the value-axis unit goes in `subtitle` (never a rotated
+y-axis title), and the horizontal axis title sits at the bottom right.
+
+``` r
+raster <- huishoudens |>
+  mutate(jaar = sample(2024:2027, n(), replace = TRUE)) |>
+  summarise(mediaan = median(koopkracht), .by = c(groep, jaar))
+
+ggplot(raster, aes(jaar, groep, fill = mediaan)) +
+  geom_tile(colour = "white", linewidth = 0.4) +
+  labs(title = "Mediane koopkracht per groep en jaar",
+       subtitle = "inkomensgroep",
+       x = NULL, y = NULL, fill = "mediaan (%)") +
+  scale_fill_cpb_c() +
+  theme_cpb(grid = "none", ticks = FALSE)
+```
+
+<img src="ggcpb_files/figure-gfm/heatmap-1.png" width="700px" />
 
 `theme_cpb()` takes the same layout arguments as the wrappers
 (`?theme_cpb`), and `cpb_tokens()` exposes the raw design tokens

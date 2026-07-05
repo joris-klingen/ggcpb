@@ -14,6 +14,10 @@ cpb_line(
   palette = "qualitative",
   index = NULL,
   pct_axis = FALSE,
+  ymin = NULL,
+  ymax = NULL,
+  forecast_x = NULL,
+  forecast_label = "raming",
   legend = "bottom",
   zeroline = NULL,
   minor = FALSE,
@@ -56,6 +60,20 @@ to \code{\link[=scale_colour_cpb_manual]{scale_colour_cpb_manual()}} instead of 
 \code{\link[=scale_colour_cpb_d]{scale_colour_cpb_d()}} when supplied.}
 
 \item{pct_axis}{If \code{TRUE}, format the y axis with \code{\link[=label_pct_nl]{label_pct_nl()}}.}
+
+\item{ymin, ymax}{Optional columns (tidy eval) bounding an
+uncertainty band, drawn as a translucent ribbon underneath the
+line(s). With a \code{colour} mapping each series gets a band in its
+own colour; otherwise the band uses the line colour.}
+
+\item{forecast_x}{Optional x value where the forecast window
+starts. Everything to its right is overlaid with a translucent
+white rectangle (drawn underneath the data) and labelled with
+\code{forecast_label}, the house convention for marking predicted
+values.}
+
+\item{forecast_label}{Label for the forecast window; defaults to
+\code{"raming"}. Use \code{NULL} (or \code{""}) for no label.}
 
 \item{zeroline}{If \code{TRUE}, draw a solid black line at zero on the
 value axis underneath the data lines. \code{NULL} (default) draws it

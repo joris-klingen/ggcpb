@@ -249,6 +249,72 @@ cpb_box(kk2, x = groep,
 
 <img src="chart-types_files/figure-gfm/box-dodged-1.png" width="700px" />
 
+# Scatter plots
+
+`cpb_scatter()` draws points in the house style. Without a `colour`
+column the points are CPB blue; a *numeric* `colour` column gets the
+continuous CPB gradient, a discrete one the discrete palette:
+
+``` r
+hh <- tibble(inkomen = round(rlnorm(400, log(2500), 0.35))) |>
+  mutate(energierekening = round(90 + 0.04 * inkomen + rnorm(n(), 0, 35)),
+         koopkracht      = round(rnorm(n(), (inkomen - 2500) / 1500, 2), 1))
+
+cpb_scatter(hh, x = inkomen, y = energierekening, colour = koopkracht,
+  title = "Energierekening naar inkomen",
+  ylab  = "energierekening (euro per maand)",
+  xlab  = "besteedbaar inkomen (euro per maand)",
+  colourlab = "koopkracht (%)") +
+  scale_x_continuous(labels = label_euro_nl())
+```
+
+<img src="chart-types_files/figure-gfm/scatter-1.png" width="700px" />
+
+# Histograms
+
+`cpb_hist()` bins a column of observations into house-blue bars with
+white outlines; set `binwidth` or `bins`. Map `fill` for grouped
+histograms:
+
+``` r
+duur <- tibble(maanden = round(rgamma(1200, 8, 0.6)))
+
+cpb_hist(duur, x = maanden, binwidth = 2,
+  title = "Verdeling van de duur",
+  ylab  = "aantal",
+  xlab  = "duur (maanden)")
+```
+
+<img src="chart-types_files/figure-gfm/hist-1.png" width="350px" />
+
+# Forecast windows and uncertainty bands
+
+Time-series figures mark the forecast part of the axis with a
+translucent window and a label – pass `forecast_x` (the x value where
+the forecast starts) to `cpb_line()`, `cpb_col()` or `cpb_area()`, and
+`forecast_label` to override the default `"raming"`. `cpb_line()` can
+additionally draw an uncertainty band from `ymin`/`ymax` columns:
+
+``` r
+groeipad <- tibble(jaar = 2015:2027,
+                   groei = round(rnorm(13, 1.5, 0.8), 1)) |>
+  mutate(marge = c(rep(0, 9), 0.4, 0.9, 1.4, 1.8),
+         lo = groei - marge, hi = groei + marge)
+
+cpb_line(groeipad, x = jaar, y = groei, ymin = lo, ymax = hi,
+  forecast_x = 2023.5,
+  title = "Economische groei met onzekerheid",
+  ylab  = "%") +
+  scale_x_continuous(breaks = seq(2015, 2027, 3), minor_breaks = 2015:2027,
+                     guide = guide_axis(minor.ticks = TRUE))
+```
+
+<img src="chart-types_files/figure-gfm/forecast-1.png" width="350px" />
+
+The window is drawn *underneath* the data and the label is centred in it
+at the top of the panel; for bar charts pick a `forecast_x` between two
+bars (e.g. `2025.5`) so no bar is cut.
+
 # Composing: a line over stacked columns
 
 Because every wrapper returns a real `ggplot`, a decomposition chart –
