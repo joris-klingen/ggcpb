@@ -93,14 +93,20 @@ test_that("flush legend lands on the same pixel across chart types and label len
   rect_pos <- lapply(rect_variants, legend_key_px)
   line_pos <- lapply(line_variants, legend_key_px)
 
-  lefts <- vapply(c(rect_pos, line_pos), `[[`, numeric(1), "left")
+  rect_lefts <- vapply(rect_pos, `[[`, numeric(1), "left")
+  line_lefts <- vapply(line_pos, `[[`, numeric(1), "left")
   rect_bottoms <- vapply(rect_pos, `[[`, numeric(1), "bottom")
   line_bottoms <- vapply(line_pos, `[[`, numeric(1), "bottom")
 
-  # one solid left-justified spot: every variant's key starts on the
-  # same pixel column (antialiasing allows 1 px), at the plot margin
-  expect_lte(diff(range(lefts)), 1)
-  expect_lte(abs(mean(lefts) - margin_px), 2)
+  # one solid left-justified spot per glyph family: rect keys paint
+  # their box edge at the plot margin; line keys are the same anchored
+  # box, but the stroke end may antialias up to 2 px further in
+  # (the exact offset varies with the ragg/ggplot2 version)
+  expect_lte(diff(range(rect_lefts)), 1)
+  expect_lte(abs(mean(rect_lefts) - margin_px), 2)
+  expect_lte(diff(range(line_lefts)), 1)
+  expect_gte(min(line_lefts), min(rect_lefts) - 1)
+  expect_lte(max(line_lefts), max(rect_lefts) + 2)
 
   # one solid bottom-justified spot: the bottom key row is identical
   # whether the legend holds 2 or 5 items, per glyph family ...
@@ -222,9 +228,13 @@ test_that("legend key pixel is invariant to chart type", {
   line_pos  <- lapply(line_variants, legend_key_px)
   point_pos <- lapply(point_variants, legend_key_px)
 
-  edge_lefts <- vapply(c(rect_pos, line_pos), `[[`, numeric(1), "left")
-  expect_lte(diff(range(edge_lefts)), 1)
-  expect_lte(abs(mean(edge_lefts) - margin_px), 2)
+  rect_lefts <- vapply(rect_pos, `[[`, numeric(1), "left")
+  line_left  <- line_pos$line$left
+  expect_lte(diff(range(rect_lefts)), 1)
+  expect_lte(abs(mean(rect_lefts) - margin_px), 2)
+  # line key: same anchored box, stroke-end antialiasing allows 2 px
+  expect_gte(line_left, min(rect_lefts) - 1)
+  expect_lte(line_left, max(rect_lefts) + 2)
 
   rect_bottoms <- vapply(rect_pos, `[[`, numeric(1), "bottom_off")
   expect_lte(diff(range(rect_bottoms)), 2)
@@ -232,8 +242,8 @@ test_that("legend key pixel is invariant to chart type", {
   expect_lte(abs(line_pos$line$bottom_off - mean(rect_bottoms)), key_h_px / 2 + 2)
 
   # scatter key: the point must fall inside the same anchored key box
-  expect_gte(point_pos$scatter$left, mean(edge_lefts) - 1)
-  expect_lte(point_pos$scatter$left, mean(edge_lefts) + key_w_px + 1)
+  expect_gte(point_pos$scatter$left, mean(rect_lefts) - 1)
+  expect_lte(point_pos$scatter$left, mean(rect_lefts) + key_w_px + 1)
   expect_gte(point_pos$scatter$bottom_off, mean(rect_bottoms) - 1)
   expect_lte(point_pos$scatter$bottom_off, mean(rect_bottoms) + key_h_px + 1)
 })
