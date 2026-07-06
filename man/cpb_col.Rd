@@ -21,6 +21,9 @@ cpb_col(
   forecast_x = NULL,
   forecast_label = "raming",
   reverse_legend = TRUE,
+  facet = NULL,
+  facet_ncol = NULL,
+  facet_scales = "fixed",
   legend = "bottom",
   zeroline = TRUE,
   minor = FALSE,
@@ -31,6 +34,7 @@ cpb_col(
   grid_colour = "black",
   grid_linewidth = 0.1,
   title = NULL,
+  subtitle = NULL,
   xlab = NULL,
   ylab = NULL,
   filllab = NULL,
@@ -94,6 +98,18 @@ two bars (e.g. \code{2025.5}) so no bar is cut.}
 order via \code{guide_legend(reverse = TRUE)} -- stacking otherwise
 makes the legend order counter-intuitive.}
 
+\item{facet}{Optional column (tidy eval) to facet by. Facets follow
+the house (legacy nicerplot) convention: the facet title is a bold
+strip \emph{below} each panel, and every panel is a complete
+mini-figure with its own axes and axis labels.}
+
+\item{facet_ncol}{Number of facet columns, passed to
+\code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}}.}
+
+\item{facet_scales}{Whether facet axis ranges are shared; passed to
+\code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}} (\code{"fixed"} default, or \code{"free"},
+\code{"free_x"}, \code{"free_y"}).}
+
 \item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}; accepts
 \code{"bottom"} (default), \code{"right"}, \code{"left"}, \code{"top"}, \code{"none"}, or
 a two-element numeric vector of plot-relative coordinates.}
@@ -105,7 +121,11 @@ Defaults to \code{TRUE} (bars are anchored at zero).}
 \item{minor, ticks, flush_legend, axis_text_size, legend_key_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}} for per-figure deviations from the
 house defaults.}
 
-\item{title}{Plot title.}
+\item{title, subtitle}{Plot title/subtitle. \code{subtitle} is normally
+left \code{NULL}: CPB house style fills the subtitle line with \code{ylab}
+(the value-axis caption). An explicit \code{subtitle} wins, in which
+case a vertical chart's \code{ylab} falls back to a rotated y-axis
+title.}
 
 \item{xlab}{Label for the \strong{horizontal} axis (bottom, right-aligned
 italic). It is attached to the correct ggplot2 aesthetic

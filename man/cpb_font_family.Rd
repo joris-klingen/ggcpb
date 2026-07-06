@@ -15,6 +15,22 @@ plots still render correctly even without the CPB font.
 \description{
 The CPB font family name for use in \code{theme_cpb()}
 }
+\section{Devices without TTF lookup}{
+
+The registration goes through \pkg{systemfonts}, which the modern
+devices (\code{ragg::agg_png()}, \code{svglite}, the RStudio device) consult.
+The base \code{pdf()} and \code{postscript()} devices instead look families up
+in their own Type1 font database and \emph{error at draw time} on a
+family they do not know. When one of those devices is currently
+active, \code{cpb_font_family()} therefore also returns \code{""}, so plots
+built with the default \code{theme_cpb()} still render (in the device's
+default face) instead of failing. If text on such a device is
+handled elsewhere -- e.g. \code{showtext::showtext_auto()} is on, which
+draws text itself on any device -- set
+\code{options(ggcpb.force_font_family = TRUE)} to always get the CPB
+family name.
+}
+
 \examples{
 cpb_font_family()
 }

@@ -7,6 +7,59 @@
 # selected with tidy evaluation, so a plain data.frame or a
 # data.table works transparently (both inherit data.frame).
 
+
+# shared wrapper tail ----
+
+# Every cpb_*() wrapper ends the same way: forward the shared theme
+# knobs to theme_cpb(). The knobs are read *by name* from the wrapper's
+# own frame, so a wrapper that misses one of them fails loudly here
+# (mget() errors on a missing name) instead of silently dropping the
+# argument -- the mechanism that keeps the wrapper signatures from
+# drifting apart.
+cpb_wrapper_theme <- function(env = parent.frame()) {
+  args <- mget(
+    c("legend", "minor", "ticks", "flush_legend", "axis_text_size",
+      "legend_key_size", "grid_colour", "grid_linewidth"),
+    envir = env
+  )
+  args$orientation <- mget("orientation", envir = env,
+                           ifnotfound = list("vertical"))[[1]]
+  do.call(theme_cpb, args)
+}
+
+# Faceting in house style: the facet title is a bold strip *below*
+# its panel (the legacy nicerplot placement) and every panel is a
+# complete mini-figure with its own axes and axis labels.
+cpb_add_facet <- function(p, facet, facet_ncol = NULL, facet_scales = "fixed") {
+  if (rlang::quo_is_null(facet)) return(p)
+  p + ggplot2::facet_wrap(ggplot2::vars(!!facet), ncol = facet_ncol,
+                          scales = facet_scales,
+                          strip.position = "bottom",
+                          axes = "all", axis.labels = "all")
+}
+
+# a titled figure always reserves the subtitle line, so the gap between
+# title and panel is stable whether or not a subtitle is set
+cpb_reserve_subtitle <- function(title, subtitle) {
+  if (!is.null(title) && is.null(subtitle)) " " else subtitle
+}
+
+# The value-axis scale arguments are assembled once, so percentage
+# labels, custom breaks and the zero-flush expansion can coexist in a
+# single scale_y_continuous() -- adding a second y scale would replace
+# the first with a message.
+cpb_value_scale_args <- function(values = NULL, pct_axis = FALSE, pct_scale = 1,
+                                 value_breaks = NULL) {
+  args <- list()
+  if (isTRUE(pct_axis)) args$labels <- label_pct_nl(scale = pct_scale)
+  if (!is.null(value_breaks)) args$breaks <- value_breaks
+  if (!is.null(values)) {
+    expand <- cpb_zero_flush_expand(values)
+    if (!is.null(expand)) args$expand <- expand
+  }
+  args
+}
+
 # columns / bars ----
 
 #' One-sided value-axis expansion for the house look
@@ -111,6 +164,15 @@ cpb_forecast_label <- function(forecast_x, xvals, label) {
 #' @param reverse_legend If `TRUE` (default), reverse the fill legend
 #'   order via `guide_legend(reverse = TRUE)` -- stacking otherwise
 #'   makes the legend order counter-intuitive.
+#' @param facet Optional column (tidy eval) to facet by. Facets follow
+#'   the house (legacy nicerplot) convention: the facet title is a bold
+#'   strip *below* each panel, and every panel is a complete
+#'   mini-figure with its own axes and axis labels.
+#' @param facet_ncol Number of facet columns, passed to
+#'   [ggplot2::facet_wrap()].
+#' @param facet_scales Whether facet axis ranges are shared; passed to
+#'   [ggplot2::facet_wrap()] (`"fixed"` default, or `"free"`,
+#'   `"free_x"`, `"free_y"`).
 #' @param legend Legend position, forwarded to [theme_cpb()]; accepts
 #'   `"bottom"` (default), `"right"`, `"left"`, `"top"`, `"none"`, or
 #'   a two-element numeric vector of plot-relative coordinates.
@@ -120,7 +182,11 @@ cpb_forecast_label <- function(forecast_x, xvals, label) {
 #' @param minor,ticks,flush_legend,axis_text_size,legend_key_size,grid_colour,grid_linewidth
 #'   Forwarded to [theme_cpb()] for per-figure deviations from the
 #'   house defaults.
-#' @param title Plot title.
+#' @param title,subtitle Plot title/subtitle. `subtitle` is normally
+#'   left `NULL`: CPB house style fills the subtitle line with `ylab`
+#'   (the value-axis caption). An explicit `subtitle` wins, in which
+#'   case a vertical chart's `ylab` falls back to a rotated y-axis
+#'   title.
 #' @param ylab Label for the **vertical** axis. Following CPB house
 #'   style it is rendered as the plot *subtitle* -- a left-aligned
 #'   italic caption at the top -- not as a rotated axis title. In a
@@ -157,6 +223,9 @@ cpb_col <- function(data, x, y, fill = NULL,
                      forecast_x = NULL,
                      forecast_label = "raming",
                      reverse_legend = TRUE,
+                     facet = NULL,
+                     facet_ncol = NULL,
+                     facet_scales = "fixed",
                      legend = "bottom",
                      zeroline = TRUE,
                      minor = FALSE,
@@ -167,6 +236,7 @@ cpb_col <- function(data, x, y, fill = NULL,
                      grid_colour = "black",
                      grid_linewidth = 0.1,
                      title = NULL,
+                     subtitle = NULL,
                      xlab = NULL,
                      ylab = NULL,
                      filllab = NULL,
@@ -177,6 +247,7 @@ cpb_col <- function(data, x, y, fill = NULL,
   x <- rlang::enquo(x)
   y <- rlang::enquo(y)
   fill <- rlang::enquo(fill)
+  facet <- rlang::enquo(facet)
   has_fill <- !rlang::quo_is_null(fill)
 
   if (has_fill) {
@@ -219,18 +290,12 @@ cpb_col <- function(data, x, y, fill = NULL,
     p <- p + ggplot2::coord_cartesian(ylim = value_limits)
   }
 
-  # the value-axis scale is assembled once, so labels, breaks and the
-  # zero-flush expansion can coexist
-  scale_args <- list()
-  if (isTRUE(pct_axis)) {
-    pct_scale <- if (position == "fill") 100 else 1
-    scale_args$labels <- label_pct_nl(scale = pct_scale)
-  }
-  if (!is.null(value_breaks)) {
-    scale_args$breaks <- value_breaks
-  }
-  expand <- cpb_zero_flush_expand(rlang::eval_tidy(y, data))
-  if (!is.null(expand)) scale_args$expand <- expand
+  scale_args <- cpb_value_scale_args(
+    values       = rlang::eval_tidy(y, data),
+    pct_axis     = pct_axis,
+    pct_scale    = if (position == "fill") 100 else 1,
+    value_breaks = value_breaks
+  )
   if (length(scale_args)) {
     p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
   }
@@ -272,24 +337,20 @@ cpb_col <- function(data, x, y, fill = NULL,
     lab_y <- NULL
   }
 
-  # a titled figure always reserves the subtitle line, so the gap
-  # between title and panel is stable whether or not a subtitle is set
-  subtitle <- ylab
-  if (!is.null(title) && is.null(subtitle)) subtitle <- " "
+  p <- cpb_add_facet(p, facet, facet_ncol, facet_scales)
+
+  if (is.null(subtitle)) {
+    subtitle <- ylab
+  } else if (!is.null(ylab) && orientation == "vertical") {
+    # an explicit subtitle occupies the caption line, so the value-axis
+    # label falls back to a rotated axis title, as in the other wrappers
+    lab_y <- ylab
+  }
+  subtitle <- cpb_reserve_subtitle(title, subtitle)
 
   p +
     ggplot2::labs(title = title, subtitle = subtitle, x = lab_x, y = lab_y, fill = filllab) +
-    theme_cpb(
-      orientation     = orientation,
-      legend          = legend,
-      minor           = minor,
-      ticks           = ticks,
-      flush_legend    = flush_legend,
-      axis_text_size  = axis_text_size,
-      legend_key_size = legend_key_size,
-      grid_colour     = grid_colour,
-      grid_linewidth  = grid_linewidth
-    )
+    cpb_wrapper_theme()
 }
 
 # stacked area ----
@@ -312,12 +373,29 @@ cpb_col <- function(data, x, y, fill = NULL,
 #'   to [scale_fill_cpb_manual()] instead of the default
 #'   [scale_fill_cpb_d()] when supplied.
 #' @param pct_axis If `TRUE`, format the y axis with [label_pct_nl()].
+#' @param value_breaks Optional breaks for the value axis (passed to
+#'   the wrapper-built [ggplot2::scale_y_continuous()]). Use this
+#'   instead of adding a second y scale, which would discard the
+#'   wrapper's axis formatting and expansion.
+#' @param value_limits Optional length-2 limits for the value axis,
+#'   applied through the coordinate system (zoom) so no data is
+#'   dropped.
 #' @param reverse_legend If `TRUE` (default), reverse the fill legend
 #'   order via `guide_legend(reverse = TRUE)`.
 #' @param forecast_x Optional x value where the forecast window
 #'   starts; overlaid and labelled as in [cpb_line()].
 #' @param forecast_label Label for the forecast window; defaults to
 #'   `"raming"`. Use `NULL` (or `""`) for no label.
+#' @param facet Optional column (tidy eval) to facet by. Facets follow
+#'   the house (legacy nicerplot) convention: the facet title is a bold
+#'   strip *below* each panel, and every panel is a complete
+#'   mini-figure with its own axes and axis labels.
+#' @param facet_ncol Number of facet columns, passed to
+#'   [ggplot2::facet_wrap()].
+#' @param facet_scales Whether facet axis ranges are shared; passed to
+#'   [ggplot2::facet_wrap()] (`"fixed"` default, or `"free"`,
+#'   `"free_x"`, `"free_y"`).
+#' @param legend Legend position, forwarded to [theme_cpb()].
 #' @param zeroline If `TRUE` (default), draw a solid black line at
 #'   zero on the value axis on top of the areas, as the CPB house
 #'   style does.
@@ -346,9 +424,14 @@ cpb_area <- function(data, x, y, fill,
                       palette = "qualitative",
                       index = NULL,
                       pct_axis = FALSE,
+                      value_breaks = NULL,
+                      value_limits = NULL,
                       forecast_x = NULL,
                       forecast_label = "raming",
                       reverse_legend = TRUE,
+                      facet = NULL,
+                      facet_ncol = NULL,
+                      facet_scales = "fixed",
                       legend = "bottom",
                       zeroline = TRUE,
                       minor = FALSE,
@@ -367,6 +450,7 @@ cpb_area <- function(data, x, y, fill,
   x <- rlang::enquo(x)
   y <- rlang::enquo(y)
   fill <- rlang::enquo(fill)
+  facet <- rlang::enquo(facet)
 
   p <- ggplot2::ggplot(data, ggplot2::aes(x = !!x, y = !!y, fill = !!fill))
 
@@ -385,15 +469,16 @@ cpb_area <- function(data, x, y, fill,
     p <- p + cpb_forecast_label(forecast_x, rlang::eval_tidy(x, data), forecast_label)
   }
 
-  # assembled once, as in cpb_col()
-  scale_args <- list()
-  if (isTRUE(pct_axis)) {
-    scale_args$labels <- label_pct_nl()
-  }
-  expand <- cpb_zero_flush_expand(rlang::eval_tidy(y, data))
-  if (!is.null(expand)) scale_args$expand <- expand
+  scale_args <- cpb_value_scale_args(
+    values       = rlang::eval_tidy(y, data),
+    pct_axis     = pct_axis,
+    value_breaks = value_breaks
+  )
   if (length(scale_args)) {
     p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
+  }
+  if (!is.null(value_limits)) {
+    p <- p + ggplot2::coord_cartesian(ylim = value_limits)
   }
 
   p <- p + if (!is.null(index)) {
@@ -406,6 +491,8 @@ cpb_area <- function(data, x, y, fill,
     p <- p + ggplot2::guides(fill = ggplot2::guide_legend(reverse = TRUE))
   }
 
+  p <- cpb_add_facet(p, facet, facet_ncol, facet_scales)
+
   # CPB convention: the value-axis label doubles as the subtitle (an
   # italic caption above the panel) rather than a rotated axis title.
   # A titled figure always reserves the subtitle line for a stable gap.
@@ -414,20 +501,11 @@ cpb_area <- function(data, x, y, fill,
     subtitle <- ylab
     lab_y <- NULL
   }
-  if (!is.null(title) && is.null(subtitle)) subtitle <- " "
+  subtitle <- cpb_reserve_subtitle(title, subtitle)
 
   p +
     ggplot2::labs(title = title, subtitle = subtitle, x = xlab, y = lab_y, fill = filllab) +
-    theme_cpb(
-      legend          = legend,
-      minor           = minor,
-      ticks           = ticks,
-      flush_legend    = flush_legend,
-      axis_text_size  = axis_text_size,
-      legend_key_size = legend_key_size,
-      grid_colour     = grid_colour,
-      grid_linewidth  = grid_linewidth
-    )
+    cpb_wrapper_theme()
 }
 
 # lines ----
@@ -454,6 +532,16 @@ cpb_area <- function(data, x, y, fill,
 #'   to [scale_colour_cpb_manual()] instead of the default
 #'   [scale_colour_cpb_d()] when supplied.
 #' @param pct_axis If `TRUE`, format the y axis with [label_pct_nl()].
+#' @param value_breaks Optional breaks for the value axis (passed to
+#'   the wrapper-built [ggplot2::scale_y_continuous()]). Use this
+#'   instead of adding a second y scale, which would discard the
+#'   wrapper's axis formatting and expansion.
+#' @param value_limits Optional length-2 limits for the value axis,
+#'   applied through the coordinate system (zoom) so no data is
+#'   dropped.
+#' @param reverse_legend If `TRUE`, reverse the colour legend order
+#'   via `guide_legend(reverse = TRUE)`. Defaults to `FALSE`: unlike
+#'   the stacked wrappers, line order carries no stacking convention.
 #' @param ymin,ymax Optional columns (tidy eval) bounding an
 #'   uncertainty band, drawn as a translucent ribbon underneath the
 #'   line(s). With a `colour` mapping each series gets a band in its
@@ -465,6 +553,16 @@ cpb_area <- function(data, x, y, fill,
 #'   values.
 #' @param forecast_label Label for the forecast window; defaults to
 #'   `"raming"`. Use `NULL` (or `""`) for no label.
+#' @param facet Optional column (tidy eval) to facet by. Facets follow
+#'   the house (legacy nicerplot) convention: the facet title is a bold
+#'   strip *below* each panel, and every panel is a complete
+#'   mini-figure with its own axes and axis labels.
+#' @param facet_ncol Number of facet columns, passed to
+#'   [ggplot2::facet_wrap()].
+#' @param facet_scales Whether facet axis ranges are shared; passed to
+#'   [ggplot2::facet_wrap()] (`"fixed"` default, or `"free"`,
+#'   `"free_x"`, `"free_y"`).
+#' @param legend Legend position, forwarded to [theme_cpb()].
 #' @param zeroline If `TRUE`, draw a solid black line at zero on the
 #'   value axis underneath the data lines. `NULL` (default) draws it
 #'   automatically when the `y` data spans (or touches) zero, the
@@ -497,10 +595,16 @@ cpb_line <- function(data, x, y, colour = NULL,
                       palette = "qualitative",
                       index = NULL,
                       pct_axis = FALSE,
+                      value_breaks = NULL,
+                      value_limits = NULL,
                       ymin = NULL,
                       ymax = NULL,
                       forecast_x = NULL,
                       forecast_label = "raming",
+                      reverse_legend = FALSE,
+                      facet = NULL,
+                      facet_ncol = NULL,
+                      facet_scales = "fixed",
                       legend = "bottom",
                       zeroline = NULL,
                       minor = FALSE,
@@ -521,6 +625,7 @@ cpb_line <- function(data, x, y, colour = NULL,
   colour <- rlang::enquo(colour)
   ymin <- rlang::enquo(ymin)
   ymax <- rlang::enquo(ymax)
+  facet <- rlang::enquo(facet)
   has_colour <- !rlang::quo_is_null(colour)
   has_band <- !rlang::quo_is_null(ymin) && !rlang::quo_is_null(ymax)
 
@@ -589,10 +694,14 @@ cpb_line <- function(data, x, y, colour = NULL,
   # the panel is drawn tight around the data/limits, so the axis line
   # and ticks meet the outermost gridlines instead of floating beyond
   # them
-  p <- p + ggplot2::coord_cartesian(expand = FALSE)
+  p <- p + ggplot2::coord_cartesian(ylim = value_limits, expand = FALSE)
 
-  if (isTRUE(pct_axis)) {
-    p <- p + ggplot2::scale_y_continuous(labels = label_pct_nl())
+  # no zero-flush expansion here: the tight coord above already pins
+  # the panel to the data/limits
+  scale_args <- cpb_value_scale_args(pct_axis = pct_axis,
+                                     value_breaks = value_breaks)
+  if (length(scale_args)) {
+    p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
   }
 
   if (has_colour) {
@@ -601,7 +710,12 @@ cpb_line <- function(data, x, y, colour = NULL,
     } else {
       scale_colour_cpb_d(palette = palette)
     }
+    if (isTRUE(reverse_legend)) {
+      p <- p + ggplot2::guides(colour = ggplot2::guide_legend(reverse = TRUE))
+    }
   }
+
+  p <- cpb_add_facet(p, facet, facet_ncol, facet_scales)
 
   # CPB convention: the value-axis label doubles as the subtitle (an
   # italic caption above the panel, typically the unit) rather than a
@@ -612,20 +726,11 @@ cpb_line <- function(data, x, y, colour = NULL,
     subtitle <- ylab
     lab_y <- NULL
   }
-  if (!is.null(title) && is.null(subtitle)) subtitle <- " "
+  subtitle <- cpb_reserve_subtitle(title, subtitle)
 
   p +
     ggplot2::labs(title = title, subtitle = subtitle, x = xlab, y = lab_y, colour = colourlab) +
-    theme_cpb(
-      legend          = legend,
-      minor           = minor,
-      ticks           = ticks,
-      flush_legend    = flush_legend,
-      axis_text_size  = axis_text_size,
-      legend_key_size = legend_key_size,
-      grid_colour     = grid_colour,
-      grid_linewidth  = grid_linewidth
-    )
+    cpb_wrapper_theme()
 }
 
 # quantile box/errorbar combo ----
@@ -686,12 +791,31 @@ cpb_line <- function(data, x, y, colour = NULL,
 #' @param index Optional integer vector of palette positions, forwarded
 #'   to [scale_fill_cpb_manual()] instead of the default
 #'   [scale_fill_cpb_d()] when supplied.
+#' @param pct_axis If `TRUE`, format the value axis with
+#'   [label_pct_nl()].
+#' @param value_breaks Optional breaks for the value axis (passed to
+#'   the wrapper-built [ggplot2::scale_y_continuous()]). Use this
+#'   instead of adding a second y scale, which would discard the
+#'   wrapper's axis formatting and expansion.
+#' @param value_limits Optional length-2 limits for the value axis,
+#'   applied through the coordinate system (zoom) so no data is
+#'   dropped.
 #' @param orientation `"vertical"` (default) or `"horizontal"` (adds
 #'   [ggplot2::coord_flip()] and is forwarded to [theme_cpb()]).
 #' @param reverse_legend If `TRUE`, reverse the fill legend order via
 #'   `guide_legend(reverse = TRUE)`. Defaults to `FALSE`; useful when
 #'   the fill levels were reversed to control the dodge order under
 #'   `coord_flip()`.
+#' @param facet Optional column (tidy eval) to facet by. Facets follow
+#'   the house (legacy nicerplot) convention: the facet title is a bold
+#'   strip *below* each panel, and every panel is a complete
+#'   mini-figure with its own axes and axis labels.
+#' @param facet_ncol Number of facet columns, passed to
+#'   [ggplot2::facet_wrap()].
+#' @param facet_scales Whether facet axis ranges are shared; passed to
+#'   [ggplot2::facet_wrap()] (`"fixed"` default, or `"free"`,
+#'   `"free_x"`, `"free_y"`).
+#' @param legend Legend position, forwarded to [theme_cpb()].
 #' @param zeroline If `TRUE`, draw a solid black line at zero on the
 #'   value axis underneath the boxes. `NULL` (default) draws it
 #'   automatically when the p5-p95 data spans (or touches) zero, the
@@ -732,7 +856,13 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                      linewidth = 0.25,
                      palette = "qualitative",
                      index = NULL,
+                     pct_axis = FALSE,
+                     value_breaks = NULL,
+                     value_limits = NULL,
                      orientation = c("vertical", "horizontal"),
+                     facet = NULL,
+                     facet_ncol = NULL,
+                     facet_scales = "fixed",
                      legend = "bottom",
                      reverse_legend = FALSE,
                      zeroline = NULL,
@@ -759,6 +889,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   p75 <- rlang::enquo(p75)
   p95 <- rlang::enquo(p95)
   fill <- rlang::enquo(fill)
+  facet <- rlang::enquo(facet)
   has_fill <- !rlang::quo_is_null(fill)
 
   if (has_fill && box_style != "ggcpb") {
@@ -881,7 +1012,20 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   }
 
   if (orientation == "horizontal") {
-    p <- p + ggplot2::coord_flip()
+    p <- p + if (!is.null(value_limits)) {
+      ggplot2::coord_flip(ylim = value_limits)
+    } else {
+      ggplot2::coord_flip()
+    }
+  } else if (!is.null(value_limits)) {
+    p <- p + ggplot2::coord_cartesian(ylim = value_limits)
+  }
+
+  # no zero-flush expansion: boxes do not grow from the axis
+  scale_args <- cpb_value_scale_args(pct_axis = pct_axis,
+                                     value_breaks = value_breaks)
+  if (length(scale_args)) {
+    p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
   }
 
   if (has_fill) {
@@ -895,6 +1039,8 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     }
   }
 
+  p <- cpb_add_facet(p, facet, facet_ncol, facet_scales)
+
   # CPB convention for vertical charts: the value-axis label doubles as
   # the subtitle; horizontally the value axis is drawn at the bottom
   # after coord_flip(), where a real axis title is appropriate. A
@@ -904,21 +1050,11 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     subtitle <- ylab
     lab_y <- NULL
   }
-  if (!is.null(title) && is.null(subtitle)) subtitle <- " "
+  subtitle <- cpb_reserve_subtitle(title, subtitle)
 
   p +
     ggplot2::labs(title = title, subtitle = subtitle, x = xlab, y = lab_y, fill = filllab) +
-    theme_cpb(
-      orientation     = orientation,
-      legend          = legend,
-      minor           = minor,
-      ticks           = ticks,
-      flush_legend    = flush_legend,
-      axis_text_size  = axis_text_size,
-      legend_key_size = legend_key_size,
-      grid_colour     = grid_colour,
-      grid_linewidth  = grid_linewidth
-    )
+    cpb_wrapper_theme()
 }
 
 # scatter ----
@@ -944,6 +1080,22 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
 #' @param index Optional integer vector of palette positions for a
 #'   discrete `colour` column, forwarded to
 #'   [scale_colour_cpb_manual()].
+#' @param forecast_x Optional x value where the forecast window
+#'   starts; overlaid and labelled as in [cpb_line()].
+#' @param forecast_label Label for the forecast window; defaults to
+#'   `"raming"`. Use `NULL` (or `""`) for no label.
+#' @param reverse_legend If `TRUE`, reverse the colour legend order
+#'   via `guide_legend(reverse = TRUE)` (discrete `colour` only).
+#'   Defaults to `FALSE`.
+#' @param facet Optional column (tidy eval) to facet by. Facets follow
+#'   the house (legacy nicerplot) convention: the facet title is a bold
+#'   strip *below* each panel, and every panel is a complete
+#'   mini-figure with its own axes and axis labels.
+#' @param facet_ncol Number of facet columns, passed to
+#'   [ggplot2::facet_wrap()].
+#' @param facet_scales Whether facet axis ranges are shared; passed to
+#'   [ggplot2::facet_wrap()] (`"fixed"` default, or `"free"`,
+#'   `"free_x"`, `"free_y"`).
 #' @param legend Legend position, forwarded to [theme_cpb()].
 #' @param zeroline If `TRUE`, draw a solid black line at zero on the
 #'   value axis underneath the points. `NULL` (default) draws it
@@ -974,6 +1126,12 @@ cpb_scatter <- function(data, x, y, colour = NULL,
                          size = 0.8,
                          palette = "qualitative",
                          index = NULL,
+                         forecast_x = NULL,
+                         forecast_label = "raming",
+                         reverse_legend = FALSE,
+                         facet = NULL,
+                         facet_ncol = NULL,
+                         facet_scales = "fixed",
                          legend = "bottom",
                          zeroline = NULL,
                          minor = FALSE,
@@ -992,6 +1150,7 @@ cpb_scatter <- function(data, x, y, colour = NULL,
   x <- rlang::enquo(x)
   y <- rlang::enquo(y)
   colour <- rlang::enquo(colour)
+  facet <- rlang::enquo(facet)
   has_colour <- !rlang::quo_is_null(colour)
 
   if (is.null(zeroline)) {
@@ -1008,7 +1167,10 @@ cpb_scatter <- function(data, x, y, colour = NULL,
 
   p <- ggplot2::ggplot(data, mapping)
 
-  # underneath the points
+  # underneath the points: first the forecast window, then the zero line
+  if (!is.null(forecast_x)) {
+    p <- p + cpb_forecast_rect(forecast_x)
+  }
   if (isTRUE(zeroline)) {
     p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black", linewidth = 0.25)
   }
@@ -1018,6 +1180,11 @@ cpb_scatter <- function(data, x, y, colour = NULL,
   } else {
     single_colour <- if (is.null(point_colour)) unname(cpb_cols(6)) else point_colour
     ggplot2::geom_point(size = size, colour = single_colour, ...)
+  }
+
+  # the label sits on top of everything
+  if (!is.null(forecast_x)) {
+    p <- p + cpb_forecast_label(forecast_x, rlang::eval_tidy(x, data), forecast_label)
   }
 
   # a numeric colour column gets the continuous gradient, anything
@@ -1031,7 +1198,12 @@ cpb_scatter <- function(data, x, y, colour = NULL,
     } else {
       scale_colour_cpb_d(palette = palette)
     }
+    if (!is.numeric(colvals) && isTRUE(reverse_legend)) {
+      p <- p + ggplot2::guides(colour = ggplot2::guide_legend(reverse = TRUE))
+    }
   }
+
+  p <- cpb_add_facet(p, facet, facet_ncol, facet_scales)
 
   # CPB convention: the value-axis label doubles as the subtitle. A
   # titled figure always reserves the subtitle line for a stable gap.
@@ -1040,20 +1212,11 @@ cpb_scatter <- function(data, x, y, colour = NULL,
     subtitle <- ylab
     lab_y <- NULL
   }
-  if (!is.null(title) && is.null(subtitle)) subtitle <- " "
+  subtitle <- cpb_reserve_subtitle(title, subtitle)
 
   p +
     ggplot2::labs(title = title, subtitle = subtitle, x = xlab, y = lab_y, colour = colourlab) +
-    theme_cpb(
-      legend          = legend,
-      minor           = minor,
-      ticks           = ticks,
-      flush_legend    = flush_legend,
-      axis_text_size  = axis_text_size,
-      legend_key_size = legend_key_size,
-      grid_colour     = grid_colour,
-      grid_linewidth  = grid_linewidth
-    )
+    cpb_wrapper_theme()
 }
 
 # histogram ----
@@ -1086,6 +1249,15 @@ cpb_scatter <- function(data, x, y, colour = NULL,
 #'   to [scale_fill_cpb_manual()].
 #' @param reverse_legend If `TRUE` (default), reverse the fill legend
 #'   order via `guide_legend(reverse = TRUE)`.
+#' @param facet Optional column (tidy eval) to facet by. Facets follow
+#'   the house (legacy nicerplot) convention: the facet title is a bold
+#'   strip *below* each panel, and every panel is a complete
+#'   mini-figure with its own axes and axis labels.
+#' @param facet_ncol Number of facet columns, passed to
+#'   [ggplot2::facet_wrap()].
+#' @param facet_scales Whether facet axis ranges are shared; passed to
+#'   [ggplot2::facet_wrap()] (`"fixed"` default, or `"free"`,
+#'   `"free_x"`, `"free_y"`).
 #' @param legend Legend position, forwarded to [theme_cpb()].
 #' @param zeroline If `TRUE` (default), draw a solid black line at
 #'   zero on the count axis on top of the bars.
@@ -1117,6 +1289,9 @@ cpb_hist <- function(data, x, fill = NULL,
                       palette = "qualitative",
                       index = NULL,
                       reverse_legend = TRUE,
+                      facet = NULL,
+                      facet_ncol = NULL,
+                      facet_scales = "fixed",
                       legend = "bottom",
                       zeroline = TRUE,
                       minor = FALSE,
@@ -1134,6 +1309,7 @@ cpb_hist <- function(data, x, fill = NULL,
                       ...) {
   x <- rlang::enquo(x)
   fill <- rlang::enquo(fill)
+  facet <- rlang::enquo(facet)
   has_fill <- !rlang::quo_is_null(fill)
 
   if (has_fill) {
@@ -1171,24 +1347,17 @@ cpb_hist <- function(data, x, fill = NULL,
     }
   }
 
+  p <- cpb_add_facet(p, facet, facet_ncol, facet_scales)
+
   # CPB convention: the count-axis label doubles as the subtitle. A
   # titled figure always reserves the subtitle line for a stable gap.
   if (is.null(subtitle) && !is.null(ylab)) {
     subtitle <- ylab
     ylab <- NULL
   }
-  if (!is.null(title) && is.null(subtitle)) subtitle <- " "
+  subtitle <- cpb_reserve_subtitle(title, subtitle)
 
   p +
     ggplot2::labs(title = title, subtitle = subtitle, x = xlab, y = ylab, fill = filllab) +
-    theme_cpb(
-      legend          = legend,
-      minor           = minor,
-      ticks           = ticks,
-      flush_legend    = flush_legend,
-      axis_text_size  = axis_text_size,
-      legend_key_size = legend_key_size,
-      grid_colour     = grid_colour,
-      grid_linewidth  = grid_linewidth
-    )
+    cpb_wrapper_theme()
 }

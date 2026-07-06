@@ -113,3 +113,21 @@ test_that("theme_cpb uses the tight house margins", {
   th <- theme_cpb()
   expect_equal(as.numeric(th$plot.margin), c(10, 10, 8, 10))
 })
+
+test_that("cpb_font_family falls back on devices without TTF lookup", {
+  skip_if_not_installed("withr")
+  # the bundled font is registered in this session
+  expect_equal(cpb_font_family(), "RijksoverheidSansText")
+
+  f <- withr::local_tempfile(fileext = ".pdf")
+  grDevices::pdf(f)
+  withr::defer(grDevices::dev.off())
+  # pdf() cannot draw systemfonts-registered families: fall back
+  expect_equal(cpb_font_family(), "")
+  # a plot built with the default theme must render, not error
+  df <- data.frame(x = c("a", "b"), y = 1:2)
+  expect_no_error(print(cpb_col(df, x = x, y = y, title = "t", ylab = "u")))
+  # escape hatch for showtext-style setups that draw text themselves
+  withr::local_options(ggcpb.force_font_family = TRUE)
+  expect_equal(cpb_font_family(), "RijksoverheidSansText")
+})

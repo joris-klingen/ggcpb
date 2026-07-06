@@ -545,6 +545,25 @@ render(18, "box: modern style",
     ggplot2::scale_y_continuous(labels = label_number_nl(accuracy = 0.1)),
   "18_box_modern.png", page = "half")
 
+# faceted dodged columns: facet titles below the panels (nicerplot
+# convention), every panel a complete mini-figure with its own axes
+facet_dt <- CJ(jaar  = 2019:2025,
+               groep = factor(c("laag", "midden", "hoog"),
+                              levels = c("laag", "midden", "hoog")),
+               regio = factor(c("stad", "platteland", "gemengd", "totaal"),
+                              levels = c("stad", "platteland", "gemengd", "totaal")))
+facet_dt[, waarde := round(2 + as.numeric(groep) + cumsum(rnorm(.N, 0, 0.3)), 1)]
+
+render(19, "faceted columns (strips below panels)",
+  cpb_col(facet_dt, x = jaar, y = waarde, fill = groep,
+    position   = "dodge",
+    facet      = regio,
+    facet_ncol = 2,
+    index      = c(6, 2, 5),
+    title = "Ontwikkeling per regio",
+    ylab  = "mld euro"),
+  "19_facets.png", page = "full", height = 4.5)
+
 # Summary ----
 
 summary_dt <- rbindlist(results)

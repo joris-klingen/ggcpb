@@ -21,7 +21,13 @@ cpb_box(
   linewidth = 0.25,
   palette = "qualitative",
   index = NULL,
+  pct_axis = FALSE,
+  value_breaks = NULL,
+  value_limits = NULL,
   orientation = c("vertical", "horizontal"),
+  facet = NULL,
+  facet_ncol = NULL,
+  facet_scales = "fixed",
   legend = "bottom",
   reverse_legend = FALSE,
   zeroline = NULL,
@@ -102,8 +108,34 @@ the thin strokes of the published CPB distributional figures.}
 to \code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} instead of the default
 \code{\link[=scale_fill_cpb_d]{scale_fill_cpb_d()}} when supplied.}
 
+\item{pct_axis}{If \code{TRUE}, format the value axis with
+\code{\link[=label_pct_nl]{label_pct_nl()}}.}
+
+\item{value_breaks}{Optional breaks for the value axis (passed to
+the wrapper-built \code{\link[ggplot2:scale_continuous]{ggplot2::scale_y_continuous()}}). Use this
+instead of adding a second y scale, which would discard the
+wrapper's axis formatting and expansion.}
+
+\item{value_limits}{Optional length-2 limits for the value axis,
+applied through the coordinate system (zoom) so no data is
+dropped.}
+
 \item{orientation}{\code{"vertical"} (default) or \code{"horizontal"} (adds
 \code{\link[ggplot2:coord_flip]{ggplot2::coord_flip()}} and is forwarded to \code{\link[=theme_cpb]{theme_cpb()}}).}
+
+\item{facet}{Optional column (tidy eval) to facet by. Facets follow
+the house (legacy nicerplot) convention: the facet title is a bold
+strip \emph{below} each panel, and every panel is a complete
+mini-figure with its own axes and axis labels.}
+
+\item{facet_ncol}{Number of facet columns, passed to
+\code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}}.}
+
+\item{facet_scales}{Whether facet axis ranges are shared; passed to
+\code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}} (\code{"fixed"} default, or \code{"free"},
+\code{"free_x"}, \code{"free_y"}).}
+
+\item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}.}
 
 \item{reverse_legend}{If \code{TRUE}, reverse the fill legend order via
 \code{guide_legend(reverse = TRUE)}. Defaults to \code{FALSE}; useful when
