@@ -146,8 +146,14 @@ theme_cpb <- function(base_family = cpb_font_family(),
     legend.margin        = ggplot2::margin(0, 0, 0, 0),
     legend.box.spacing   = grid::unit(6, "pt"),
 
+    # facet strips follow the legacy nicerplot convention: the panel
+    # title sits *below* its panel (the wrappers set
+    # strip.position = "bottom"); "outside" places it below the axis
+    # text, so the caption reads as a title for the complete mini-figure
     strip.text       = ggplot2::element_text(face = "bold", hjust = 0, size = 7),
     strip.background = ggplot2::element_blank(),
+    strip.placement  = "outside",
+    panel.spacing    = grid::unit(0.8, "lines"),
 
     panel.grid.major.x = if (show_grid_x) gridline else blankline,
     panel.grid.minor.x = if (show_grid_x) minorline else blankline,

@@ -25,6 +25,9 @@ cpb_box(
   value_breaks = NULL,
   value_limits = NULL,
   orientation = c("vertical", "horizontal"),
+  facet = NULL,
+  facet_ncol = NULL,
+  facet_scales = "fixed",
   legend = "bottom",
   reverse_legend = FALSE,
   zeroline = NULL,
@@ -119,6 +122,18 @@ dropped.}
 
 \item{orientation}{\code{"vertical"} (default) or \code{"horizontal"} (adds
 \code{\link[ggplot2:coord_flip]{ggplot2::coord_flip()}} and is forwarded to \code{\link[=theme_cpb]{theme_cpb()}}).}
+
+\item{facet}{Optional column (tidy eval) to facet by. Facets follow
+the house (legacy nicerplot) convention: the facet title is a bold
+strip \emph{below} each panel, and every panel is a complete
+mini-figure with its own axes and axis labels.}
+
+\item{facet_ncol}{Number of facet columns, passed to
+\code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}}.}
+
+\item{facet_scales}{Whether facet axis ranges are shared; passed to
+\code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}} (\code{"fixed"} default, or \code{"free"},
+\code{"free_x"}, \code{"free_y"}).}
 
 \item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}.}
 

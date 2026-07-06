@@ -314,6 +314,38 @@ cpb_hist(duur, x = maanden, binwidth = 2,
 
 <img src="chart-types_files/figure-gfm/hist-1.png" width="350px" />
 
+# Facets
+
+Every wrapper accepts a `facet` column. Facets follow the house (legacy
+nicerplot) convention: the facet title is a bold strip *below* each
+panel, and every panel is a complete mini-figure with its own axes.
+Control the grid with `facet_ncol` and shared-versus-free axis ranges
+with `facet_scales` (`"fixed"` by default, so panels are directly
+comparable):
+
+``` r
+regios <- expand_grid(regio = factor(c("stad", "platteland", "gemengd", "totaal"),
+                                     levels = c("stad", "platteland", "gemengd", "totaal")),
+                      groep = factor(c("laag", "midden", "hoog"),
+                                     levels = c("laag", "midden", "hoog")),
+                      jaar  = 2019:2025) |>
+  mutate(waarde = round(2 + as.numeric(groep) + cumsum(rnorm(n(), 0, 0.3)), 1))
+
+cpb_col(regios, x = jaar, y = waarde, fill = groep,
+  position   = "dodge",
+  facet      = regio,
+  facet_ncol = 2,
+  index      = c(6, 2, 5),
+  title = "Ontwikkeling per regio",
+  ylab  = "mld euro")
+```
+
+<img src="chart-types_files/figure-gfm/facets-1.png" width="700px" />
+
+A faceted figure usually needs a taller canvas: pass an explicit
+`height` to `save_cpb()` (here the figure is drawn 4.5 in tall on the
+full-page width).
+
 # Forecast windows and uncertainty bands
 
 Time-series figures mark the forecast part of the axis with a

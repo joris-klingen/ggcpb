@@ -30,12 +30,12 @@ published reference figures in `references/plots/` (see the smoke test
   need height per facet row. Let `save_cpb()` (or the wrappers)
   derive a sensible default from the plot object, with the presets as
   fallback.
-- **Facets in nicerplot style** (priority): support faceting with the
-  legacy nicerplot look, i.e. facet titles placed *below* each panel
-  (strip.position = "bottom", styled like the house category labels)
-  rather than ggplot2's default strip on top; fold into the wrappers
-  (`facet =` argument) and calibrate strip typography/spacing against
-  legacy output.
+- **Facets in nicerplot style**: done -- every wrapper accepts
+  `facet` (plus `facet_ncol`/`facet_scales`); the facet title is a
+  bold strip *below* each panel and every panel gets its own axes
+  (see the cookbook vignette and smoke-test figure 19). Still open:
+  smarter default export height for faceted figures (see the plot
+  height item above).
 - **Visual snapshot tests**: the legend position is pinned by
   rendered-pixel tests, but the rest of the styling (gridlines,
   spacing, titles) has no regression net; add `vdiffr` snapshots for

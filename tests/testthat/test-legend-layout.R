@@ -200,7 +200,10 @@ test_that("legend key pixel is invariant to chart type", {
     box            = cpb_box(box_df,
                              x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                              fill = g, reverse_legend = TRUE,
-                             index = c(6, 2), title = "t")
+                             index = c(6, 2), title = "t"),
+    col_facet      = cpb_col(transform(cat2, f = rep(c("paneel 1", "paneel 2"), 2)),
+                             x = x, y = y, fill = g, position = "dodge",
+                             facet = f, index = c(6, 2), title = "t")
   )
   # line keys: stroke centred in the key box, so bottoms sit ~half a
   # key higher than rect bottoms

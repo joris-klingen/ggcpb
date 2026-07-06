@@ -458,3 +458,48 @@ test_that("every wrapper forwards the shared theme knobs (anti-drift)", {
     expect_equal(p$theme$legend.position, "none")
   }
 })
+
+test_that("facet adds bottom-strip house-style facets in every wrapper", {
+  df <- data.frame(x = rep(c("a", "b"), 2), y = 1:4,
+                   f = rep(c("p1", "p2"), each = 2))
+  num <- data.frame(x = rep(2015:2016, 2), y = 1:4,
+                    f = rep(c("p1", "p2"), each = 2))
+  box_df <- data.frame(x = rep(c("a", "b"), 2), p5 = 1, p25 = 2, p50 = 3,
+                       p75 = 4, p95 = 5, f = rep(c("p1", "p2"), each = 2))
+  plots <- list(
+    cpb_col(df, x = x, y = y, facet = f),
+    cpb_area(df, x = x, y = y, fill = x, facet = f),
+    cpb_line(num, x = x, y = y, facet = f),
+    cpb_box(box_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+            facet = f),
+    cpb_scatter(num, x = x, y = y, facet = f),
+    cpb_hist(df, x = y, bins = 2, facet = f)
+  )
+  for (p in plots) {
+    expect_s3_class(p$facet, "FacetWrap")
+    expect_equal(p$facet$params$strip.position, "bottom")
+    # every panel is a complete mini-figure with its own axes
+    expect_true(all(unlist(p$facet$params$axes)))
+    expect_true(all(unlist(p$facet$params$axis.labels)))
+  }
+  # without facet the plot stays single-panel
+  expect_s3_class(cpb_col(df, x = x, y = y)$facet, "FacetNull")
+})
+
+test_that("facet_ncol and facet_scales are forwarded", {
+  df <- data.frame(x = rep(c("a", "b"), 2), y = 1:4,
+                   f = rep(c("p1", "p2"), each = 2))
+  p <- cpb_col(df, x = x, y = y, facet = f, facet_ncol = 1,
+               facet_scales = "free_y")
+  expect_equal(p$facet$params$ncol, 1)
+  expect_true(p$facet$params$free$y)
+  expect_false(p$facet$params$free$x)
+})
+
+test_that("theme_cpb places facet strips outside for bottom captions", {
+  th <- theme_cpb()
+  expect_equal(th$strip.placement, "outside")
+  expect_equal(th$strip.text$face, "bold")
+  expect_equal(th$strip.text$hjust, 0)
+  expect_equal(th$strip.text$size, 7)
+})

@@ -16,6 +16,9 @@ cpb_hist(
   palette = "qualitative",
   index = NULL,
   reverse_legend = TRUE,
+  facet = NULL,
+  facet_ncol = NULL,
+  facet_scales = "fixed",
   legend = "bottom",
   zeroline = TRUE,
   minor = FALSE,
@@ -64,6 +67,18 @@ to \code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}}.}
 
 \item{reverse_legend}{If \code{TRUE} (default), reverse the fill legend
 order via \code{guide_legend(reverse = TRUE)}.}
+
+\item{facet}{Optional column (tidy eval) to facet by. Facets follow
+the house (legacy nicerplot) convention: the facet title is a bold
+strip \emph{below} each panel, and every panel is a complete
+mini-figure with its own axes and axis labels.}
+
+\item{facet_ncol}{Number of facet columns, passed to
+\code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}}.}
+
+\item{facet_scales}{Whether facet axis ranges are shared; passed to
+\code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}} (\code{"fixed"} default, or \code{"free"},
+\code{"free_x"}, \code{"free_y"}).}
 
 \item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}.}
 
