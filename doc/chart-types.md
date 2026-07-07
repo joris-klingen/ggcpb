@@ -173,6 +173,34 @@ wrapper, not through a second `scale_y_continuous()`, which would
 silently replace the wrapper’s percentage labels and zero-flush
 expansion.
 
+## Grouped categories on one shared axis
+
+Pass `group` to organise the categories into blocks – a gap between the
+groups, the group names in bold under the category labels, and *one*
+shared value axis (no facets). Each category must belong to exactly one
+group; tune the gap with `group_gap`:
+
+``` r
+zakkans <- tibble(
+  cat   = factor(rep(c("jongen", "meisje", "laag", "hoog"), each = 2),
+                 levels = c("jongen", "meisje", "laag", "hoog")),
+  grp   = factor(rep(c("geslacht", "opleiding ouders"), each = 4),
+                 levels = c("geslacht", "opleiding ouders")),
+  serie = rep(c("als centraal examen meetelt",
+                "als centraal examen niet meetelt"), 4),
+  pct   = c(8.7, 8.7, 9.7, 5.1, 11.2, 8.0, 8.1, 6.0))
+
+cpb_col(zakkans, x = cat, y = pct, fill = serie, group = grp,
+  position = "dodge", index = c(6, 2), width = 0.75,
+  value_breaks = seq(0, 12, 2), value_limits = c(0, 12),
+  title = "VWO", ylab = "zakkans (%)")
+```
+
+<img src="chart-types_files/figure-gfm/col-grouped-1.png" width="350px" />
+
+The group labels occupy the line an `xlab` would use, so the two cannot
+be combined.
+
 # Area charts
 
 `cpb_area()` draws the recurring share-of-total-over-time figure. With
@@ -276,6 +304,42 @@ Both styles print value labels by default (`box_labels = FALSE` turns
 them off, `label_accuracy` controls their rounding) and draw
 single-colour boxes: a `fill` mapping is only supported by `"ggcpb"`.
 
+## Vertical grouping
+
+For the published distributional layout – categories organised under
+bold group headings, all sharing one value axis – pass `group`. A group
+whose only category carries the same name (like an “Alle huishoudens”
+total) collapses onto its heading row. Combine with
+`box_style = "james"` and a *vector* `fill_colour` (one colour per row)
+to colour each group:
+
+``` r
+ink <- tribble(
+  ~cat,                     ~grp,                   ~p50,
+  "Alle huishoudens",       "Alle huishoudens",     0.09,
+  "1-20%",                  "Inkomensgroepen",      0.02,
+  "21-40%",                 "Inkomensgroepen",      0.07,
+  "41-60%",                 "Inkomensgroepen",      0.07,
+  "61-80%",                 "Inkomensgroepen",      0.06,
+  "81-100%",                "Inkomensgroepen",      0.04,
+  "Werkenden",              "Inkomensbron",         0.09,
+  "Uitkeringsgerechtigden", "Inkomensbron",         0.04,
+  "Gepensioneerden",        "Inkomensbron",         0.05) |>
+  mutate(cat = factor(cat, levels = cat),
+         grp = factor(grp, levels = unique(grp)),
+         p25 = p50 - runif(n(), 0.02, 0.15), p75 = p50 + runif(n(), 0.02, 0.12),
+         p5  = p25 - runif(n(), 0.1, 0.6),   p95 = p75 + runif(n(), 0.1, 0.6))
+
+cpb_box(ink, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  group = grp, box_style = "james", orientation = "horizontal",
+  fill_colour = c("#193c69", rep("#87d2ff", 5), rep("#e6006e", 3)),
+  width = 0.45,
+  title = "Inkomenseffecten plannen stelsel",
+  ylab  = "verandering in 2025 (%)")
+```
+
+<img src="chart-types_files/figure-gfm/box-grouped-1.png" width="350px" />
+
 # Scatter plots
 
 `cpb_scatter()` draws points in the house style. Without a `colour`
@@ -373,6 +437,32 @@ cpb_line(groeipad, x = jaar, y = groei, ymin = lo, ymax = hi,
 The window is drawn *underneath* the data and the label is centred in it
 at the top of the panel; for bar charts pick a `forecast_x` between two
 bars (e.g. `2025.5`) so no bar is cut.
+
+# Maps
+
+`cpb_map()` draws a value per Dutch municipality, COROP region or
+province on bundled generalised CBS/Kadaster boundaries (2025, via
+cartomap). Regions are joined by CBS code (`"GM0014"`, `"PV20"`) or by
+name, whichever matches best; regions without a value are filled with
+the CPB missing-value grey. Borders are hairlines in the background
+colour, so regions read as tiles separated by light-blue seams:
+
+``` r
+gemeenten <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
+  mutate(index = rnorm(n(), 100, 15))
+
+cpb_map(gemeenten, region = code, value = index,
+  title    = "Voorbeeldindex per gemeente",
+  subtitle = "index (Nederland = 100)")
+#> Warning in ggplot2::geom_polygon(colour = border_colour, linewidth =
+#> border_linewidth, : Ignoring empty aesthetic: `colour`.
+```
+
+<img src="chart-types_files/figure-gfm/map-1.png" width="350px" />
+
+Numeric values get the CPB sequential gradient; a discrete value column
+gets the discrete palettes. The raw boundary tables are available
+through `cpb_nl_geo(level)` for anything the wrapper does not cover.
 
 # Composing: a line over stacked columns
 

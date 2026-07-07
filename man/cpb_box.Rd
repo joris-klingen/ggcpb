@@ -14,6 +14,8 @@ cpb_box(
   p95,
   fill = NULL,
   fill_colour = NULL,
+  group = NULL,
+  group_gap = 0.7,
   box_style = c("ggcpb", "james", "modern"),
   box_labels = NULL,
   label_accuracy = 0.1,
@@ -64,7 +66,23 @@ eval), e.g. for grouped boxes side by side. Only supported by
 mapped. Defaults to \code{NULL}, which resolves to the CPB primary blue
 (\code{cpb_cols(6)}, \code{"#005faf"}) for \code{"ggcpb"}/\code{"james"} and the CPB
 light blue (\code{cpb_cols(5)}, \code{"#87d2ff"}) for \code{"modern"}. Ignored
-when \code{fill} is supplied.}
+when \code{fill} is supplied. For the \code{"james"}/\code{"modern"} styles it
+may also be a \emph{vector} with one colour per row of \code{data} (e.g.
+one colour per \code{group}), recycled if shorter.}
+
+\item{group}{Optional column (tidy eval) assigning each \code{x} category
+to a group, for the published vertically grouped layout: every
+group gets its name as a bold heading row on the category axis
+above its categories, all boxes share one value axis. A group
+containing exactly one category with the same name as the group
+collapses onto its heading row (e.g. an "Alle huishoudens" total).
+Cannot be combined with a \code{fill} mapping. Typically used with
+\code{orientation = "horizontal"}. Note: the headings are right-aligned
+with the other category labels (a deviation from some published
+figures, which set them flush left).}
+
+\item{group_gap}{Extra gap between group blocks, in category
+widths; defaults to \code{0.7}.}
 
 \item{box_style}{How the boxes are constructed:
 \itemize{

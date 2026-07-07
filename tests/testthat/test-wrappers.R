@@ -503,3 +503,155 @@ test_that("theme_cpb places facet strips outside for bottom captions", {
   expect_equal(th$strip.text$hjust, 0)
   expect_equal(th$strip.text$size, 7)
 })
+
+# grouped category axes ----
+
+test_that("cpb_col group lays out gapped blocks with bold group labels", {
+  df <- data.frame(
+    cat = factor(rep(c("jongen", "meisje", "laag", "hoog"), each = 2),
+                 levels = c("jongen", "meisje", "laag", "hoog")),
+    grp = factor(rep(c("geslacht", "geslacht", "opleiding", "opleiding"), each = 2),
+                 levels = c("geslacht", "opleiding")),
+    serie = rep(c("a", "b"), 4),
+    y = 1:8
+  )
+  p <- cpb_col(df, x = cat, y = y, fill = serie, group = grp,
+               position = "dodge", title = "t")
+  # categories at 1,2 then a gap, then 3.8,4.8
+  sc <- p$scales$get_scales("x")
+  expect_equal(sc$breaks, c(1, 2, 3.8, 4.8))
+  expect_equal(sc$labels, c("jongen", "meisje", "laag", "hoog"))
+  # the bold group labels are a text annotation at the group centres
+  txt <- p$layers[[length(p$layers)]]
+  expect_s3_class(txt$geom, "GeomText")
+  expect_equal(txt$data$x, c(1.5, 4.3))
+  expect_equal(txt$aes_params$label, c("geslacht", "opleiding"))
+  expect_equal(txt$aes_params$fontface, "bold")
+  # clip is off so the labels can render under the panel
+  expect_equal(p$coordinates$clip, "off")
+  # the axis-title line is reserved for the group labels
+  expect_equal(p$labels$x, " ")
+})
+
+test_that("cpb_col group validates its input", {
+  df <- data.frame(cat = c("a", "a"), grp = c("g1", "g2"), y = 1:2)
+  expect_error(cpb_col(df, x = cat, y = y, group = grp),
+               "exactly one `group`")
+  df2 <- data.frame(cat = c("a", "b"), grp = c("g1", "g1"), y = 1:2)
+  expect_error(cpb_col(df2, x = cat, y = y, group = grp,
+                       orientation = "horizontal"),
+               "vertical")
+  expect_error(cpb_col(df2, x = cat, y = y, group = grp, forecast_x = 1.5),
+               "forecast_x")
+})
+
+test_that("cpb_box group builds heading rows on the category axis", {
+  df <- data.frame(
+    cat = factor(c("Alle huishoudens", "1-20%", "21-40%", "Werkenden"),
+                 levels = c("Alle huishoudens", "1-20%", "21-40%", "Werkenden")),
+    grp = factor(c("Alle huishoudens", "Inkomensgroepen", "Inkomensgroepen",
+                   "Inkomensbron"),
+                 levels = c("Alle huishoudens", "Inkomensgroepen", "Inkomensbron")),
+    p5 = -1, p25 = -0.2, p50 = 0.1, p75 = 0.3, p95 = 1
+  )
+  p <- cpb_box(df, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+               group = grp, orientation = "horizontal", title = "t")
+  sc <- p$scales$get_scales("x")
+  # 6 slots: collapsed total, heading + 2 items, heading + 1 item;
+  # positions descend so the first group reads from the top
+  expect_length(sc$breaks, 6)
+  expect_true(all(diff(sc$breaks) < 0))
+  # heading labels are bold plotmath expressions, items plain strings
+  labs <- as.list(sc$labels)
+  expect_true(is.language(labs[[1]]))  # collapsed "Alle huishoudens" total
+  expect_true(is.language(labs[[2]]))  # "Inkomensgroepen"
+  expect_false(is.language(labs[[3]])) # "1-20%"
+  # the collapsed total has its box on the heading row: the largest
+  # break position carries data
+  built <- ggplot2::ggplot_build(p)
+  box_data <- built$data[[which(vapply(p$layers, function(l)
+    inherits(l$geom, "GeomBoxplot"), logical(1)))]]
+  expect_true(max(sc$breaks) %in% box_data$x)
+})
+
+test_that("cpb_box group + fill mapping is rejected", {
+  df <- data.frame(cat = c("a", "b"), grp = c("g", "g"), s = c("s1", "s2"),
+                   p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5)
+  expect_error(
+    cpb_box(df, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+            group = grp, fill = s),
+    "cannot be combined"
+  )
+})
+
+test_that("vector fill_colour tracks rows in james/modern boxes", {
+  df <- data.frame(
+    cat = factor(c("a", "b", "c"), levels = c("a", "b", "c")),
+    grp = factor(c("G1", "G1", "G2"), levels = c("G1", "G2")),
+    p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5
+  )
+  cols <- c("#87d2ff", "#87d2ff", "#e6006e")
+  p <- cpb_box(df, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+               group = grp, box_style = "james", orientation = "horizontal",
+               fill_colour = cols)
+  built <- ggplot2::ggplot_build(p)
+  box_i <- which(vapply(p$layers, function(l)
+    inherits(l$geom, "GeomBoxplot"), logical(1)))
+  box_data <- built$data[[box_i]]
+  # the box on the highest slot (category "a", top of the flipped
+  # axis) is light blue; the lowest (category "c") is magenta
+  expect_equal(as.character(box_data$fill[which.max(box_data$x)]), "#87d2ff")
+  expect_equal(as.character(box_data$fill[which.min(box_data$x)]), "#e6006e")
+})
+
+# maps ----
+
+test_that("cpb_nl_geo returns the three bundled levels", {
+  for (lvl in c("gemeente", "corop", "provincie")) {
+    g <- cpb_nl_geo(lvl)
+    expect_true(all(c("code", "name", "part", "ring", "x", "y") %in% names(g)))
+    expect_gt(nrow(g), 100)
+  }
+  expect_length(unique(cpb_nl_geo("provincie")$code), 12)
+  expect_length(unique(cpb_nl_geo("corop")$code), 40)
+})
+
+test_that("cpb_map joins by code or name and styles the borders", {
+  prov <- data.frame(code = unique(cpb_nl_geo("provincie")$code))
+  prov$w <- seq_len(nrow(prov))
+  p <- cpb_map(prov, region = code, value = w, level = "provincie",
+               title = "t", subtitle = "s")
+  poly <- p$layers[[1]]
+  expect_s3_class(poly$geom, "GeomPolygon")
+  # borders: thin, in the background colour (the deliberate deviation)
+  expect_equal(poly$aes_params$colour, cpb_tokens()$background)
+  expect_equal(poly$aes_params$linewidth, 0.1)
+  expect_equal(p$coordinates$ratio, 1)  # fixed 1:1 aspect (RD metres)
+  # numeric values get the continuous CPB scale
+  expect_s3_class(p$scales$get_scales("fill"), "ScaleContinuous")
+  # map theme: no axes
+  expect_s3_class(p$theme$axis.text, "element_blank")
+
+  # join by name works too, and a missing region fills as NA
+  prov2 <- data.frame(naam = unique(cpb_nl_geo("provincie")$name)[1:11])
+  prov2$w <- 1:11
+  p2 <- cpb_map(prov2, region = naam, value = w, level = "provincie")
+  expect_true(anyNA(p2$data$cpb__value))
+  expect_false(anyNA(p2$data$cpb__value[p2$data$name == prov2$naam[1]]))
+})
+
+test_that("cpb_map warns on unmatched regions and errors on duplicates", {
+  df <- data.frame(r = c("Groningen", "Atlantis"), w = 1:2)
+  expect_warning(cpb_map(df, region = r, value = w, level = "provincie"),
+                 "Atlantis")
+  df2 <- data.frame(r = c("Groningen", "Groningen"), w = 1:2)
+  expect_error(cpb_map(df2, region = r, value = w, level = "provincie"),
+               "one row per region")
+})
+
+test_that("cpb_map uses discrete CPB palettes for discrete values", {
+  prov <- data.frame(code = unique(cpb_nl_geo("provincie")$code))
+  prov$klasse <- factor(rep(c("laag", "hoog"), 6))
+  p <- cpb_map(prov, region = code, value = klasse, level = "provincie")
+  expect_s3_class(p$scales$get_scales("fill"), "ScaleDiscrete")
+})
