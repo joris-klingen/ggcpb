@@ -2,10 +2,9 @@
 #
 # Choropleth maps of the Netherlands on the bundled generalised
 # CBS/Kadaster boundaries (via cartomap.github.io/nl, EPSG:28992;
-# rebuilt with tools/fetch_nl_geo.R). One deliberate deviation from the
-# legacy plotter: region borders are drawn thin in the plot background
-# colour, so regions read as tiles separated by hairlines of light
-# blue rather than outlined shapes.
+# rebuilt with tools/fetch_nl_geo.R). Regions are separated by thin
+# seams in the plot background colour, and the legend sits inside the
+# panel at top-left, in the empty North Sea corner of the country.
 
 .ggcpb_geo_env <- new.env(parent = emptyenv())
 
@@ -48,10 +47,9 @@ cpb_nl_geo <- function(level = c("gemeente", "corop", "provincie")) {
 #' CBS code (`"GM0014"`, `"CR01"`, `"PV20"`) or by name -- whichever
 #' matches the `region` column best -- and filled with the CPB
 #' sequential gradient (numeric values) or a discrete CPB palette.
-#' Borders are hairlines in the plot background colour, so regions read
-#' as tiles separated by light-blue seams (a deliberate deviation from
-#' the legacy plotter's outlined shapes). Returns a real ggplot object
-#' that can be extended further with `+`.
+#' Regions are separated by thin background-colour seams, and the
+#' legend sits inside the panel at top-left (the empty North Sea
+#' corner). Returns a real ggplot object that can be extended with `+`.
 #'
 #' @param data A data.frame or data.table with one row per region.
 #' @param region Column (tidy eval) identifying the region, as CBS
@@ -62,9 +60,11 @@ cpb_nl_geo <- function(level = c("gemeente", "corop", "provincie")) {
 #' @param level One of `"gemeente"` (default), `"corop"` or
 #'   `"provincie"`; must match the regions in `data`.
 #' @param border_colour Border colour between regions; defaults to the
-#'   CPB background colour so borders read as seams in the background.
-#' @param border_linewidth Border line width; defaults to `0.2`, a thin
-#'   seam that keeps adjacent regions legible without drawing outlines.
+#'   CPB background colour, a soft seam (on a classed or continuous
+#'   fill neighbouring classes already differ, so this is enough). Pass
+#'   `"white"` for more contrast, e.g. on a two-class discrete map.
+#' @param border_linewidth Border line width; defaults to `0.15`, a
+#'   thin seam that keeps adjacent regions legible without outlines.
 #' @param palette CPB palette for a *discrete* `value` column; one of
 #'   `"qualitative"`, `"discr"`, or `"sequential"`.
 #' @param index Optional integer vector of palette positions for a
@@ -73,9 +73,12 @@ cpb_nl_geo <- function(level = c("gemeente", "corop", "provincie")) {
 #'   gradient (passed to [scale_fill_cpb_c()]).
 #' @param na_fill Fill for regions without a value in `data`; defaults
 #'   to the CPB missing-value grey.
-#' @param legend Legend position, forwarded to [theme_cpb()].
-#' @param flush_legend Anchor the legend flush bottom-left, as in the
-#'   other wrappers.
+#' @param legend Legend placement. `"topleft"` (default) puts the
+#'   legend inside the panel at top-left -- in the empty North Sea
+#'   corner of the Netherlands -- as a vertical block. Any other value
+#'   (e.g. `"bottom"`, `"none"`) is forwarded to [theme_cpb()].
+#' @param flush_legend Anchor a `"bottom"` legend flush bottom-left, as
+#'   in the other wrappers. Ignored when `legend = "topleft"`.
 #' @param title,subtitle Plot title/subtitle. As elsewhere, `ylab` does
 #'   not exist here: use `subtitle` for the unit caption.
 #' @param filllab Legend title; defaults to `NULL` (no title).
@@ -90,12 +93,12 @@ cpb_nl_geo <- function(level = c("gemeente", "corop", "provincie")) {
 cpb_map <- function(data, region, value,
                     level = c("gemeente", "corop", "provincie"),
                     border_colour = NULL,
-                    border_linewidth = 0.2,
+                    border_linewidth = 0.15,
                     palette = "sequential",
                     index = NULL,
                     reverse = FALSE,
                     na_fill = NULL,
-                    legend = "bottom",
+                    legend = "topleft",
                     flush_legend = TRUE,
                     title = NULL,
                     subtitle = NULL,
@@ -128,8 +131,15 @@ cpb_map <- function(data, region, value,
   geo$cpb__value <- vals[match(geo_key, keys)]
 
   tokens <- cpb_tokens()
-  if (is.null(border_colour)) border_colour <- tokens$background
+  # thin seams in the plot background colour separate the regions; on a
+  # classed/continuous fill neighbouring classes already differ, so a
+  # soft seam is enough. Pass border_colour = "white" for more contrast.
+  if (is.null(border_colour)) border_colour <- tokens$bg
   if (is.null(na_fill)) na_fill <- tokens$na
+
+  # the legend sits inside the panel, top-left, by default -- the empty
+  # North Sea corner of the Netherlands leaves room for it there
+  inside <- identical(legend, "topleft")
 
   p <- ggplot2::ggplot(geo, ggplot2::aes(
     x = .data$x, y = .data$y, group = .data$part, subgroup = .data$ring,
@@ -148,26 +158,36 @@ cpb_map <- function(data, region, value,
     scale_fill_cpb_d(palette = palette, na.value = na_fill)
   }
   if (is.numeric(vals)) {
-    # a compact horizontal colourbar, key-height thin like legend keys
+    # a compact colourbar, thin like the legend keys; vertical when the
+    # legend sits inside top-left, horizontal along the bottom otherwise
     p <- p + ggplot2::guides(fill = ggplot2::guide_colourbar(
-      direction = "horizontal",
+      direction = if (inside) "vertical" else "horizontal",
       theme = ggplot2::theme(
-        legend.key.height = grid::unit(0.25, "cm"),
-        legend.key.width  = grid::unit(2.8, "cm")
+        legend.key.height = grid::unit(if (inside) 2.4 else 0.25, "cm"),
+        legend.key.width  = grid::unit(if (inside) 0.30 else 2.8, "cm")
       )
     ))
   }
 
-  subtitle <- cpb_reserve_subtitle(title, subtitle)
-
-  p +
+  p <- p +
     ggplot2::labs(title = title, subtitle = subtitle, fill = filllab) +
-    theme_cpb(grid = "none", ticks = FALSE, legend = legend,
-              flush_legend = flush_legend) +
+    theme_cpb(grid = "none", ticks = FALSE,
+              legend = if (inside) "bottom" else legend,
+              flush_legend = if (inside) FALSE else flush_legend) +
     ggplot2::theme(
       axis.text  = ggplot2::element_blank(),
       axis.title = ggplot2::element_blank(),
       axis.line  = ggplot2::element_blank(),
       axis.ticks = ggplot2::element_blank()
     )
+
+  if (inside) {
+    p <- p + ggplot2::theme(
+      legend.position        = "inside",
+      legend.position.inside = c(0, 0.98),
+      legend.justification   = c(0, 1),
+      legend.direction       = "vertical"
+    )
+  }
+  p
 }

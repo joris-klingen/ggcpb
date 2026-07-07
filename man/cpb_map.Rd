@@ -10,12 +10,12 @@ cpb_map(
   value,
   level = c("gemeente", "corop", "provincie"),
   border_colour = NULL,
-  border_linewidth = 0.2,
+  border_linewidth = 0.15,
   palette = "sequential",
   index = NULL,
   reverse = FALSE,
   na_fill = NULL,
-  legend = "bottom",
+  legend = "topleft",
   flush_legend = TRUE,
   title = NULL,
   subtitle = NULL,
@@ -37,10 +37,12 @@ CPB palette.}
 \code{"provincie"}; must match the regions in \code{data}.}
 
 \item{border_colour}{Border colour between regions; defaults to the
-CPB background colour so borders read as seams in the background.}
+CPB background colour, a soft seam (on a classed or continuous
+fill neighbouring classes already differ, so this is enough). Pass
+\code{"white"} for more contrast, e.g. on a two-class discrete map.}
 
-\item{border_linewidth}{Border line width; defaults to \code{0.2}, a thin
-seam that keeps adjacent regions legible without drawing outlines.}
+\item{border_linewidth}{Border line width; defaults to \code{0.15}, a
+thin seam that keeps adjacent regions legible without outlines.}
 
 \item{palette}{CPB palette for a \emph{discrete} \code{value} column; one of
 \code{"qualitative"}, \code{"discr"}, or \code{"sequential"}.}
@@ -54,10 +56,13 @@ gradient (passed to \code{\link[=scale_fill_cpb_c]{scale_fill_cpb_c()}}).}
 \item{na_fill}{Fill for regions without a value in \code{data}; defaults
 to the CPB missing-value grey.}
 
-\item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}.}
+\item{legend}{Legend placement. \code{"topleft"} (default) puts the
+legend inside the panel at top-left -- in the empty North Sea
+corner of the Netherlands -- as a vertical block. Any other value
+(e.g. \code{"bottom"}, \code{"none"}) is forwarded to \code{\link[=theme_cpb]{theme_cpb()}}.}
 
-\item{flush_legend}{Anchor the legend flush bottom-left, as in the
-other wrappers.}
+\item{flush_legend}{Anchor a \code{"bottom"} legend flush bottom-left, as
+in the other wrappers. Ignored when \code{legend = "topleft"}.}
 
 \item{title, subtitle}{Plot title/subtitle. As elsewhere, \code{ylab} does
 not exist here: use \code{subtitle} for the unit caption.}
@@ -75,10 +80,9 @@ the bundled generalised boundaries. Regions are joined to \code{data} by
 CBS code (\code{"GM0014"}, \code{"CR01"}, \code{"PV20"}) or by name -- whichever
 matches the \code{region} column best -- and filled with the CPB
 sequential gradient (numeric values) or a discrete CPB palette.
-Borders are hairlines in the plot background colour, so regions read
-as tiles separated by light-blue seams (a deliberate deviation from
-the legacy plotter's outlined shapes). Returns a real ggplot object
-that can be extended further with \code{+}.
+Regions are separated by thin background-colour seams, and the
+legend sits inside the panel at top-left (the empty North Sea
+corner). Returns a real ggplot object that can be extended with \code{+}.
 }
 \examples{
 df <- data.frame(prov = c("Groningen", "Friesland", "Drenthe"),

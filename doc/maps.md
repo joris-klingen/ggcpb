@@ -10,9 +10,9 @@ set.seed(42)
 
 `cpb_map()` draws a value per Dutch municipality, COROP region or
 province on bundled generalised CBS/Kadaster boundaries (2025, via
-cartomap), so no geo packages or downloads are needed. Borders are
-hairlines in the background colour, so regions read as tiles separated
-by light-blue seams.
+cartomap), so no geo packages or downloads are needed. Regions are
+separated by thin background-colour seams, and the legend sits inside
+the panel at top-left – in the empty North Sea corner of the country.
 
 # Classed maps
 
@@ -33,10 +33,8 @@ gemeenten <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
 
 cpb_map(gemeenten, region = code, value = klasse,
   palette = "blues",
-  title   = "Aandeel huishoudens\nmet zonnepanelen",
+  title   = "Aandeel huishoudens met zonnepanelen",
   filllab = "aandeel")
-#> Warning in ggplot2::geom_polygon(colour = border_colour, linewidth =
-#> border_linewidth, : Ignoring empty aesthetic: `colour`.
 ```
 
 <img src="maps_files/figure-gfm/map-classed-1.png" width="350px" />
@@ -44,9 +42,9 @@ cpb_map(gemeenten, region = code, value = klasse,
 The map fills the half-page width (`page = "half"` in `save_cpb()`);
 because the Netherlands is taller than it is wide, a map figure needs a
 taller canvas than a chart – here `fig.height` is set so the map is not
-squeezed. The title is broken over two lines with `"\n"`: a single-line
-title that runs wider than the panel triggers a warning from
-`save_cpb()`, which suggests exactly this.
+squeezed. A title that runs wider than the panel triggers a warning from
+`save_cpb()`, which suggests breaking it over two lines with `"\n"` (see
+the province example below).
 
 `cpb_cut()` is a house-styled wrapper around `cut()`: give it the
 `breaks` (including the outer bounds, `Inf` for an open top class) and a
@@ -59,9 +57,9 @@ just maps – use it for classed bars too.
 # Continuous maps
 
 For a raw numeric value, `cpb_map()` fills with the CPB sequential
-gradient and a compact horizontal colourbar. As elsewhere the unit
-caption goes in `subtitle`; there is no value axis, so `ylab` does not
-apply here:
+gradient and a compact colourbar (vertical, top-left, alongside the
+map). As elsewhere the unit caption goes in `subtitle`; there is no
+value axis, so `ylab` does not apply here:
 
 ``` r
 gemeenten_ct <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
@@ -70,8 +68,6 @@ gemeenten_ct <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
 cpb_map(gemeenten_ct, region = code, value = index,
   title    = "Voorbeeldindex per gemeente",
   subtitle = "index (Nederland = 100)")
-#> Warning in ggplot2::geom_polygon(colour = border_colour, linewidth =
-#> border_linewidth, : Ignoring empty aesthetic: `colour`.
 ```
 
 <img src="maps_files/figure-gfm/map-gemeente-1.png" width="350px" />
@@ -90,21 +86,21 @@ provincies <- tibble(naam = unique(cpb_nl_geo("provincie")$name)) |>
   ))
 
 cpb_map(provincies, region = naam, value = klasse, level = "provincie",
-  index = c(5, 6),
-  title = "Groei ten opzichte van het landelijk gemiddelde")
-#> Warning in ggplot2::geom_polygon(colour = border_colour, linewidth =
-#> border_linewidth, : Ignoring empty aesthetic: `colour`.
+  index = c(2, 6),
+  title = "Groei ten opzichte van het\nlandelijk gemiddelde")
 ```
 
 <img src="maps_files/figure-gfm/map-provincie-1.png" width="350px" />
 
 # Styling and raw boundaries
 
-The border seams are controlled with `border_colour` (default: the CPB
-background colour – a deliberate deviation from the legacy plotter’s
-outlined shapes) and `border_linewidth` (default `0.1`, the house
-hairline). `reverse` flips the sequential gradient and `na_fill`
-overrides the missing-value colour.
+The border seams are controlled with `border_colour` (default the CPB
+background colour; pass `"white"` for more contrast, e.g. on a two-class
+map) and `border_linewidth` (default `0.15`). The legend defaults to
+`legend = "topleft"` inside the panel; pass `legend = "bottom"` for the
+flush bottom-left legend of the other wrappers, or `legend = "none"`.
+`reverse` flips the sequential gradient and `na_fill` overrides the
+missing-value colour.
 
 For anything the wrapper does not cover, the raw boundary tables are
 available through `cpb_nl_geo(level)`: one row per polygon vertex with
