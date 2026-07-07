@@ -63,28 +63,60 @@ cpb_palette_colours <- function(palette = c("qualitative", "discr", "sequential"
 
 #' Read-only access to the CPB design tokens
 #'
-#' Returns the canonical CPB colour tokens as a plain list. Use this to inspect the raw hex values, e.g. when
-#' building a custom scale that the package does not provide directly.
-#' The palette vectors are returned without their trailing NA colour;
-#' the NA colour is available separately as `na`.
+#' Returns the canonical CPB colour tokens as a list. Use this to
+#' inspect the raw hex values, e.g. when building a custom scale that
+#' the package does not provide directly. The palette vectors are
+#' returned without their trailing NA colour; the NA colour is
+#' available separately as `na`.
 #'
-#' @return A named list with elements `colors`, `colors_discr`,
-#'   `colors_scale` (character vectors of data colours), `bg`, `grid`,
-#'   `na`, `table_header`, `table_total` (single hex strings).
+#' Accessing an unknown token with `$` is an error rather than a silent
+#' `NULL` (so a typo like `cpb_tokens()$background` -- the token is
+#' `bg` -- fails loudly instead of propagating `NULL` into a plot).
+#'
+#' A note on spelling: the token *keys* keep the historical American
+#' `colors*` names of the internal CPB scripts, while all ggcpb
+#' *function arguments* follow the ggplot2 convention of British
+#' spelling (`colour`, `fill_colour`, `grid_colour`, ...).
+#'
+#' @return A named list (classed `"cpb_tokens"`) with elements
+#'   `colors`, `colors_discr`, `colors_scale`, `colors_blues`
+#'   (character vectors of data colours), `bg`, `grid`, `na`,
+#'   `table_header`, `table_total` (single hex strings).
 #' @examples
 #' cpb_tokens()$colors
 #' cpb_tokens()$bg
 #' @export
 cpb_tokens <- function() {
-  list(
-    colors       = cpb_palette_colours("qualitative"),
-    colors_discr = cpb_palette_colours("discr"),
-    colors_scale = cpb_palette_colours("sequential"),
-    colors_blues = cpb_palette_colours("blues"),
-    bg           = cpb_bg,
-    grid         = cpb_grid,
-    na           = cpb_na,
-    table_header = cpb_table_header,
-    table_total  = cpb_table_total
+  structure(
+    list(
+      colors       = cpb_palette_colours("qualitative"),
+      colors_discr = cpb_palette_colours("discr"),
+      colors_scale = cpb_palette_colours("sequential"),
+      colors_blues = cpb_palette_colours("blues"),
+      bg           = cpb_bg,
+      grid         = cpb_grid,
+      na           = cpb_na,
+      table_header = cpb_table_header,
+      table_total  = cpb_table_total
+    ),
+    class = "cpb_tokens"
   )
+}
+
+#' @export
+`$.cpb_tokens` <- function(x, name) {
+  if (!name %in% names(x)) {
+    stop("unknown CPB token `", name, "`; available tokens: ",
+         paste(names(x), collapse = ", "), ".", call. = FALSE)
+  }
+  .subset2(x, name)
+}
+
+#' @export
+`[[.cpb_tokens` <- function(x, i, ...) {
+  if (is.character(i) && length(i) == 1 && !i %in% names(x)) {
+    stop("unknown CPB token `", i, "`; available tokens: ",
+         paste(names(x), collapse = ", "), ".", call. = FALSE)
+  }
+  .subset2(x, i)
 }

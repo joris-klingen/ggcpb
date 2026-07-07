@@ -14,8 +14,8 @@ cpb_cols(
 \item{...}{One or more integer positions into \code{palette}. If empty,
 the full palette is returned in its original order.}
 
-\item{palette}{One of \code{"qualitative"} (default), \code{"discr"}, or
-\code{"sequential"}.}
+\item{palette}{One of \code{"qualitative"} (default), \code{"discr"},
+\code{"sequential"} (pink ramp), or \code{"blues"} (blue ramp).}
 
 \item{reverse}{If \code{TRUE}, reverse the palette before indexing.}
 }

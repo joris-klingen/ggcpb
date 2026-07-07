@@ -59,7 +59,8 @@ supplied.}
 published CPB figures.}
 
 \item{palette}{CPB palette to use for \code{colour}; one of
-\code{"qualitative"} (default), \code{"discr"}, or \code{"sequential"}.}
+\code{"qualitative"} (default), \code{"discr"}, \code{"sequential"}
+(pink ramp), or \code{"blues"} (blue ramp).}
 
 \item{index}{Optional integer vector of palette positions, forwarded
 to \code{\link[=scale_colour_cpb_manual]{scale_colour_cpb_manual()}} instead of the default

@@ -61,8 +61,8 @@ cpb_pal <- function(palette = c("qualitative", "discr", "sequential", "blues"), 
 #'
 #' @param ... One or more integer positions into `palette`. If empty,
 #'   the full palette is returned in its original order.
-#' @param palette One of `"qualitative"` (default), `"discr"`, or
-#'   `"sequential"`.
+#' @param palette One of `"qualitative"` (default), `"discr"`,
+#'   `"sequential"` (pink ramp), or `"blues"` (blue ramp).
 #' @param reverse If `TRUE`, reverse the palette before indexing.
 #' @return A character vector of hex colours, named by the position
 #'   they were drawn from.
