@@ -60,7 +60,8 @@ look for histograms.}
 defaults to \code{"stack"}.}
 
 \item{palette}{CPB palette to use for \code{fill}; one of
-\code{"qualitative"} (default), \code{"discr"}, or \code{"sequential"}.}
+\code{"qualitative"} (default), \code{"discr"}, \code{"sequential"}
+(pink ramp), or \code{"blues"} (blue ramp).}
 
 \item{index}{Optional integer vector of palette positions, forwarded
 to \code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}}.}

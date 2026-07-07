@@ -7,15 +7,27 @@
 cpb_tokens()
 }
 \value{
-A named list with elements \code{colors}, \code{colors_discr},
-\code{colors_scale} (character vectors of data colours), \code{bg}, \code{grid},
-\code{na}, \code{table_header}, \code{table_total} (single hex strings).
+A named list (classed \code{"cpb_tokens"}) with elements
+\code{colors}, \code{colors_discr}, \code{colors_scale}, \code{colors_blues}
+(character vectors of data colours), \code{bg}, \code{grid}, \code{na},
+\code{table_header}, \code{table_total} (single hex strings).
 }
 \description{
-Returns the canonical CPB colour tokens as a plain list. Use this to inspect the raw hex values, e.g. when
-building a custom scale that the package does not provide directly.
-The palette vectors are returned without their trailing NA colour;
-the NA colour is available separately as \code{na}.
+Returns the canonical CPB colour tokens as a list. Use this to
+inspect the raw hex values, e.g. when building a custom scale that
+the package does not provide directly. The palette vectors are
+returned without their trailing NA colour; the NA colour is
+available separately as \code{na}.
+}
+\details{
+Accessing an unknown token with \code{$} is an error rather than a silent
+\code{NULL} (so a typo like \code{cpb_tokens()$background} -- the token is
+\code{bg} -- fails loudly instead of propagating \code{NULL} into a plot).
+
+A note on spelling: the token \emph{keys} keep the historical American
+\verb{colors*} names of the internal CPB scripts, while all ggcpb
+\emph{function arguments} follow the ggplot2 convention of British
+spelling (\code{colour}, \code{fill_colour}, \code{grid_colour}, ...).
 }
 \examples{
 cpb_tokens()$colors

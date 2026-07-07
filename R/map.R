@@ -66,7 +66,8 @@ cpb_nl_geo <- function(level = c("gemeente", "corop", "provincie")) {
 #' @param border_linewidth Border line width; defaults to `0.15`, a
 #'   thin seam that keeps adjacent regions legible without outlines.
 #' @param palette CPB palette for a *discrete* `value` column; one of
-#'   `"qualitative"`, `"discr"`, or `"sequential"`.
+#'   `"qualitative"`, `"discr"`, `"sequential"` (pink ramp), or
+#'   `"blues"` (blue ramp -- the usual choice for classed maps).
 #' @param index Optional integer vector of palette positions for a
 #'   discrete `value` column, forwarded to [scale_fill_cpb_manual()].
 #' @param reverse For a numeric `value` column: reverse the sequential

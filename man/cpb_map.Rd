@@ -45,7 +45,8 @@ fill neighbouring classes already differ, so this is enough). Pass
 thin seam that keeps adjacent regions legible without outlines.}
 
 \item{palette}{CPB palette for a \emph{discrete} \code{value} column; one of
-\code{"qualitative"}, \code{"discr"}, or \code{"sequential"}.}
+\code{"qualitative"}, \code{"discr"}, \code{"sequential"} (pink ramp), or
+\code{"blues"} (blue ramp -- the usual choice for classed maps).}
 
 \item{index}{Optional integer vector of palette positions for a
 discrete \code{value} column, forwarded to \code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}}.}

@@ -206,7 +206,8 @@ cpb_forecast_label <- function(forecast_x, xvals, label) {
 #'   bars are clipped for display but not dropped. `NULL` (default) lets
 #'   ggplot2 pick the range.
 #' @param palette CPB palette to use for `fill`; one of
-#'   `"qualitative"` (default), `"discr"`, or `"sequential"`.
+#'   `"qualitative"` (default), `"discr"`, `"sequential"`
+#'   (pink ramp), or `"blues"` (blue ramp).
 #' @param index Optional integer vector of palette positions, forwarded
 #'   to [scale_fill_cpb_manual()] instead of the default
 #'   [scale_fill_cpb_d()] when supplied.
@@ -478,7 +479,8 @@ cpb_col <- function(data, x, y, fill = NULL,
 #' @param fill Column mapped to the fill aesthetic (tidy eval), i.e.
 #'   the grouping variable being stacked.
 #' @param palette CPB palette to use for `fill`; one of
-#'   `"qualitative"` (default), `"discr"`, or `"sequential"`.
+#'   `"qualitative"` (default), `"discr"`, `"sequential"`
+#'   (pink ramp), or `"blues"` (blue ramp).
 #' @param index Optional integer vector of palette positions, forwarded
 #'   to [scale_fill_cpb_manual()] instead of the default
 #'   [scale_fill_cpb_d()] when supplied.
@@ -637,7 +639,8 @@ cpb_area <- function(data, x, y, fill,
 #' @param linewidth Line width; defaults to `0.55`, matching the
 #'   published CPB figures.
 #' @param palette CPB palette to use for `colour`; one of
-#'   `"qualitative"` (default), `"discr"`, or `"sequential"`.
+#'   `"qualitative"` (default), `"discr"`, `"sequential"`
+#'   (pink ramp), or `"blues"` (blue ramp).
 #' @param index Optional integer vector of palette positions, forwarded
 #'   to [scale_colour_cpb_manual()] instead of the default
 #'   [scale_colour_cpb_d()] when supplied.
@@ -912,7 +915,8 @@ cpb_line <- function(data, x, y, colour = NULL,
 #'   errorbars in the `"ggcpb"` style. Defaults to `0.25`, matching
 #'   the thin strokes of the published CPB distributional figures.
 #' @param palette CPB palette to use for `fill`; one of
-#'   `"qualitative"` (default), `"discr"`, or `"sequential"`.
+#'   `"qualitative"` (default), `"discr"`, `"sequential"`
+#'   (pink ramp), or `"blues"` (blue ramp).
 #' @param index Optional integer vector of palette positions, forwarded
 #'   to [scale_fill_cpb_manual()] instead of the default
 #'   [scale_fill_cpb_d()] when supplied.
@@ -1295,7 +1299,8 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
 #'   primary blue (`cpb_cols(6)`, `"#005faf"`).
 #' @param size Point size; defaults to `0.8`.
 #' @param palette CPB palette used for a *discrete* `colour` column;
-#'   one of `"qualitative"` (default), `"discr"`, or `"sequential"`.
+#'   one of `"qualitative"` (default), `"discr"`, `"sequential"`
+#'   (pink ramp), or `"blues"` (blue ramp).
 #' @param index Optional integer vector of palette positions for a
 #'   discrete `colour` column, forwarded to
 #'   [scale_colour_cpb_manual()].
@@ -1463,7 +1468,8 @@ cpb_scatter <- function(data, x, y, colour = NULL,
 #' @param position Position adjustment for grouped histograms;
 #'   defaults to `"stack"`.
 #' @param palette CPB palette to use for `fill`; one of
-#'   `"qualitative"` (default), `"discr"`, or `"sequential"`.
+#'   `"qualitative"` (default), `"discr"`, `"sequential"`
+#'   (pink ramp), or `"blues"` (blue ramp).
 #' @param index Optional integer vector of palette positions, forwarded
 #'   to [scale_fill_cpb_manual()].
 #' @param reverse_legend If `TRUE` (default), reverse the fill legend

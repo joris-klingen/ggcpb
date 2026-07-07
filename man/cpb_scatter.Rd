@@ -53,7 +53,8 @@ primary blue (\code{cpb_cols(6)}, \code{"#005faf"}).}
 \item{size}{Point size; defaults to \code{0.8}.}
 
 \item{palette}{CPB palette used for a \emph{discrete} \code{colour} column;
-one of \code{"qualitative"} (default), \code{"discr"}, or \code{"sequential"}.}
+one of \code{"qualitative"} (default), \code{"discr"}, \code{"sequential"}
+(pink ramp), or \code{"blues"} (blue ramp).}
 
 \item{index}{Optional integer vector of palette positions for a
 discrete \code{colour} column, forwarded to
