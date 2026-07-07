@@ -7,29 +7,29 @@
 \title{CPB discrete fill/colour scales}
 \usage{
 scale_fill_cpb_d(
-  palette = c("qualitative", "discr", "sequential"),
+  palette = c("qualitative", "discr", "sequential", "blues"),
   reverse = FALSE,
   na.value = cpb_na,
   ...
 )
 
 scale_colour_cpb_d(
-  palette = c("qualitative", "discr", "sequential"),
+  palette = c("qualitative", "discr", "sequential", "blues"),
   reverse = FALSE,
   na.value = cpb_na,
   ...
 )
 
 scale_color_cpb_d(
-  palette = c("qualitative", "discr", "sequential"),
+  palette = c("qualitative", "discr", "sequential", "blues"),
   reverse = FALSE,
   na.value = cpb_na,
   ...
 )
 }
 \arguments{
-\item{palette}{One of \code{"qualitative"} (default), \code{"discr"}, or
-\code{"sequential"}.}
+\item{palette}{One of \code{"qualitative"} (default), \code{"discr"},
+\code{"sequential"} (pink ramp), or \code{"blues"} (blue ramp).}
 
 \item{reverse}{If \code{TRUE}, reverse the palette order.}
 

@@ -4,7 +4,21 @@ The package encodes a single CPB house style, calibrated against the
 published reference figures in `references/plots/` (see the smoke test
 `inst/examples/smoke_test_plots.R` for side-by-side recreations).
 
+**See `PLAN.md`** for the roadmap from the publication audit (CEP 2026,
+MEV 2026, zonnepanelen, erfbelasting) and which of its items were kept
+or dropped.
+
 ## Open items
+
+- **Dual-axis line charts** (from the audit): CEP fig 1.2-right draws
+  two series on left/right axes with legend entries auto-suffixed
+  "(linkeras)"/"(rechteras)". Add `y2`/`y2lab`/`y2_scale` to
+  `cpb_line()` (sec_axis + legend suffixing). The split-panel variant
+  ("zie linker/rechter y-as" with a dashed separator) stays a recipe.
+- **Rotating value labels / horizontal raming label** (from the
+  audit): the forecast "raming" label rotated 90° for horizontal
+  charts, and angled (~45°) x category labels as an option. Low
+  priority -- currently done by hand.
 
 - **Robustness**: check and improve behaviour on edge cases -- empty
   or single-row data, NA-heavy series, very long labels, many series,

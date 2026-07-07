@@ -925,6 +925,11 @@ cpb_line <- function(data, x, y, colour = NULL,
 #' @param value_limits Optional length-2 limits for the value axis,
 #'   applied through the coordinate system (zoom) so no data is
 #'   dropped.
+#' @param value_axis Where the value axis is drawn: `"bottom"`
+#'   (default) or `"top"`. `"top"` places the numeric scale along the
+#'   top of the panel, the convention of the CPB koopkracht figures;
+#'   it applies to horizontal boxes (the value axis is the flipped
+#'   axis).
 #' @param orientation `"vertical"` (default) or `"horizontal"` (adds
 #'   [ggplot2::coord_flip()] and is forwarded to [theme_cpb()]).
 #' @param reverse_legend If `TRUE`, reverse the fill legend order via
@@ -986,6 +991,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                      pct_axis = FALSE,
                      value_breaks = NULL,
                      value_limits = NULL,
+                     value_axis = c("bottom", "top"),
                      orientation = c("vertical", "horizontal"),
                      facet = NULL,
                      facet_ncol = NULL,
@@ -1008,6 +1014,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                      ...) {
   orientation <- match.arg(orientation)
   box_style <- match.arg(box_style)
+  value_axis <- match.arg(value_axis)
 
   x <- rlang::enquo(x)
   p5  <- rlang::enquo(p5)
@@ -1202,6 +1209,10 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   # no zero-flush expansion: boxes do not grow from the axis
   scale_args <- cpb_value_scale_args(pct_axis = pct_axis,
                                      value_breaks = value_breaks)
+  # value_axis = "top" draws the value scale at the top of the panel
+  # (the koopkracht-figure convention). The value is the y aesthetic;
+  # under coord_flip() its "right" position renders along the top edge.
+  if (value_axis == "top") scale_args$position <- "right"
   if (length(scale_args)) {
     p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
   }

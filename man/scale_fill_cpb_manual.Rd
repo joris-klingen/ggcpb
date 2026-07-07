@@ -8,21 +8,21 @@
 \usage{
 scale_fill_cpb_manual(
   index = NULL,
-  palette = c("qualitative", "discr", "sequential"),
+  palette = c("qualitative", "discr", "sequential", "blues"),
   na.value = cpb_na,
   ...
 )
 
 scale_colour_cpb_manual(
   index = NULL,
-  palette = c("qualitative", "discr", "sequential"),
+  palette = c("qualitative", "discr", "sequential", "blues"),
   na.value = cpb_na,
   ...
 )
 
 scale_color_cpb_manual(
   index = NULL,
-  palette = c("qualitative", "discr", "sequential"),
+  palette = c("qualitative", "discr", "sequential", "blues"),
   na.value = cpb_na,
   ...
 )
@@ -32,8 +32,8 @@ scale_color_cpb_manual(
 order the resulting scale should use them. If \code{NULL} (default),
 the full palette is used in its original order.}
 
-\item{palette}{One of \code{"qualitative"} (default), \code{"discr"}, or
-\code{"sequential"}.}
+\item{palette}{One of \code{"qualitative"} (default), \code{"discr"},
+\code{"sequential"} (pink ramp), or \code{"blues"} (blue ramp).}
 
 \item{na.value}{Colour used for \code{NA} values; defaults to the CPB NA
 colour (\code{"lightgrey"}).}

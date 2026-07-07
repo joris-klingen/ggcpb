@@ -22,6 +22,14 @@ cpb_colors_scale <- c(
   "#fff1f8", "#fad1e8", "#f08bb8", "#e93a8d", "#a81256", "#4f0a2a", "lightgrey"
 )
 
+# sequential blues (light -> dark) ----
+# The 6-step blue ramp used for classed fills in CPB publications
+# (colours pixel-sampled from the classed bar/map figures in
+# "Erfbelasting in beeld", 2026). Ramped to any n by cpb_pal().
+cpb_colors_blues <- c(
+  "#c6dff5", "#87d2ff", "#4aaee0", "#1a75ba", "#0a4a8a", "#083e76", "lightgrey"
+)
+
 # structural ----
 cpb_bg   <- "#eef8ff" # plot background
 cpb_grid <- "#c9d1da" # gridline colour
@@ -40,13 +48,14 @@ cpb_table_total  <- "#f08bb8"
 #' @param palette One of `"qualitative"`, `"discr"`, `"sequential"`.
 #' @return An unnamed character vector of hex colours (data colours only).
 #' @noRd
-cpb_palette_colours <- function(palette = c("qualitative", "discr", "sequential")) {
+cpb_palette_colours <- function(palette = c("qualitative", "discr", "sequential", "blues")) {
   palette <- match.arg(palette)
   raw <- switch(
     palette,
     qualitative = cpb_colors,
     discr       = cpb_colors_discr,
-    sequential  = cpb_colors_scale
+    sequential  = cpb_colors_scale,
+    blues       = cpb_colors_blues
   )
   # drop the trailing NA colour ("lightgrey") -- it is never a data colour
   utils::head(raw, -1L)
@@ -71,6 +80,7 @@ cpb_tokens <- function() {
     colors       = cpb_palette_colours("qualitative"),
     colors_discr = cpb_palette_colours("discr"),
     colors_scale = cpb_palette_colours("sequential"),
+    colors_blues = cpb_palette_colours("blues"),
     bg           = cpb_bg,
     grid         = cpb_grid,
     na           = cpb_na,
