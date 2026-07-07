@@ -1,30 +1,7 @@
----
-title: "Recipes: forecasts, composing & export"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Recipes: forecasts, composing & export}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
----
+Annotation
+================
 
-```{r, include = FALSE}
-# Figures are drawn on the REAL CPB canvas (page = "half" is 2.98 in,
-# "full" is 5.96 in; text sizes in theme_cpb() are absolute points, so
-# any other canvas distorts the text-to-figure proportion) and only
-# *displayed* smaller via out.width, at a consistent 2:1 scale:
-# half-page figures at 350px, full-page figures at 700px.
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.width = 2.98,
-  fig.height = 2.98,
-  dpi = 300,
-  out.width = "350px",
-  dev = if (requireNamespace("ragg", quietly = TRUE)) "ragg_png" else "png"
-)
-```
-
-```{r setup, message = FALSE}
+``` r
 library(ggcpb)
 library(ggplot2)
 library(dplyr)
@@ -33,14 +10,14 @@ set.seed(42)
 ```
 
 The chart types in `vignette("chart-types")` are the building blocks;
-this vignette covers the cross-cutting techniques that apply across
-them -- marking a forecast window, composing a figure by hand because
-every wrapper returns a real `ggplot`, and exporting at the CPB page
-sizes.
+this vignette covers annotating them – the built-in forecast window and
+uncertainty band, reference lines and text notes, shaded regions, and
+composing an extra series onto a chart. All of it works because every
+wrapper returns a real `ggplot`: annotations are ordinary `+` layers.
 
 Two data sets used below:
 
-```{r data}
+``` r
 bbp <- tibble(
   jaar  = 2015:2027,
   index = 100 + cumsum(rnorm(13, mean = 1.5, sd = 1.2))
@@ -57,12 +34,12 @@ auto <- tibble(
 # Forecast windows and uncertainty bands
 
 Time-series figures mark the forecast part of the axis with a
-translucent window and a label -- pass `forecast_x` (the x value where
+translucent window and a label – pass `forecast_x` (the x value where
 the forecast starts) to `cpb_line()`, `cpb_col()` or `cpb_area()`, and
 `forecast_label` to override the default `"raming"`. `cpb_line()` can
 additionally draw an uncertainty band from `ymin`/`ymax` columns:
 
-```{r forecast}
+``` r
 groeipad <- tibble(jaar = 2015:2027,
                    groei = round(rnorm(13, 1.5, 0.8), 1)) |>
   mutate(marge = c(rep(0, 9), 0.4, 0.9, 1.4, 1.8),
@@ -76,18 +53,20 @@ cpb_line(groeipad, x = jaar, y = groei, ymin = lo, ymax = hi,
                      guide = guide_axis(minor.ticks = TRUE))
 ```
 
-The window is drawn *underneath* the data and the label is centred in
-it at the top of the panel; for bar charts pick a `forecast_x` between
-two bars (e.g. `2025.5`) so no bar is cut.
+<img src="annotation_files/figure-gfm/forecast-1.png" width="350px" />
+
+The window is drawn *underneath* the data and the label is centred in it
+at the top of the panel; for bar charts pick a `forecast_x` between two
+bars (e.g. `2025.5`) so no bar is cut.
 
 # Composing: a line over stacked columns
 
-Because every wrapper returns a real `ggplot`, a decomposition chart
--- stacked contribution columns with the total drawn as a line -- is
-just `cpb_col()` plus a `geom_line()` layer and a colour scale for
-the extra series:
+Because every wrapper returns a real `ggplot`, a decomposition chart –
+stacked contribution columns with the total drawn as a line – is just
+`cpb_col()` plus a `geom_line()` layer and a colour scale for the extra
+series:
 
-```{r overlay}
+``` r
 componenten <- c("kapitaal/uren", "arbeidssamenstelling", "tfp")
 dec <- expand_grid(jaar = 2000:2024,
                    # reversed levels stack the first component nearest zero
@@ -114,18 +93,20 @@ cpb_col(dec, x = jaar, y = bijdrage, fill = component,
   theme(legend.box = "horizontal", legend.box.just = "top")
 ```
 
+<img src="annotation_files/figure-gfm/overlay-1.png" width="350px" />
+
 # Everything is a ggplot object
 
-The wrappers do not draw anything -- they *return* a `ggplot` object
-with the theme and scales already applied. That means the full
-`ggplot2` grammar stays available through `+`: extra geoms,
-annotations, scale tweaks and further `theme()` overrides all layer
-on top of what the wrapper built.
+The wrappers do not draw anything – they *return* a `ggplot` object with
+the theme and scales already applied. That means the full `ggplot2`
+grammar stays available through `+`: extra geoms, annotations, scale
+tweaks and further `theme()` overrides all layer on top of what the
+wrapper built.
 
 A dashed reference line with an italic annotation, on top of a
 horizontal bar chart:
 
-```{r layer-refline}
+``` r
 cpb_col(auto, x = inkomensgroep, y = share,
   orientation  = "horizontal",
   pct_axis     = TRUE,
@@ -141,13 +122,15 @@ cpb_col(auto, x = inkomensgroep, y = share,
            family = cpb_font_family(), fontface = "italic")
 ```
 
+<img src="annotation_files/figure-gfm/layer-refline-1.png" width="350px" />
+
 Note that under `coord_flip()` the value axis is still the `y`
 aesthetic, so a reference line on the value axis is a `geom_hline()`.
 
-Or mark a forecast window on a line chart with a shaded region drawn
-by hand, as an alternative to the `forecast_x` argument above:
+Or mark a forecast window on a line chart with a shaded region drawn by
+hand, as an alternative to the `forecast_x` argument above:
 
-```{r layer-raming}
+``` r
 cpb_line(bbp, x = jaar, y = index,
   title = "Bruto binnenlands product",
   ylab  = "index (2015 = 100)") +
@@ -161,32 +144,15 @@ cpb_line(bbp, x = jaar, y = index,
                      guide = guide_axis(minor.ticks = TRUE))
 ```
 
-Later `+ theme(...)` calls override individual elements of
-`theme_cpb()` the same way -- see the per-figure margin and legend
-tweaks in `inst/examples/smoke_test_plots.R`. The one thing *not* to
-add is a second value-axis scale: use the wrapper's `value_breaks`,
+<img src="annotation_files/figure-gfm/layer-raming-1.png" width="350px" />
+
+Later `+ theme(...)` calls override individual elements of `theme_cpb()`
+the same way – see the per-figure margin and legend tweaks in
+`inst/examples/smoke_test_plots.R`. The one thing *not* to add is a
+second value-axis scale: use the wrapper’s `value_breaks`,
 `value_limits` and `pct_axis` arguments instead.
 
 For building figures entirely from the composable core (no wrappers at
 all), see `vignette("ggcpb")`.
 
-# Export
-
-`save_cpb()` writes the figure at the strict CPB page widths --
-`page = "half"` (2.98 in) or `page = "full"` (5.96 in) -- through the
-`ragg` device, so the bundled Rijksoverheid font renders correctly:
-
-```{r save, eval = FALSE}
-p <- cpb_line(bbp, x = jaar, y = index,
-  title = "Bruto binnenlands product",
-  ylab  = "index (2015 = 100)")
-
-save_cpb("bbp.png", p, page = "half")
-save_cpb("bbp_breed.png", p, page = "full", height = 3.2)
-```
-
-Width is strict -- it is fixed by `page`, not free-form -- so a stray
-`width` off the two CPB values errors rather than silently producing
-an off-spec figure. Height defaults to the report height; pass
-`height` for taller figures (grouped boxes, facets) or
-`preset = "presentation"`.
+Export at the CPB page sizes is covered in `vignette("ggcpb")`.

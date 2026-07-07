@@ -1,0 +1,94 @@
+---
+title: "Maps"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Maps}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+# Figures are drawn on the REAL CPB canvas (page = "half" is 2.98 in,
+# "full" is 5.96 in; text sizes in theme_cpb() are absolute points, so
+# any other canvas distorts the text-to-figure proportion) and only
+# *displayed* smaller via out.width, at a consistent 2:1 scale:
+# half-page figures at 350px, full-page figures at 700px.
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 2.98,
+  fig.height = 2.98,
+  dpi = 300,
+  out.width = "350px",
+  dev = if (requireNamespace("ragg", quietly = TRUE)) "ragg_png" else "png"
+)
+```
+
+```{r setup, message = FALSE}
+library(ggcpb)
+library(ggplot2)
+library(dplyr)
+set.seed(42)
+```
+
+`cpb_map()` draws a value per Dutch municipality, COROP region or
+province on bundled generalised CBS/Kadaster boundaries (2025, via
+cartomap), so no geo packages or downloads are needed. Borders are
+hairlines in the background colour, so regions read as tiles
+separated by light-blue seams.
+
+# Municipalities
+
+Regions are joined by CBS code (`"GM0014"`, `"CR01"`, `"PV20"`) or by
+name, whichever matches the `region` column best; regions without a
+value are filled with the CPB missing-value grey, and unmatched
+regions in the data raise a warning. A numeric `value` column gets
+the CPB sequential gradient with a compact horizontal colourbar:
+
+```{r map-gemeente, fig.height = 3.4}
+gemeenten <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
+  mutate(index = rnorm(n(), 100, 15))
+
+cpb_map(gemeenten, region = code, value = index,
+  title    = "Voorbeeldindex per gemeente",
+  subtitle = "index (Nederland = 100)")
+```
+
+As elsewhere, the unit caption goes in `subtitle`; there is no value
+axis, so `ylab` does not exist here.
+
+# Provinces and COROP regions
+
+`level` selects the boundaries -- `"provincie"` and `"corop"` for the
+coarser levels -- and joining by *name* works too. A discrete `value`
+column gets the discrete CPB palettes (pick colours with `index`):
+
+```{r map-provincie, fig.height = 3.4}
+provincies <- tibble(naam = unique(cpb_nl_geo("provincie")$name)) |>
+  mutate(klasse = factor(
+    sample(c("onder gemiddeld", "boven gemiddeld"), n(), replace = TRUE),
+    levels = c("onder gemiddeld", "boven gemiddeld")
+  ))
+
+cpb_map(provincies, region = naam, value = klasse, level = "provincie",
+  index = c(5, 6),
+  title = "Groei ten opzichte van het landelijk gemiddelde")
+```
+
+# Styling and raw boundaries
+
+The border seams are controlled with `border_colour` (default: the
+CPB background colour -- a deliberate deviation from the legacy
+plotter's outlined shapes) and `border_linewidth` (default `0.1`,
+the house hairline). `reverse` flips the sequential gradient and
+`na_fill` overrides the missing-value colour.
+
+For anything the wrapper does not cover, the raw boundary tables are
+available through `cpb_nl_geo(level)`: one row per polygon vertex
+with the region `code` and `name`, ready for
+`ggplot2::geom_polygon()` (use `part` as `group` and `ring` as
+`subgroup`).
+
+```{r geo}
+head(cpb_nl_geo("provincie"), 3)
+```

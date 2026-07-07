@@ -1,8 +1,8 @@
 ---
-title: "ggcpb: from data to publication-ready figure"
+title: "Setup"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{ggcpb}
+  %\VignetteIndexEntry{Setup}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -22,18 +22,23 @@ knitr::opts_chunk$set(
 )
 ```
 
-This vignette follows one analysis from raw microdata to exported,
-publication-ready figures. Along the way it uses each layer of the
-package in the order you reach for them in practice: a **wrapper** for
-the first draft, `+` layers with the **formatters and palette
-accessors** to refine it, the **theme and scales directly** for a
-chart type the wrappers do not cover, and `save_cpb()` to export at
-the strict CPB page widths. For a catalogue of all chart types and
-their wrapper calls (`cpb_line()`, `cpb_col()`, `cpb_area()`,
-`cpb_box()`, `cpb_scatter()`, `cpb_hist()`), see
-`vignette("chart-types")`; for grouped layouts, facets and maps see
-`vignette("layouts")`, and for forecast windows, composing figures by
-hand and export see `vignette("recipes")`.
+ggcpb encodes the CPB house plotting style on a ggplot2 backend. It
+has two layers, and this vignette shows the basic idea of both:
+
+* **Wrappers** (`cpb_line()`, `cpb_col()`, `cpb_box()`, ...): one call
+  gives a complete house-style figure -- theme, colours, zero line,
+  flush legend, Dutch number formats. Every wrapper *returns* a plain
+  `ggplot` object, so the full ggplot2 grammar stays available through
+  `+`.
+* **The composable core** (`theme_cpb()`, the `scale_*_cpb_*()`
+  scales, palettes, formatters, fonts): the pieces the wrappers are
+  built from, for any figure without a wrapper.
+
+The other vignettes go deeper: `vignette("chart-types")` for the
+default chart per type, `vignette("layout")` for facets and grouped
+axes, `vignette("annotation")` for reference lines and forecast
+windows, `vignette("boxplots")` for the box-plot styles, and
+`vignette("maps")` for choropleths of the Netherlands.
 
 ```{r setup, message = FALSE}
 library(ggcpb)
@@ -42,110 +47,68 @@ library(dplyr)
 set.seed(7)
 ```
 
-# The case: purchasing power by income group
+# One wrapper call
 
-Simulated household microdata: five income quintiles with a
-purchasing-power change, disposable income and a monthly energy bill
-per household.
+The standard CPB income groups, with a purchasing-power change per
+group and year:
 
 ```{r data}
-groepen <- c("laagste 20%", "2e 20%", "midden 20%", "4e 20%", "hoogste 20%")
+groepen <- c("tot 120% wml", "120% wml - mod.", "1 - 1,5x mod.",
+             "1,5 - 2x mod.", "2 - 3x mod.", "boven 3x mod.")
 
-huishoudens <- tibble(
-  groep = factor(rep(groepen, each = 1000), levels = groepen)
-) |>
-  mutate(
-    inkomen         = round(rlnorm(n(), log(2200) + 0.30 * (as.integer(groep) - 3), 0.20)),
-    energierekening = round(90 + 0.04 * inkomen + rnorm(n(), 0, 35)),
-    koopkracht      = rnorm(n(), mean = (as.integer(groep) - 3) * 1.2, sd = 2)
-  )
-```
+kk <- tibble(
+  # reversed levels put the first-named group at the top after the flip
+  groep      = factor(groepen, levels = rev(groepen)),
+  koopkracht = c(-1.2, -0.4, 0.3, 0.8, 1.4, 2.1)
+)
 
-# First draft: one wrapper call
-
-The distributional figure CPB uses for this is the p5/p25/p50/p75/p95
-quantile boxplot. `cpb_box()` wants precomputed quantiles, so
-aggregate first, then one call gives a complete house-style figure --
-theme, colours, zero line, flush legend layout, everything:
-
-```{r draft}
-kk <- huishoudens |>
-  summarise(
-    p5  = quantile(koopkracht, 0.05),
-    p25 = quantile(koopkracht, 0.25),
-    p50 = quantile(koopkracht, 0.50),
-    p75 = quantile(koopkracht, 0.75),
-    p95 = quantile(koopkracht, 0.95),
-    .by = groep
-  )
-
-p <- cpb_box(kk, x = groep,
-  p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+p <- cpb_col(kk, x = groep, y = koopkracht,
   orientation = "horizontal",
-  title    = "Koopkracht per inkomensgroep",
-  subtitle = "inkomensgroep",
-  ylab     = "% koopkrachtmutatie")
+  title = "Koopkracht naar inkomensgroep",
+  ylab  = "inkomensgroep",
+  xlab  = "% koopkrachtmutatie")
 p
 ```
 
-# Refine with layers
+One call, one finished figure: bold title, italic caption line, black
+hairline gridlines on the value axis, ticks on the category axis, the
+black zero line, and the CPB blue -- all house defaults, no styling
+arguments needed.
 
-The wrapper returned a plain `ggplot` object, so refinements are `+`
-layers. Here: Dutch-locale value labels (`label_number_nl()`, one of
-the formatters), and a dashed reference line at the population median
-with an italic annotation -- coloured via `cpb_cols()`, the raw
-palette accessor, and set in the house font via `cpb_font_family()`:
+# It is still a ggplot
 
-```{r refine}
-mediaan <- median(huishoudens$koopkracht)
+Because the wrapper returned a real `ggplot` object, refining it is
+ordinary ggplot2: `+` a layer, a scale, an annotation. Here a dashed
+reference line in the house magenta (`cpb_cols(2)`), labelled in the
+bundled house font:
 
+```{r layer}
 p +
-  scale_y_continuous(labels = label_number_nl()) +
-  geom_hline(yintercept = mediaan, linetype = "dashed",
+  geom_hline(yintercept = 0.9, linetype = "dashed",
              colour = cpb_cols(2), linewidth = 0.4) +
-  annotate("text", x = 5.45, y = mediaan, label = "mediaan",
+  annotate("text", x = 6.4, y = 0.9, label = "raming",
            hjust = -0.15, size = 2.0, colour = cpb_cols(2),
            family = cpb_font_family(), fontface = "italic")
 ```
 
 (Under `coord_flip()` the value axis is still the `y` aesthetic, so
-the reference line is a `geom_hline()`. For bar and column charts,
-set custom value-axis breaks through the wrapper's `value_breaks`
-argument rather than a second `scale_y_continuous()` -- see
-`vignette("chart-types")`.)
+the reference line is a `geom_hline()`. More annotation patterns in
+`vignette("annotation")`.)
 
-# Another view, another wrapper
+# Without a wrapper: the theme and scales directly
 
-The same microdata seen as a scatter is one `cpb_scatter()` call --
-a numeric `colour` column automatically gets the continuous CPB
-gradient:
-
-```{r scatter, fig.width = 5.96, fig.height = 2.98, out.width = "700px"}
-steekproef <- slice_sample(huishoudens, n = 400)
-
-cpb_scatter(steekproef, x = inkomen, y = energierekening, colour = koopkracht,
-  title = "Energierekening naar inkomen",
-  ylab  = "energierekening (euro per maand)",
-  xlab  = "besteedbaar inkomen (euro per maand)",
-  colourlab = "koopkracht (%)") +
-  scale_x_continuous(labels = label_euro_nl())
-```
-
-# When there is no wrapper: the composable core
-
-Not every figure has a wrapper. For anything else -- here a heatmap
-of the median purchasing-power change per income group and simulated
-year -- you build from raw `ggplot2` and apply the same core pieces
-the wrappers use: `theme_cpb()`, a CPB colour scale
-(`scale_fill_cpb_c()` for a continuous gradient), and the formatters.
-Two house conventions to carry over yourself: the value-axis unit
-goes in `subtitle` (never a rotated y-axis title), and the horizontal
-axis title sits at the bottom right.
+Not every figure has a wrapper. For anything else you build from raw
+`ggplot2` and apply the same core pieces the wrappers use:
+`theme_cpb()`, a CPB colour scale (`scale_fill_cpb_c()` for a
+continuous gradient), and the Dutch-locale formatters. Two house
+conventions to carry over yourself: the value-axis unit goes in
+`subtitle` (never a rotated y-axis title), and the horizontal axis
+title sits at the bottom right.
 
 ```{r heatmap, fig.width = 5.96, fig.height = 2.4, out.width = "700px"}
-raster <- huishoudens |>
-  mutate(jaar = sample(2024:2027, n(), replace = TRUE)) |>
-  summarise(mediaan = median(koopkracht), .by = c(groep, jaar))
+raster <- expand.grid(groep = factor(groepen, levels = rev(groepen)),
+                      jaar  = 2024:2027) |>
+  mutate(mediaan = round(rnorm(n(), 0.5, 1), 1))
 
 ggplot(raster, aes(jaar, groep, fill = mediaan)) +
   geom_tile(colour = "white", linewidth = 0.4) +
@@ -158,21 +121,8 @@ ggplot(raster, aes(jaar, groep, fill = mediaan)) +
 
 `theme_cpb()` takes the same layout arguments as the wrappers
 (`?theme_cpb`), and `cpb_tokens()` exposes the raw design tokens
-(palettes, background `r cpb_tokens()$bg`, grid and NA colours) for
-anything the scales do not cover.
-
-Small multiples keep the same house dress -- gridlines, blue
-background and all -- with `facet_wrap()` on top of `theme_cpb()`:
-
-```{r facets, fig.width = 5.96, fig.height = 2.4, out.width = "700px"}
-ggplot(steekproef, aes(inkomen, energierekening)) +
-  geom_point(size = 0.5, colour = cpb_cols(6)) +
-  facet_wrap(~ groep, nrow = 1) +
-  labs(title = "Energierekening naar inkomen, per groep",
-       subtitle = "energierekening (euro per maand)",
-       x = NULL, y = NULL) +
-  theme_cpb()
-```
+(palettes, background, grid and NA colours) for anything the scales
+do not cover.
 
 # Export
 
@@ -190,4 +140,6 @@ The half/full widths are the only ones `save_cpb()` accepts: a stray
 `width = 8` fails loudly instead of silently producing an off-spec
 figure. Text sizes in `theme_cpb()` are absolute points, so the
 canvas size is part of the design -- draw at 2.98/5.96 in and scale
-the *display*, never the figure.
+the *display*, never the figure. Height defaults to the report
+height; pass `height` for taller figures (grouped boxes, facets) or
+`preset = "presentation"`.

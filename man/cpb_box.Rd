@@ -76,7 +76,9 @@ group gets its name as a bold heading row on the category axis
 above its categories, all boxes share one value axis. A group
 containing exactly one category with the same name as the group
 collapses onto its heading row (e.g. an "Alle huishoudens" total).
-Cannot be combined with a \code{fill} mapping. Typically used with
+Combines with a \code{fill} mapping (\code{"ggcpb"} style): pass a
+\code{position_dodge()} for e.g. two dodged years per category under
+the group headings. Typically used with
 \code{orientation = "horizontal"}. The category rows keep the house
 category ticks; the bold headings carry none and are outdented.}
 
