@@ -47,3 +47,27 @@ test_that("preset controls the default height, and an explicit height wins", {
   )
   expect_match(msg2, "2.98 x 4 in", fixed = TRUE)
 })
+
+test_that("save_cpb warns on a title too long for the page, not when wrapped", {
+  skip_if_not_installed("ragg")
+  df <- data.frame(x = c("a", "b"), y = 1:2)
+  path <- withr::local_tempfile(fileext = ".png")
+  long <- "Een uitzonderlijk lange titel die zeker niet op een halve pagina past"
+
+  # long single-line title on a half page -> warning suggesting \n
+  expect_warning(
+    save_cpb(path, cpb_col(df, x = x, y = y, title = long), page = "half"),
+    "\\\\n"
+  )
+  # the same length split over two lines fits -> no warning
+  wrapped <- "Een uitzonderlijk lange titel\ndie over twee regels loopt"
+  expect_no_warning(
+    save_cpb(path, cpb_col(df, x = x, y = y, title = wrapped), page = "half")
+  )
+  # a long title fits on the full page
+  expect_no_warning(
+    save_cpb(path, cpb_col(df, x = x, y = y, title = long), page = "full")
+  )
+  # no title, no warning
+  expect_no_warning(save_cpb(path, cpb_col(df, x = x, y = y), page = "half"))
+})

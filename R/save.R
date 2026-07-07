@@ -84,6 +84,8 @@ save_cpb <- function(filename,
     height <- if (preset == "presentation") 2.5 else 2.98
   }
 
+  cpb_check_title(plot$labels$title, width)
+
   ggplot2::ggsave(
     filename = filename,
     plot     = plot,
@@ -99,4 +101,37 @@ save_cpb <- function(filename,
   tcat("ggcpb: wrote ", filename, " (", width, " x ", height, " in, ", dpi, " dpi)")
 
   invisible(filename)
+}
+
+#' Warn when a title is too long for the page width
+#'
+#' The bold 9 pt title is drawn on one line unless it contains explicit
+#' `"\n"` breaks. A single line that runs wider than the panel is
+#' clipped or shrinks the figure, so this estimates the per-line
+#' character budget for the given width (9 pt bold within the house
+#' margins) and warns -- once -- when the longest title line exceeds it,
+#' suggesting a manual `"\n"` break. Multi-line titles are checked line
+#' by line, so a title already broken with `"\n"` passes.
+#'
+#' @param title The plot title (may be `NULL`, `""`, or contain `"\n"`).
+#' @param width Figure width in inches.
+#' @return Invisibly `TRUE` if every line fits, `FALSE` otherwise.
+#' @noRd
+cpb_check_title <- function(title, width) {
+  if (is.null(title) || !any(nzchar(title))) return(invisible(TRUE))
+  # usable text width: figure width minus the 10 pt left + 10 pt right
+  # plot margins, in points; ~5 pt per 9 pt bold glyph on average
+  budget <- floor((width * 72 - 20) / 5.0)
+  lines <- strsplit(as.character(title), "\n", fixed = TRUE)[[1]]
+  longest <- max(nchar(lines))
+  if (longest > budget) {
+    warning(
+      "ggcpb: the title's longest line is ", longest, " characters, which ",
+      "is likely too wide for a ", round(width, 2), " in figure (about ",
+      budget, " fit). Break it over two lines with \"\\n\".",
+      call. = FALSE
+    )
+    return(invisible(FALSE))
+  }
+  invisible(TRUE)
 }

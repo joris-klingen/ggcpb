@@ -644,7 +644,7 @@ test_that("cpb_map joins by code or name and styles the borders", {
   expect_s3_class(poly$geom, "GeomPolygon")
   # borders: thin, in the background colour (the deliberate deviation)
   expect_equal(poly$aes_params$colour, cpb_tokens()$background)
-  expect_equal(poly$aes_params$linewidth, 0.1)
+  expect_equal(poly$aes_params$linewidth, 0.2)
   expect_equal(p$coordinates$ratio, 1)  # fixed 1:1 aspect (RD metres)
   # numeric values get the continuous CPB scale
   expect_s3_class(p$scales$get_scales("fill"), "ScaleContinuous")
@@ -688,4 +688,12 @@ test_that("cpb_box value_axis = 'top' puts the value scale on top", {
   p2 <- cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                 orientation = "horizontal", value_breaks = c(-1, 0, 1))
   expect_false(identical(p2$scales$get_scales("y")$position, "right"))
+})
+
+test_that("cpb_map draws thin background-coloured seams by default", {
+  prov <- data.frame(code = unique(cpb_nl_geo("provincie")$code), w = 1:12)
+  p <- cpb_map(prov, region = code, value = w, level = "provincie")
+  poly <- p$layers[[1]]
+  expect_equal(poly$aes_params$colour, cpb_tokens()$background)
+  expect_equal(poly$aes_params$linewidth, 0.2)
 })

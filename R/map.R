@@ -63,8 +63,8 @@ cpb_nl_geo <- function(level = c("gemeente", "corop", "provincie")) {
 #'   `"provincie"`; must match the regions in `data`.
 #' @param border_colour Border colour between regions; defaults to the
 #'   CPB background colour so borders read as seams in the background.
-#' @param border_linewidth Border line width; defaults to `0.1`, the
-#'   house hairline.
+#' @param border_linewidth Border line width; defaults to `0.2`, a thin
+#'   seam that keeps adjacent regions legible without drawing outlines.
 #' @param palette CPB palette for a *discrete* `value` column; one of
 #'   `"qualitative"`, `"discr"`, or `"sequential"`.
 #' @param index Optional integer vector of palette positions for a
@@ -90,7 +90,7 @@ cpb_nl_geo <- function(level = c("gemeente", "corop", "provincie")) {
 cpb_map <- function(data, region, value,
                     level = c("gemeente", "corop", "provincie"),
                     border_colour = NULL,
-                    border_linewidth = 0.1,
+                    border_linewidth = 0.2,
                     palette = "sequential",
                     index = NULL,
                     reverse = FALSE,

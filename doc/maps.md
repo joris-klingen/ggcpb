@@ -33,13 +33,20 @@ gemeenten <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
 
 cpb_map(gemeenten, region = code, value = klasse,
   palette = "blues",
-  title   = "Aandeel huishoudens met zonnepanelen",
+  title   = "Aandeel huishoudens\nmet zonnepanelen",
   filllab = "aandeel")
 #> Warning in ggplot2::geom_polygon(colour = border_colour, linewidth =
 #> border_linewidth, : Ignoring empty aesthetic: `colour`.
 ```
 
 <img src="maps_files/figure-gfm/map-classed-1.png" width="350px" />
+
+The map fills the half-page width (`page = "half"` in `save_cpb()`);
+because the Netherlands is taller than it is wide, a map figure needs a
+taller canvas than a chart – here `fig.height` is set so the map is not
+squeezed. The title is broken over two lines with `"\n"`: a single-line
+title that runs wider than the panel triggers a warning from
+`save_cpb()`, which suggests exactly this.
 
 `cpb_cut()` is a house-styled wrapper around `cut()`: give it the
 `breaks` (including the outer bounds, `Inf` for an open top class) and a
