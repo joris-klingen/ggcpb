@@ -642,9 +642,9 @@ test_that("cpb_map joins by code or name and styles the borders", {
                title = "t", subtitle = "s")
   poly <- p$layers[[1]]
   expect_s3_class(poly$geom, "GeomPolygon")
-  # borders: thin white seams (visible on any fill), the default
-  expect_equal(poly$aes_params$colour, "white")
-  expect_equal(poly$aes_params$linewidth, 0.2)
+  # borders: thin background-colour seams, the default
+  expect_equal(poly$aes_params$colour, cpb_tokens()$bg)
+  expect_equal(poly$aes_params$linewidth, 0.15)
   # legend sits inside the panel at top-left by default
   expect_equal(p$theme$legend.position, "inside")
   expect_equal(p$theme$legend.position.inside, c(0, 0.98))
@@ -693,19 +693,19 @@ test_that("cpb_box value_axis = 'top' puts the value scale on top", {
   expect_false(identical(p2$scales$get_scales("y")$position, "right"))
 })
 
-test_that("cpb_map draws thin white seams and a bottom legend on request", {
+test_that("cpb_map seams and legend fall back on request", {
   prov <- data.frame(code = unique(cpb_nl_geo("provincie")$code), w = 1:12)
   p <- cpb_map(prov, region = code, value = w, level = "provincie")
   poly <- p$layers[[1]]
-  expect_equal(poly$aes_params$colour, "white")
-  expect_equal(poly$aes_params$linewidth, 0.2)
+  expect_equal(poly$aes_params$colour, cpb_tokens()$bg)
+  expect_equal(poly$aes_params$linewidth, 0.15)
   # legend = "bottom" falls back to the flush bottom-left theme legend
   p2 <- cpb_map(prov, region = code, value = w, level = "provincie",
                 legend = "bottom")
   expect_equal(p2$theme$legend.position, "bottom")
   expect_null(p2$theme$legend.position.inside)
-  # a passed border_colour overrides the white default
+  # a passed border_colour overrides the background default (e.g. white)
   p3 <- cpb_map(prov, region = code, value = w, level = "provincie",
-                border_colour = cpb_tokens()$bg)
-  expect_equal(p3$layers[[1]]$aes_params$colour, cpb_tokens()$bg)
+                border_colour = "white")
+  expect_equal(p3$layers[[1]]$aes_params$colour, "white")
 })

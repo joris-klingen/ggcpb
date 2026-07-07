@@ -3,9 +3,8 @@
 # Choropleth maps of the Netherlands on the bundled generalised
 # CBS/Kadaster boundaries (via cartomap.github.io/nl, EPSG:28992;
 # rebuilt with tools/fetch_nl_geo.R). Regions are separated by thin
-# white seams (the classed-map convention of CPB publications), and the
-# legend sits inside the panel at top-left, in the empty North Sea
-# corner of the country.
+# seams in the plot background colour, and the legend sits inside the
+# panel at top-left, in the empty North Sea corner of the country.
 
 .ggcpb_geo_env <- new.env(parent = emptyenv())
 
@@ -48,9 +47,9 @@ cpb_nl_geo <- function(level = c("gemeente", "corop", "provincie")) {
 #' CBS code (`"GM0014"`, `"CR01"`, `"PV20"`) or by name -- whichever
 #' matches the `region` column best -- and filled with the CPB
 #' sequential gradient (numeric values) or a discrete CPB palette.
-#' Regions are separated by thin white seams, and the legend sits
-#' inside the panel at top-left (the empty North Sea corner). Returns a
-#' real ggplot object that can be extended further with `+`.
+#' Regions are separated by thin background-colour seams, and the
+#' legend sits inside the panel at top-left (the empty North Sea
+#' corner). Returns a real ggplot object that can be extended with `+`.
 #'
 #' @param data A data.frame or data.table with one row per region.
 #' @param region Column (tidy eval) identifying the region, as CBS
@@ -60,12 +59,12 @@ cpb_nl_geo <- function(level = c("gemeente", "corop", "provincie")) {
 #'   CPB palette.
 #' @param level One of `"gemeente"` (default), `"corop"` or
 #'   `"provincie"`; must match the regions in `data`.
-#' @param border_colour Border colour between regions; defaults to
-#'   `"white"`, a thin seam that separates regions cleanly on any fill
-#'   (the classed-map convention in CPB publications). Pass the CPB
-#'   background colour (`cpb_tokens()$bg`) for a near-seamless look.
-#' @param border_linewidth Border line width; defaults to `0.2`, a thin
-#'   seam that keeps adjacent regions legible without drawing outlines.
+#' @param border_colour Border colour between regions; defaults to the
+#'   CPB background colour, a soft seam (on a classed or continuous
+#'   fill neighbouring classes already differ, so this is enough). Pass
+#'   `"white"` for more contrast, e.g. on a two-class discrete map.
+#' @param border_linewidth Border line width; defaults to `0.15`, a
+#'   thin seam that keeps adjacent regions legible without outlines.
 #' @param palette CPB palette for a *discrete* `value` column; one of
 #'   `"qualitative"`, `"discr"`, or `"sequential"`.
 #' @param index Optional integer vector of palette positions for a
@@ -94,7 +93,7 @@ cpb_nl_geo <- function(level = c("gemeente", "corop", "provincie")) {
 cpb_map <- function(data, region, value,
                     level = c("gemeente", "corop", "provincie"),
                     border_colour = NULL,
-                    border_linewidth = 0.2,
+                    border_linewidth = 0.15,
                     palette = "sequential",
                     index = NULL,
                     reverse = FALSE,
@@ -132,9 +131,10 @@ cpb_map <- function(data, region, value,
   geo$cpb__value <- vals[match(geo_key, keys)]
 
   tokens <- cpb_tokens()
-  # white seams separate the regions cleanly on any fill (the classed
-  # maps in CPB publications use white); pass border_colour to override
-  if (is.null(border_colour)) border_colour <- "white"
+  # thin seams in the plot background colour separate the regions; on a
+  # classed/continuous fill neighbouring classes already differ, so a
+  # soft seam is enough. Pass border_colour = "white" for more contrast.
+  if (is.null(border_colour)) border_colour <- tokens$bg
   if (is.null(na_fill)) na_fill <- tokens$na
 
   # the legend sits inside the panel, top-left, by default -- the empty
@@ -168,8 +168,6 @@ cpb_map <- function(data, region, value,
       )
     ))
   }
-
-  subtitle <- cpb_reserve_subtitle(title, subtitle)
 
   p <- p +
     ggplot2::labs(title = title, subtitle = subtitle, fill = filllab) +

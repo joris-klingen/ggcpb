@@ -11,8 +11,8 @@ set.seed(42)
 `cpb_map()` draws a value per Dutch municipality, COROP region or
 province on bundled generalised CBS/Kadaster boundaries (2025, via
 cartomap), so no geo packages or downloads are needed. Regions are
-separated by thin white seams, and the legend sits inside the panel at
-top-left – in the empty North Sea corner of the country.
+separated by thin background-colour seams, and the legend sits inside
+the panel at top-left – in the empty North Sea corner of the country.
 
 # Classed maps
 
@@ -33,7 +33,7 @@ gemeenten <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
 
 cpb_map(gemeenten, region = code, value = klasse,
   palette = "blues",
-  title   = "Aandeel huishoudens\nmet zonnepanelen",
+  title   = "Aandeel huishoudens met zonnepanelen",
   filllab = "aandeel")
 ```
 
@@ -42,9 +42,9 @@ cpb_map(gemeenten, region = code, value = klasse,
 The map fills the half-page width (`page = "half"` in `save_cpb()`);
 because the Netherlands is taller than it is wide, a map figure needs a
 taller canvas than a chart – here `fig.height` is set so the map is not
-squeezed. The title is broken over two lines with `"\n"`: a single-line
-title that runs wider than the panel triggers a warning from
-`save_cpb()`, which suggests exactly this.
+squeezed. A title that runs wider than the panel triggers a warning from
+`save_cpb()`, which suggests breaking it over two lines with `"\n"` (see
+the province example below).
 
 `cpb_cut()` is a house-styled wrapper around `cut()`: give it the
 `breaks` (including the outer bounds, `Inf` for an open top class) and a
@@ -94,12 +94,13 @@ cpb_map(provincies, region = naam, value = klasse, level = "provincie",
 
 # Styling and raw boundaries
 
-The border seams are controlled with `border_colour` (default `"white"`;
-pass `cpb_tokens()$bg` for near-seamless regions) and `border_linewidth`
-(default `0.2`). The legend defaults to `legend = "topleft"` inside the
-panel; pass `legend = "bottom"` for the flush bottom-left legend of the
-other wrappers, or `legend = "none"`. `reverse` flips the sequential
-gradient and `na_fill` overrides the missing-value colour.
+The border seams are controlled with `border_colour` (default the CPB
+background colour; pass `"white"` for more contrast, e.g. on a two-class
+map) and `border_linewidth` (default `0.15`). The legend defaults to
+`legend = "topleft"` inside the panel; pass `legend = "bottom"` for the
+flush bottom-left legend of the other wrappers, or `legend = "none"`.
+`reverse` flips the sequential gradient and `na_fill` overrides the
+missing-value colour.
 
 For anything the wrapper does not cover, the raw boundary tables are
 available through `cpb_nl_geo(level)`: one row per polygon vertex with

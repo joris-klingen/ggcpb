@@ -10,7 +10,7 @@ cpb_map(
   value,
   level = c("gemeente", "corop", "provincie"),
   border_colour = NULL,
-  border_linewidth = 0.2,
+  border_linewidth = 0.15,
   palette = "sequential",
   index = NULL,
   reverse = FALSE,
@@ -36,13 +36,13 @@ CPB palette.}
 \item{level}{One of \code{"gemeente"} (default), \code{"corop"} or
 \code{"provincie"}; must match the regions in \code{data}.}
 
-\item{border_colour}{Border colour between regions; defaults to
-\code{"white"}, a thin seam that separates regions cleanly on any fill
-(the classed-map convention in CPB publications). Pass the CPB
-background colour (\code{cpb_tokens()$bg}) for a near-seamless look.}
+\item{border_colour}{Border colour between regions; defaults to the
+CPB background colour, a soft seam (on a classed or continuous
+fill neighbouring classes already differ, so this is enough). Pass
+\code{"white"} for more contrast, e.g. on a two-class discrete map.}
 
-\item{border_linewidth}{Border line width; defaults to \code{0.2}, a thin
-seam that keeps adjacent regions legible without drawing outlines.}
+\item{border_linewidth}{Border line width; defaults to \code{0.15}, a
+thin seam that keeps adjacent regions legible without outlines.}
 
 \item{palette}{CPB palette for a \emph{discrete} \code{value} column; one of
 \code{"qualitative"}, \code{"discr"}, or \code{"sequential"}.}
@@ -80,9 +80,9 @@ the bundled generalised boundaries. Regions are joined to \code{data} by
 CBS code (\code{"GM0014"}, \code{"CR01"}, \code{"PV20"}) or by name -- whichever
 matches the \code{region} column best -- and filled with the CPB
 sequential gradient (numeric values) or a discrete CPB palette.
-Regions are separated by thin white seams, and the legend sits
-inside the panel at top-left (the empty North Sea corner). Returns a
-real ggplot object that can be extended further with \code{+}.
+Regions are separated by thin background-colour seams, and the
+legend sits inside the panel at top-left (the empty North Sea
+corner). Returns a real ggplot object that can be extended with \code{+}.
 }
 \examples{
 df <- data.frame(prov = c("Groningen", "Friesland", "Drenthe"),
