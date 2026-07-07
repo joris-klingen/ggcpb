@@ -85,12 +85,13 @@ print(
 # Histogram ----
 wachttijd <- tibble(dagen = round(rgamma(500, 6, 0.4)))
 
-print(
-  cpb_hist(wachttijd, x = dagen, binwidth = 2,
+cpb_hist(wachttijd, x = dagen, binwidth = 2,
     title = "Verdeling van de wachttijd",
     ylab  = "aantal",
     xlab  = "wachttijd (dagen)")
-)
+
+save_cpb('reports/figures/test.png', page = 'half')
+
 
 # Box plot ----
 # The CPB quantile box: pass precomputed p5/p25/p50/p75/p95 columns.
@@ -100,13 +101,15 @@ spreiding <- tibble(
   p75 = c(1, 2, 3),    p95 = c(4, 5, 6)
 )
 
-print(
-  cpb_box(spreiding, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+cpb_box(
+    spreiding, 
+    x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
     orientation = "horizontal",
-    title    = "Spreiding van de koopkracht",
+    title    = "Spreiding van de koopkracht \n met een lange titel",
     subtitle = "inkomensgroep",
-    ylab     = "% koopkrachtmutatie")
-)
+    ylab     = "% koopkrachtmutatie", 
+    value_limits = c(-10, 8) )
+
 
 # Choropleth map ----
 # One value per province; ggcpb joins on the province name.
@@ -122,3 +125,4 @@ print(
     title    = "Voorbeeldindex per provincie",
     subtitle = "index (Nederland = 100)")
 )
+

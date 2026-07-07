@@ -3,6 +3,7 @@
 .RData
 .Ruserdata
 inst/doc
+reports/
 Rplots.pdf
 inst/examples/output
 # reference material: the internal originals stay untracked; only the
