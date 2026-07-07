@@ -14,7 +14,9 @@
 #'
 #' @param palette One of `"qualitative"` (the primary 9-colour discrete
 #'   palette), `"discr"` (the alternate blue/pink-led 7-colour discrete
-#'   palette), or `"sequential"` (the 6-colour light-to-dark ramp).
+#'   palette), `"sequential"` (the 6-colour light-to-dark pink ramp), or
+#'   `"blues"` (the 6-colour light-to-dark blue ramp for classed fills).
+#'   Ramps are interpolated to any number of levels.
 #' @param reverse If `TRUE`, reverse the palette order before drawing
 #'   colours from it.
 #' @return A function `function(n)` returning a character vector of
@@ -26,13 +28,13 @@
 #' cpb_pal("sequential")(5)
 #' cpb_pal("qualitative", reverse = TRUE)(3)
 #' @export
-cpb_pal <- function(palette = c("qualitative", "discr", "sequential"), reverse = FALSE) {
+cpb_pal <- function(palette = c("qualitative", "discr", "sequential", "blues"), reverse = FALSE) {
   palette <- match.arg(palette)
   cols <- cpb_palette_colours(palette)
   if (isTRUE(reverse)) cols <- rev(cols)
 
   function(n) {
-    if (palette == "sequential") {
+    if (palette %in% c("sequential", "blues")) {
       grDevices::colorRampPalette(cols)(n)
     } else {
       if (n > length(cols)) {

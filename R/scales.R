@@ -10,8 +10,8 @@
 #'
 #' Discrete ggplot2 scales drawing from a CPB palette via [cpb_pal()].
 #'
-#' @param palette One of `"qualitative"` (default), `"discr"`, or
-#'   `"sequential"`.
+#' @param palette One of `"qualitative"` (default), `"discr"`,
+#'   `"sequential"` (pink ramp), or `"blues"` (blue ramp).
 #' @param reverse If `TRUE`, reverse the palette order.
 #' @param na.value Colour used for `NA` values; defaults to the CPB NA
 #'   colour (`"lightgrey"`).
@@ -23,7 +23,7 @@
 #'   geom_bar() +
 #'   scale_fill_cpb_d()
 #' @export
-scale_fill_cpb_d <- function(palette = c("qualitative", "discr", "sequential"),
+scale_fill_cpb_d <- function(palette = c("qualitative", "discr", "sequential", "blues"),
                               reverse = FALSE,
                               na.value = cpb_na,
                               ...) {
@@ -38,7 +38,7 @@ scale_fill_cpb_d <- function(palette = c("qualitative", "discr", "sequential"),
 
 #' @rdname scale_fill_cpb_d
 #' @export
-scale_colour_cpb_d <- function(palette = c("qualitative", "discr", "sequential"),
+scale_colour_cpb_d <- function(palette = c("qualitative", "discr", "sequential", "blues"),
                                 reverse = FALSE,
                                 na.value = cpb_na,
                                 ...) {
@@ -106,8 +106,8 @@ scale_color_cpb_c <- scale_colour_cpb_c
 #' @param index Integer vector of positions into `palette`, in the
 #'   order the resulting scale should use them. If `NULL` (default),
 #'   the full palette is used in its original order.
-#' @param palette One of `"qualitative"` (default), `"discr"`, or
-#'   `"sequential"`.
+#' @param palette One of `"qualitative"` (default), `"discr"`,
+#'   `"sequential"` (pink ramp), or `"blues"` (blue ramp).
 #' @param na.value Colour used for `NA` values; defaults to the CPB NA
 #'   colour (`"lightgrey"`).
 #' @param ... Passed through to [ggplot2::scale_fill_manual()] /
@@ -120,7 +120,7 @@ scale_color_cpb_c <- scale_colour_cpb_c
 #'   scale_fill_cpb_manual(index = c(6, 2, 5))
 #' @export
 scale_fill_cpb_manual <- function(index = NULL,
-                                   palette = c("qualitative", "discr", "sequential"),
+                                   palette = c("qualitative", "discr", "sequential", "blues"),
                                    na.value = cpb_na,
                                    ...) {
   palette <- match.arg(palette)
@@ -132,7 +132,7 @@ scale_fill_cpb_manual <- function(index = NULL,
 #' @rdname scale_fill_cpb_manual
 #' @export
 scale_colour_cpb_manual <- function(index = NULL,
-                                     palette = c("qualitative", "discr", "sequential"),
+                                     palette = c("qualitative", "discr", "sequential", "blues"),
                                      na.value = cpb_na,
                                      ...) {
   palette <- match.arg(palette)

@@ -636,6 +636,36 @@ render(23, "grouped boxes with a fill per year",
     ylab  = "% mutatie"),
   "23_grouped_fill_box.png", page = "half", height = 4.5)
 
+# koopkracht boxplot with the value axis on top (CEP figuur 1.4 style)
+kop_groepen <- c("tot 120% wml", "120% wml - mod.", "1 - 1,5x mod.",
+                 "1,5 - 2x mod.", "2 - 3x mod.", "boven 3x mod.")
+kop_dt <- data.table(groep = factor(kop_groepen, levels = rev(kop_groepen)),
+                     p50 = c(-0.2, 0.1, 0.6, 1.0, 1.3, 1.7))
+kop_dt[, `:=`(p25 = p50 - runif(.N, 0.2, 0.4), p75 = p50 + runif(.N, 0.2, 0.4))]
+kop_dt[, `:=`(p5 = p25 - runif(.N, 0.4, 0.8), p95 = p75 + runif(.N, 0.4, 0.9))]
+render(24, "boxplot with value axis on top",
+  cpb_box(kop_dt, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+    box_style   = "modern",
+    orientation = "horizontal",
+    value_axis  = "top",
+    value_breaks = seq(-1, 3, 1),
+    width = 0.35,
+    title    = "Koopkracht per inkomensgroep",
+    subtitle = "statisch, verandering in % (a)"),
+  "24_box_top_axis.png", page = "half", height = 3.2)
+
+# classed choropleth: cpb_cut() bins + the blues palette (publication style)
+map_dt <- data.table(code = unique(cpb_nl_geo("gemeente")$code))
+map_dt[, aandeel := runif(.N, 5, 75)]
+map_dt[, klasse := cpb_cut(aandeel, breaks = c(0, 20, 30, 40, 50, 60, Inf),
+                           labeller = label_pct_nl())]
+render(25, "classed choropleth (cpb_cut + blues)",
+  cpb_map(map_dt, region = code, value = klasse,
+    palette = "blues",
+    title    = "Aandeel huishoudens met zonnepanelen",
+    filllab  = "aandeel"),
+  "25_map_classed.png", page = "half", height = 3.4)
+
 # Summary ----
 
 summary_dt <- rbindlist(results)

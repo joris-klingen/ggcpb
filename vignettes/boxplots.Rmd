@@ -160,3 +160,27 @@ cpb_box(kk3, x = groep,
 For the single-colour grouped layout (one box per category, one
 colour per group, as in the published inkomenseffecten figures), see
 `vignette("layout")`.
+
+# Value axis on top
+
+The flagship CPB koopkracht figure draws the value axis along the
+*top* of the panel, with the income groups down the side. Pass
+`value_axis = "top"` (horizontal boxes only):
+
+```{r box-top}
+cpb_box(kk, x = groep,
+  p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  box_style    = "modern",
+  orientation  = "horizontal",
+  value_axis   = "top",
+  value_breaks = seq(-6, 6, 2),
+  width        = 0.35,
+  title    = "Koopkracht per inkomensgroep",
+  subtitle = "statisch, verandering in %")
+```
+
+Under the hood this sets the value scale to `position = "right"`,
+which `coord_flip()` renders along the top edge. Set custom tick
+positions through the wrapper's `value_breaks` (as here) rather than
+adding a second `scale_y_continuous()`, which would replace the
+wrapper's scale.

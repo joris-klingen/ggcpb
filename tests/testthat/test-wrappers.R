@@ -674,3 +674,18 @@ test_that("cpb_map uses discrete CPB palettes for discrete values", {
   p <- cpb_map(prov, region = code, value = klasse, level = "provincie")
   expect_s3_class(p$scales$get_scales("fill"), "ScaleDiscrete")
 })
+
+test_that("cpb_box value_axis = 'top' puts the value scale on top", {
+  df <- data.frame(groep = factor(c("a", "b", "c"), levels = c("a", "b", "c")),
+                   p5 = -1, p25 = -0.2, p50 = 0.1, p75 = 0.3, p95 = 1)
+  p <- cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+               orientation = "horizontal", value_axis = "top",
+               value_breaks = c(-1, 0, 1))
+  sc <- p$scales$get_scales("y")
+  # under coord_flip(), the y scale's "right" position renders at the top
+  expect_equal(sc$position, "right")
+  # bottom (default) leaves the scale in its normal spot
+  p2 <- cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+                orientation = "horizontal", value_breaks = c(-1, 0, 1))
+  expect_false(identical(p2$scales$get_scales("y")$position, "right"))
+})

@@ -37,25 +37,52 @@ cartomap), so no geo packages or downloads are needed. Borders are
 hairlines in the background colour, so regions read as tiles
 separated by light-blue seams.
 
-# Municipalities
+# Classed maps
 
-Regions are joined by CBS code (`"GM0014"`, `"CR01"`, `"PV20"`) or by
-name, whichever matches the `region` column best; regions without a
-value are filled with the CPB missing-value grey, and unmatched
-regions in the data raise a warning. A numeric `value` column gets
-the CPB sequential gradient with a compact horizontal colourbar:
+CPB choropleths are usually *classed*: the values are binned into a
+handful of ordered classes and filled with a light-to-dark ramp.
+`cpb_cut()` does the binning with tidy Dutch class labels ("lager dan
+20%", "20% - 30%", ..., "60% en hoger"), and `palette = "blues"` gives
+the house blue ramp. Regions are joined by CBS code (`"GM0014"`,
+`"CR01"`, `"PV20"`) or by name, whichever matches the `region` column
+best; regions without a value get the CPB missing-value grey, and
+unmatched regions raise a warning:
+
+```{r map-classed, fig.height = 3.4}
+gemeenten <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
+  mutate(aandeel = runif(n(), 5, 75),
+         klasse  = cpb_cut(aandeel, breaks = c(0, 20, 30, 40, 50, 60, Inf),
+                           labeller = label_pct_nl()))
+
+cpb_map(gemeenten, region = code, value = klasse,
+  palette = "blues",
+  title   = "Aandeel huishoudens met zonnepanelen",
+  filllab = "aandeel")
+```
+
+`cpb_cut()` is a house-styled wrapper around `cut()`: give it the
+`breaks` (including the outer bounds, `Inf` for an open top class) and
+a formatter (`label_pct_nl()`, `label_euro_nl()`, `label_number_nl()`),
+and it returns an ordered factor whose levels read the way published
+figures label them. A single integer (`breaks = 5`) asks for that many
+equal-width bins. The `"blues"` palette works in every CPB scale, not
+just maps -- use it for classed bars too.
+
+# Continuous maps
+
+For a raw numeric value, `cpb_map()` fills with the CPB sequential
+gradient and a compact horizontal colourbar. As elsewhere the unit
+caption goes in `subtitle`; there is no value axis, so `ylab` does not
+apply here:
 
 ```{r map-gemeente, fig.height = 3.4}
-gemeenten <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
+gemeenten_ct <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
   mutate(index = rnorm(n(), 100, 15))
 
-cpb_map(gemeenten, region = code, value = index,
+cpb_map(gemeenten_ct, region = code, value = index,
   title    = "Voorbeeldindex per gemeente",
   subtitle = "index (Nederland = 100)")
 ```
-
-As elsewhere, the unit caption goes in `subtitle`; there is no value
-axis, so `ylab` does not exist here.
 
 # Provinces and COROP regions
 

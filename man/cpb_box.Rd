@@ -26,6 +26,7 @@ cpb_box(
   pct_axis = FALSE,
   value_breaks = NULL,
   value_limits = NULL,
+  value_axis = c("bottom", "top"),
   orientation = c("vertical", "horizontal"),
   facet = NULL,
   facet_ncol = NULL,
@@ -138,6 +139,12 @@ wrapper's axis formatting and expansion.}
 \item{value_limits}{Optional length-2 limits for the value axis,
 applied through the coordinate system (zoom) so no data is
 dropped.}
+
+\item{value_axis}{Where the value axis is drawn: \code{"bottom"}
+(default) or \code{"top"}. \code{"top"} places the numeric scale along the
+top of the panel, the convention of the CPB koopkracht figures;
+it applies to horizontal boxes (the value axis is the flipped
+axis).}
 
 \item{orientation}{\code{"vertical"} (default) or \code{"horizontal"} (adds
 \code{\link[ggplot2:coord_flip]{ggplot2::coord_flip()}} and is forwarded to \code{\link[=theme_cpb]{theme_cpb()}}).}
