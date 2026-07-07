@@ -1239,9 +1239,22 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   }
   subtitle <- cpb_reserve_subtitle(title, subtitle)
 
-  p +
+  p <- p +
     ggplot2::labs(title = title, subtitle = subtitle, x = xlab, y = lab_y, fill = filllab) +
     cpb_wrapper_theme()
+
+  if (has_group) {
+    # the grouped layout labels its rows (categories and bold group
+    # headings) itself, so the per-row category ticks are noise; drop
+    # them but keep the category axis line. The category axis is the x
+    # aesthetic, drawn on the y side under coord_flip().
+    tick_side <- if (orientation == "horizontal") "y" else "x"
+    p <- p + do.call(ggplot2::theme, stats::setNames(
+      list(ggplot2::element_blank()), paste0("axis.ticks.", tick_side)
+    ))
+  }
+
+  p
 }
 
 # scatter ----

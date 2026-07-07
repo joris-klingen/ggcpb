@@ -561,6 +561,9 @@ test_that("cpb_box group builds heading rows on the category axis", {
   # positions descend so the first group reads from the top
   expect_length(sc$breaks, 6)
   expect_true(all(diff(sc$breaks) < 0))
+  # the per-row category ticks are dropped (headings label the rows)
+  # but the category axis line stays
+  expect_s3_class(p$theme$axis.ticks.y, "element_blank")
   # heading labels are bold plotmath expressions, items plain strings
   labs <- as.list(sc$labels)
   expect_true(is.language(labs[[1]]))  # collapsed "Alle huishoudens" total
