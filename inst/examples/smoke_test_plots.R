@@ -614,7 +614,7 @@ render(22, "choropleth map (gemeente)",
   cpb_map(gem_dt, region = code, value = index,
     title = "Voorbeeldindex per gemeente",
     subtitle = "index (Nederland = 100)"),
-  "22_map.png", page = "half", height = 3.4)
+  "22_map.png", page = "half", height = 4.8)
 
 # grouped boxes with a fill per year: dodged pairs under the headings
 gfb_groepen <- c("tot 120% wml", "120% wml - mod.", "1 - 1,5x mod.",
