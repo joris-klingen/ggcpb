@@ -580,14 +580,27 @@ test_that("cpb_box group builds heading rows on the category axis", {
   expect_equal(p$coordinates$clip, "off")
 })
 
-test_that("cpb_box group + fill mapping is rejected", {
-  df <- data.frame(cat = c("a", "b"), grp = c("g", "g"), s = c("s1", "s2"),
-                   p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5)
-  expect_error(
-    cpb_box(df, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-            group = grp, fill = s),
-    "cannot be combined"
-  )
+test_that("cpb_box group combines with a fill mapping (dodged boxes)", {
+  df <- expand.grid(jaar = factor(c(2026, 2027)),
+                    cat  = factor(c("a", "b", "c"), levels = c("a", "b", "c")))
+  df$grp <- factor(ifelse(df$cat == "a", "G1", "G2"), levels = c("G1", "G2"))
+  df$p5 <- 1; df$p25 <- 2; df$p50 <- 3; df$p75 <- 4; df$p95 <- 5
+  p <- cpb_box(df, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+               fill = jaar, group = grp, orientation = "horizontal",
+               position = ggplot2::position_dodge(width = 0.6),
+               index = c(6, 2), title = "t")
+  built <- ggplot2::ggplot_build(p)
+  box_data <- built$data[[which(vapply(p$layers, function(l)
+    inherits(l$geom, "GeomBoxplot"), logical(1)))]]
+  # 6 boxes (3 categories x 2 years), dodged: two distinct x offsets
+  # around every category slot, so 6 unique positions in total
+  expect_equal(nrow(box_data), 6)
+  expect_length(unique(box_data$x), 6)
+  expect_length(unique(box_data$fill), 2)
+  # the heading rows are still bold text annotations
+  txt <- p$layers[[length(p$layers)]]
+  expect_s3_class(txt$geom, "GeomText")
+  expect_equal(sort(txt$aes_params$label), c("G1", "G2"))
 })
 
 test_that("vector fill_colour tracks rows in james/modern boxes", {

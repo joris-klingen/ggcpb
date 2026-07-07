@@ -9,19 +9,16 @@ library(tidyr)
 set.seed(42)
 ```
 
-This vignette is a gallery: one section per CPB chart type, each with
-the simulated data it needs and the wrapper call that draws it. All
-wrappers return a plain `ggplot` object, so anything here can be
-extended further with `+`.
+One section per CPB chart type, each in its *default* house style: the
+simulated data it needs and the wrapper call that draws it, nothing
+more. All wrappers return a plain `ggplot` object, so anything here can
+be extended further with `+`.
 
-The other vignettes build on these basics:
-
-- `vignette("layouts")` – grouped category axes, facets and maps:
-  arranging more than one chart’s worth of information in a figure.
-- `vignette("recipes")` – forecast windows, composing charts by hand,
-  and exporting at CPB page sizes.
-- `vignette("ggcpb")` – the composable core the wrappers are built on,
-  as an end-to-end walkthrough.
+Variants and extras live in the other vignettes: `vignette("layout")`
+for facets and grouped category axes, `vignette("boxplots")` for the
+box-plot styles and combinations, `vignette("annotation")` for reference
+lines and forecast windows, `vignette("maps")` for choropleths, and
+`vignette("ggcpb")` for the basic setup and export.
 
 Two house conventions to know up front:
 
@@ -181,10 +178,6 @@ wrapper, not through a second `scale_y_continuous()`, which would
 silently replace the wrapper’s percentage labels and zero-flush
 expansion.
 
-For a two-level category axis – categories grouped into blocks under
-bold group names on one shared axis – see the `group` argument in
-`vignette("layouts")`.
-
 # Area charts
 
 `cpb_area()` draws the recurring share-of-total-over-time figure. With
@@ -216,10 +209,11 @@ out to p5 and p95. It expects **precomputed quantile columns** (both
 layers use `stat = "identity"`), so aggregate your microdata first:
 
 ``` r
-groepen5 <- c("laagste 20%", "2e 20%", "midden 20%", "4e 20%", "hoogste 20%")
+groepen <- c("tot 120% wml", "120% wml - mod.", "1 - 1,5x mod.",
+             "1,5 - 2x mod.", "2 - 3x mod.", "boven 3x mod.")
 raw <- tibble(
-  groep      = factor(rep(groepen5, each = 400), levels = groepen5),
-  koopkracht = rnorm(2000, mean = rep(c(-3, -1.5, 0, 1.5, 3.5), each = 400), sd = 2)
+  groep      = factor(rep(groepen, each = 400), levels = groepen),
+  koopkracht = rnorm(2400, mean = rep(c(-3, -1.5, 0, 1, 2, 3.5), each = 400), sd = 2)
 )
 kk <- raw |>
   summarise(
@@ -241,54 +235,9 @@ cpb_box(kk, x = groep,
 
 <img src="chart-types_files/figure-gfm/box-single-1.png" width="350px" />
 
-Boxes without a `fill` mapping are drawn in the CPB primary blue. Map
-`fill` and pass a `position_dodge()` for grouped boxes – for example one
-pair of years per income group:
-
-``` r
-kk2 <- expand_grid(kk, jaar = factor(c(2026, 2027))) |>
-  mutate(across(p5:p95, \(q) q + (jaar == "2027") * 0.8))
-
-cpb_box(kk2, x = groep,
-  p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-  fill     = jaar,
-  position = position_dodge(width = 0.6),
-  index    = c(6, 2),
-  title    = "Koopkracht per jaar, 2026 en 2027",
-  ylab     = "% koopkrachtmutatie") +
-  scale_y_continuous(labels = label_number_nl())
-```
-
-<img src="chart-types_files/figure-gfm/box-dodged-1.png" width="700px" />
-
-## Box styles
-
-`box_style` selects how the boxes are drawn. Besides the default
-`"ggcpb"` construction above there is `"james"`, the legacy plotter’s
-box – borderless, plain capless whiskers, a black median line extending
-past the box, and the median value printed above it – and `"modern"`,
-the designer variant with light-blue boxes, a thick dark-blue median and
-the quartile values printed below the box ends:
-
-``` r
-cpb_box(kk, x = groep,
-  p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-  box_style   = "modern",
-  orientation = "horizontal",
-  width       = 0.35,
-  title    = "Koopkracht per inkomensgroep",
-  subtitle = "inkomensgroep",
-  ylab     = "% koopkrachtmutatie") +
-  scale_y_continuous(labels = label_number_nl(accuracy = 0.1))
-```
-
-<img src="chart-types_files/figure-gfm/box-modern-1.png" width="350px" />
-
-Both styles print value labels by default (`box_labels = FALSE` turns
-them off, `label_accuracy` controls their rounding) and draw
-single-colour boxes: a `fill` mapping is only supported by `"ggcpb"`.
-For the vertically grouped distributional layout (boxes organised under
-bold group headings) see `vignette("layouts")`.
+Boxes without a `fill` mapping are drawn in the CPB primary blue. The
+other box constructions – the legacy and designer styles, fill-dodged
+boxes per year, and grouped layouts – are in `vignette("boxplots")`.
 
 # Scatter plots
 
@@ -327,13 +276,6 @@ cpb_hist(duur, x = maanden, binwidth = 2,
 ```
 
 <img src="chart-types_files/figure-gfm/hist-1.png" width="350px" />
-
-# Where next
-
-- Arrange more than one chart’s worth of information – grouped category
-  axes, facets and choropleth maps – in `vignette("layouts")`.
-- Forecast windows, composing charts by hand and export at CPB page
-  sizes are in `vignette("recipes")`.
 
 For a rendered gallery of all chart types against the published
 reference figures, run `inst/examples/smoke_test_plots.R`.

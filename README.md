@@ -14,22 +14,22 @@ that you can keep extending with `+`.
 
 ## Documentation
 
-- **[Chart types](doc/chart-types.md)** --
-  `vignette("chart-types")`: a gallery with one worked example per CPB
-  chart type (lines, stacked/dodged columns, horizontal bars, areas,
-  quantile boxplots and box styles, scatter, histograms) and the house
-  conventions they follow.
-- **[Grouped layouts, facets & maps](doc/layouts.md)** --
-  `vignette("layouts")`: arranging more than one chart's worth of
-  information -- a two-level category axis, vertically grouped
-  boxplots, small-multiple facets, and choropleth maps of the
-  Netherlands.
-- **[Recipes](doc/recipes.md)** -- `vignette("recipes")`: cross-cutting
-  techniques -- forecast windows and uncertainty bands, composing a
-  figure by hand, and exporting at the CPB page sizes.
-- **[Walkthrough](doc/ggcpb.md)** -- `vignette("ggcpb")`: one analysis
-  from raw microdata to exported figure, using the composable core --
-  theme, scales, palettes, formatters, fonts and export.
+- **[Setup](doc/ggcpb.md)** -- `vignette("ggcpb")`: the basic idea in
+  a couple of plots -- one wrapper call, how it relates to ggplot2,
+  using only the theme without the wrappers, and export.
+- **[Chart types](doc/chart-types.md)** -- `vignette("chart-types")`:
+  every CPB chart type in its default style -- lines, columns,
+  horizontal bars, areas, quantile boxplot, scatter, histogram.
+- **[Layout](doc/layout.md)** -- `vignette("layout")`: facets, grouped
+  categories on one shared axis, and grouped boxplots.
+- **[Annotation](doc/annotation.md)** -- `vignette("annotation")`:
+  forecast windows and uncertainty bands, reference lines, text notes,
+  and composing an extra series onto a chart.
+- **[Box plots](doc/boxplots.md)** -- `vignette("boxplots")`: the
+  three box styles, a fill per year, and grouped boxes with a fill
+  per year.
+- **[Maps](doc/maps.md)** -- `vignette("maps")`: choropleths of the
+  Netherlands at municipality, COROP or province level.
 
 The links point to rendered versions (with figures) in `doc/`,
 regenerated from `vignettes/` with `Rscript tools/render_vignettes.R`.

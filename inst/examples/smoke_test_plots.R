@@ -550,8 +550,8 @@ render(18, "box: modern style",
 facet_dt <- CJ(jaar  = 2019:2025,
                groep = factor(c("laag", "midden", "hoog"),
                               levels = c("laag", "midden", "hoog")),
-               regio = factor(c("stad", "platteland", "gemengd", "totaal"),
-                              levels = c("stad", "platteland", "gemengd", "totaal")))
+               regio = factor(c("stedelijk", "landelijk", "gemengd", "totaal"),
+                              levels = c("stedelijk", "landelijk", "gemengd", "totaal")))
 facet_dt[, waarde := round(2 + as.numeric(groep) + cumsum(rnorm(.N, 0, 0.3)), 1)]
 
 render(19, "faceted columns (strips below panels)",
@@ -615,6 +615,26 @@ render(22, "choropleth map (gemeente)",
     title = "Voorbeeldindex per gemeente",
     subtitle = "index (Nederland = 100)"),
   "22_map.png", page = "half", height = 3.4)
+
+# grouped boxes with a fill per year: dodged pairs under the headings
+gfb_groepen <- c("tot 120% wml", "120% wml - mod.", "1 - 1,5x mod.",
+                 "1,5 - 2x mod.", "2 - 3x mod.", "boven 3x mod.")
+gfb_dt <- CJ(jaar = factor(c(2026, 2027)),
+             cat  = factor(gfb_groepen, levels = gfb_groepen))
+gfb_dt[, grp := factor(fifelse(cat %in% gfb_groepen[1:3],
+                               "lagere inkomens", "hogere inkomens"),
+                       levels = c("lagere inkomens", "hogere inkomens"))]
+gfb_dt[, p50 := rnorm(.N, 0.5, 1)]
+gfb_dt[, `:=`(p25 = p50 - runif(.N, 0.3, 0.6), p75 = p50 + runif(.N, 0.3, 0.6))]
+gfb_dt[, `:=`(p5 = p25 - runif(.N, 0.5, 1), p95 = p75 + runif(.N, 0.5, 1))]
+render(23, "grouped boxes with a fill per year",
+  cpb_box(gfb_dt, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+    fill = jaar, group = grp, orientation = "horizontal",
+    position = ggplot2::position_dodge(width = 0.6),
+    index = c(6, 2), reverse_legend = TRUE,
+    title = "Koopkracht per jaar en inkomensgroep",
+    ylab  = "% mutatie"),
+  "23_grouped_fill_box.png", page = "half", height = 4.5)
 
 # Summary ----
 

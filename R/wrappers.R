@@ -876,7 +876,9 @@ cpb_line <- function(data, x, y, colour = NULL,
 #'   above its categories, all boxes share one value axis. A group
 #'   containing exactly one category with the same name as the group
 #'   collapses onto its heading row (e.g. an "Alle huishoudens" total).
-#'   Cannot be combined with a `fill` mapping. Typically used with
+#'   Combines with a `fill` mapping (`"ggcpb"` style): pass a
+#'   `position_dodge()` for e.g. two dodged years per category under
+#'   the group headings. Typically used with
 #'   `orientation = "horizontal"`. The category rows keep the house
 #'   category ticks; the bold headings carry none and are outdented.
 #' @param group_gap Extra gap between group blocks, in category
@@ -1019,10 +1021,6 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   has_fill <- !rlang::quo_is_null(fill)
   has_group <- !rlang::quo_is_null(group)
 
-  if (has_group && has_fill) {
-    stop("`group` organises single boxes under bold group headings and ",
-         "cannot be combined with a `fill` mapping.", call. = FALSE)
-  }
   slots <- NULL
   if (has_group) {
     # vertical grouping: every group gets a bold heading row above its
@@ -1052,12 +1050,14 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   }
 
   if (has_fill) {
-    # group (not fill) drives the errorbar dodge: errorbars have no fill
-    # aesthetic, and mapping one only triggers a warning
-    mapping_errorbar <- ggplot2::aes(x = !!x, ymin = !!p5, ymax = !!p95, group = !!fill)
+    # the x-fill interaction drives the dodge: errorbars have no fill
+    # aesthetic (mapping one only warns), and on the numeric category
+    # axis of the grouped layout fill alone would chain across rows
+    mapping_errorbar <- ggplot2::aes(x = !!x, ymin = !!p5, ymax = !!p95,
+                                     group = interaction(!!x, !!fill))
     mapping_box <- ggplot2::aes(
       x = !!x, ymin = !!p25, lower = !!p25, middle = !!p50, upper = !!p75,
-      ymax = !!p75, fill = !!fill
+      ymax = !!p75, fill = !!fill, group = interaction(!!x, !!fill)
     )
   } else {
     # the explicit group keeps one box per category when the category
