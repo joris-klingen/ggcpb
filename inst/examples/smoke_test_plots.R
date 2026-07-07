@@ -662,9 +662,9 @@ map_dt[, klasse := cpb_cut(aandeel, breaks = c(0, 20, 30, 40, 50, 60, Inf),
 render(25, "classed choropleth (cpb_cut + blues)",
   cpb_map(map_dt, region = code, value = klasse,
     palette = "blues",
-    title    = "Aandeel huishoudens met zonnepanelen",
+    title    = "Aandeel huishoudens\nmet zonnepanelen",
     filllab  = "aandeel"),
-  "25_map_classed.png", page = "half", height = 3.4)
+  "25_map_classed.png", page = "half", height = 5.2)
 
 # Summary ----
 

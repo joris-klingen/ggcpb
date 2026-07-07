@@ -10,7 +10,7 @@ cpb_map(
   value,
   level = c("gemeente", "corop", "provincie"),
   border_colour = NULL,
-  border_linewidth = 0.1,
+  border_linewidth = 0.2,
   palette = "sequential",
   index = NULL,
   reverse = FALSE,
@@ -39,8 +39,8 @@ CPB palette.}
 \item{border_colour}{Border colour between regions; defaults to the
 CPB background colour so borders read as seams in the background.}
 
-\item{border_linewidth}{Border line width; defaults to \code{0.1}, the
-house hairline.}
+\item{border_linewidth}{Border line width; defaults to \code{0.2}, a thin
+seam that keeps adjacent regions legible without drawing outlines.}
 
 \item{palette}{CPB palette for a \emph{discrete} \code{value} column; one of
 \code{"qualitative"}, \code{"discr"}, or \code{"sequential"}.}
