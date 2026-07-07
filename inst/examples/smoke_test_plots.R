@@ -564,6 +564,58 @@ render(19, "faceted columns (strips below panels)",
     ylab  = "mld euro"),
   "19_facets.png", page = "full", height = 4.5)
 
+# grouped categories on one shared value axis (no facets): gapped
+# blocks with bold group names under the category labels
+vwo_dt <- data.table(
+  cat   = factor(rep(c("jongen", "meisje", "laag", "hoog"), each = 2),
+                 levels = c("jongen", "meisje", "laag", "hoog")),
+  grp   = factor(rep(c("geslacht", "geslacht", "opleiding ouders",
+                       "opleiding ouders"), each = 2),
+                 levels = c("geslacht", "opleiding ouders")),
+  serie = rep(c("als centraal examen meetelt",
+                "als centraal examen niet meetelt"), 4),
+  zakkans = c(8.7, 8.7, 9.7, 5.1, 11.2, 8.0, 8.1, 6.0)
+)
+render(20, "grouped categories, shared axis",
+  cpb_col(vwo_dt, x = cat, y = zakkans, fill = serie, group = grp,
+    position = "dodge", index = c(6, 2), width = 0.75,
+    value_breaks = seq(0, 12, 2), value_limits = c(0, 12),
+    title = "VWO", ylab = "zakkans (%)"),
+  "20_grouped_col.png", page = "half")
+
+# vertically grouped boxes: bold heading rows on the category axis,
+# one colour per group
+ink_cats <- list(
+  "Alle huishoudens"    = "Alle huishoudens",
+  "Inkomensgroepen"     = c("1-20%", "21-40%", "41-60%", "61-80%", "81-100%"),
+  "Inkomensbron"        = c("Werkenden", "Uitkeringsgerechtigden", "Gepensioneerden"),
+  "Gezinssamenstelling" = c("Met kinderen", "Zonder kinderen")
+)
+ink_dt <- data.table(cat = unlist(ink_cats),
+                     grp = rep(names(ink_cats), lengths(ink_cats)))
+ink_dt[, `:=`(cat = factor(cat, levels = cat),
+              grp = factor(grp, levels = names(ink_cats)))]
+ink_dt[, p50 := c(0.09, 0.02, 0.07, 0.07, 0.06, 0.04, 0.09, 0.04, 0.05, 0.04, 0.09)]
+ink_dt[, `:=`(p25 = p50 - runif(.N, 0.02, 0.15), p75 = p50 + runif(.N, 0.02, 0.12))]
+ink_dt[, `:=`(p5 = p25 - runif(.N, 0.1, 0.6), p95 = p75 + runif(.N, 0.1, 0.6))]
+ink_cols <- c("#193c69", rep("#87d2ff", 5), rep("#e6006e", 3), rep("#96827d", 2))
+render(21, "grouped boxes (bold heading rows)",
+  cpb_box(ink_dt, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+    group = grp, box_style = "james", orientation = "horizontal",
+    fill_colour = ink_cols, width = 0.45,
+    title = "Inkomenseffecten plannen stelsel",
+    ylab  = "verandering in 2025 (%)"),
+  "21_grouped_box.png", page = "half", height = 4.5)
+
+# choropleth of the Netherlands: thin borders in the background colour
+gem_dt <- data.table(code = unique(cpb_nl_geo("gemeente")$code))
+gem_dt[, index := rnorm(.N, 100, 15)]
+render(22, "choropleth map (gemeente)",
+  cpb_map(gem_dt, region = code, value = index,
+    title = "Voorbeeldindex per gemeente",
+    subtitle = "index (Nederland = 100)"),
+  "22_map.png", page = "half", height = 3.4)
+
 # Summary ----
 
 summary_dt <- rbindlist(results)

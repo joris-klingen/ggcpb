@@ -27,6 +27,62 @@ cpb_wrapper_theme <- function(env = parent.frame()) {
   do.call(theme_cpb, args)
 }
 
+# Two-level category axis without facets: categories keep one shared
+# value axis, but are laid out in blocks with a gap between groups (see
+# the grouped published figures, e.g. "geslacht" vs "opleiding ouders").
+# Returns one row per category with its numeric axis position plus the
+# group centres for the bold group labels.
+cpb_group_positions <- function(cats, groups, gap = 0.8) {
+  cats <- as.factor(cats)
+  groups <- as.factor(groups)
+  # one group per category (categories nested in groups)
+  map <- unique(data.frame(cat = cats, grp = groups))
+  if (anyDuplicated(map$cat)) {
+    stop("each `x` category must belong to exactly one `group`.", call. = FALSE)
+  }
+  # lay the groups out in factor-level order, categories in level order
+  # within their group
+  map <- map[order(as.integer(map$grp), as.integer(map$cat)), , drop = FALSE]
+  offset <- (as.integer(factor(map$grp, levels = unique(map$grp))) - 1) * gap
+  map$pos <- seq_len(nrow(map)) + offset
+  centres <- vapply(split(map$pos, map$grp), mean, numeric(1))
+  list(map = map, centres = centres[unique(as.character(map$grp))])
+}
+
+# Grouped category slots with a heading row per group (the vertical
+# grouping of the published distributional figures: a bold group name
+# on its own row above its categories, all sharing one value axis).
+# Returns one row per slot: heading rows have heading = TRUE. Positions
+# descend from the first slot, so under coord_flip() the first group
+# reads from the top.
+cpb_group_heading_positions <- function(cats, groups, gap = 0.7) {
+  map <- cpb_group_positions(cats, groups, gap = 0)$map
+  out <- NULL
+  pos <- 0
+  for (g in unique(as.character(map$grp))) {
+    if (!is.null(out)) pos <- pos - gap
+    cts <- as.character(map$cat[as.character(map$grp) == g])
+    if (length(cts) == 1 && cts == g) {
+      # a single-category group named after itself collapses onto its
+      # heading row (e.g. the "Alle huishoudens" total)
+      pos <- pos - 1
+      out <- rbind(out, data.frame(label = g, cat = cts,
+                                   heading = TRUE, pos = pos))
+      next
+    }
+    pos <- pos - 1
+    out <- rbind(out, data.frame(label = g, cat = NA_character_,
+                                 heading = TRUE, pos = pos))
+    for (ct in cts) {
+      pos <- pos - 1
+      out <- rbind(out, data.frame(label = ct, cat = ct,
+                                   heading = FALSE, pos = pos))
+    }
+  }
+  out$pos <- out$pos - min(out$pos) + 1
+  out
+}
+
 # Faceting in house style: the facet title is a bold strip *below*
 # its panel (the legacy nicerplot placement) and every panel is a
 # complete mini-figure with its own axes and axis labels.
@@ -130,6 +186,16 @@ cpb_forecast_label <- function(forecast_x, xvals, label) {
 #' @param fill_colour Constant bar fill used when no `fill` column is
 #'   mapped. Defaults to `NULL`, which resolves to the CPB primary blue
 #'   (`cpb_cols(6)`, `"#005faf"`). Ignored when `fill` is supplied.
+#' @param group Optional column (tidy eval) assigning each `x` category
+#'   to a group, for the published two-level category axis: categories
+#'   are laid out in blocks with a gap between groups on *one shared
+#'   value axis* (no facets), and the group names are printed in bold
+#'   under the category labels. Each category must belong to exactly
+#'   one group; groups and categories follow their factor-level order.
+#'   The group labels occupy the x-axis-title line, so `xlab` is not
+#'   available; vertical charts only.
+#' @param group_gap Gap between group blocks, in category widths;
+#'   defaults to `0.8`.
 #' @param position One of `"stack"` (default), `"dodge"`, or `"fill"`.
 #' @param orientation `"vertical"` (default) or `"horizontal"` (adds
 #'   [ggplot2::coord_flip()] and is forwarded to [theme_cpb()]).
@@ -212,6 +278,8 @@ cpb_forecast_label <- function(forecast_x, xvals, label) {
 #' @export
 cpb_col <- function(data, x, y, fill = NULL,
                      fill_colour = NULL,
+                     group = NULL,
+                     group_gap = 0.8,
                      position = c("stack", "dodge", "fill"),
                      orientation = c("vertical", "horizontal"),
                      palette = "qualitative",
@@ -247,8 +315,31 @@ cpb_col <- function(data, x, y, fill = NULL,
   x <- rlang::enquo(x)
   y <- rlang::enquo(y)
   fill <- rlang::enquo(fill)
+  group <- rlang::enquo(group)
   facet <- rlang::enquo(facet)
   has_fill <- !rlang::quo_is_null(fill)
+  has_group <- !rlang::quo_is_null(group)
+
+  if (has_group) {
+    # a two-level category axis: categories in gapped group blocks on
+    # one shared value axis, group names in bold under the categories
+    if (orientation == "horizontal") {
+      stop("`group` is only supported for vertical column charts; for ",
+           "horizontal grouped categories see the `group` argument of ",
+           "cpb_box().", call. = FALSE)
+    }
+    if (!is.null(forecast_x)) {
+      stop("`group` and `forecast_x` cannot be combined: the grouped ",
+           "category axis is not a time axis.", call. = FALSE)
+    }
+    grp <- cpb_group_positions(rlang::eval_tidy(x, data),
+                               rlang::eval_tidy(group, data),
+                               gap = group_gap)
+    data <- as.data.frame(data)
+    data[["cpb__x"]] <- grp$map$pos[match(as.character(rlang::eval_tidy(x, data)),
+                                             as.character(grp$map$cat))]
+    x <- rlang::quo(.data[["cpb__x"]])
+  }
 
   if (has_fill) {
     mapping <- ggplot2::aes(x = !!x, y = !!y, fill = !!fill)
@@ -280,7 +371,23 @@ cpb_col <- function(data, x, y, fill = NULL,
     p <- p + cpb_forecast_label(forecast_x, rlang::eval_tidy(x, data), forecast_label)
   }
 
-  if (orientation == "horizontal") {
+  if (has_group) {
+    p <- p +
+      ggplot2::scale_x_continuous(
+        breaks = grp$map$pos,
+        labels = as.character(grp$map$cat),
+        expand = ggplot2::expansion(add = 0.7)
+      ) +
+      # the group names sit in bold under the category labels, on the
+      # line the x-axis title would otherwise use; clip is off so the
+      # text can be drawn below the panel
+      ggplot2::annotate("text",
+        x = unname(grp$centres), y = -Inf, label = names(grp$centres),
+        vjust = 5.1, fontface = "bold", size = 7 / ggplot2::.pt,
+        family = cpb_font_family()
+      ) +
+      ggplot2::coord_cartesian(ylim = value_limits, clip = "off")
+  } else if (orientation == "horizontal") {
     p <- p + if (!is.null(value_limits)) {
       ggplot2::coord_flip(ylim = value_limits)
     } else {
@@ -336,6 +443,9 @@ cpb_col <- function(data, x, y, fill = NULL,
     lab_x <- xlab
     lab_y <- NULL
   }
+  # the bold group labels occupy the axis-title line, so it is always
+  # reserved (an explicit xlab would collide with them)
+  if (has_group) lab_x <- " "
 
   p <- cpb_add_facet(p, facet, facet_ncol, facet_scales)
 
@@ -757,7 +867,20 @@ cpb_line <- function(data, x, y, colour = NULL,
 #'   mapped. Defaults to `NULL`, which resolves to the CPB primary blue
 #'   (`cpb_cols(6)`, `"#005faf"`) for `"ggcpb"`/`"james"` and the CPB
 #'   light blue (`cpb_cols(5)`, `"#87d2ff"`) for `"modern"`. Ignored
-#'   when `fill` is supplied.
+#'   when `fill` is supplied. For the `"james"`/`"modern"` styles it
+#'   may also be a *vector* with one colour per row of `data` (e.g.
+#'   one colour per `group`), recycled if shorter.
+#' @param group Optional column (tidy eval) assigning each `x` category
+#'   to a group, for the published vertically grouped layout: every
+#'   group gets its name as a bold heading row on the category axis
+#'   above its categories, all boxes share one value axis. A group
+#'   containing exactly one category with the same name as the group
+#'   collapses onto its heading row (e.g. an "Alle huishoudens" total).
+#'   Cannot be combined with a `fill` mapping. Typically used with
+#'   `orientation = "horizontal"`. The category rows keep the house
+#'   category ticks; the bold headings carry none and are outdented.
+#' @param group_gap Extra gap between group blocks, in category
+#'   widths; defaults to `0.7`.
 #' @param box_style How the boxes are constructed:
 #'   * `"ggcpb"` (default): the style already used in CPB
 #'     distributional figures -- capped errorbar whiskers plus an
@@ -849,6 +972,8 @@ cpb_line <- function(data, x, y, colour = NULL,
 cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                      fill = NULL,
                      fill_colour = NULL,
+                     group = NULL,
+                     group_gap = 0.7,
                      box_style = c("ggcpb", "james", "modern"),
                      box_labels = NULL,
                      label_accuracy = 0.1,
@@ -889,8 +1014,27 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   p75 <- rlang::enquo(p75)
   p95 <- rlang::enquo(p95)
   fill <- rlang::enquo(fill)
+  group <- rlang::enquo(group)
   facet <- rlang::enquo(facet)
   has_fill <- !rlang::quo_is_null(fill)
+  has_group <- !rlang::quo_is_null(group)
+
+  if (has_group && has_fill) {
+    stop("`group` organises single boxes under bold group headings and ",
+         "cannot be combined with a `fill` mapping.", call. = FALSE)
+  }
+  slots <- NULL
+  if (has_group) {
+    # vertical grouping: every group gets a bold heading row above its
+    # categories; all boxes share one value axis
+    slots <- cpb_group_heading_positions(rlang::eval_tidy(x, data),
+                                         rlang::eval_tidy(group, data),
+                                         gap = group_gap)
+    data <- as.data.frame(data)
+    data[["cpb__x"]] <- slots$pos[match(as.character(rlang::eval_tidy(x, data)),
+                                           slots$cat)]
+    x <- rlang::quo(.data[["cpb__x"]])
+  }
 
   if (has_fill && box_style != "ggcpb") {
     stop("box_style = \"", box_style, "\" draws single-colour boxes and does ",
@@ -916,11 +1060,25 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
       ymax = !!p75, fill = !!fill
     )
   } else {
-    mapping_errorbar <- ggplot2::aes(x = !!x, ymin = !!p5, ymax = !!p95)
+    # the explicit group keeps one box per category when the category
+    # axis is numeric (the grouped-slots layout)
+    mapping_errorbar <- ggplot2::aes(x = !!x, ymin = !!p5, ymax = !!p95,
+                                     group = !!x)
     mapping_box <- ggplot2::aes(
       x = !!x, ymin = !!p25, lower = !!p25, middle = !!p50, upper = !!p75,
-      ymax = !!p75
+      ymax = !!p75, group = !!x
     )
+  }
+
+  # A vector fill_colour gives every box its own colour (e.g. one
+  # colour per group in the grouped layout). It is carried as a data
+  # column and mapped with I(), because ggplot2 reorders rows by axis
+  # position and a plain parameter vector would not travel with them.
+  row_cols <- NULL
+  if (box_style != "ggcpb" && length(fill_colour) > 1) {
+    data <- as.data.frame(data)
+    data[["cpb__boxcol"]] <- rep_len(fill_colour, nrow(data))
+    row_cols <- TRUE
   }
 
   p <- ggplot2::ggplot(data)
@@ -967,19 +1125,34 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     )
     fmt <- label_number_nl(accuracy = label_accuracy)
 
+    # plain whiskers: capless (width = 0) segments p5-p25 and p75-p95;
+    # then the borderless box (colour = NA also hides the boxplot's own
+    # median line, which is drawn separately so it can extend past the
+    # box). With per-row colours the colour/fill ride along as I()
+    # (asis) aesthetics.
+    whisk_lo <- ggplot2::aes(x = !!x, ymin = !!p5, ymax = !!p25)
+    whisk_hi <- ggplot2::aes(x = !!x, ymin = !!p75, ymax = !!p95)
+    whisk_args <- list(width = 0, linewidth = sty$whisk_lw)
+    box_args2 <- list(mapping = mapping_box, stat = "identity",
+                      width = width, colour = NA, key_glyph = "rect")
+    if (is.null(row_cols)) {
+      whisk_args$colour <- sty$box_col
+      box_args2$fill <- sty$box_col
+    } else {
+      col_aes <- ggplot2::aes(colour = I(.data[["cpb__boxcol"]]))
+      whisk_lo <- utils::modifyList(whisk_lo, col_aes)
+      whisk_hi <- utils::modifyList(whisk_hi, col_aes)
+      box_args2$mapping <- utils::modifyList(
+        mapping_box, ggplot2::aes(fill = I(.data[["cpb__boxcol"]]))
+      )
+    }
+
     p <- p +
-      # plain whiskers: capless (width = 0) segments p5-p25 and p75-p95
-      ggplot2::geom_errorbar(ggplot2::aes(x = !!x, ymin = !!p5, ymax = !!p25),
-                             width = 0, linewidth = sty$whisk_lw,
-                             colour = sty$box_col, ...) +
-      ggplot2::geom_errorbar(ggplot2::aes(x = !!x, ymin = !!p75, ymax = !!p95),
-                             width = 0, linewidth = sty$whisk_lw,
-                             colour = sty$box_col, ...) +
-      # borderless box; colour = NA also hides the boxplot's own median
-      # line, which is drawn separately so it can extend past the box
-      ggplot2::geom_boxplot(mapping = mapping_box, stat = "identity",
-                            width = width, fill = sty$box_col, colour = NA,
-                            key_glyph = "rect", ...) +
+      do.call(ggplot2::geom_errorbar,
+              c(list(mapping = whisk_lo), whisk_args, list(...))) +
+      do.call(ggplot2::geom_errorbar,
+              c(list(mapping = whisk_hi), whisk_args, list(...))) +
+      do.call(ggplot2::geom_boxplot, c(box_args2, list(...))) +
       # the median: a zero-span errorbar whose cap IS the median line,
       # slightly wider than the box
       ggplot2::geom_errorbar(ggplot2::aes(x = !!x, ymin = !!p50, ymax = !!p50),
@@ -1011,14 +1184,19 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     }
   }
 
+  # the grouped layout draws its bold headings outside the panel, so
+  # clipping is turned off for that case
+  clip <- if (has_group) "off" else "on"
   if (orientation == "horizontal") {
     p <- p + if (!is.null(value_limits)) {
-      ggplot2::coord_flip(ylim = value_limits)
+      ggplot2::coord_flip(ylim = value_limits, clip = clip)
     } else {
-      ggplot2::coord_flip()
+      ggplot2::coord_flip(clip = clip)
     }
   } else if (!is.null(value_limits)) {
-    p <- p + ggplot2::coord_cartesian(ylim = value_limits)
+    p <- p + ggplot2::coord_cartesian(ylim = value_limits, clip = clip)
+  } else if (has_group) {
+    p <- p + ggplot2::coord_cartesian(clip = "off")
   }
 
   # no zero-flush expansion: boxes do not grow from the axis
@@ -1026,6 +1204,36 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                                      value_breaks = value_breaks)
   if (length(scale_args)) {
     p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
+  }
+
+  if (has_group) {
+    # only the plain category rows are axis breaks, so the house
+    # category ticks land on them (and not on the bold group-heading
+    # rows). The heading names are drawn separately as bold text.
+    cat_rows <- slots[!slots$heading, , drop = FALSE]
+    head_rows <- slots[slots$heading, , drop = FALSE]
+    p <- p + ggplot2::scale_x_continuous(
+      breaks = cat_rows$pos,
+      labels = cat_rows$label,
+      # keep the heading-only rows inside the panel range
+      limits = range(slots$pos) + c(-0.9, 0.9),
+      expand = ggplot2::expansion(add = 0)
+    )
+    # the bold headings are drawn as text on the axis side (no tick),
+    # right-aligned like the category labels; for horizontal boxes they
+    # sit at the value-axis minimum (the left edge after coord_flip),
+    # for vertical boxes just below the category labels
+    if (nrow(head_rows)) {
+      p <- p + if (orientation == "horizontal") {
+        ggplot2::annotate("text", x = head_rows$pos, y = -Inf,
+          label = head_rows$label, hjust = 1.03, vjust = 0.5,
+          fontface = "bold", size = 7 / ggplot2::.pt, family = cpb_font_family())
+      } else {
+        ggplot2::annotate("text", x = head_rows$pos, y = -Inf,
+          label = head_rows$label, hjust = 0.5, vjust = 2.6,
+          fontface = "bold", size = 7 / ggplot2::.pt, family = cpb_font_family())
+      }
+    }
   }
 
   if (has_fill) {

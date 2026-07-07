@@ -1,0 +1,148 @@
+Grouped layouts, facets & maps
+================
+
+``` r
+library(ggcpb)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+set.seed(42)
+```
+
+The basic chart types in `vignette("chart-types")` each show a single
+chart. This vignette covers the ways CPB figures arrange *more than one
+chart’s worth* of information: a two-level category axis, the vertically
+grouped distributional layout, small-multiple facets, and choropleth
+maps of the Netherlands.
+
+# Grouped categories on one shared axis
+
+Pass `group` to `cpb_col()` to organise the categories into blocks – a
+gap between the groups, the group names in bold under the category
+labels, and *one* shared value axis (no facets). Each category must
+belong to exactly one group; tune the gap with `group_gap`:
+
+``` r
+zakkans <- tibble(
+  cat   = factor(rep(c("jongen", "meisje", "laag", "hoog"), each = 2),
+                 levels = c("jongen", "meisje", "laag", "hoog")),
+  grp   = factor(rep(c("geslacht", "opleiding ouders"), each = 4),
+                 levels = c("geslacht", "opleiding ouders")),
+  serie = rep(c("als centraal examen meetelt",
+                "als centraal examen niet meetelt"), 4),
+  pct   = c(8.7, 8.7, 9.7, 5.1, 11.2, 8.0, 8.1, 6.0))
+
+cpb_col(zakkans, x = cat, y = pct, fill = serie, group = grp,
+  position = "dodge", index = c(6, 2), width = 0.75,
+  value_breaks = seq(0, 12, 2), value_limits = c(0, 12),
+  title = "VWO", ylab = "zakkans (%)")
+```
+
+<img src="layouts_files/figure-gfm/col-grouped-1.png" width="350px" />
+
+The group labels occupy the line an `xlab` would use, so the two cannot
+be combined. This is the shared-axis alternative to faceting (below):
+use it when the groups belong on one comparable scale.
+
+# Vertically grouped boxplots
+
+`cpb_box()` takes the same `group` argument for the published
+distributional layout: categories organised under bold group headings,
+all sharing one value axis. A group whose only category carries the same
+name (like an “Alle huishoudens” total) collapses onto its heading row.
+Combine with `box_style = "james"` (see `vignette("chart-types")` for
+the box styles) and a *vector* `fill_colour` – one colour per row – to
+colour each group:
+
+``` r
+ink <- tribble(
+  ~cat,                     ~grp,                   ~p50,
+  "Alle huishoudens",       "Alle huishoudens",     0.09,
+  "1-20%",                  "Inkomensgroepen",      0.02,
+  "21-40%",                 "Inkomensgroepen",      0.07,
+  "41-60%",                 "Inkomensgroepen",      0.07,
+  "61-80%",                 "Inkomensgroepen",      0.06,
+  "81-100%",                "Inkomensgroepen",      0.04,
+  "Werkenden",              "Inkomensbron",         0.09,
+  "Uitkeringsgerechtigden", "Inkomensbron",         0.04,
+  "Gepensioneerden",        "Inkomensbron",         0.05) |>
+  mutate(cat = factor(cat, levels = cat),
+         grp = factor(grp, levels = unique(grp)),
+         p25 = p50 - runif(n(), 0.02, 0.15), p75 = p50 + runif(n(), 0.02, 0.12),
+         p5  = p25 - runif(n(), 0.1, 0.6),   p95 = p75 + runif(n(), 0.1, 0.6))
+
+cpb_box(ink, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  group = grp, box_style = "james", orientation = "horizontal",
+  fill_colour = c("#193c69", rep("#87d2ff", 5), rep("#e6006e", 3)),
+  width = 0.45,
+  title = "Inkomenseffecten plannen stelsel",
+  ylab  = "verandering in 2025 (%)")
+```
+
+<img src="layouts_files/figure-gfm/box-grouped-1.png" width="350px" />
+
+The category rows keep the house ticks; the bold group headings carry
+none and are outdented. A vertically grouped figure needs a taller
+canvas – here it is drawn 4.5 in tall.
+
+# Facets
+
+Every wrapper accepts a `facet` column. Facets follow the house (legacy
+nicerplot) convention: the facet title is a bold strip *below* each
+panel, and every panel is a complete mini-figure with its own axes.
+Control the grid with `facet_ncol` and shared-versus-free axis ranges
+with `facet_scales` (`"fixed"` by default, so panels are directly
+comparable):
+
+``` r
+regios <- expand_grid(regio = factor(c("stad", "platteland", "gemengd", "totaal"),
+                                     levels = c("stad", "platteland", "gemengd", "totaal")),
+                      groep = factor(c("laag", "midden", "hoog"),
+                                     levels = c("laag", "midden", "hoog")),
+                      jaar  = 2019:2025) |>
+  mutate(waarde = round(2 + as.numeric(groep) + cumsum(rnorm(n(), 0, 0.3)), 1))
+
+cpb_col(regios, x = jaar, y = waarde, fill = groep,
+  position   = "dodge",
+  facet      = regio,
+  facet_ncol = 2,
+  index      = c(6, 2, 5),
+  title = "Ontwikkeling per regio",
+  ylab  = "mld euro")
+```
+
+<img src="layouts_files/figure-gfm/facets-1.png" width="700px" />
+
+A faceted figure usually needs a taller canvas: pass an explicit
+`height` to `save_cpb()` (here the figure is drawn 4.5 in tall on the
+full-page width). Facets versus `group`: reach for facets when each
+panel is a self-contained chart, and for `group` when the categories
+belong on one shared axis.
+
+# Maps
+
+`cpb_map()` draws a value per Dutch municipality, COROP region or
+province on bundled generalised CBS/Kadaster boundaries (2025, via
+cartomap). Regions are joined by CBS code (`"GM0014"`, `"PV20"`) or by
+name, whichever matches best; regions without a value are filled with
+the CPB missing-value grey. Borders are hairlines in the background
+colour, so regions read as tiles separated by light-blue seams:
+
+``` r
+gemeenten <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
+  mutate(index = rnorm(n(), 100, 15))
+
+cpb_map(gemeenten, region = code, value = index,
+  title    = "Voorbeeldindex per gemeente",
+  subtitle = "index (Nederland = 100)")
+#> Warning in ggplot2::geom_polygon(colour = border_colour, linewidth =
+#> border_linewidth, : Ignoring empty aesthetic: `colour`.
+```
+
+<img src="layouts_files/figure-gfm/map-1.png" width="350px" />
+
+Numeric values get the CPB sequential gradient; a discrete value column
+gets the discrete palettes. Use `level = "corop"` or
+`level = "provincie"` for the coarser boundaries. The raw boundary
+tables are available through `cpb_nl_geo(level)` for anything the
+wrapper does not cover.

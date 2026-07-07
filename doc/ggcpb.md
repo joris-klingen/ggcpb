@@ -9,7 +9,10 @@ accessors** to refine it, the **theme and scales directly** for a chart
 type the wrappers do not cover, and `save_cpb()` to export at the strict
 CPB page widths. For a catalogue of all chart types and their wrapper
 calls (`cpb_line()`, `cpb_col()`, `cpb_area()`, `cpb_box()`,
-`cpb_scatter()`, `cpb_hist()`), see `vignette("chart-types")`.
+`cpb_scatter()`, `cpb_hist()`), see `vignette("chart-types")`; for
+grouped layouts, facets and maps see `vignette("layouts")`, and for
+forecast windows, composing figures by hand and export see
+`vignette("recipes")`.
 
 ``` r
 library(ggcpb)

@@ -10,6 +10,8 @@ cpb_col(
   y,
   fill = NULL,
   fill_colour = NULL,
+  group = NULL,
+  group_gap = 0.8,
   position = c("stack", "dodge", "fill"),
   orientation = c("vertical", "horizontal"),
   palette = "qualitative",
@@ -52,6 +54,18 @@ eval); if omitted, bars are drawn in a single colour (\code{fill_colour}).}
 \item{fill_colour}{Constant bar fill used when no \code{fill} column is
 mapped. Defaults to \code{NULL}, which resolves to the CPB primary blue
 (\code{cpb_cols(6)}, \code{"#005faf"}). Ignored when \code{fill} is supplied.}
+
+\item{group}{Optional column (tidy eval) assigning each \code{x} category
+to a group, for the published two-level category axis: categories
+are laid out in blocks with a gap between groups on \emph{one shared
+value axis} (no facets), and the group names are printed in bold
+under the category labels. Each category must belong to exactly
+one group; groups and categories follow their factor-level order.
+The group labels occupy the x-axis-title line, so \code{xlab} is not
+available; vertical charts only.}
+
+\item{group_gap}{Gap between group blocks, in category widths;
+defaults to \code{0.8}.}
 
 \item{position}{One of \code{"stack"} (default), \code{"dodge"}, or \code{"fill"}.}
 

@@ -49,8 +49,12 @@ published reference figures in `references/plots/` (see the smoke test
   construction, and the designer modern variant). Still open:
   heatmap (built from the core in the walkthrough for now), fan
   charts (the dedicated fan palette of the legacy plotter has not
-  been recovered), the standardized purchasing-power plot, and
-  geographic maps. (Faceting has its own item above.)
+  been recovered), and the standardized purchasing-power plot.
+  (Faceting has its own item above; choropleth maps are done --
+  cpb_map() at gemeente/COROP/provincie level on bundled cartomap
+  boundaries -- as are grouped category axes: cpb_col(group=) for the
+  shared-axis block layout and cpb_box(group=) for the vertically
+  grouped heading-row layout.)
 - **Sequential blue palette**: reference p17_img19 (deciles) uses a
   10-step blue ramp that the package palettes do not cover yet.
 - **Minor tick marks on continuous (year) axes** are currently added
