@@ -1,8 +1,8 @@
 ---
-title: "CPB chart types"
+title: "Chart types"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{CPB chart types}
+  %\VignetteIndexEntry{Chart types}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -32,11 +32,19 @@ library(tidyr)
 set.seed(42)
 ```
 
-This vignette is a cookbook: one section per CPB chart type, each with
+This vignette is a gallery: one section per CPB chart type, each with
 the simulated data it needs and the wrapper call that draws it. All
 wrappers return a plain `ggplot` object, so anything here can be
-extended further with `+`. See `vignette("ggcpb")` for the
-composable core the wrappers build on.
+extended further with `+`.
+
+The other vignettes build on these basics:
+
+* `vignette("layouts")` -- grouped category axes, facets and maps:
+  arranging more than one chart's worth of information in a figure.
+* `vignette("recipes")` -- forecast windows, composing charts by hand,
+  and exporting at CPB page sizes.
+* `vignette("ggcpb")` -- the composable core the wrappers are built
+  on, as an end-to-end walkthrough.
 
 Two house conventions to know up front:
 
@@ -185,31 +193,9 @@ wrapper, not through a second `scale_y_continuous()`, which would
 silently replace the wrapper's percentage labels and zero-flush
 expansion.
 
-## Grouped categories on one shared axis
-
-Pass `group` to organise the categories into blocks -- a gap between
-the groups, the group names in bold under the category labels, and
-*one* shared value axis (no facets). Each category must belong to
-exactly one group; tune the gap with `group_gap`:
-
-```{r col-grouped}
-zakkans <- tibble(
-  cat   = factor(rep(c("jongen", "meisje", "laag", "hoog"), each = 2),
-                 levels = c("jongen", "meisje", "laag", "hoog")),
-  grp   = factor(rep(c("geslacht", "opleiding ouders"), each = 4),
-                 levels = c("geslacht", "opleiding ouders")),
-  serie = rep(c("als centraal examen meetelt",
-                "als centraal examen niet meetelt"), 4),
-  pct   = c(8.7, 8.7, 9.7, 5.1, 11.2, 8.0, 8.1, 6.0))
-
-cpb_col(zakkans, x = cat, y = pct, fill = serie, group = grp,
-  position = "dodge", index = c(6, 2), width = 0.75,
-  value_breaks = seq(0, 12, 2), value_limits = c(0, 12),
-  title = "VWO", ylab = "zakkans (%)")
-```
-
-The group labels occupy the line an `xlab` would use, so the two
-cannot be combined.
+For a two-level category axis -- categories grouped into blocks under
+bold group names on one shared axis -- see the `group` argument in
+`vignette("layouts")`.
 
 # Area charts
 
@@ -306,41 +292,8 @@ cpb_box(kk, x = groep,
 Both styles print value labels by default (`box_labels = FALSE` turns
 them off, `label_accuracy` controls their rounding) and draw
 single-colour boxes: a `fill` mapping is only supported by
-`"ggcpb"`.
-
-## Vertical grouping
-
-For the published distributional layout -- categories organised under
-bold group headings, all sharing one value axis -- pass `group`. A
-group whose only category carries the same name (like an
-"Alle huishoudens" total) collapses onto its heading row. Combine with
-`box_style = "james"` and a *vector* `fill_colour` (one colour per
-row) to colour each group:
-
-```{r box-grouped, fig.height = 4.5}
-ink <- tribble(
-  ~cat,                     ~grp,                   ~p50,
-  "Alle huishoudens",       "Alle huishoudens",     0.09,
-  "1-20%",                  "Inkomensgroepen",      0.02,
-  "21-40%",                 "Inkomensgroepen",      0.07,
-  "41-60%",                 "Inkomensgroepen",      0.07,
-  "61-80%",                 "Inkomensgroepen",      0.06,
-  "81-100%",                "Inkomensgroepen",      0.04,
-  "Werkenden",              "Inkomensbron",         0.09,
-  "Uitkeringsgerechtigden", "Inkomensbron",         0.04,
-  "Gepensioneerden",        "Inkomensbron",         0.05) |>
-  mutate(cat = factor(cat, levels = cat),
-         grp = factor(grp, levels = unique(grp)),
-         p25 = p50 - runif(n(), 0.02, 0.15), p75 = p50 + runif(n(), 0.02, 0.12),
-         p5  = p25 - runif(n(), 0.1, 0.6),   p95 = p75 + runif(n(), 0.1, 0.6))
-
-cpb_box(ink, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-  group = grp, box_style = "james", orientation = "horizontal",
-  fill_colour = c("#193c69", rep("#87d2ff", 5), rep("#e6006e", 3)),
-  width = 0.45,
-  title = "Inkomenseffecten plannen stelsel",
-  ylab  = "verandering in 2025 (%)")
-```
+`"ggcpb"`. For the vertically grouped distributional layout (boxes
+organised under bold group headings) see `vignette("layouts")`.
 
 # Scatter plots
 
@@ -376,186 +329,12 @@ cpb_hist(duur, x = maanden, binwidth = 2,
   xlab  = "duur (maanden)")
 ```
 
-# Facets
+# Where next
 
-Every wrapper accepts a `facet` column. Facets follow the house
-(legacy nicerplot) convention: the facet title is a bold strip *below*
-each panel, and every panel is a complete mini-figure with its own
-axes. Control the grid with `facet_ncol` and shared-versus-free axis
-ranges with `facet_scales` (`"fixed"` by default, so panels are
-directly comparable):
-
-```{r facets, fig.width = 5.96, fig.height = 4.5, out.width = "700px"}
-regios <- expand_grid(regio = factor(c("stad", "platteland", "gemengd", "totaal"),
-                                     levels = c("stad", "platteland", "gemengd", "totaal")),
-                      groep = factor(c("laag", "midden", "hoog"),
-                                     levels = c("laag", "midden", "hoog")),
-                      jaar  = 2019:2025) |>
-  mutate(waarde = round(2 + as.numeric(groep) + cumsum(rnorm(n(), 0, 0.3)), 1))
-
-cpb_col(regios, x = jaar, y = waarde, fill = groep,
-  position   = "dodge",
-  facet      = regio,
-  facet_ncol = 2,
-  index      = c(6, 2, 5),
-  title = "Ontwikkeling per regio",
-  ylab  = "mld euro")
-```
-
-A faceted figure usually needs a taller canvas: pass an explicit
-`height` to `save_cpb()` (here the figure is drawn 4.5 in tall on the
-full-page width).
-
-# Forecast windows and uncertainty bands
-
-Time-series figures mark the forecast part of the axis with a
-translucent window and a label -- pass `forecast_x` (the x value where
-the forecast starts) to `cpb_line()`, `cpb_col()` or `cpb_area()`, and
-`forecast_label` to override the default `"raming"`. `cpb_line()` can
-additionally draw an uncertainty band from `ymin`/`ymax` columns:
-
-```{r forecast}
-groeipad <- tibble(jaar = 2015:2027,
-                   groei = round(rnorm(13, 1.5, 0.8), 1)) |>
-  mutate(marge = c(rep(0, 9), 0.4, 0.9, 1.4, 1.8),
-         lo = groei - marge, hi = groei + marge)
-
-cpb_line(groeipad, x = jaar, y = groei, ymin = lo, ymax = hi,
-  forecast_x = 2023.5,
-  title = "Economische groei met onzekerheid",
-  ylab  = "%") +
-  scale_x_continuous(breaks = seq(2015, 2027, 3), minor_breaks = 2015:2027,
-                     guide = guide_axis(minor.ticks = TRUE))
-```
-
-The window is drawn *underneath* the data and the label is centred in
-it at the top of the panel; for bar charts pick a `forecast_x` between
-two bars (e.g. `2025.5`) so no bar is cut.
-
-# Maps
-
-`cpb_map()` draws a value per Dutch municipality, COROP region or
-province on bundled generalised CBS/Kadaster boundaries (2025, via
-cartomap). Regions are joined by CBS code (`"GM0014"`, `"PV20"`) or by
-name, whichever matches best; regions without a value are filled with
-the CPB missing-value grey. Borders are hairlines in the background
-colour, so regions read as tiles separated by light-blue seams:
-
-```{r map, fig.height = 3.4}
-gemeenten <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
-  mutate(index = rnorm(n(), 100, 15))
-
-cpb_map(gemeenten, region = code, value = index,
-  title    = "Voorbeeldindex per gemeente",
-  subtitle = "index (Nederland = 100)")
-```
-
-Numeric values get the CPB sequential gradient; a discrete value
-column gets the discrete palettes. The raw boundary tables are
-available through `cpb_nl_geo(level)` for anything the wrapper does
-not cover.
-
-# Composing: a line over stacked columns
-
-Because every wrapper returns a real `ggplot`, a decomposition chart
--- stacked contribution columns with the total drawn as a line -- is
-just `cpb_col()` plus a `geom_line()` layer and a colour scale for
-the extra series:
-
-```{r overlay}
-componenten <- c("kapitaal/uren", "arbeidssamenstelling", "tfp")
-dec <- expand_grid(jaar = 2000:2024,
-                   # reversed levels stack the first component nearest zero
-                   component = factor(componenten, levels = rev(componenten))) |>
-  mutate(bijdrage = round(rnorm(n(), mean = 0.4, sd = 0.9), 1))
-totaal <- dec |>
-  summarise(bijdrage = sum(bijdrage), .by = jaar)
-
-cpb_col(dec, x = jaar, y = bijdrage, fill = component,
-  position = "stack",
-  index    = c(2, 5, 6),
-  width    = 0.75,
-  title    = "Opbouw productiviteitsgroei",
-  ylab     = "%") +
-  geom_line(
-    data    = totaal,
-    mapping = aes(x = jaar, y = bijdrage, colour = "arbeidsproductiviteit"),
-    linewidth = 0.55, inherit.aes = FALSE
-  ) +
-  scale_colour_cpb_manual(index = 1) +
-  labs(colour = NULL) +
-  guides(fill   = guide_legend(reverse = TRUE, order = 1),
-         colour = guide_legend(order = 2)) +
-  theme(legend.box = "horizontal", legend.box.just = "top")
-```
-
-# Everything is a ggplot object
-
-The wrappers do not draw anything -- they *return* a `ggplot` object
-with the theme and scales already applied. That means the full
-`ggplot2` grammar stays available through `+`: extra geoms,
-annotations, scale tweaks and further `theme()` overrides all layer
-on top of what the wrapper built.
-
-A dashed reference line with an italic annotation, on top of the
-horizontal bar chart from before:
-
-```{r layer-refline}
-cpb_col(auto, x = inkomensgroep, y = share,
-  orientation  = "horizontal",
-  pct_axis     = TRUE,
-  value_limits = c(0, 70),
-  width        = 0.6,
-  title = "Aandeel huishoudens zonder auto naar inkomen",
-  ylab  = "inkomensgroep",
-  xlab  = "huishoudens zonder auto") +
-  geom_hline(yintercept = 24, linetype = "dashed",
-             colour = "#666666", linewidth = 0.4) +
-  annotate("text", x = 6.45, y = 24, label = "landelijk gemiddelde",
-           hjust = -0.05, size = 2.0, colour = "#666666",
-           family = cpb_font_family(), fontface = "italic")
-```
-
-Note that under `coord_flip()` the value axis is still the `y`
-aesthetic, so a reference line on the value axis is a `geom_hline()`.
-
-Or mark a forecast window on a line chart with a shaded region, as
-the published scenario figures do:
-
-```{r layer-raming}
-cpb_line(bbp, x = jaar, y = index,
-  title = "Bruto binnenlands product",
-  ylab  = "index (2015 = 100)") +
-  annotate("rect", xmin = 2024.5, xmax = Inf, ymin = -Inf, ymax = Inf,
-           fill = "white", alpha = 0.4) +
-  annotate("text", x = 2026, y = 104, label = "raming",
-           size = 2.2, colour = "#666666",
-           family = cpb_font_family(), fontface = "italic") +
-  geom_vline(xintercept = 2024.5, linetype = "dashed", linewidth = 0.3) +
-  scale_x_continuous(breaks = seq(2015, 2027, 3), minor_breaks = 2015:2027,
-                     guide = guide_axis(minor.ticks = TRUE))
-```
-
-Later `+ theme(...)` calls override individual elements of
-`theme_cpb()` the same way -- see the per-figure margin and legend
-tweaks in `inst/examples/smoke_test_plots.R`. The one thing *not* to
-add is a second value-axis scale: use the wrapper's `value_breaks`,
-`value_limits` and `pct_axis` arguments instead, as noted above.
-
-# Export
-
-`save_cpb()` writes the figure at the strict CPB page widths --
-`page = "half"` (2.98 in) or `page = "full"` (5.96 in) -- through the
-`ragg` device, so the bundled Rijksoverheid font renders correctly:
-
-```{r save, eval = FALSE}
-p <- cpb_line(bbp, x = jaar, y = index,
-  title = "Bruto binnenlands product",
-  ylab  = "index (2015 = 100)")
-
-save_cpb("bbp.png", p, page = "half")
-save_cpb("bbp_breed.png", p, page = "full", height = 3.2)
-```
+* Arrange more than one chart's worth of information -- grouped
+  category axes, facets and choropleth maps -- in `vignette("layouts")`.
+* Forecast windows, composing charts by hand and export at CPB page
+  sizes are in `vignette("recipes")`.
 
 For a rendered gallery of all chart types against the published
 reference figures, run `inst/examples/smoke_test_plots.R`.

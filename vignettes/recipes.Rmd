@@ -1,0 +1,192 @@
+---
+title: "Recipes: forecasts, composing & export"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Recipes: forecasts, composing & export}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+# Figures are drawn on the REAL CPB canvas (page = "half" is 2.98 in,
+# "full" is 5.96 in; text sizes in theme_cpb() are absolute points, so
+# any other canvas distorts the text-to-figure proportion) and only
+# *displayed* smaller via out.width, at a consistent 2:1 scale:
+# half-page figures at 350px, full-page figures at 700px.
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 2.98,
+  fig.height = 2.98,
+  dpi = 300,
+  out.width = "350px",
+  dev = if (requireNamespace("ragg", quietly = TRUE)) "ragg_png" else "png"
+)
+```
+
+```{r setup, message = FALSE}
+library(ggcpb)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+set.seed(42)
+```
+
+The chart types in `vignette("chart-types")` are the building blocks;
+this vignette covers the cross-cutting techniques that apply across
+them -- marking a forecast window, composing a figure by hand because
+every wrapper returns a real `ggplot`, and exporting at the CPB page
+sizes.
+
+Two data sets used below:
+
+```{r data}
+bbp <- tibble(
+  jaar  = 2015:2027,
+  index = 100 + cumsum(rnorm(13, mean = 1.5, sd = 1.2))
+)
+
+groepen <- c("tot 120% wml", "120% wml - mod.", "1 - 1,5x mod.",
+             "1,5 - 2x mod.", "2 - 3x mod.", "boven 3x mod.")
+auto <- tibble(
+  inkomensgroep = factor(groepen, levels = rev(groepen)),
+  share         = c(62, 35, 26, 19, 14, 13)
+)
+```
+
+# Forecast windows and uncertainty bands
+
+Time-series figures mark the forecast part of the axis with a
+translucent window and a label -- pass `forecast_x` (the x value where
+the forecast starts) to `cpb_line()`, `cpb_col()` or `cpb_area()`, and
+`forecast_label` to override the default `"raming"`. `cpb_line()` can
+additionally draw an uncertainty band from `ymin`/`ymax` columns:
+
+```{r forecast}
+groeipad <- tibble(jaar = 2015:2027,
+                   groei = round(rnorm(13, 1.5, 0.8), 1)) |>
+  mutate(marge = c(rep(0, 9), 0.4, 0.9, 1.4, 1.8),
+         lo = groei - marge, hi = groei + marge)
+
+cpb_line(groeipad, x = jaar, y = groei, ymin = lo, ymax = hi,
+  forecast_x = 2023.5,
+  title = "Economische groei met onzekerheid",
+  ylab  = "%") +
+  scale_x_continuous(breaks = seq(2015, 2027, 3), minor_breaks = 2015:2027,
+                     guide = guide_axis(minor.ticks = TRUE))
+```
+
+The window is drawn *underneath* the data and the label is centred in
+it at the top of the panel; for bar charts pick a `forecast_x` between
+two bars (e.g. `2025.5`) so no bar is cut.
+
+# Composing: a line over stacked columns
+
+Because every wrapper returns a real `ggplot`, a decomposition chart
+-- stacked contribution columns with the total drawn as a line -- is
+just `cpb_col()` plus a `geom_line()` layer and a colour scale for
+the extra series:
+
+```{r overlay}
+componenten <- c("kapitaal/uren", "arbeidssamenstelling", "tfp")
+dec <- expand_grid(jaar = 2000:2024,
+                   # reversed levels stack the first component nearest zero
+                   component = factor(componenten, levels = rev(componenten))) |>
+  mutate(bijdrage = round(rnorm(n(), mean = 0.4, sd = 0.9), 1))
+totaal <- dec |>
+  summarise(bijdrage = sum(bijdrage), .by = jaar)
+
+cpb_col(dec, x = jaar, y = bijdrage, fill = component,
+  position = "stack",
+  index    = c(2, 5, 6),
+  width    = 0.75,
+  title    = "Opbouw productiviteitsgroei",
+  ylab     = "%") +
+  geom_line(
+    data    = totaal,
+    mapping = aes(x = jaar, y = bijdrage, colour = "arbeidsproductiviteit"),
+    linewidth = 0.55, inherit.aes = FALSE
+  ) +
+  scale_colour_cpb_manual(index = 1) +
+  labs(colour = NULL) +
+  guides(fill   = guide_legend(reverse = TRUE, order = 1),
+         colour = guide_legend(order = 2)) +
+  theme(legend.box = "horizontal", legend.box.just = "top")
+```
+
+# Everything is a ggplot object
+
+The wrappers do not draw anything -- they *return* a `ggplot` object
+with the theme and scales already applied. That means the full
+`ggplot2` grammar stays available through `+`: extra geoms,
+annotations, scale tweaks and further `theme()` overrides all layer
+on top of what the wrapper built.
+
+A dashed reference line with an italic annotation, on top of a
+horizontal bar chart:
+
+```{r layer-refline}
+cpb_col(auto, x = inkomensgroep, y = share,
+  orientation  = "horizontal",
+  pct_axis     = TRUE,
+  value_limits = c(0, 70),
+  width        = 0.6,
+  title = "Aandeel huishoudens zonder auto naar inkomen",
+  ylab  = "inkomensgroep",
+  xlab  = "huishoudens zonder auto") +
+  geom_hline(yintercept = 24, linetype = "dashed",
+             colour = "#666666", linewidth = 0.4) +
+  annotate("text", x = 6.45, y = 24, label = "landelijk gemiddelde",
+           hjust = -0.05, size = 2.0, colour = "#666666",
+           family = cpb_font_family(), fontface = "italic")
+```
+
+Note that under `coord_flip()` the value axis is still the `y`
+aesthetic, so a reference line on the value axis is a `geom_hline()`.
+
+Or mark a forecast window on a line chart with a shaded region drawn
+by hand, as an alternative to the `forecast_x` argument above:
+
+```{r layer-raming}
+cpb_line(bbp, x = jaar, y = index,
+  title = "Bruto binnenlands product",
+  ylab  = "index (2015 = 100)") +
+  annotate("rect", xmin = 2024.5, xmax = Inf, ymin = -Inf, ymax = Inf,
+           fill = "white", alpha = 0.4) +
+  annotate("text", x = 2026, y = 104, label = "raming",
+           size = 2.2, colour = "#666666",
+           family = cpb_font_family(), fontface = "italic") +
+  geom_vline(xintercept = 2024.5, linetype = "dashed", linewidth = 0.3) +
+  scale_x_continuous(breaks = seq(2015, 2027, 3), minor_breaks = 2015:2027,
+                     guide = guide_axis(minor.ticks = TRUE))
+```
+
+Later `+ theme(...)` calls override individual elements of
+`theme_cpb()` the same way -- see the per-figure margin and legend
+tweaks in `inst/examples/smoke_test_plots.R`. The one thing *not* to
+add is a second value-axis scale: use the wrapper's `value_breaks`,
+`value_limits` and `pct_axis` arguments instead.
+
+For building figures entirely from the composable core (no wrappers at
+all), see `vignette("ggcpb")`.
+
+# Export
+
+`save_cpb()` writes the figure at the strict CPB page widths --
+`page = "half"` (2.98 in) or `page = "full"` (5.96 in) -- through the
+`ragg` device, so the bundled Rijksoverheid font renders correctly:
+
+```{r save, eval = FALSE}
+p <- cpb_line(bbp, x = jaar, y = index,
+  title = "Bruto binnenlands product",
+  ylab  = "index (2015 = 100)")
+
+save_cpb("bbp.png", p, page = "half")
+save_cpb("bbp_breed.png", p, page = "full", height = 3.2)
+```
+
+Width is strict -- it is fixed by `page`, not free-form -- so a stray
+`width` off the two CPB values errors rather than silently producing
+an off-spec figure. Height defaults to the report height; pass
+`height` for taller figures (grouped boxes, facets) or
+`preset = "presentation"`.

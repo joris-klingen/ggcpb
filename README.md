@@ -15,13 +15,21 @@ that you can keep extending with `+`.
 ## Documentation
 
 - **[Chart types](doc/chart-types.md)** --
-  `vignette("chart-types")`: a cookbook with one worked example per
-  CPB chart type (lines, stacked/dodged columns, horizontal bars,
-  areas, quantile boxplots, overlays) and the house conventions they
-  follow.
-- **[Walkthrough](doc/ggcpb.md)** -- `vignette("ggcpb")`: the
-  composable core -- theme, scales, palettes, formatters, fonts and
-  export -- for building figures from raw `ggplot2`.
+  `vignette("chart-types")`: a gallery with one worked example per CPB
+  chart type (lines, stacked/dodged columns, horizontal bars, areas,
+  quantile boxplots and box styles, scatter, histograms) and the house
+  conventions they follow.
+- **[Grouped layouts, facets & maps](doc/layouts.md)** --
+  `vignette("layouts")`: arranging more than one chart's worth of
+  information -- a two-level category axis, vertically grouped
+  boxplots, small-multiple facets, and choropleth maps of the
+  Netherlands.
+- **[Recipes](doc/recipes.md)** -- `vignette("recipes")`: cross-cutting
+  techniques -- forecast windows and uncertainty bands, composing a
+  figure by hand, and exporting at the CPB page sizes.
+- **[Walkthrough](doc/ggcpb.md)** -- `vignette("ggcpb")`: one analysis
+  from raw microdata to exported figure, using the composable core --
+  theme, scales, palettes, formatters, fonts and export.
 
 The links point to rendered versions (with figures) in `doc/`,
 regenerated from `vignettes/` with `Rscript tools/render_vignettes.R`.
