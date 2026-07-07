@@ -877,9 +877,8 @@ cpb_line <- function(data, x, y, colour = NULL,
 #'   containing exactly one category with the same name as the group
 #'   collapses onto its heading row (e.g. an "Alle huishoudens" total).
 #'   Cannot be combined with a `fill` mapping. Typically used with
-#'   `orientation = "horizontal"`. Note: the headings are right-aligned
-#'   with the other category labels (a deviation from some published
-#'   figures, which set them flush left).
+#'   `orientation = "horizontal"`. The category rows keep the house
+#'   category ticks; the bold headings carry none and are outdented.
 #' @param group_gap Extra gap between group blocks, in category
 #'   widths; defaults to `0.7`.
 #' @param box_style How the boxes are constructed:
@@ -1185,14 +1184,19 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     }
   }
 
+  # the grouped layout draws its bold headings outside the panel, so
+  # clipping is turned off for that case
+  clip <- if (has_group) "off" else "on"
   if (orientation == "horizontal") {
     p <- p + if (!is.null(value_limits)) {
-      ggplot2::coord_flip(ylim = value_limits)
+      ggplot2::coord_flip(ylim = value_limits, clip = clip)
     } else {
-      ggplot2::coord_flip()
+      ggplot2::coord_flip(clip = clip)
     }
   } else if (!is.null(value_limits)) {
-    p <- p + ggplot2::coord_cartesian(ylim = value_limits)
+    p <- p + ggplot2::coord_cartesian(ylim = value_limits, clip = clip)
+  } else if (has_group) {
+    p <- p + ggplot2::coord_cartesian(clip = "off")
   }
 
   # no zero-flush expansion: boxes do not grow from the axis
@@ -1203,16 +1207,33 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   }
 
   if (has_group) {
-    # heading rows render their group name in bold via plotmath labels
-    # on the category axis; category rows keep plain labels
-    slot_labels <- lapply(seq_len(nrow(slots)), function(i) {
-      if (slots$heading[i]) bquote(bold(.(slots$label[i]))) else slots$label[i]
-    })
+    # only the plain category rows are axis breaks, so the house
+    # category ticks land on them (and not on the bold group-heading
+    # rows). The heading names are drawn separately as bold text.
+    cat_rows <- slots[!slots$heading, , drop = FALSE]
+    head_rows <- slots[slots$heading, , drop = FALSE]
     p <- p + ggplot2::scale_x_continuous(
-      breaks = slots$pos,
-      labels = as.expression(slot_labels),
-      expand = ggplot2::expansion(add = 0.6)
+      breaks = cat_rows$pos,
+      labels = cat_rows$label,
+      # keep the heading-only rows inside the panel range
+      limits = range(slots$pos) + c(-0.9, 0.9),
+      expand = ggplot2::expansion(add = 0)
     )
+    # the bold headings are drawn as text on the axis side (no tick),
+    # right-aligned like the category labels; for horizontal boxes they
+    # sit at the value-axis minimum (the left edge after coord_flip),
+    # for vertical boxes just below the category labels
+    if (nrow(head_rows)) {
+      p <- p + if (orientation == "horizontal") {
+        ggplot2::annotate("text", x = head_rows$pos, y = -Inf,
+          label = head_rows$label, hjust = 1.03, vjust = 0.5,
+          fontface = "bold", size = 7 / ggplot2::.pt, family = cpb_font_family())
+      } else {
+        ggplot2::annotate("text", x = head_rows$pos, y = -Inf,
+          label = head_rows$label, hjust = 0.5, vjust = 2.6,
+          fontface = "bold", size = 7 / ggplot2::.pt, family = cpb_font_family())
+      }
+    }
   }
 
   if (has_fill) {
@@ -1239,22 +1260,9 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   }
   subtitle <- cpb_reserve_subtitle(title, subtitle)
 
-  p <- p +
+  p +
     ggplot2::labs(title = title, subtitle = subtitle, x = xlab, y = lab_y, fill = filllab) +
     cpb_wrapper_theme()
-
-  if (has_group) {
-    # the grouped layout labels its rows (categories and bold group
-    # headings) itself, so the per-row category ticks are noise; drop
-    # them but keep the category axis line. The category axis is the x
-    # aesthetic, drawn on the y side under coord_flip().
-    tick_side <- if (orientation == "horizontal") "y" else "x"
-    p <- p + do.call(ggplot2::theme, stats::setNames(
-      list(ggplot2::element_blank()), paste0("axis.ticks.", tick_side)
-    ))
-  }
-
-  p
 }
 
 # scatter ----

@@ -557,24 +557,27 @@ test_that("cpb_box group builds heading rows on the category axis", {
   p <- cpb_box(df, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                group = grp, orientation = "horizontal", title = "t")
   sc <- p$scales$get_scales("x")
-  # 6 slots: collapsed total, heading + 2 items, heading + 1 item;
-  # positions descend so the first group reads from the top
-  expect_length(sc$breaks, 6)
+  # only the 3 plain category rows are axis breaks (so the house ticks
+  # land on them, not on the bold headings); positions descend so the
+  # first group reads from the top under coord_flip()
+  expect_equal(sc$labels, c("1-20%", "21-40%", "Werkenden"))
   expect_true(all(diff(sc$breaks) < 0))
-  # the per-row category ticks are dropped (headings label the rows)
-  # but the category axis line stays
-  expect_s3_class(p$theme$axis.ticks.y, "element_blank")
-  # heading labels are bold plotmath expressions, items plain strings
-  labs <- as.list(sc$labels)
-  expect_true(is.language(labs[[1]]))  # collapsed "Alle huishoudens" total
-  expect_true(is.language(labs[[2]]))  # "Inkomensgroepen"
-  expect_false(is.language(labs[[3]])) # "1-20%"
-  # the collapsed total has its box on the heading row: the largest
-  # break position carries data
+  # the category ticks are kept on the category axis (y under flip)
+  expect_s3_class(p$theme$axis.ticks.y, "element_line")
+  # the 3 headings (2 group headings + the collapsed "Alle huishoudens"
+  # total) are drawn as a bold text annotation, not as axis labels
+  txt <- p$layers[[length(p$layers)]]
+  expect_s3_class(txt$geom, "GeomText")
+  expect_equal(sort(txt$aes_params$label),
+               sort(c("Alle huishoudens", "Inkomensgroepen", "Inkomensbron")))
+  expect_equal(txt$aes_params$fontface, "bold")
+  # the collapsed total still carries its box, above the first break
   built <- ggplot2::ggplot_build(p)
   box_data <- built$data[[which(vapply(p$layers, function(l)
     inherits(l$geom, "GeomBoxplot"), logical(1)))]]
-  expect_true(max(sc$breaks) %in% box_data$x)
+  expect_true(max(box_data$x) > max(sc$breaks))
+  # clip is off so the outdented headings can render outside the panel
+  expect_equal(p$coordinates$clip, "off")
 })
 
 test_that("cpb_box group + fill mapping is rejected", {
