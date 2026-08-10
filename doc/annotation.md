@@ -9,7 +9,7 @@ library(tidyr)
 set.seed(42)
 ```
 
-The chart types in `vignette("chart-types")` are the building blocks;
+The chart types in [`vignette("chart-types")`](chart-types.md) are the building blocks;
 this vignette covers annotating them – the built-in forecast window and
 uncertainty band, reference lines and text notes, shaded regions, and
 composing an extra series onto a chart. All of it works because every
@@ -153,6 +153,6 @@ second value-axis scale: use the wrapper’s `value_breaks`,
 `value_limits` and `pct_axis` arguments instead.
 
 For building figures entirely from the composable core (no wrappers at
-all), see `vignette("ggcpb")`.
+all), see [`vignette("ggcpb")`](ggcpb.md).
 
-Export at the CPB page sizes is covered in `vignette("ggcpb")`.
+Export at the CPB page sizes is covered in [`vignette("ggcpb")`](ggcpb.md).

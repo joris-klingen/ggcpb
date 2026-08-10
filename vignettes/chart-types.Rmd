@@ -38,11 +38,12 @@ nothing more. All wrappers return a plain `ggplot` object, so
 anything here can be extended further with `+`.
 
 Variants and extras live in the other vignettes:
-`vignette("layout")` for facets and grouped category axes,
-`vignette("boxplots")` for the box-plot styles and combinations,
-`vignette("annotation")` for reference lines and forecast windows,
-`vignette("maps")` for choropleths, and `vignette("ggcpb")` for the
-basic setup and export.
+[`vignette("layout")`](layout.html) for facets and grouped category
+axes, [`vignette("boxplots")`](boxplots.html) for the box-plot styles
+and combinations, [`vignette("annotation")`](annotation.html) for
+reference lines and forecast windows,
+[`vignette("maps")`](maps.html) for choropleths, and
+[`vignette("ggcpb")`](ggcpb.html) for the basic setup and export.
 
 Two house conventions to know up front:
 

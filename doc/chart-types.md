@@ -14,11 +14,11 @@ simulated data it needs and the wrapper call that draws it, nothing
 more. All wrappers return a plain `ggplot` object, so anything here can
 be extended further with `+`.
 
-Variants and extras live in the other vignettes: `vignette("layout")`
-for facets and grouped category axes, `vignette("boxplots")` for the
-box-plot styles and combinations, `vignette("annotation")` for reference
-lines and forecast windows, `vignette("maps")` for choropleths, and
-`vignette("ggcpb")` for the basic setup and export.
+Variants and extras live in the other vignettes: [`vignette("layout")`](layout.md)
+for facets and grouped category axes, [`vignette("boxplots")`](boxplots.md) for the
+box-plot styles and combinations, [`vignette("annotation")`](annotation.md) for reference
+lines and forecast windows, [`vignette("maps")`](maps.md) for choropleths, and
+[`vignette("ggcpb")`](ggcpb.md) for the basic setup and export.
 
 Two house conventions to know up front:
 

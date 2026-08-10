@@ -34,11 +34,13 @@ has two layers, and this vignette shows the basic idea of both:
   scales, palettes, formatters, fonts): the pieces the wrappers are
   built from, for any figure without a wrapper.
 
-The other vignettes go deeper: `vignette("chart-types")` for the
-default chart per type, `vignette("layout")` for facets and grouped
-axes, `vignette("annotation")` for reference lines and forecast
-windows, `vignette("boxplots")` for the box-plot styles, and
-`vignette("maps")` for choropleths of the Netherlands.
+The other vignettes go deeper:
+[`vignette("chart-types")`](chart-types.html) for the default chart
+per type, [`vignette("layout")`](layout.html) for facets and grouped
+axes, [`vignette("annotation")`](annotation.html) for reference lines
+and forecast windows, [`vignette("boxplots")`](boxplots.html) for the
+box-plot styles, and [`vignette("maps")`](maps.html) for choropleths
+of the Netherlands.
 
 ```{r setup, message = FALSE}
 library(ggcpb)
@@ -93,7 +95,7 @@ p +
 
 (Under `coord_flip()` the value axis is still the `y` aesthetic, so
 the reference line is a `geom_hline()`. More annotation patterns in
-`vignette("annotation")`.)
+[`vignette("annotation")`](annotation.html).)
 
 # Without a wrapper: the theme and scales directly
 

@@ -12,7 +12,7 @@ set.seed(42)
 `cpb_box()` draws the CPB distributional figure from **precomputed
 quantile columns** (p5/p25/p50/p75/p95; both layers use
 `stat = "identity"`, so aggregate your microdata first). The default
-style is shown in `vignette("chart-types")`; this vignette covers the
+style is shown in [`vignette("chart-types")`](chart-types.md); this vignette covers the
 box constructions and combinations.
 
 One data set used throughout – purchasing power per standard income
@@ -118,7 +118,7 @@ cpb_box(kk2, x = groep,
 # Grouped, with a fill per year
 
 The `fill` mapping combines with the vertically grouped layout of
-`vignette("layout")`: bold group headings on the category axis, and
+[`vignette("layout")`](layout.md): bold group headings on the category axis, and
 within every category a dodged pair of years. `reverse_legend = TRUE`
 puts the first year at the bottom of the legend, matching the dodge
 order under `coord_flip()`:
@@ -146,7 +146,7 @@ cpb_box(kk3, x = groep,
 
 For the single-colour grouped layout (one box per category, one colour
 per group, as in the published inkomenseffecten figures), see
-`vignette("layout")`.
+[`vignette("layout")`](layout.md).
 
 # Value axis on top
 

@@ -9,7 +9,7 @@ library(tidyr)
 set.seed(42)
 ```
 
-The chart types in `vignette("chart-types")` each show a single chart.
+The chart types in [`vignette("chart-types")`](chart-types.md) each show a single chart.
 This vignette covers the ways CPB figures arrange *more than one chart’s
 worth* of information on the page: small-multiple facets, a two-level
 category axis on one shared value axis, and the vertically grouped
@@ -84,7 +84,7 @@ belong on one shared scale.
 distributional layout: categories organised under bold group headings,
 all sharing one value axis. A group whose only category carries the same
 name (like a “Totaal” row) collapses onto its heading row. Combine with
-`box_style = "james"` (see `vignette("boxplots")` for the styles) and a
+`box_style = "james"` (see [`vignette("boxplots")`](boxplots.md) for the styles) and a
 *vector* `fill_colour` – one colour per row – to colour each group:
 
 ``` r
@@ -116,4 +116,4 @@ The category rows keep the house ticks; the bold group headings carry
 none and are outdented. A vertically grouped figure needs a taller
 canvas – here it is drawn 4.5 in tall. For grouped boxes *with a fill
 mapping* (e.g. two dodged years per category), see
-`vignette("boxplots")`.
+[`vignette("boxplots")`](boxplots.md).

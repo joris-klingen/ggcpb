@@ -12,10 +12,10 @@ two layers, and this vignette shows the basic idea of both:
   palettes, formatters, fonts): the pieces the wrappers are built from,
   for any figure without a wrapper.
 
-The other vignettes go deeper: `vignette("chart-types")` for the default
-chart per type, `vignette("layout")` for facets and grouped axes,
-`vignette("annotation")` for reference lines and forecast windows,
-`vignette("boxplots")` for the box-plot styles, and `vignette("maps")`
+The other vignettes go deeper: [`vignette("chart-types")`](chart-types.md) for the default
+chart per type, [`vignette("layout")`](layout.md) for facets and grouped axes,
+[`vignette("annotation")`](annotation.md) for reference lines and forecast windows,
+[`vignette("boxplots")`](boxplots.md) for the box-plot styles, and [`vignette("maps")`](maps.md)
 for choropleths of the Netherlands.
 
 ``` r
@@ -75,7 +75,7 @@ p +
 
 (Under `coord_flip()` the value axis is still the `y` aesthetic, so the
 reference line is a `geom_hline()`. More annotation patterns in
-`vignette("annotation")`.)
+[`vignette("annotation")`](annotation.md).)
 
 # Without a wrapper: the theme and scales directly
 

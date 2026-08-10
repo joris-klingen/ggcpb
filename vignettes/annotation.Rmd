@@ -32,12 +32,12 @@ library(tidyr)
 set.seed(42)
 ```
 
-The chart types in `vignette("chart-types")` are the building blocks;
-this vignette covers annotating them -- the built-in forecast window
-and uncertainty band, reference lines and text notes, shaded regions,
-and composing an extra series onto a chart. All of it works because
-every wrapper returns a real `ggplot`: annotations are ordinary `+`
-layers.
+The chart types in [`vignette("chart-types")`](chart-types.html) are
+the building blocks; this vignette covers annotating them -- the
+built-in forecast window and uncertainty band, reference lines and
+text notes, shaded regions, and composing an extra series onto a
+chart. All of it works because every wrapper returns a real `ggplot`:
+annotations are ordinary `+` layers.
 
 Two data sets used below:
 
@@ -169,6 +169,7 @@ add is a second value-axis scale: use the wrapper's `value_breaks`,
 `value_limits` and `pct_axis` arguments instead.
 
 For building figures entirely from the composable core (no wrappers at
-all), see `vignette("ggcpb")`.
+all), see [`vignette("ggcpb")`](ggcpb.html).
 
-Export at the CPB page sizes is covered in `vignette("ggcpb")`.
+Export at the CPB page sizes is covered in
+[`vignette("ggcpb")`](ggcpb.html).
