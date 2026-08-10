@@ -33,6 +33,15 @@ for (rmd in list.files(file.path(pkg_root, "vignettes"),
     quiet         = TRUE
   )
   unlink(local_rmd)
+
+  # Cross-vignette links are written as sibling .html in the .Rmd, which
+  # is what the built (html_vignette) package needs. In doc/ the siblings
+  # are .md, so repoint them there -- otherwise the link 404s on GitHub.
+  md <- sub("\\.Rmd$", ".md", local_rmd)
+  if (file.exists(md)) {
+    txt <- readLines(md, warn = FALSE)
+    writeLines(gsub("(\\]\\([^):]*)\\.html\\)", "\\1.md)", txt), md)
+  }
 }
 
 message("rendered vignettes written to ", out_dir)

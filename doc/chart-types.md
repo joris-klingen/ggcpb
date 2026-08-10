@@ -237,7 +237,8 @@ cpb_box(kk, x = groep,
 
 Boxes without a `fill` mapping are drawn in the CPB primary blue. The
 other box constructions – the legacy and designer styles, fill-dodged
-boxes per year, and grouped layouts – are in `vignette("boxplots")`.
+boxes per year, and grouped layouts – are in
+[`vignette("boxplots")`](boxplots.md).
 
 # Scatter plots
 
