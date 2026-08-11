@@ -12,11 +12,13 @@ cpb_box(
   p50,
   p75,
   p95,
+  mean = NULL,
   fill = NULL,
   fill_colour = NULL,
   group = NULL,
   group_gap = 0.7,
-  box_style = c("ggcpb", "james", "modern"),
+  box_style = c("ggcpb", "james", "modern", "dot"),
+  dot_labels = NULL,
   box_labels = NULL,
   label_accuracy = 0.1,
   width = 0.5,
@@ -59,6 +61,11 @@ category each box belongs to.}
 \item{p5, p25, p50, p75, p95}{Columns holding the precomputed 5th,
 25th, 50th (median), 75th and 95th percentiles (tidy eval).}
 
+\item{mean}{Optional column holding the mean of each distribution
+(tidy eval), drawn as a diamond marker. Only used by
+\code{box_style = "dot"}; ignored by the box-drawing styles, which have
+no published mean marker.}
+
 \item{fill}{Optional column mapped to the fill aesthetic (tidy
 eval), e.g. for grouped boxes side by side. Only supported by
 \code{box_style = "ggcpb"}.}
@@ -99,11 +106,23 @@ above it.
 and whiskers, a thick dark-blue median line, the median value
 in bold above it and the p25/p75 values printed below the box
 ends.
+\item \code{"dot"}: the marker variant used for survey distributions --
+no box at all. A dashed connector spans p5-p95 with a light dot
+at each end, a capped bar spans the p25-p75 range, a filled dot
+marks the median and (when \code{mean} is supplied) a diamond marks
+the mean. Unlike the other styles it draws a legend naming each
+marker, so the reader can tell the five statistics apart.
 }
 
-\code{"james"} and \code{"modern"} follow the house convention of
+\code{"james"}, \code{"modern"} and \code{"dot"} follow the house convention of
 horizontal boxes; combine them with
 \code{orientation = "horizontal"}.}
+
+\item{dot_labels}{Legend labels for \code{box_style = "dot"}, as a named
+character vector with elements \code{p5}, \code{iqr}, \code{p50}, \code{p95} and
+\code{mean}. \code{NULL} (default) uses the published Dutch labels. Supply
+only the elements you want to change; the rest keep their
+defaults. Ignored by the other styles.}
 
 \item{box_labels}{Whether to print the value labels of the
 \code{"james"}/\code{"modern"} styles. \code{NULL} (default) resolves by

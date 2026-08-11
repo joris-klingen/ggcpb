@@ -199,6 +199,28 @@ cpb_forecast_label <- function(forecast_x, xvals, label) {
 #' @param position One of `"stack"` (default), `"dodge"`, or `"fill"`.
 #' @param orientation `"vertical"` (default) or `"horizontal"` (adds
 #'   [ggplot2::coord_flip()] and is forwarded to [theme_cpb()]).
+#' @param sec_y Optional column (tidy eval) holding a series to draw as
+#'   a line against a **secondary value axis** on the right, the house
+#'   combination chart (e.g. a stacked wealth total in billions with
+#'   the tax raised on it, an order of magnitude smaller, alongside).
+#'   One value per `x`. Only supported for vertical, ungrouped columns.
+#' @param sec_limits Length-2 numeric vector giving the range the
+#'   secondary axis spans. `NULL` (default) uses zero to the maximum of
+#'   `sec_y`. The line is placed by mapping this range linearly onto
+#'   the primary range, so the two axes always start together.
+#' @param sec_label Legend label for the line. `NULL` (default) uses
+#'   the `sec_y` column name. House style names the axis in the label,
+#'   e.g. `"erfbelasting (rechteras)"`.
+#' @param sec_ylab Unit caption for the secondary axis, drawn
+#'   right-aligned above the panel to mirror the left-hand unit that
+#'   `ylab` puts in the subtitle. `NULL` (default) draws none.
+#' @param sec_colour Line colour; defaults to `NULL`, which resolves to
+#'   the CPB pink (`cpb_cols(2)`, `"#e6006e"`) that sets the line apart
+#'   from the blue-led column fills.
+#' @param sec_linewidth Line width for `sec_y`; defaults to `0.55`, as
+#'   in [cpb_line()].
+#' @param sec_points If `TRUE`, add a marker at every point of the
+#'   `sec_y` line.
 #' @param value_limits Optional length-2 numeric vector giving the
 #'   value-axis range (the `y` axis, or the flipped axis when
 #'   `orientation = "horizontal"`). Applied as a coordinate-system zoom
@@ -283,6 +305,13 @@ cpb_col <- function(data, x, y, fill = NULL,
                      group_gap = 0.8,
                      position = c("stack", "dodge", "fill"),
                      orientation = c("vertical", "horizontal"),
+                     sec_y = NULL,
+                     sec_limits = NULL,
+                     sec_label = NULL,
+                     sec_ylab = NULL,
+                     sec_colour = NULL,
+                     sec_linewidth = 0.55,
+                     sec_points = FALSE,
                      palette = "qualitative",
                      index = NULL,
                      pct_axis = FALSE,
@@ -318,8 +347,28 @@ cpb_col <- function(data, x, y, fill = NULL,
   fill <- rlang::enquo(fill)
   group <- rlang::enquo(group)
   facet <- rlang::enquo(facet)
+  sec_y <- rlang::enquo(sec_y)
   has_fill <- !rlang::quo_is_null(fill)
   has_group <- !rlang::quo_is_null(group)
+  has_sec <- !rlang::quo_is_null(sec_y)
+
+  if (has_sec) {
+    if (orientation == "horizontal") {
+      stop("`sec_y` is only supported for vertical column charts: the ",
+           "secondary axis is drawn on the right of the value axis.",
+           call. = FALSE)
+    }
+    if (has_group) {
+      stop("`sec_y` and `group` cannot be combined: the bold group headings ",
+           "and the secondary axis both claim the space beside the panel.",
+           call. = FALSE)
+    }
+    if (position == "fill") {
+      stop("`sec_y` cannot be combined with position = \"fill\": a ",
+           "proportional value axis has no scale for a second series to ",
+           "share.", call. = FALSE)
+    }
+  }
 
   if (has_group) {
     # a two-level category axis: categories in gapped group blocks on
@@ -363,6 +412,75 @@ cpb_col <- function(data, x, y, fill = NULL,
     ggplot2::geom_col(position = position, fill = single_fill, ...)
   }
 
+  # The secondary series is drawn on the primary scale and read off a
+  # right-hand axis: both are one affine map, built once here so the
+  # line's position and the axis labels cannot drift apart.
+  sec_map <- NULL
+  if (has_sec) {
+    sec_vals <- rlang::eval_tidy(sec_y, data)
+    if (!is.numeric(sec_vals)) {
+      stop("`sec_y` must be a numeric column.", call. = FALSE)
+    }
+    # the primary range the columns occupy: stacked bars reach their
+    # per-category total, dodged bars only their own height
+    prim_vals <- rlang::eval_tidy(y, data)
+    prim_max <- if (position == "stack") {
+      max(c(0, tapply(prim_vals, as.character(rlang::eval_tidy(x, data)),
+                      function(v) sum(v[v > 0], na.rm = TRUE))), na.rm = TRUE)
+    } else {
+      max(c(0, prim_vals), na.rm = TRUE)
+    }
+    prim_min <- min(c(0, prim_vals), na.rm = TRUE)
+    if (!is.null(value_limits)) {
+      prim_min <- value_limits[[1]]
+      prim_max <- value_limits[[2]]
+    }
+    if (is.null(sec_limits)) {
+      sec_limits <- c(min(c(0, sec_vals), na.rm = TRUE),
+                      max(c(0, sec_vals), na.rm = TRUE))
+    }
+    if (length(sec_limits) != 2 || !is.numeric(sec_limits) ||
+        sec_limits[[2]] == sec_limits[[1]]) {
+      stop("`sec_limits` must be a length-2 numeric vector spanning a ",
+           "non-zero range.", call. = FALSE)
+    }
+    if (prim_max == prim_min) {
+      stop("the primary value axis has no range for `sec_y` to map onto.",
+           call. = FALSE)
+    }
+    sec_map <- list(
+      prim_min = prim_min, prim_max = prim_max,
+      sec_min = sec_limits[[1]], sec_max = sec_limits[[2]]
+    )
+    # secondary value -> primary position, and its inverse for the axis
+    to_primary <- function(v) {
+      (v - sec_map$sec_min) / (sec_map$sec_max - sec_map$sec_min) *
+        (sec_map$prim_max - sec_map$prim_min) + sec_map$prim_min
+    }
+    data <- as.data.frame(data)
+    data[["cpb__sec"]] <- to_primary(sec_vals)
+    sec_lab <- if (is.null(sec_label)) rlang::as_label(sec_y) else sec_label
+    sec_col <- if (is.null(sec_colour)) unname(cpb_cols(2)) else sec_colour
+
+    # the line carries its own one-level colour scale, so it gets a
+    # legend key of its own next to the fill keys
+    p <- p +
+      ggplot2::geom_line(
+        ggplot2::aes(x = !!x, y = .data[["cpb__sec"]], colour = sec_lab,
+                     group = 1),
+        linewidth = sec_linewidth
+      )
+    if (isTRUE(sec_points)) {
+      p <- p + ggplot2::geom_point(
+        ggplot2::aes(x = !!x, y = .data[["cpb__sec"]], colour = sec_lab),
+        size = 1.1
+      )
+    }
+    sec_values <- sec_col
+    names(sec_values) <- sec_lab
+    p <- p + ggplot2::scale_colour_manual(values = sec_values, name = NULL)
+  }
+
   # The zero line sits on the value axis (the y aesthetic even under
   # coord_flip()) and is drawn on top of the bars.
   if (isTRUE(zeroline)) {
@@ -394,8 +512,22 @@ cpb_col <- function(data, x, y, fill = NULL,
     } else {
       ggplot2::coord_flip()
     }
+  } else if (has_sec && !is.null(sec_ylab)) {
+    # the secondary unit caption is drawn above the panel, so it needs
+    # to survive clipping
+    p <- p + ggplot2::coord_cartesian(ylim = value_limits, clip = "off")
   } else if (!is.null(value_limits)) {
     p <- p + ggplot2::coord_cartesian(ylim = value_limits)
+  }
+
+  if (has_sec && !is.null(sec_ylab)) {
+    # mirrors the left-hand unit that `ylab` puts in the subtitle:
+    # right-aligned, italic, on the line just above the panel
+    p <- p + ggplot2::annotate(
+      "text", x = Inf, y = Inf, label = sec_ylab,
+      hjust = 1, vjust = -0.9, fontface = "italic",
+      size = 7 / ggplot2::.pt, family = cpb_font_family()
+    )
   }
 
   scale_args <- cpb_value_scale_args(
@@ -404,6 +536,18 @@ cpb_col <- function(data, x, y, fill = NULL,
     pct_scale    = if (position == "fill") 100 else 1,
     value_breaks = value_breaks
   )
+  if (has_sec) {
+    # the right-hand axis is the inverse of the map that placed the
+    # line, so its labels read in the secondary series' own units
+    sm <- sec_map
+    scale_args$sec.axis <- ggplot2::sec_axis(
+      transform = function(v) {
+        (v - sm$prim_min) / (sm$prim_max - sm$prim_min) *
+          (sm$sec_max - sm$sec_min) + sm$sec_min
+      },
+      labels = if (isTRUE(pct_axis)) label_pct_nl() else label_number_nl()
+    )
+  }
   if (length(scale_args)) {
     p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
   }
@@ -459,9 +603,17 @@ cpb_col <- function(data, x, y, fill = NULL,
   }
   subtitle <- cpb_reserve_subtitle(title, subtitle)
 
-  p +
+  p <- p +
     ggplot2::labs(title = title, subtitle = subtitle, x = lab_x, y = lab_y, fill = filllab) +
     cpb_wrapper_theme()
+
+  # the fill keys and the line key are two guides; stack them into one
+  # left-aligned block instead of letting them sit side by side
+  if (has_sec) {
+    p <- p + ggplot2::theme(legend.box = "vertical",
+                            legend.box.just = "left")
+  }
+  p
 }
 
 # stacked area ----
@@ -638,6 +790,14 @@ cpb_area <- function(data, x, y, fill,
 #'   supplied.
 #' @param linewidth Line width; defaults to `0.55`, matching the
 #'   published CPB figures.
+#' @param points If `TRUE`, draw a point marker at every observation on
+#'   top of the line, the house variant used when the x axis holds a
+#'   handful of discrete categories (age brackets, quintiles) rather
+#'   than a dense time series. Markers take the line colour, and the
+#'   legend key shows a line with a marker on it.
+#' @param point_size Marker size when `points = TRUE`; defaults to
+#'   `1.1`, which reads as the published dot against the default
+#'   `linewidth`.
 #' @param palette CPB palette to use for `colour`; one of
 #'   `"qualitative"` (default), `"discr"`, `"sequential"`
 #'   (pink ramp), or `"blues"` (blue ramp).
@@ -705,6 +865,8 @@ cpb_area <- function(data, x, y, fill,
 cpb_line <- function(data, x, y, colour = NULL,
                       line_colour = NULL,
                       linewidth = 0.55,
+                      points = FALSE,
+                      point_size = 1.1,
                       palette = "qualitative",
                       index = NULL,
                       pct_axis = FALSE,
@@ -799,6 +961,17 @@ cpb_line <- function(data, x, y, colour = NULL,
     ggplot2::geom_line(linewidth = linewidth, colour = single_colour, ...)
   }
 
+  # markers sit on top of the line, in the same colour. Both layers map
+  # the same colour variable, so ggplot2 overlays their glyphs into one
+  # key -- a line with a marker on it, as in the published figures.
+  if (isTRUE(points)) {
+    p <- p + if (has_colour) {
+      ggplot2::geom_point(size = point_size)
+    } else {
+      ggplot2::geom_point(size = point_size, colour = single_colour)
+    }
+  }
+
   # the label sits on top of everything
   if (!is.null(forecast_x)) {
     p <- p + cpb_forecast_label(forecast_x, rlang::eval_tidy(x, data), forecast_label)
@@ -863,6 +1036,10 @@ cpb_line <- function(data, x, y, colour = NULL,
 #'   category each box belongs to.
 #' @param p5,p25,p50,p75,p95 Columns holding the precomputed 5th,
 #'   25th, 50th (median), 75th and 95th percentiles (tidy eval).
+#' @param mean Optional column holding the mean of each distribution
+#'   (tidy eval), drawn as a diamond marker. Only used by
+#'   `box_style = "dot"`; ignored by the box-drawing styles, which have
+#'   no published mean marker.
 #' @param fill Optional column mapped to the fill aesthetic (tidy
 #'   eval), e.g. for grouped boxes side by side. Only supported by
 #'   `box_style = "ggcpb"`.
@@ -898,10 +1075,21 @@ cpb_line <- function(data, x, y, colour = NULL,
 #'     and whiskers, a thick dark-blue median line, the median value
 #'     in bold above it and the p25/p75 values printed below the box
 #'     ends.
+#'   * `"dot"`: the marker variant used for survey distributions --
+#'     no box at all. A dashed connector spans p5-p95 with a light dot
+#'     at each end, a capped bar spans the p25-p75 range, a filled dot
+#'     marks the median and (when `mean` is supplied) a diamond marks
+#'     the mean. Unlike the other styles it draws a legend naming each
+#'     marker, so the reader can tell the five statistics apart.
 #'
-#'   `"james"` and `"modern"` follow the house convention of
+#'   `"james"`, `"modern"` and `"dot"` follow the house convention of
 #'   horizontal boxes; combine them with
 #'   `orientation = "horizontal"`.
+#' @param dot_labels Legend labels for `box_style = "dot"`, as a named
+#'   character vector with elements `p5`, `iqr`, `p50`, `p95` and
+#'   `mean`. `NULL` (default) uses the published Dutch labels. Supply
+#'   only the elements you want to change; the rest keep their
+#'   defaults. Ignored by the other styles.
 #' @param box_labels Whether to print the value labels of the
 #'   `"james"`/`"modern"` styles. `NULL` (default) resolves by
 #'   `box_style` (`TRUE` for `"james"`/`"modern"`, which always
@@ -981,11 +1169,13 @@ cpb_line <- function(data, x, y, colour = NULL,
 #' cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95)
 #' @export
 cpb_box <- function(data, x, p5, p25, p50, p75, p95,
+                     mean = NULL,
                      fill = NULL,
                      fill_colour = NULL,
                      group = NULL,
                      group_gap = 0.7,
-                     box_style = c("ggcpb", "james", "modern"),
+                     box_style = c("ggcpb", "james", "modern", "dot"),
+                     dot_labels = NULL,
                      box_labels = NULL,
                      label_accuracy = 0.1,
                      width = 0.5,
@@ -1026,6 +1216,8 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   p50 <- rlang::enquo(p50)
   p75 <- rlang::enquo(p75)
   p95 <- rlang::enquo(p95)
+  mean <- rlang::enquo(mean)
+  has_mean <- !rlang::quo_is_null(mean)
   fill <- rlang::enquo(fill)
   group <- rlang::enquo(group)
   facet <- rlang::enquo(facet)
@@ -1050,7 +1242,16 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
          "not support a `fill` mapping; use box_style = \"ggcpb\" for ",
          "fill-grouped boxes.", call. = FALSE)
   }
-  if (is.null(box_labels)) box_labels <- box_style != "ggcpb"
+  # the "dot" style carries a legend instead of printed values
+  if (is.null(box_labels)) box_labels <- box_style %in% c("james", "modern")
+  if (isTRUE(box_labels) && box_style == "dot") {
+    stop("box_style = \"dot\" does not print value labels; it names the ",
+         "markers in a legend instead (see `dot_labels`).", call. = FALSE)
+  }
+  if (has_mean && box_style != "dot") {
+    stop("`mean` is only drawn by box_style = \"dot\"; the box styles have ",
+         "no published mean marker.", call. = FALSE)
+  }
 
   # as in cpb_line(): only bold the zero line when zero is on the axis
   if (is.null(zeroline)) {
@@ -1099,7 +1300,67 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black", linewidth = 0.25)
   }
 
-  if (box_style == "ggcpb") {
+  if (box_style == "dot") {
+    # Markers only: a dashed p5-p95 connector with a light dot at each
+    # end, a capped p25-p75 bar, a filled median dot and an optional
+    # mean diamond. Every layer maps `colour` to a constant label so
+    # the markers get named legend keys; because each layer's data
+    # holds exactly one level, a key row only ever picks up the glyph
+    # of the layer it belongs to.
+    labs_default <- c(p5 = "5e percentiel", iqr = "25e-75e percentiel",
+                      p50 = "mediaan", p95 = "95e percentiel",
+                      mean = "gemiddelde")
+    if (!is.null(dot_labels)) {
+      if (is.null(names(dot_labels)) ||
+          !all(names(dot_labels) %in% names(labs_default))) {
+        stop("`dot_labels` must be a named character vector using the names ",
+             paste0("\"", names(labs_default), "\"", collapse = ", "), ".",
+             call. = FALSE)
+      }
+      labs_default[names(dot_labels)] <- dot_labels
+    }
+    lab <- as.list(labs_default)
+
+    accent <- if (is.null(fill_colour)) unname(cpb_cols(2)) else fill_colour[[1]]
+    light  <- unname(cpb_cols(1))
+    meancol <- unname(cpb_cols(5))
+
+    # legend order follows the published figure: the two tails first,
+    # then the interquartile range, the median and the mean
+    dot_values <- c(light, accent, accent, light, meancol)
+    names(dot_values) <- c(lab$p5, lab$iqr, lab$p50, lab$p95, lab$mean)
+    dot_breaks <- c(lab$p5, lab$p95, lab$iqr, lab$p50)
+    if (has_mean) dot_breaks <- c(dot_breaks, lab$mean)
+
+    p <- p +
+      # the connector runs the full p5-p95 span underneath everything
+      ggplot2::geom_errorbar(
+        ggplot2::aes(x = !!x, ymin = !!p5, ymax = !!p95),
+        width = 0, linewidth = 0.25, linetype = "dashed", colour = light
+      ) +
+      ggplot2::geom_point(
+        ggplot2::aes(x = !!x, y = !!p5, colour = lab$p5), size = 1.1
+      ) +
+      ggplot2::geom_point(
+        ggplot2::aes(x = !!x, y = !!p95, colour = lab$p95), size = 1.1
+      ) +
+      ggplot2::geom_errorbar(
+        ggplot2::aes(x = !!x, ymin = !!p25, ymax = !!p75, colour = lab$iqr),
+        width = width / 2, linewidth = 0.4
+      ) +
+      ggplot2::geom_point(
+        ggplot2::aes(x = !!x, y = !!p50, colour = lab$p50), size = 1.6, ...
+      )
+    if (has_mean) {
+      p <- p + ggplot2::geom_point(
+        ggplot2::aes(x = !!x, y = !!mean, colour = lab$mean),
+        shape = 23, fill = meancol, size = 1.5, stroke = 0.3
+      )
+    }
+    p <- p + ggplot2::scale_colour_manual(
+      values = dot_values, breaks = dot_breaks, name = NULL
+    )
+  } else if (box_style == "ggcpb") {
     # key_glyph = "rect": CPB legends show plain colour squares, not
     # miniature boxplots. Without a fill mapping the boxes are drawn in
     # one flat house-style colour (CPB primary blue by default).
@@ -1584,5 +1845,256 @@ cpb_hist <- function(data, x, fill = NULL,
 
   p +
     ggplot2::labs(title = title, subtitle = subtitle, x = xlab, y = ylab, fill = filllab) +
+    cpb_wrapper_theme()
+}
+
+# dot-and-interval ----
+
+#' A CPB-styled dot-and-interval chart
+#'
+#' The coefficient-plot form used for regression output in CPB
+#' publications: one point estimate per row with a horizontal interval
+#' through it, a black reference line at zero, and (optionally) the
+#' rows collected under bold group headings. Both layers use
+#' `stat = "identity"` -- pass precomputed estimates and interval
+#' bounds rather than raw observations.
+#'
+#' Unlike [cpb_scatter()], which draws a cloud of observations on two
+#' continuous axes, this wrapper puts a categorical axis against a
+#' single value axis, and is horizontal by default: the estimate rows
+#' read top to bottom.
+#'
+#' @param data A data.frame or data.table with one row per estimate.
+#' @param x Column mapped to the category axis (tidy eval), i.e. the
+#'   term each estimate belongs to.
+#' @param y Column holding the point estimate (tidy eval).
+#' @param lower,upper Columns holding the lower and upper bounds of the
+#'   interval around each estimate (tidy eval). Both are required: an
+#'   estimate without its uncertainty is a job for [cpb_col()].
+#' @param colour Optional column mapped to the colour aesthetic (tidy
+#'   eval), e.g. to distinguish two model specifications. If omitted,
+#'   everything is drawn in `point_colour`.
+#' @param point_colour Constant colour used when no `colour` column is
+#'   mapped. Defaults to `NULL`, which resolves to the CPB pink
+#'   (`cpb_cols(2)`, `"#e6006e"`) used in the published coefficient
+#'   figures.
+#' @param group Optional column (tidy eval) assigning each `x` category
+#'   to a group; every group gets its name as a bold heading row above
+#'   its categories, exactly as in [cpb_box()].
+#' @param group_gap Extra gap between group blocks, in category widths;
+#'   defaults to `0.7`.
+#' @param size Point size; defaults to `1.4`.
+#' @param linewidth Interval line width; defaults to `0.4`.
+#' @param cap_width Width of the interval end caps, in category widths;
+#'   defaults to `0.25`. Use `0` for plain capless intervals.
+#' @param orientation `"horizontal"` (default, the published form,
+#'   adding [ggplot2::coord_flip()]) or `"vertical"`.
+#' @param palette CPB palette to use for `colour`; one of
+#'   `"qualitative"` (default), `"discr"`, `"sequential"`
+#'   (pink ramp), or `"blues"` (blue ramp).
+#' @param index Optional integer vector of palette positions, forwarded
+#'   to [scale_colour_cpb_manual()] instead of the default
+#'   [scale_colour_cpb_d()] when supplied.
+#' @param pct_axis If `TRUE`, format the value axis with
+#'   [label_pct_nl()].
+#' @param value_breaks Optional breaks for the value axis (passed to
+#'   [ggplot2::scale_y_continuous()]).
+#' @param value_limits Optional length-2 numeric vector giving the
+#'   value-axis range, applied as a coordinate-system zoom.
+#' @param zeroline If `TRUE` (default), draw a solid black reference
+#'   line at zero on the value axis -- the line the intervals are read
+#'   against.
+#' @param reverse_legend If `TRUE`, reverse the colour legend order.
+#'   Defaults to `FALSE`.
+#' @param facet Optional column (tidy eval) to facet by.
+#' @param facet_ncol Number of facet columns, passed to
+#'   [ggplot2::facet_wrap()].
+#' @param facet_scales Whether facet axis ranges are shared; passed to
+#'   [ggplot2::facet_wrap()].
+#' @param legend Legend position, forwarded to [theme_cpb()].
+#' @param minor,ticks,flush_legend,axis_text_size,legend_key_size,grid_colour,grid_linewidth
+#'   Passed through to [theme_cpb()].
+#' @param title,subtitle Plot title/subtitle.
+#' @param xlab Label for the value axis (drawn at the bottom, where the
+#'   value axis lands after `coord_flip()`).
+#' @param ylab Label for the category axis. Following CPB house style
+#'   this is normally left `NULL`.
+#' @param colourlab Legend title override; defaults to `NULL`.
+#' @param ... Further arguments passed to [ggplot2::geom_point()].
+#' @return A `ggplot` object.
+#' @examples
+#' df <- data.frame(
+#'   term  = c("Vertrouwen in de politiek", "Succes door hard werken",
+#'             "Heeft kinderen", "Vermogenskwintiel"),
+#'   coef  = c(2.9, -2.0, -1.4, -2.5),
+#'   lo    = c(1.9, -3.0, -3.3, -3.2),
+#'   hi    = c(3.9, -1.1, 0.6, -1.8)
+#' )
+#' cpb_dot(df, x = term, y = coef, lower = lo, upper = hi,
+#'         xlab = "%-punt verandering")
+#' @export
+cpb_dot <- function(data, x, y, lower, upper,
+                     colour = NULL,
+                     point_colour = NULL,
+                     group = NULL,
+                     group_gap = 0.7,
+                     size = 1.4,
+                     linewidth = 0.4,
+                     cap_width = 0.25,
+                     orientation = c("horizontal", "vertical"),
+                     palette = "qualitative",
+                     index = NULL,
+                     pct_axis = FALSE,
+                     value_breaks = NULL,
+                     value_limits = NULL,
+                     zeroline = TRUE,
+                     reverse_legend = FALSE,
+                     facet = NULL,
+                     facet_ncol = NULL,
+                     facet_scales = "fixed",
+                     legend = "bottom",
+                     minor = FALSE,
+                     ticks = TRUE,
+                     flush_legend = TRUE,
+                     axis_text_size = 7,
+                     legend_key_size = NULL,
+                     grid_colour = "black",
+                     grid_linewidth = 0.1,
+                     title = NULL,
+                     subtitle = NULL,
+                     xlab = NULL,
+                     ylab = NULL,
+                     colourlab = NULL,
+                     ...) {
+  orientation <- match.arg(orientation)
+
+  x <- rlang::enquo(x)
+  y <- rlang::enquo(y)
+  lower <- rlang::enquo(lower)
+  upper <- rlang::enquo(upper)
+  colour <- rlang::enquo(colour)
+  group <- rlang::enquo(group)
+  facet <- rlang::enquo(facet)
+  has_colour <- !rlang::quo_is_null(colour)
+  has_group <- !rlang::quo_is_null(group)
+
+  single_colour <- if (is.null(point_colour)) unname(cpb_cols(2)) else point_colour
+
+  slots <- NULL
+  if (has_group) {
+    # same two-level category axis as cpb_box(): bold heading rows
+    # above the categories they collect, one shared value axis
+    slots <- cpb_group_heading_positions(rlang::eval_tidy(x, data),
+                                         rlang::eval_tidy(group, data),
+                                         gap = group_gap)
+    data <- as.data.frame(data)
+    data[["cpb__x"]] <- slots$pos[match(as.character(rlang::eval_tidy(x, data)),
+                                           slots$cat)]
+    x <- rlang::quo(.data[["cpb__x"]])
+  }
+
+  # the interaction keeps one interval per category when the category
+  # axis is numeric (the grouped-slots layout) and colour is mapped
+  if (has_colour) {
+    mapping_interval <- ggplot2::aes(x = !!x, ymin = !!lower, ymax = !!upper,
+                                     colour = !!colour,
+                                     group = interaction(!!x, !!colour))
+    mapping_point <- ggplot2::aes(x = !!x, y = !!y, colour = !!colour,
+                                  group = interaction(!!x, !!colour))
+  } else {
+    mapping_interval <- ggplot2::aes(x = !!x, ymin = !!lower, ymax = !!upper,
+                                     group = !!x)
+    mapping_point <- ggplot2::aes(x = !!x, y = !!y, group = !!x)
+  }
+
+  p <- ggplot2::ggplot(data)
+
+  # the reference line sits underneath the estimates
+  if (isTRUE(zeroline)) {
+    p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black",
+                                 linewidth = 0.25)
+  }
+
+  interval_args <- list(mapping = mapping_interval, width = cap_width,
+                        linewidth = linewidth)
+  point_args <- list(mapping = mapping_point, size = size, ...)
+  if (!has_colour) {
+    interval_args$colour <- single_colour
+    point_args$colour <- single_colour
+  }
+  p <- p +
+    do.call(ggplot2::geom_errorbar, interval_args) +
+    do.call(ggplot2::geom_point, point_args)
+
+  # the grouped layout draws its bold headings outside the panel
+  clip <- if (has_group) "off" else "on"
+  if (orientation == "horizontal") {
+    p <- p + if (!is.null(value_limits)) {
+      ggplot2::coord_flip(ylim = value_limits, clip = clip)
+    } else {
+      ggplot2::coord_flip(clip = clip)
+    }
+  } else if (!is.null(value_limits)) {
+    p <- p + ggplot2::coord_cartesian(ylim = value_limits, clip = clip)
+  } else if (has_group) {
+    p <- p + ggplot2::coord_cartesian(clip = "off")
+  }
+
+  # no zero-flush expansion: estimates do not grow from the axis
+  scale_args <- cpb_value_scale_args(pct_axis = pct_axis,
+                                     value_breaks = value_breaks)
+  if (length(scale_args)) {
+    p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
+  }
+
+  if (has_group) {
+    cat_rows <- slots[!slots$heading, , drop = FALSE]
+    head_rows <- slots[slots$heading, , drop = FALSE]
+    p <- p + ggplot2::scale_x_continuous(
+      breaks = cat_rows$pos,
+      labels = cat_rows$label,
+      limits = range(slots$pos) + c(-0.9, 0.9),
+      expand = ggplot2::expansion(add = 0)
+    )
+    if (nrow(head_rows)) {
+      p <- p + if (orientation == "horizontal") {
+        ggplot2::annotate("text", x = head_rows$pos, y = -Inf,
+          label = head_rows$label, hjust = 1.03, vjust = 0.5,
+          fontface = "bold", size = 7 / ggplot2::.pt, family = cpb_font_family())
+      } else {
+        ggplot2::annotate("text", x = head_rows$pos, y = -Inf,
+          label = head_rows$label, hjust = 0.5, vjust = 2.6,
+          fontface = "bold", size = 7 / ggplot2::.pt, family = cpb_font_family())
+      }
+    }
+  }
+
+  if (has_colour) {
+    p <- p + if (!is.null(index)) {
+      scale_colour_cpb_manual(index = index, palette = palette)
+    } else {
+      scale_colour_cpb_d(palette = palette)
+    }
+    if (isTRUE(reverse_legend)) {
+      p <- p + ggplot2::guides(colour = ggplot2::guide_legend(reverse = TRUE))
+    }
+  }
+
+  p <- cpb_add_facet(p, facet, facet_ncol, facet_scales)
+
+  # as in cpb_box(): vertically the value-axis label doubles as the
+  # subtitle, horizontally the value axis is drawn at the bottom after
+  # coord_flip(), where a real axis title is appropriate
+  lab_x <- ylab
+  lab_y <- xlab
+  if (orientation == "vertical") {
+    lab_y <- NULL
+    if (is.null(subtitle) && !is.null(xlab)) subtitle <- xlab
+  }
+  subtitle <- cpb_reserve_subtitle(title, subtitle)
+
+  p +
+    ggplot2::labs(title = title, subtitle = subtitle, x = lab_x, y = lab_y,
+                  colour = colourlab) +
     cpb_wrapper_theme()
 }

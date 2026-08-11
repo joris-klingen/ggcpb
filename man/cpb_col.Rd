@@ -14,6 +14,13 @@ cpb_col(
   group_gap = 0.8,
   position = c("stack", "dodge", "fill"),
   orientation = c("vertical", "horizontal"),
+  sec_y = NULL,
+  sec_limits = NULL,
+  sec_label = NULL,
+  sec_ylab = NULL,
+  sec_colour = NULL,
+  sec_linewidth = 0.55,
+  sec_points = FALSE,
   palette = "qualitative",
   index = NULL,
   pct_axis = FALSE,
@@ -71,6 +78,35 @@ defaults to \code{0.8}.}
 
 \item{orientation}{\code{"vertical"} (default) or \code{"horizontal"} (adds
 \code{\link[ggplot2:coord_flip]{ggplot2::coord_flip()}} and is forwarded to \code{\link[=theme_cpb]{theme_cpb()}}).}
+
+\item{sec_y}{Optional column (tidy eval) holding a series to draw as
+a line against a \strong{secondary value axis} on the right, the house
+combination chart (e.g. a stacked wealth total in billions with
+the tax raised on it, an order of magnitude smaller, alongside).
+One value per \code{x}. Only supported for vertical, ungrouped columns.}
+
+\item{sec_limits}{Length-2 numeric vector giving the range the
+secondary axis spans. \code{NULL} (default) uses zero to the maximum of
+\code{sec_y}. The line is placed by mapping this range linearly onto
+the primary range, so the two axes always start together.}
+
+\item{sec_label}{Legend label for the line. \code{NULL} (default) uses
+the \code{sec_y} column name. House style names the axis in the label,
+e.g. \code{"erfbelasting (rechteras)"}.}
+
+\item{sec_ylab}{Unit caption for the secondary axis, drawn
+right-aligned above the panel to mirror the left-hand unit that
+\code{ylab} puts in the subtitle. \code{NULL} (default) draws none.}
+
+\item{sec_colour}{Line colour; defaults to \code{NULL}, which resolves to
+the CPB pink (\code{cpb_cols(2)}, \code{"#e6006e"}) that sets the line apart
+from the blue-led column fills.}
+
+\item{sec_linewidth}{Line width for \code{sec_y}; defaults to \code{0.55}, as
+in \code{\link[=cpb_line]{cpb_line()}}.}
+
+\item{sec_points}{If \code{TRUE}, add a marker at every point of the
+\code{sec_y} line.}
 
 \item{palette}{CPB palette to use for \code{fill}; one of
 \code{"qualitative"} (default), \code{"discr"}, \code{"sequential"}

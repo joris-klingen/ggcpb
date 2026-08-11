@@ -11,6 +11,8 @@ cpb_line(
   colour = NULL,
   line_colour = NULL,
   linewidth = 0.55,
+  points = FALSE,
+  point_size = 1.1,
   palette = "qualitative",
   index = NULL,
   pct_axis = FALSE,
@@ -57,6 +59,16 @@ supplied.}
 
 \item{linewidth}{Line width; defaults to \code{0.55}, matching the
 published CPB figures.}
+
+\item{points}{If \code{TRUE}, draw a point marker at every observation on
+top of the line, the house variant used when the x axis holds a
+handful of discrete categories (age brackets, quintiles) rather
+than a dense time series. Markers take the line colour, and the
+legend key shows a line with a marker on it.}
+
+\item{point_size}{Marker size when \code{points = TRUE}; defaults to
+\code{1.1}, which reads as the published dot against the default
+\code{linewidth}.}
 
 \item{palette}{CPB palette to use for \code{colour}; one of
 \code{"qualitative"} (default), \code{"discr"}, \code{"sequential"}
