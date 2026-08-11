@@ -19,6 +19,20 @@ When judging whether a ggcpb figure is "right", compare it against the
 
 - **`plots/`** *(tracked)* — rendered figures from CPB publications, i.e.
   examples of the target output. Treat these as the visual ground truth.
+  Each file is named `<publication>_p<page>_img<n>.png`, so the prefix
+  says which publication it came from:
+
+  | Filename prefix | Publication |
+  | --- | --- |
+  | `CPB_publicatie_erfbelasting_in_beeld_20260803` | [Erfbelasting in beeld: feiten, percepties en voorkeuren van Nederlanders](https://www.cpb.nl/publicatie/erfbelasting-beeld-feiten-percepties-en-voorkeuren-van-nederlanders) |
+  | `CPB_publicatie_inkomenseffecten_hogere_energie_en_brandstofprijzen` | [Inkomenseffecten van hogere energie- en brandstofprijzen](https://www.cpb.nl/publicatie/inkomenseffecten-van-hogere-energie-en-brandstofprijzen) |
+
+  Add a row when you drop a new publication's figures in here, so the
+  ground truth can always be traced back to what was actually
+  published. Look the URL up rather than deriving it from the
+  filename: CPB slugs do not reliably match their titles, and the site
+  uses more than one URL shape, so a slug guessed from a filename can
+  easily point at the wrong publication.
 - **`code/reference_plot_snippets.R`** *(tracked)* — anonymised raw-ggplot2
   snippets distilled from internal CPB analysis scripts. **These are not the
   target.** They only show how close plain ggplot2 (hand-rolled `theme()`
