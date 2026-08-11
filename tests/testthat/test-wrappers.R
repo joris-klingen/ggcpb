@@ -709,3 +709,138 @@ test_that("cpb_map seams and legend fall back on request", {
                 border_colour = "white")
   expect_equal(p3$layers[[1]]$aes_params$colour, "white")
 })
+
+test_that("cpb_line(points = TRUE) adds markers and keeps the lines joined", {
+  df <- data.frame(
+    cat = factor(rep(c("20-30", "30-40", "40-50"), 2),
+                 levels = c("20-30", "30-40", "40-50")),
+    y = c(1, 2, 3, 4, 5, 6),
+    reeks = rep(c("a", "b"), each = 3)
+  )
+  p <- cpb_line(df, x = cat, y = y, colour = reeks, points = TRUE)
+  geoms <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  expect_true("GeomPoint" %in% geoms)
+  expect_true("GeomLine" %in% geoms)
+  # a discrete x would otherwise leave every observation in its own
+  # group and drop the lines entirely
+  expect_equal(rlang::as_label(p$mapping$group), "reeks")
+  expect_equal(nrow(unique(ggplot2::layer_data(p, 2)["group"])), 2)
+  # markers are off by default
+  p0 <- cpb_line(df, x = cat, y = y, colour = reeks)
+  expect_false("GeomPoint" %in%
+                 vapply(p0$layers, function(l) class(l$geom)[1], character(1)))
+  # without a colour mapping the single series stays one group
+  p1 <- cpb_line(df[df$reeks == "a", ], x = cat, y = y, points = TRUE)
+  expect_equal(nrow(unique(ggplot2::layer_data(p1, 1)["group"])), 1)
+})
+
+test_that("cpb_box box_style = 'dot' draws markers with a named legend", {
+  df <- data.frame(cat = c("a", "b"), p5 = c(0, 1), p25 = c(1, 2),
+                   p50 = c(2, 3), p75 = c(3, 4), p95 = c(4, 5),
+                   gem = c(2.2, 3.4))
+  p <- cpb_box(df, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75,
+               p95 = p95, mean = gem, box_style = "dot")
+  geoms <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  # no box: the style is markers plus ranges only
+  expect_false("GeomBoxplot" %in% geoms)
+  expect_equal(sum(geoms == "GeomPoint"), 4L)   # p5, p95, median, mean
+  # the mean marker is dropped when no mean column is given
+  p0 <- cpb_box(df, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75,
+                p95 = p95, box_style = "dot")
+  expect_equal(
+    sum(vapply(p0$layers, function(l) class(l$geom)[1], character(1)) ==
+          "GeomPoint"), 3L
+  )
+  # every statistic is named in the legend, in the published order
+  sc <- p$scales$get_scales("colour")
+  expect_s3_class(sc, "ScaleDiscrete")
+  expect_equal(sc$breaks, c("5e percentiel", "95e percentiel",
+                            "25e-75e percentiel", "mediaan", "gemiddelde"))
+  # each layer is tagged with the statistic it draws, so a legend key
+  # only ever picks up the glyph of its own layer
+  tags <- unlist(lapply(p$layers, function(l) {
+    if (is.null(l$mapping$colour)) NULL else rlang::eval_tidy(l$mapping$colour)
+  }))
+  expect_equal(sort(unname(tags)), sort(sc$breaks))
+  # with no mean column the mean is left out of the legend entirely
+  expect_false("gemiddelde" %in% p0$scales$get_scales("colour")$breaks)
+  # labels are overridable one at a time
+  p2 <- cpb_box(df, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75,
+                p95 = p95, box_style = "dot", dot_labels = c(p50 = "median"))
+  expect_true("median" %in% p2$scales$get_scales("colour")$breaks)
+  # the untouched labels keep their defaults
+  expect_true("5e percentiel" %in% p2$scales$get_scales("colour")$breaks)
+  expect_error(
+    cpb_box(df, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+            box_style = "dot", dot_labels = c(nope = "x")),
+    "named character vector"
+  )
+  # the mean marker belongs to this style alone
+  expect_error(
+    cpb_box(df, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+            mean = gem, box_style = "james"),
+    "only drawn by"
+  )
+})
+
+test_that("cpb_dot draws estimates with intervals and a zero line", {
+  df <- data.frame(term = c("a", "b", "c"), est = c(1, -2, 0.5),
+                   lo = c(0.2, -3, -0.4), hi = c(1.8, -1, 1.4))
+  p <- cpb_dot(df, x = term, y = est, lower = lo, upper = hi)
+  geoms <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  expect_true(all(c("GeomHline", "GeomErrorbar", "GeomPoint") %in% geoms))
+  expect_s3_class(p$coordinates, "CoordFlip")
+  # the reference line can be turned off
+  p0 <- cpb_dot(df, x = term, y = est, lower = lo, upper = hi, zeroline = FALSE)
+  expect_false("GeomHline" %in%
+                 vapply(p0$layers, function(l) class(l$geom)[1], character(1)))
+  # vertical drops coord_flip()
+  pv <- cpb_dot(df, x = term, y = est, lower = lo, upper = hi,
+                orientation = "vertical")
+  expect_false(inherits(pv$coordinates, "CoordFlip"))
+})
+
+test_that("cpb_dot lays groups out under bold headings", {
+  df <- data.frame(
+    term = c("a", "b", "c", "d"), blok = rep(c("een", "twee"), each = 2),
+    est = c(1, 2, 3, 4), lo = c(0, 1, 2, 3), hi = c(2, 3, 4, 5)
+  )
+  p <- cpb_dot(df, x = term, y = est, lower = lo, upper = hi, group = blok)
+  # the category axis becomes numeric slots, with the headings drawn as
+  # text rather than as axis breaks
+  sc <- p$scales$get_scales("x")
+  expect_s3_class(sc, "ScaleContinuous")
+  expect_equal(length(sc$get_labels()), 4L)
+  txt <- p$layers[[length(p$layers)]]
+  expect_s3_class(txt$geom, "GeomText")
+  expect_equal(sort(txt$aes_params$label), c("een", "twee"))
+  expect_equal(txt$aes_params$fontface, "bold")
+  expect_equal(p$coordinates$clip, "off")
+})
+
+test_that("cpb_col(sec_y) rescales a line onto a secondary axis", {
+  df <- data.frame(jaar = rep(2020:2022, 2), v = c(6, 8, 10, 4, 2, 5),
+                   soort = rep(c("a", "b"), each = 3),
+                   klein = rep(c(0.5, 1, 1.5), 2))
+  p <- cpb_col(df, x = jaar, y = v, fill = soort, sec_y = klein,
+               sec_limits = c(0, 2), sec_label = "klein (rechteras)")
+  sc <- p$scales$get_scales("y")
+  expect_s3_class(sc$secondary.axis, "AxisSecondary")
+  # the primary stack tops out at 15, so the secondary maximum of 2
+  # maps onto it and the line's midpoint lands halfway
+  line <- Filter(function(l) inherits(l$geom, "GeomLine"), p$layers)[[1]]
+  expect_equal(nrow(line$data), 3L)          # one row per x, not per fill
+  expect_equal(line$data$cpb__sec, c(3.75, 7.5, 11.25))
+  expect_equal(rlang::eval_tidy(line$mapping$colour), "klein (rechteras)")
+  # the combination is refused where it cannot be drawn
+  expect_error(
+    cpb_col(df, x = jaar, y = v, fill = soort, sec_y = klein,
+            orientation = "horizontal"),
+    "only supported for vertical"
+  )
+  expect_error(
+    cpb_col(df, x = jaar, y = v, fill = soort, sec_y = klein,
+            position = "fill"),
+    "position = \"fill\""
+  )
+})

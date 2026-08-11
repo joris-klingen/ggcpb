@@ -99,6 +99,38 @@ The added `scale_x_continuous()` shows the usual refinements for a
 year axis: labelled breaks every few years plus small minor ticks for
 the years in between.
 
+## Markers on the line
+
+A dense time series is drawn as a bare line. When the x axis instead
+holds a handful of ordered categories -- age brackets, quintiles --
+the house style puts a marker on every observation, so the reader can
+see where the measurements actually are. `points = TRUE` adds them in
+the line colour, and the legend key becomes a line with a marker on
+it:
+
+```{r line-points}
+leeftijden <- c("20-30", "30-40", "40-50", "50-60", "60-70", "70-80", ">80")
+tarieven <- expand_grid(
+  erfenis  = factor(c("10.000 euro", "100.000 euro", "1.000.000 euro"),
+                    levels = c("10.000 euro", "100.000 euro", "1.000.000 euro")),
+  leeftijd = factor(leeftijden, levels = leeftijden)
+) |>
+  mutate(tarief = c(14, 12, 13, 10, 8, 10, 12,
+                    21, 18, 18, 17, 17, 21, 24,
+                    29, 27, 28, 27, 29, 37, 41))
+
+cpb_line(tarieven, x = leeftijd, y = tarief, colour = erfenis,
+  points       = TRUE,
+  index        = c(6, 2, 8),
+  value_limits = c(0, 40),
+  title = "Voorkeurstarieven erfbelasting naar leeftijd",
+  ylab  = "% gemiddeld voorkeurstarief")
+```
+
+`points = TRUE` is the only thing separating this from an ordinary
+`cpb_line()` call; `point_size` adjusts the marker if the default
+reads too heavy against a thicker line.
+
 # Column charts
 
 `cpb_col()` covers stacked, dodged and horizontal bars. Stacked is
@@ -192,6 +224,51 @@ wrapper, not through a second `scale_y_continuous()`, which would
 silently replace the wrapper's percentage labels and zero-flush
 expansion.
 
+## A secondary axis
+
+Two series belong in one figure when they are about the same thing
+but an order of magnitude apart -- a wealth total in billions, and
+the tax raised on it. `sec_y` draws the second series as a line
+against a right-hand axis, with `sec_limits` fixing the range that
+axis spans. The line is placed by mapping `sec_limits` linearly onto
+the primary range, so both axes start together and the line cannot
+drift out of step with its own labels:
+
+```{r col-secaxis, fig.width = 5.96, fig.height = 2.98, out.width = "700px"}
+nalatenschap <- expand_grid(
+  soort = factor(c("waarover aangifte", "waarover geen aangifte"),
+                 levels = c("waarover geen aangifte", "waarover aangifte")),
+  jaar  = 2007:2022
+) |>
+  mutate(mld = c(1.6, 2.6, 2.9, 4.4, 4.4, 3.8, 3.9, 4.7,
+                 5.2, 5.8, 5.8, 5.6, 5.6, 6.6, 6.4, 6.5,
+                 15.8, 15.9, 15.2, 16.0, 15.3, 14.8, 13.9, 13.1,
+                 13.9, 15.0, 15.3, 15.5, 16.3, 19.4, 20.5, 22.2))
+
+erfbelasting <- tibble(
+  jaar = 2007:2022,
+  heffing = c(2.2, 2.1, 1.9, 1.8, 1.6, 1.7, 1.6, 1.5,
+              1.6, 1.7, 1.8, 1.8, 1.8, 2.3, 2.4, 2.5)
+)
+
+nalatenschap |>
+  left_join(erfbelasting, by = "jaar") |>
+  cpb_col(x = jaar, y = mld, fill = soort,
+    sec_y      = heffing,
+    sec_limits = c(0, 3),
+    sec_label  = "erfbelasting (rechteras)",
+    sec_ylab   = "mld euro",
+    index      = c(8, 6),
+    title = "Belasting over erfenissen, prijzen 2022",
+    ylab  = "mld euro")
+```
+
+`sec_ylab` mirrors on the right what `ylab` puts above the panel on
+the left, and `sec_label` names the line in the legend -- house style
+says which axis it belongs to. The combination is refused where it
+cannot be read: horizontal bars, grouped categories, and
+`position = "fill"` all error rather than draw something misleading.
+
 # Area charts
 
 `cpb_area()` draws the recurring share-of-total-over-time figure.
@@ -250,6 +327,40 @@ Boxes without a `fill` mapping are drawn in the CPB primary blue.
 The other box constructions -- the legacy and designer styles,
 fill-dodged boxes per year, and grouped layouts -- are in
 [`vignette("boxplots")`](boxplots.html).
+
+# Dot-and-interval charts
+
+`cpb_dot()` draws the coefficient-plot form used for regression
+output: one estimate per row with its interval through it, read
+against a black line at zero. It is horizontal by default, so the
+rows read top to bottom in the order of the factor levels. `group`
+collects the rows under bold headings, exactly as in `cpb_box()`:
+
+```{r dot, fig.width = 5.96, fig.height = 2.98, out.width = "700px"}
+termen <- c("Belasting ontmoedigt werken en sparen",
+            "Ongelijkheid is oneerlijk", "Succes door hard werken",
+            "Vertrouwen in de politiek", "Leeftijdscategorie",
+            "Geslacht (vrouw t.o.v. man)", "Heeft kinderen",
+            "Vermogenskwintiel")
+schatting <- tibble(
+  term = factor(termen, levels = termen),
+  blok = factor(rep(c("Percepties", "Achtergrond"), each = 4),
+                levels = c("Percepties", "Achtergrond")),
+  coef = c(3.2, 2.9, -2.0, 2.9, 3.5, 0.4, -1.4, -2.5),
+  lo   = c(-0.3, 2.1, -3.0, 1.9, 2.6, -1.3, -3.3, -3.2),
+  hi   = c(6.6, 3.6, -1.1, 3.9, 4.3, 2.2, 0.6, -1.8)
+)
+
+cpb_dot(schatting, x = term, y = coef, lower = lo, upper = hi,
+  group = blok,
+  title = "Samenhang voorkeurstarieven, percepties en kenmerken",
+  xlab  = "%-punt verandering in voorkeurstarief")
+```
+
+The estimates carry no `colour` mapping here, so everything is drawn
+in the house pink and no legend appears. Map `colour` to compare two
+specifications side by side, and use `cap_width = 0` for plain
+intervals without end caps.
 
 # Scatter plots
 

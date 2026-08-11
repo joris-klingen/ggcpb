@@ -457,8 +457,12 @@ cpb_col <- function(data, x, y, fill = NULL,
       (v - sec_map$sec_min) / (sec_map$sec_max - sec_map$sec_min) *
         (sec_map$prim_max - sec_map$prim_min) + sec_map$prim_min
     }
-    data <- as.data.frame(data)
-    data[["cpb__sec"]] <- to_primary(sec_vals)
+    # the line gets its own layer data: the plot-level data was already
+    # captured by ggplot() above, and one row per x is enough (the
+    # column data carries a row per fill level)
+    sec_df <- as.data.frame(data)
+    sec_df[["cpb__sec"]] <- to_primary(sec_vals)
+    sec_df <- sec_df[!duplicated(rlang::eval_tidy(x, data)), , drop = FALSE]
     sec_lab <- if (is.null(sec_label)) rlang::as_label(sec_y) else sec_label
     sec_col <- if (is.null(sec_colour)) unname(cpb_cols(2)) else sec_colour
 
@@ -466,12 +470,14 @@ cpb_col <- function(data, x, y, fill = NULL,
     # legend key of its own next to the fill keys
     p <- p +
       ggplot2::geom_line(
+        data = sec_df,
         ggplot2::aes(x = !!x, y = .data[["cpb__sec"]], colour = sec_lab,
                      group = 1),
         linewidth = sec_linewidth
       )
     if (isTRUE(sec_points)) {
       p <- p + ggplot2::geom_point(
+        data = sec_df,
         ggplot2::aes(x = !!x, y = .data[["cpb__sec"]], colour = sec_lab),
         size = 1.1
       )
@@ -608,10 +614,16 @@ cpb_col <- function(data, x, y, fill = NULL,
     cpb_wrapper_theme()
 
   # the fill keys and the line key are two guides; stack them into one
-  # left-aligned block instead of letting them sit side by side
+  # left-aligned block instead of letting them sit side by side, with
+  # the columns named before the line, as in the published figures
   if (has_sec) {
-    p <- p + ggplot2::theme(legend.box = "vertical",
-                            legend.box.just = "left")
+    p <- p +
+      ggplot2::guides(
+        fill = ggplot2::guide_legend(order = 1, reverse = isTRUE(reverse_legend)),
+        colour = ggplot2::guide_legend(order = 2)
+      ) +
+      ggplot2::theme(legend.box = "vertical",
+                     legend.box.just = "left")
   }
   p
 }
@@ -914,10 +926,17 @@ cpb_line <- function(data, x, y, colour = NULL,
       min(yvals, na.rm = TRUE) <= 0 && max(yvals, na.rm = TRUE) >= 0
   }
 
+  # `group` is set explicitly rather than left to ggplot2, which infers
+  # it from every discrete aesthetic: on a categorical x axis (age
+  # brackets, quintiles) that puts each observation in a group of its
+  # own and the lines disappear entirely. One series per colour level,
+  # or a single series when no colour is mapped, is always what is
+  # meant here.
   if (has_colour) {
-    mapping <- ggplot2::aes(x = !!x, y = !!y, colour = !!colour)
+    mapping <- ggplot2::aes(x = !!x, y = !!y, colour = !!colour,
+                            group = !!colour)
   } else {
-    mapping <- ggplot2::aes(x = !!x, y = !!y)
+    mapping <- ggplot2::aes(x = !!x, y = !!y, group = 1)
   }
 
   p <- ggplot2::ggplot(data, mapping)

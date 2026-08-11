@@ -12,8 +12,8 @@ set.seed(42)
 `cpb_box()` draws the CPB distributional figure from **precomputed
 quantile columns** (p5/p25/p50/p75/p95; both layers use
 `stat = "identity"`, so aggregate your microdata first). The default
-style is shown in [`vignette("chart-types")`](chart-types.md); this vignette covers the
-box constructions and combinations.
+style is shown in [`vignette("chart-types")`](chart-types.md); this
+vignette covers the box constructions and combinations.
 
 One data set used throughout – purchasing power per standard income
 group:
@@ -94,6 +94,39 @@ rounding) and draw single-colour boxes: `fill_colour` sets the colour,
 and may be a *vector* with one colour per row. A `fill` mapping is only
 supported by `"ggcpb"`.
 
+`"dot"` is the fourth style, and the only one that draws no box at all.
+It is the form used for survey distributions, where the reader needs to
+tell five separate statistics apart: a dashed connector spans p5-p95
+with a light dot at each end, a capped bar spans the interquartile
+range, a filled dot marks the median, and the optional `mean` column
+adds a diamond. Because the markers carry no shape of their own meaning,
+this style names each one in a legend instead of printing values:
+
+``` r
+voorkeur <- tibble(
+  erfenis = factor(c("10.000 euro", "100.000 euro", "1.000.000 euro"),
+                   levels = c("1.000.000 euro", "100.000 euro", "10.000 euro")),
+  p5  = c(0, 0, 0),     p25 = c(0, 4, 10),    p50 = c(4, 11, 25),
+  p75 = c(12, 26, 45),  p95 = c(47, 54, 75),  gem = c(11, 19, 30)
+)
+
+cpb_box(voorkeur, x = erfenis,
+  p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  mean        = gem,
+  box_style   = "dot",
+  orientation = "horizontal",
+  title = "Voorkeurstarieven erfbelasting",
+  xlab  = "omvang erfenis",
+  ylab  = "voorkeurstarief (%)")
+```
+
+<img src="boxplots_files/figure-gfm/box-dot-1.png" width="350px" />
+
+Leave `mean` out and the diamond disappears from both the chart and the
+legend. `dot_labels` renames any of the five keys – pass only the ones
+you want to change, e.g. `c(p50 = "median")` – which is what you need
+when the figure is captioned in English.
+
 # A fill per year
 
 Map `fill` (with the `"ggcpb"` style) and pass a `position_dodge()` for
@@ -118,10 +151,10 @@ cpb_box(kk2, x = groep,
 # Grouped, with a fill per year
 
 The `fill` mapping combines with the vertically grouped layout of
-[`vignette("layout")`](layout.md): bold group headings on the category axis, and
-within every category a dodged pair of years. `reverse_legend = TRUE`
-puts the first year at the bottom of the legend, matching the dodge
-order under `coord_flip()`:
+[`vignette("layout")`](layout.md): bold group headings on the category
+axis, and within every category a dodged pair of years.
+`reverse_legend = TRUE` puts the first year at the bottom of the legend,
+matching the dodge order under `coord_flip()`:
 
 ``` r
 kk3 <- kk2 |>
