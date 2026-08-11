@@ -398,3 +398,25 @@ cpb_hist(duur, x = maanden, binwidth = 2,
 
 For a rendered gallery of all chart types against the published
 reference figures, run `inst/examples/smoke_test_plots.R`.
+
+# Sources
+
+Every data set above is **simulated** and every label is a
+placeholder -- nothing here reproduces a published number. What the
+examples do follow is the *layout* of real CPB figures, so that the
+house style has something concrete to be judged against.
+
+The figures used as those targets come from:
+
+- [Erfbelasting in beeld: feiten, percepties en voorkeuren van
+  Nederlanders](https://www.cpb.nl/publicatie/erfbelasting-beeld-feiten-percepties-en-voorkeuren-van-nederlanders)
+  -- the layouts behind *Voorkeurstarieven erfbelasting naar
+  leeftijd* (markers on the line), *Belasting over erfenissen*
+  (secondary axis) and *Samenhang voorkeurstarieven, percepties en
+  kenmerken* (dot-and-interval).
+- [Inkomenseffecten van hogere energie- en
+  brandstofprijzen](https://www.cpb.nl/publicatie/inkomenseffecten-van-hogere-energie-en-brandstofprijzen)
+  -- the household-level income and energy figures.
+
+The rendered originals live in `references/plots/` in the repository,
+named after the publication they came from.

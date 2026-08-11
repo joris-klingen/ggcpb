@@ -205,3 +205,11 @@ Under the hood this sets the value scale to `position = "right"`, which
 `coord_flip()` renders along the top edge. Set custom tick positions
 through the wrapper’s `value_breaks` (as here) rather than adding a
 second `scale_y_continuous()`, which would replace the wrapper’s scale.
+
+# Sources
+
+The quantile data above is **simulated**; the layouts follow real CPB
+figures. The `"dot"` style is modelled on a figure in [Erfbelasting in
+beeld: feiten, percepties en voorkeuren van
+Nederlanders](https://www.cpb.nl/publicatie/erfbelasting-beeld-feiten-percepties-en-voorkeuren-van-nederlanders),
+and the rendered originals are kept in `references/plots/`.
