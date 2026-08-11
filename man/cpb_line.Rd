@@ -23,6 +23,7 @@ cpb_line(
   forecast_x = NULL,
   forecast_label = "raming",
   reverse_legend = FALSE,
+  legend_ncol = NULL,
   facet = NULL,
   facet_ncol = NULL,
   facet_scales = "fixed",
@@ -106,6 +107,12 @@ values.}
 \item{reverse_legend}{If \code{TRUE}, reverse the colour legend order
 via \code{guide_legend(reverse = TRUE)}. Defaults to \code{FALSE}: unlike
 the stacked wrappers, line order carries no stacking convention.}
+
+\item{legend_ncol}{Number of columns to lay the legend keys out in,
+passed to \code{guide_legend(ncol = )}. \code{NULL} (default) leaves the
+single flush-left column of the house style; \code{2} and up suit a
+legend with many short keys, such as binned classes from
+\code{\link[=cpb_cut]{cpb_cut()}}, which would otherwise run past the panel.}
 
 \item{facet}{Optional column (tidy eval) to facet by. Facets follow
 the house (legacy nicerplot) convention: the facet title is a bold

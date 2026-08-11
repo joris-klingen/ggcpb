@@ -12,11 +12,13 @@ two layers, and this vignette shows the basic idea of both:
   palettes, formatters, fonts): the pieces the wrappers are built from,
   for any figure without a wrapper.
 
-The other vignettes go deeper: [`vignette("chart-types")`](chart-types.md) for the default
-chart per type, [`vignette("layout")`](layout.md) for facets and grouped axes,
-[`vignette("annotation")`](annotation.md) for reference lines and forecast windows,
-[`vignette("boxplots")`](boxplots.md) for the box-plot styles, and [`vignette("maps")`](maps.md)
-for choropleths of the Netherlands.
+The other vignettes go deeper:
+[`vignette("chart-types")`](chart-types.md) for the default chart per
+type, [`vignette("layout")`](layout.md) for facets and grouped axes,
+[`vignette("annotation")`](annotation.md) for reference lines and
+forecast windows, [`vignette("boxplots")`](boxplots.md) for the
+box-plot styles, and [`vignette("maps")`](maps.md) for choropleths of
+the Netherlands.
 
 ``` r
 library(ggcpb)
@@ -81,23 +83,36 @@ reference line is a `geom_hline()`. More annotation patterns in
 
 Not every figure has a wrapper. For anything else you build from raw
 `ggplot2` and apply the same core pieces the wrappers use:
-`theme_cpb()`, a CPB colour scale (`scale_fill_cpb_c()` for a continuous
-gradient), and the Dutch-locale formatters. Two house conventions to
-carry over yourself: the value-axis unit goes in `subtitle` (never a
-rotated y-axis title), and the horizontal axis title sits at the bottom
-right.
+`theme_cpb()`, a CPB colour scale, and the Dutch-locale formatters. Two
+house conventions to carry over yourself: the value-axis unit goes in
+`subtitle` (never a rotated y-axis title), and the horizontal axis title
+sits at the bottom right.
+
+The fill here is *binned* rather than a continuous gradient: `cpb_cut()`
+turns the numeric values into classes with Dutch labels (“lager dan
+-1%”, “-1% - 0%”, …), which `scale_fill_cpb_d(palette = "blues")` then
+colours light-to-dark. Binned classes read off a choropleth or heatmap
+far more reliably than a gradient does. Because that produces a stack of
+short keys, `guide_legend(ncol = 2)` lays them out in two columns
+instead of one tall one – the wrappers expose the same thing as
+`legend_ncol`. `drop = FALSE` keeps every class in the legend even when
+no observation falls in it, so the reader sees the full scale rather
+than silently losing a class.
 
 ``` r
 raster <- expand.grid(groep = factor(groepen, levels = rev(groepen)),
                       jaar  = 2024:2027) |>
   mutate(mediaan = round(rnorm(n(), 0.5, 1), 1))
 
-ggplot(raster, aes(jaar, groep, fill = mediaan)) +
+ggplot(raster, aes(jaar, groep,
+                   fill = cpb_cut(mediaan, c(-Inf, -1, 0, 1, 2, Inf),
+                                  labeller = label_pct_nl()))) +
   geom_tile(colour = "white", linewidth = 0.4) +
   labs(title = "Mediane koopkracht per groep en jaar",
        subtitle = "inkomensgroep",
        x = NULL, y = NULL, fill = "mediaan (%)") +
-  scale_fill_cpb_c() +
+  scale_fill_cpb_d(palette = "blues", drop = FALSE) +
+  guides(fill = guide_legend(ncol = 2)) +
   theme_cpb(grid = "none", ticks = FALSE)
 ```
 
