@@ -113,9 +113,15 @@ The fill here is *binned* rather than a continuous gradient:
 choropleth or heatmap far more reliably than a gradient does. Because
 that produces a stack of short keys, `guide_legend(ncol = 2)` lays
 them out in two columns instead of one tall one -- the wrappers expose
-the same thing as `legend_ncol`. `drop = FALSE` keeps every class in
-the legend even when no observation falls in it, so the reader sees
-the full scale rather than silently losing a class.
+the same thing as `legend_ncol`.
+
+Two settings keep the legend showing the *whole* scale. `drop = FALSE`
+keeps a class with no observations in the legend rather than dropping
+it, and `show.legend = TRUE` makes ggplot2 draw that class's coloured
+glyph: by default it blanks the key of any level absent from the data,
+leaving a label with no swatch beside it. The wrappers set
+`show.legend = TRUE` on their layers already, so this only needs
+saying when you build the layer yourself.
 
 ```{r heatmap, fig.width = 5.96, fig.height = 2.4, out.width = "700px"}
 raster <- expand.grid(groep = factor(groepen, levels = rev(groepen)),
@@ -125,7 +131,7 @@ raster <- expand.grid(groep = factor(groepen, levels = rev(groepen)),
 ggplot(raster, aes(jaar, groep,
                    fill = cpb_cut(mediaan, c(-Inf, -1, 0, 1, 2, Inf),
                                   labeller = label_pct_nl()))) +
-  geom_tile(colour = "white", linewidth = 0.4) +
+  geom_tile(colour = "white", linewidth = 0.4, show.legend = TRUE) +
   labs(title = "Mediane koopkracht per groep en jaar",
        subtitle = "inkomensgroep",
        x = NULL, y = NULL, fill = "mediaan (%)") +

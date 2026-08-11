@@ -321,3 +321,31 @@ test_that("legend_ncol lays the keys out in columns and keeps reverse_legend", {
   num <- d; num$n <- seq_len(24)
   expect_s3_class(cpb_scatter(num, x, y, colour = n, legend_ncol = 2), "ggplot")
 })
+
+test_that("a level with no observations still gets a coloured legend glyph", {
+  # ggplot2 blanks the key of any level absent from the layer data, which
+  # leaves a labelled but swatch-less row once drop = FALSE keeps empty
+  # classes in the legend (as binned cpb_cut() classes routinely are).
+  lv <- c("z", "a", "b", "c", "d")          # "z" carries no observations
+  d <- data.frame(x = rep(1:4, 4), y = runif(16, 1, 4),
+                  g = factor(rep(c("a", "b", "c", "d"), each = 4), levels = lv))
+  lightest <- cpb_pal("blues")(5)[1]
+
+  drawn <- function(p) {
+    f <- withr::local_tempfile(fileext = ".png")
+    suppressMessages(ggplot2::ggsave(f, p, width = 4, height = 2.6, dpi = 150,
+                                     device = ragg::agg_png))
+    im <- png::readPNG(f)[, , 1:3]
+    hex <- toupper(apply(im, c(1, 2), function(q) grDevices::rgb(q[1], q[2], q[3])))
+    any(hex == toupper(lightest))
+  }
+  blues <- function(p) suppressMessages(
+    p + scale_fill_cpb_d(palette = "blues", drop = FALSE) +
+        scale_colour_cpb_d(palette = "blues", drop = FALSE))
+
+  expect_true(drawn(blues(cpb_col(d, x, y, fill = g))))
+  expect_true(drawn(blues(cpb_area(d, x, y, fill = g))))
+  expect_true(drawn(blues(cpb_line(d, x, y, colour = g))))
+  expect_true(drawn(blues(cpb_scatter(d, x, y, colour = g))))
+  expect_true(drawn(blues(cpb_dot(d, x, y, lower = y, upper = y, colour = g))))
+})

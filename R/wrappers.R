@@ -421,7 +421,7 @@ cpb_col <- function(data, x, y, fill = NULL,
   }
 
   p <- p + if (has_fill) {
-    ggplot2::geom_col(position = position, ...)
+    ggplot2::geom_col(position = position, show.legend = TRUE, ...)
   } else {
     # No fill mapping: draw one flat house-style colour (CPB primary blue
     # by default) rather than ggplot2's grey.
@@ -757,7 +757,7 @@ cpb_area <- function(data, x, y, fill,
     p <- p + cpb_forecast_rect(forecast_x)
   }
 
-  p <- p + ggplot2::geom_area(...)
+  p <- p + ggplot2::geom_area(show.legend = TRUE, ...)
 
   # on top of the areas
   if (isTRUE(zeroline)) {
@@ -999,7 +999,7 @@ cpb_line <- function(data, x, y, colour = NULL,
   }
 
   p <- p + if (has_colour) {
-    ggplot2::geom_line(linewidth = linewidth, ...)
+    ggplot2::geom_line(linewidth = linewidth, show.legend = TRUE, ...)
   } else {
     # no colour mapping: draw one flat house-style colour (CPB primary
     # blue by default) rather than black
@@ -1011,7 +1011,7 @@ cpb_line <- function(data, x, y, colour = NULL,
   # key -- a line with a marker on it, as in the published figures.
   if (isTRUE(points)) {
     p <- p + if (has_colour) {
-      ggplot2::geom_point(size = point_size)
+      ggplot2::geom_point(size = point_size, show.legend = TRUE)
     } else {
       ggplot2::geom_point(size = point_size, colour = single_colour)
     }
@@ -1414,7 +1414,8 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     # miniature boxplots. Without a fill mapping the boxes are drawn in
     # one flat house-style colour (CPB primary blue by default).
     box_args <- list(mapping = mapping_box, stat = "identity", width = width,
-                     linewidth = linewidth, key_glyph = "rect", ...)
+                     linewidth = linewidth, key_glyph = "rect",
+                     show.legend = TRUE, ...)
     if (!has_fill) {
       box_args$fill <- if (is.null(fill_colour)) unname(cpb_cols(6)) else fill_colour
     }
@@ -1714,7 +1715,7 @@ cpb_scatter <- function(data, x, y, colour = NULL,
   }
 
   p <- p + if (has_colour) {
-    ggplot2::geom_point(size = size, ...)
+    ggplot2::geom_point(size = size, show.legend = TRUE, ...)
   } else {
     single_colour <- if (is.null(point_colour)) unname(cpb_cols(6)) else point_colour
     ggplot2::geom_point(size = size, colour = single_colour, ...)
@@ -1868,7 +1869,8 @@ cpb_hist <- function(data, x, fill = NULL,
 
   p <- p + if (has_fill) {
     ggplot2::geom_histogram(binwidth = binwidth, bins = bins, position = position,
-                            colour = outline, linewidth = 0.2, ...)
+                            colour = outline, linewidth = 0.2,
+                            show.legend = TRUE, ...)
   } else {
     single_fill <- if (is.null(fill_colour)) unname(cpb_cols(6)) else fill_colour
     ggplot2::geom_histogram(binwidth = binwidth, bins = bins, position = position,
@@ -2081,7 +2083,8 @@ cpb_dot <- function(data, x, y, lower, upper,
 
   interval_args <- list(mapping = mapping_interval, width = cap_width,
                         linewidth = linewidth)
-  point_args <- list(mapping = mapping_point, size = size, ...)
+  point_args <- list(mapping = mapping_point, size = size,
+                     show.legend = TRUE, ...)
   if (!has_colour) {
     interval_args$colour <- single_colour
     point_args$colour <- single_colour
