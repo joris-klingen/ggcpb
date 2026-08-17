@@ -94,6 +94,17 @@ cpb_add_facet <- function(p, facet, facet_ncol = NULL, facet_scales = "fixed") {
                           axes = "all", axis.labels = "all")
 }
 
+# reverse_legend and legend_ncol both configure the same guide_legend(),
+# so they are resolved together: setting one through a wrapper argument
+# must not silently drop the other (which a bare guides() call appended
+# after the wrapper would do).
+cpb_add_legend_guide <- function(p, aesthetic, reverse = FALSE, ncol = NULL) {
+  if (!isTRUE(reverse) && is.null(ncol)) return(p)
+  args <- list(ggplot2::guide_legend(reverse = isTRUE(reverse), ncol = ncol))
+  names(args) <- aesthetic
+  p + do.call(ggplot2::guides, args)
+}
+
 # a titled figure always reserves the subtitle line, so the gap between
 # title and panel is stable whether or not a subtitle is set
 cpb_reserve_subtitle <- function(title, subtitle) {
@@ -253,6 +264,11 @@ cpb_forecast_label <- function(forecast_x, xvals, label) {
 #' @param reverse_legend If `TRUE` (default), reverse the fill legend
 #'   order via `guide_legend(reverse = TRUE)` -- stacking otherwise
 #'   makes the legend order counter-intuitive.
+#' @param legend_ncol Number of columns to lay the legend keys out in,
+#'   passed to `guide_legend(ncol = )`. `NULL` (default) leaves the
+#'   single flush-left column of the house style; `2` and up suit a
+#'   legend with many short keys, such as binned classes from
+#'   [cpb_cut()], which would otherwise run past the panel.
 #' @param facet Optional column (tidy eval) to facet by. Facets follow
 #'   the house (legacy nicerplot) convention: the facet title is a bold
 #'   strip *below* each panel, and every panel is a complete
@@ -321,6 +337,7 @@ cpb_col <- function(data, x, y, fill = NULL,
                      forecast_x = NULL,
                      forecast_label = "raming",
                      reverse_legend = TRUE,
+                     legend_ncol = NULL,
                      facet = NULL,
                      facet_ncol = NULL,
                      facet_scales = "fixed",
@@ -404,7 +421,7 @@ cpb_col <- function(data, x, y, fill = NULL,
   }
 
   p <- p + if (has_fill) {
-    ggplot2::geom_col(position = position, ...)
+    ggplot2::geom_col(position = position, show.legend = TRUE, ...)
   } else {
     # No fill mapping: draw one flat house-style colour (CPB primary blue
     # by default) rather than ggplot2's grey.
@@ -578,9 +595,7 @@ cpb_col <- function(data, x, y, fill = NULL,
     } else {
       scale_fill_cpb_d(palette = palette)
     }
-    if (isTRUE(reverse_legend)) {
-      p <- p + ggplot2::guides(fill = ggplot2::guide_legend(reverse = TRUE))
-    }
+    p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol)
   }
 
   # CPB convention: the vertical-axis label is the plot subtitle (`ylab`), and
@@ -619,7 +634,8 @@ cpb_col <- function(data, x, y, fill = NULL,
   if (has_sec) {
     p <- p +
       ggplot2::guides(
-        fill = ggplot2::guide_legend(order = 1, reverse = isTRUE(reverse_legend)),
+        fill = ggplot2::guide_legend(order = 1, reverse = isTRUE(reverse_legend),
+                                     ncol = legend_ncol),
         colour = ggplot2::guide_legend(order = 2)
       ) +
       ggplot2::theme(legend.box = "vertical",
@@ -662,6 +678,11 @@ cpb_col <- function(data, x, y, fill = NULL,
 #'   starts; overlaid and labelled as in [cpb_line()].
 #' @param forecast_label Label for the forecast window; defaults to
 #'   `"raming"`. Use `NULL` (or `""`) for no label.
+#' @param legend_ncol Number of columns to lay the legend keys out in,
+#'   passed to `guide_legend(ncol = )`. `NULL` (default) leaves the
+#'   single flush-left column of the house style; `2` and up suit a
+#'   legend with many short keys, such as binned classes from
+#'   [cpb_cut()], which would otherwise run past the panel.
 #' @param facet Optional column (tidy eval) to facet by. Facets follow
 #'   the house (legacy nicerplot) convention: the facet title is a bold
 #'   strip *below* each panel, and every panel is a complete
@@ -705,6 +726,7 @@ cpb_area <- function(data, x, y, fill,
                       forecast_x = NULL,
                       forecast_label = "raming",
                       reverse_legend = TRUE,
+                      legend_ncol = NULL,
                       facet = NULL,
                       facet_ncol = NULL,
                       facet_scales = "fixed",
@@ -735,7 +757,7 @@ cpb_area <- function(data, x, y, fill,
     p <- p + cpb_forecast_rect(forecast_x)
   }
 
-  p <- p + ggplot2::geom_area(...)
+  p <- p + ggplot2::geom_area(show.legend = TRUE, ...)
 
   # on top of the areas
   if (isTRUE(zeroline)) {
@@ -763,9 +785,7 @@ cpb_area <- function(data, x, y, fill,
     scale_fill_cpb_d(palette = palette)
   }
 
-  if (isTRUE(reverse_legend)) {
-    p <- p + ggplot2::guides(fill = ggplot2::guide_legend(reverse = TRUE))
-  }
+  p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol)
 
   p <- cpb_add_facet(p, facet, facet_ncol, facet_scales)
 
@@ -838,6 +858,11 @@ cpb_area <- function(data, x, y, fill,
 #'   values.
 #' @param forecast_label Label for the forecast window; defaults to
 #'   `"raming"`. Use `NULL` (or `""`) for no label.
+#' @param legend_ncol Number of columns to lay the legend keys out in,
+#'   passed to `guide_legend(ncol = )`. `NULL` (default) leaves the
+#'   single flush-left column of the house style; `2` and up suit a
+#'   legend with many short keys, such as binned classes from
+#'   [cpb_cut()], which would otherwise run past the panel.
 #' @param facet Optional column (tidy eval) to facet by. Facets follow
 #'   the house (legacy nicerplot) convention: the facet title is a bold
 #'   strip *below* each panel, and every panel is a complete
@@ -889,6 +914,7 @@ cpb_line <- function(data, x, y, colour = NULL,
                       forecast_x = NULL,
                       forecast_label = "raming",
                       reverse_legend = FALSE,
+                      legend_ncol = NULL,
                       facet = NULL,
                       facet_ncol = NULL,
                       facet_scales = "fixed",
@@ -973,7 +999,7 @@ cpb_line <- function(data, x, y, colour = NULL,
   }
 
   p <- p + if (has_colour) {
-    ggplot2::geom_line(linewidth = linewidth, ...)
+    ggplot2::geom_line(linewidth = linewidth, show.legend = TRUE, ...)
   } else {
     # no colour mapping: draw one flat house-style colour (CPB primary
     # blue by default) rather than black
@@ -985,7 +1011,7 @@ cpb_line <- function(data, x, y, colour = NULL,
   # key -- a line with a marker on it, as in the published figures.
   if (isTRUE(points)) {
     p <- p + if (has_colour) {
-      ggplot2::geom_point(size = point_size)
+      ggplot2::geom_point(size = point_size, show.legend = TRUE)
     } else {
       ggplot2::geom_point(size = point_size, colour = single_colour)
     }
@@ -1015,9 +1041,7 @@ cpb_line <- function(data, x, y, colour = NULL,
     } else {
       scale_colour_cpb_d(palette = palette)
     }
-    if (isTRUE(reverse_legend)) {
-      p <- p + ggplot2::guides(colour = ggplot2::guide_legend(reverse = TRUE))
-    }
+    p <- cpb_add_legend_guide(p, "colour", reverse_legend, legend_ncol)
   }
 
   p <- cpb_add_facet(p, facet, facet_ncol, facet_scales)
@@ -1147,6 +1171,11 @@ cpb_line <- function(data, x, y, colour = NULL,
 #'   `guide_legend(reverse = TRUE)`. Defaults to `FALSE`; useful when
 #'   the fill levels were reversed to control the dodge order under
 #'   `coord_flip()`.
+#' @param legend_ncol Number of columns to lay the legend keys out in,
+#'   passed to `guide_legend(ncol = )`. `NULL` (default) leaves the
+#'   single flush-left column of the house style; `2` and up suit a
+#'   legend with many short keys, such as binned classes from
+#'   [cpb_cut()], which would otherwise run past the panel.
 #' @param facet Optional column (tidy eval) to facet by. Facets follow
 #'   the house (legacy nicerplot) convention: the facet title is a bold
 #'   strip *below* each panel, and every panel is a complete
@@ -1211,6 +1240,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                      facet_scales = "fixed",
                      legend = "bottom",
                      reverse_legend = FALSE,
+                     legend_ncol = NULL,
                      zeroline = NULL,
                      minor = FALSE,
                      ticks = TRUE,
@@ -1384,7 +1414,8 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     # miniature boxplots. Without a fill mapping the boxes are drawn in
     # one flat house-style colour (CPB primary blue by default).
     box_args <- list(mapping = mapping_box, stat = "identity", width = width,
-                     linewidth = linewidth, key_glyph = "rect", ...)
+                     linewidth = linewidth, key_glyph = "rect",
+                     show.legend = TRUE, ...)
     if (!has_fill) {
       box_args$fill <- if (is.null(fill_colour)) unname(cpb_cols(6)) else fill_colour
     }
@@ -1537,9 +1568,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     } else {
       scale_fill_cpb_d(palette = palette)
     }
-    if (isTRUE(reverse_legend)) {
-      p <- p + ggplot2::guides(fill = ggplot2::guide_legend(reverse = TRUE))
-    }
+    p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol)
   }
 
   p <- cpb_add_facet(p, facet, facet_ncol, facet_scales)
@@ -1591,6 +1620,11 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
 #' @param reverse_legend If `TRUE`, reverse the colour legend order
 #'   via `guide_legend(reverse = TRUE)` (discrete `colour` only).
 #'   Defaults to `FALSE`.
+#' @param legend_ncol Number of columns to lay the legend keys out in,
+#'   passed to `guide_legend(ncol = )`. `NULL` (default) leaves the
+#'   single flush-left column of the house style; `2` and up suit a
+#'   legend with many short keys, such as binned classes from
+#'   [cpb_cut()], which would otherwise run past the panel.
 #' @param facet Optional column (tidy eval) to facet by. Facets follow
 #'   the house (legacy nicerplot) convention: the facet title is a bold
 #'   strip *below* each panel, and every panel is a complete
@@ -1633,6 +1667,7 @@ cpb_scatter <- function(data, x, y, colour = NULL,
                          forecast_x = NULL,
                          forecast_label = "raming",
                          reverse_legend = FALSE,
+                         legend_ncol = NULL,
                          facet = NULL,
                          facet_ncol = NULL,
                          facet_scales = "fixed",
@@ -1680,7 +1715,7 @@ cpb_scatter <- function(data, x, y, colour = NULL,
   }
 
   p <- p + if (has_colour) {
-    ggplot2::geom_point(size = size, ...)
+    ggplot2::geom_point(size = size, show.legend = TRUE, ...)
   } else {
     single_colour <- if (is.null(point_colour)) unname(cpb_cols(6)) else point_colour
     ggplot2::geom_point(size = size, colour = single_colour, ...)
@@ -1702,8 +1737,9 @@ cpb_scatter <- function(data, x, y, colour = NULL,
     } else {
       scale_colour_cpb_d(palette = palette)
     }
-    if (!is.numeric(colvals) && isTRUE(reverse_legend)) {
-      p <- p + ggplot2::guides(colour = ggplot2::guide_legend(reverse = TRUE))
+    if (!is.numeric(colvals)) {
+      # a numeric colour draws a colourbar, which takes neither setting
+      p <- cpb_add_legend_guide(p, "colour", reverse_legend, legend_ncol)
     }
   }
 
@@ -1754,6 +1790,11 @@ cpb_scatter <- function(data, x, y, colour = NULL,
 #'   to [scale_fill_cpb_manual()].
 #' @param reverse_legend If `TRUE` (default), reverse the fill legend
 #'   order via `guide_legend(reverse = TRUE)`.
+#' @param legend_ncol Number of columns to lay the legend keys out in,
+#'   passed to `guide_legend(ncol = )`. `NULL` (default) leaves the
+#'   single flush-left column of the house style; `2` and up suit a
+#'   legend with many short keys, such as binned classes from
+#'   [cpb_cut()], which would otherwise run past the panel.
 #' @param facet Optional column (tidy eval) to facet by. Facets follow
 #'   the house (legacy nicerplot) convention: the facet title is a bold
 #'   strip *below* each panel, and every panel is a complete
@@ -1794,6 +1835,7 @@ cpb_hist <- function(data, x, fill = NULL,
                       palette = "qualitative",
                       index = NULL,
                       reverse_legend = TRUE,
+                      legend_ncol = NULL,
                       facet = NULL,
                       facet_ncol = NULL,
                       facet_scales = "fixed",
@@ -1827,7 +1869,8 @@ cpb_hist <- function(data, x, fill = NULL,
 
   p <- p + if (has_fill) {
     ggplot2::geom_histogram(binwidth = binwidth, bins = bins, position = position,
-                            colour = outline, linewidth = 0.2, ...)
+                            colour = outline, linewidth = 0.2,
+                            show.legend = TRUE, ...)
   } else {
     single_fill <- if (is.null(fill_colour)) unname(cpb_cols(6)) else fill_colour
     ggplot2::geom_histogram(binwidth = binwidth, bins = bins, position = position,
@@ -1847,9 +1890,7 @@ cpb_hist <- function(data, x, fill = NULL,
     } else {
       scale_fill_cpb_d(palette = palette)
     }
-    if (isTRUE(reverse_legend)) {
-      p <- p + ggplot2::guides(fill = ggplot2::guide_legend(reverse = TRUE))
-    }
+    p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol)
   }
 
   p <- cpb_add_facet(p, facet, facet_ncol, facet_scales)
@@ -1925,6 +1966,11 @@ cpb_hist <- function(data, x, fill = NULL,
 #'   against.
 #' @param reverse_legend If `TRUE`, reverse the colour legend order.
 #'   Defaults to `FALSE`.
+#' @param legend_ncol Number of columns to lay the legend keys out in,
+#'   passed to `guide_legend(ncol = )`. `NULL` (default) leaves the
+#'   single flush-left column of the house style; `2` and up suit a
+#'   legend with many short keys, such as binned classes from
+#'   [cpb_cut()], which would otherwise run past the panel.
 #' @param facet Optional column (tidy eval) to facet by.
 #' @param facet_ncol Number of facet columns, passed to
 #'   [ggplot2::facet_wrap()].
@@ -1968,6 +2014,7 @@ cpb_dot <- function(data, x, y, lower, upper,
                      value_limits = NULL,
                      zeroline = TRUE,
                      reverse_legend = FALSE,
+                     legend_ncol = NULL,
                      facet = NULL,
                      facet_ncol = NULL,
                      facet_scales = "fixed",
@@ -2036,7 +2083,8 @@ cpb_dot <- function(data, x, y, lower, upper,
 
   interval_args <- list(mapping = mapping_interval, width = cap_width,
                         linewidth = linewidth)
-  point_args <- list(mapping = mapping_point, size = size, ...)
+  point_args <- list(mapping = mapping_point, size = size,
+                     show.legend = TRUE, ...)
   if (!has_colour) {
     interval_args$colour <- single_colour
     point_args$colour <- single_colour
@@ -2094,9 +2142,7 @@ cpb_dot <- function(data, x, y, lower, upper,
     } else {
       scale_colour_cpb_d(palette = palette)
     }
-    if (isTRUE(reverse_legend)) {
-      p <- p + ggplot2::guides(colour = ggplot2::guide_legend(reverse = TRUE))
-    }
+    p <- cpb_add_legend_guide(p, "colour", reverse_legend, legend_ncol)
   }
 
   p <- cpb_add_facet(p, facet, facet_ncol, facet_scales)

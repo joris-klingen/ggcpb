@@ -35,6 +35,7 @@ cpb_box(
   facet_scales = "fixed",
   legend = "bottom",
   reverse_legend = FALSE,
+  legend_ncol = NULL,
   zeroline = NULL,
   minor = FALSE,
   ticks = TRUE,
@@ -187,6 +188,12 @@ mini-figure with its own axes and axis labels.}
 \code{guide_legend(reverse = TRUE)}. Defaults to \code{FALSE}; useful when
 the fill levels were reversed to control the dodge order under
 \code{coord_flip()}.}
+
+\item{legend_ncol}{Number of columns to lay the legend keys out in,
+passed to \code{guide_legend(ncol = )}. \code{NULL} (default) leaves the
+single flush-left column of the house style; \code{2} and up suit a
+legend with many short keys, such as binned classes from
+\code{\link[=cpb_cut]{cpb_cut()}}, which would otherwise run past the panel.}
 
 \item{zeroline}{If \code{TRUE}, draw a solid black line at zero on the
 value axis underneath the boxes. \code{NULL} (default) draws it

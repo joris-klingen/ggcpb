@@ -362,14 +362,24 @@ without end caps.
 
 `cpb_scatter()` draws points in the house style. Without a `colour`
 column the points are CPB blue; a *numeric* `colour` column gets the
-continuous CPB gradient, a discrete one the discrete palette:
+continuous CPB gradient, a discrete one the discrete palette.
+
+Binning a numeric variable with `cpb_cut()` takes the second route: the
+classes get the light-to-dark `"blues"` palette and a legend of discrete
+keys, which is easier to read off a dense scatter than a gradient.
+`legend_ncol = 2` lays those keys out in two columns rather than one
+tall column:
 
 ``` r
 hh <- tibble(inkomen = round(rlnorm(400, log(2500), 0.35))) |>
   mutate(energierekening = round(90 + 0.04 * inkomen + rnorm(n(), 0, 35)),
          koopkracht      = round(rnorm(n(), (inkomen - 2500) / 1500, 2), 1))
 
-cpb_scatter(hh, x = inkomen, y = energierekening, colour = koopkracht,
+cpb_scatter(hh, x = inkomen, y = energierekening,
+  colour = cpb_cut(koopkracht, c(-Inf, -2, -1, 0, 1, 2, Inf),
+                   labeller = label_pct_nl()),
+  palette   = "blues",
+  legend_ncol = 2,
   title = "Energierekening naar inkomen",
   ylab  = "energierekening (euro per maand)",
   xlab  = "besteedbaar inkomen (euro per maand)",

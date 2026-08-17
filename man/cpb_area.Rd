@@ -17,6 +17,7 @@ cpb_area(
   forecast_x = NULL,
   forecast_label = "raming",
   reverse_legend = TRUE,
+  legend_ncol = NULL,
   facet = NULL,
   facet_ncol = NULL,
   facet_scales = "fixed",
@@ -74,6 +75,12 @@ starts; overlaid and labelled as in \code{\link[=cpb_line]{cpb_line()}}.}
 
 \item{reverse_legend}{If \code{TRUE} (default), reverse the fill legend
 order via \code{guide_legend(reverse = TRUE)}.}
+
+\item{legend_ncol}{Number of columns to lay the legend keys out in,
+passed to \code{guide_legend(ncol = )}. \code{NULL} (default) leaves the
+single flush-left column of the house style; \code{2} and up suit a
+legend with many short keys, such as binned classes from
+\code{\link[=cpb_cut]{cpb_cut()}}, which would otherwise run past the panel.}
 
 \item{facet}{Optional column (tidy eval) to facet by. Facets follow
 the house (legacy nicerplot) convention: the facet title is a bold
