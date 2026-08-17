@@ -822,6 +822,26 @@ cpb_area <- function(data, x, y, fill,
 #'   supplied.
 #' @param linewidth Line width; defaults to `0.55`, matching the
 #'   published CPB figures.
+#' @param sec_y Optional column (tidy eval) holding a series to draw
+#'   against a **secondary value axis** on the right, the house
+#'   dual-axis line chart (e.g. two rates in % on the left and an index
+#'   on the right). One value per `x`. Unlike [cpb_col()], where the
+#'   columns key on `fill` and the secondary line on `colour`, here the
+#'   primary series already key on `colour`: the secondary line joins
+#'   that same scale and takes the next palette position, so all series
+#'   share one legend block. House style names the axis in each label,
+#'   e.g. `"inflatie (linkeras)"` and `"reeel loon (rechteras)"`.
+#' @param sec_limits Length-2 numeric vector giving the range the
+#'   secondary axis spans. `NULL` (default) uses the range of `sec_y`.
+#'   The line is placed by mapping this range linearly onto the primary
+#'   range, so the two axes always start together.
+#' @param sec_label Legend label for the secondary line. `NULL`
+#'   (default) uses the `sec_y` column name.
+#' @param sec_ylab Unit caption for the secondary axis, drawn
+#'   right-aligned above the panel to mirror the left-hand unit that
+#'   `ylab` puts in the subtitle. `NULL` (default) draws none.
+#' @param sec_linewidth Line width for `sec_y`; `NULL` (default) uses
+#'   `linewidth`, so the secondary line matches the primary ones.
 #' @param points If `TRUE`, draw a point marker at every observation on
 #'   top of the line, the house variant used when the x axis holds a
 #'   handful of discrete categories (age brackets, quintiles) rather
@@ -902,6 +922,11 @@ cpb_area <- function(data, x, y, fill,
 cpb_line <- function(data, x, y, colour = NULL,
                       line_colour = NULL,
                       linewidth = 0.55,
+                      sec_y = NULL,
+                      sec_limits = NULL,
+                      sec_label = NULL,
+                      sec_ylab = NULL,
+                      sec_linewidth = NULL,
                       points = FALSE,
                       point_size = 1.1,
                       palette = "qualitative",
@@ -938,8 +963,10 @@ cpb_line <- function(data, x, y, colour = NULL,
   colour <- rlang::enquo(colour)
   ymin <- rlang::enquo(ymin)
   ymax <- rlang::enquo(ymax)
+  sec_y <- rlang::enquo(sec_y)
   facet <- rlang::enquo(facet)
   has_colour <- !rlang::quo_is_null(colour)
+  has_sec <- !rlang::quo_is_null(sec_y)
   has_band <- !rlang::quo_is_null(ymin) && !rlang::quo_is_null(ymax)
 
   # the house style bolds the zero line only when zero is on the axis, so
@@ -958,9 +985,55 @@ cpb_line <- function(data, x, y, colour = NULL,
   # own and the lines disappear entirely. One series per colour level,
   # or a single series when no colour is mapped, is always what is
   # meant here.
+  # the secondary series is placed by mapping its range linearly onto
+  # the primary one, so the two axes always start together
+  if (has_sec) {
+    sec_vals <- rlang::eval_tidy(sec_y, data)
+    if (!is.numeric(sec_vals)) {
+      stop("`sec_y` must be a numeric column.", call. = FALSE)
+    }
+    prim_vals <- rlang::eval_tidy(y, data)
+    prim_min <- min(prim_vals, na.rm = TRUE)
+    prim_max <- max(prim_vals, na.rm = TRUE)
+    if (!is.null(value_limits)) {
+      prim_min <- value_limits[[1]]
+      prim_max <- value_limits[[2]]
+    }
+    if (is.null(sec_limits)) {
+      sec_limits <- c(min(sec_vals, na.rm = TRUE), max(sec_vals, na.rm = TRUE))
+    }
+    if (length(sec_limits) != 2 || !is.numeric(sec_limits) ||
+        sec_limits[[2]] == sec_limits[[1]]) {
+      stop("`sec_limits` must be a length-2 numeric vector spanning a ",
+           "non-zero range.", call. = FALSE)
+    }
+    if (prim_max == prim_min) {
+      stop("the primary value axis has no range for `sec_y` to map onto.",
+           call. = FALSE)
+    }
+    sec_map <- list(prim_min = prim_min, prim_max = prim_max,
+                    sec_min = sec_limits[[1]], sec_max = sec_limits[[2]])
+    sec_lab <- if (is.null(sec_label)) rlang::as_label(sec_y) else sec_label
+    sec_df <- as.data.frame(data)
+    sec_df[["cpb__sec"]] <-
+      (sec_vals - sec_map$sec_min) / (sec_map$sec_max - sec_map$sec_min) *
+      (sec_map$prim_max - sec_map$prim_min) + sec_map$prim_min
+    sec_df[["cpb__seclab"]] <- sec_lab
+    sec_df <- sec_df[!duplicated(rlang::eval_tidy(x, data)), , drop = FALSE]
+  }
+
   if (has_colour) {
     mapping <- ggplot2::aes(x = !!x, y = !!y, colour = !!colour,
                             group = !!colour)
+  } else if (has_sec) {
+    # without a colour mapping there would be no key naming the primary
+    # line, leaving the legend explaining only the secondary axis. Give
+    # the primary line a key of its own, named after the `y` column.
+    prim_lab <- if (is.null(ylab)) rlang::as_label(y) else ylab
+    data <- as.data.frame(data)
+    data[["cpb__primlab"]] <- prim_lab
+    mapping <- ggplot2::aes(x = !!x, y = !!y,
+                            colour = .data[["cpb__primlab"]], group = 1)
   } else {
     mapping <- ggplot2::aes(x = !!x, y = !!y, group = 1)
   }
@@ -998,7 +1071,7 @@ cpb_line <- function(data, x, y, colour = NULL,
     }
   }
 
-  p <- p + if (has_colour) {
+  p <- p + if (has_colour || has_sec) {
     ggplot2::geom_line(linewidth = linewidth, show.legend = TRUE, ...)
   } else {
     # no colour mapping: draw one flat house-style colour (CPB primary
@@ -1010,10 +1083,34 @@ cpb_line <- function(data, x, y, colour = NULL,
   # the same colour variable, so ggplot2 overlays their glyphs into one
   # key -- a line with a marker on it, as in the published figures.
   if (isTRUE(points)) {
-    p <- p + if (has_colour) {
+    p <- p + if (has_colour || has_sec) {
       ggplot2::geom_point(size = point_size, show.legend = TRUE)
     } else {
       ggplot2::geom_point(size = point_size, colour = single_colour)
+    }
+  }
+
+  # the secondary series is rescaled onto the primary range and drawn
+  # as one more line. Unlike cpb_col(), where the columns key on fill
+  # and the line on colour, here the primary series already key on
+  # colour -- so the secondary line joins that same scale and takes the
+  # next palette position, which is how the published figures name both
+  # axes in a single legend block.
+  if (has_sec) {
+    p <- p + ggplot2::geom_line(
+      data = sec_df,
+      ggplot2::aes(x = !!x, y = .data[["cpb__sec"]], colour = .data[["cpb__seclab"]],
+                   group = 1),
+      linewidth = if (is.null(sec_linewidth)) linewidth else sec_linewidth,
+      show.legend = TRUE
+    )
+    if (isTRUE(points)) {
+      p <- p + ggplot2::geom_point(
+        data = sec_df,
+        ggplot2::aes(x = !!x, y = .data[["cpb__sec"]],
+                     colour = .data[["cpb__seclab"]]),
+        size = point_size, show.legend = TRUE
+      )
     }
   }
 
@@ -1022,20 +1119,45 @@ cpb_line <- function(data, x, y, colour = NULL,
     p <- p + cpb_forecast_label(forecast_x, rlang::eval_tidy(x, data), forecast_label)
   }
 
+  if (has_sec && !is.null(sec_ylab)) {
+    # mirrors the left-hand unit that `ylab` puts in the subtitle:
+    # right-aligned, italic, on the line just above the panel
+    p <- p + ggplot2::annotate(
+      "text", x = Inf, y = Inf, label = sec_ylab,
+      hjust = 1, vjust = -0.9, fontface = "italic",
+      size = 7 / ggplot2::.pt, family = cpb_font_family()
+    )
+  }
+
   # the panel is drawn tight around the data/limits, so the axis line
   # and ticks meet the outermost gridlines instead of floating beyond
-  # them
-  p <- p + ggplot2::coord_cartesian(ylim = value_limits, expand = FALSE)
+  # them. A secondary unit caption is drawn above the panel, so it has
+  # to survive clipping.
+  p <- p + ggplot2::coord_cartesian(
+    ylim = value_limits, expand = FALSE,
+    clip = if (has_sec && !is.null(sec_ylab)) "off" else "on")
 
   # no zero-flush expansion here: the tight coord above already pins
   # the panel to the data/limits
   scale_args <- cpb_value_scale_args(pct_axis = pct_axis,
                                      value_breaks = value_breaks)
+  if (has_sec) {
+    # the right-hand axis is the inverse of the map that placed the
+    # line, so its labels read in the secondary series' own units
+    sm <- sec_map
+    scale_args$sec.axis <- ggplot2::sec_axis(
+      transform = function(v) {
+        (v - sm$prim_min) / (sm$prim_max - sm$prim_min) *
+          (sm$sec_max - sm$sec_min) + sm$sec_min
+      },
+      labels = if (isTRUE(pct_axis)) label_pct_nl() else label_number_nl()
+    )
+  }
   if (length(scale_args)) {
     p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
   }
 
-  if (has_colour) {
+  if (has_colour || has_sec) {
     p <- p + if (!is.null(index)) {
       scale_colour_cpb_manual(index = index, palette = palette)
     } else {
