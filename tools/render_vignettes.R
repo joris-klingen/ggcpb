@@ -15,24 +15,24 @@ pkg_root <- normalizePath(file.path(dirname(sub(
   grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)[[1]]
 )), ".."))
 
+devtools::load_all(pkg_root, quiet = TRUE)
+
 # Dutch figures carry accented characters ("reele", "geindexeerd" with
 # their diaereses). Under a non-UTF-8 locale R reads each of those as
 # two undefined bytes, and the graphics device silently draws them as
 # missing glyphs -- so the rendered figures look fine to the build and
 # wrong to the reader. Fail loudly instead of committing that.
-if (!grepl("UTF-8", Sys.getlocale("LC_CTYPE"), ignore.case = TRUE)) {
+if (!ggcpb:::cpb_utf8_locale()) {
   for (loc in c("C.UTF-8", "en_US.UTF-8", "nl_NL.UTF-8")) {
     if (suppressWarnings(Sys.setlocale("LC_CTYPE", loc)) != "") break
   }
 }
-if (!grepl("UTF-8", Sys.getlocale("LC_CTYPE"), ignore.case = TRUE)) {
+if (!ggcpb:::cpb_utf8_locale()) {
   stop("LC_CTYPE is '", Sys.getlocale("LC_CTYPE"), "', which cannot ",
-       "represent the accented characters in the figures. Re-run with a ",
-       "UTF-8 locale, e.g. LC_ALL=C.UTF-8 Rscript tools/render_vignettes.R",
-       call. = FALSE)
+       "represent the accented characters in the figures, and no UTF-8 ",
+       "locale is available to switch to. Install one, or re-run with e.g. ",
+       "LC_ALL=C.UTF-8 Rscript tools/render_vignettes.R", call. = FALSE)
 }
-
-devtools::load_all(pkg_root, quiet = TRUE)
 
 out_dir <- file.path(pkg_root, "doc")
 dir.create(out_dir, showWarnings = FALSE)
