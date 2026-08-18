@@ -185,35 +185,106 @@ cpb_discrete_scale <- function(aesthetic = c("fill", "colour"), index = NULL,
   }
 }
 
-# x_lim_follow_data's flush: zero expansion on the x scale, whichever
-# type it turns out to be. Scale-level, not coord's own expand = FALSE
-# (which is blanket across both axes and would strip the value axis's
-# own flush expansion too -- the exact bug fixed in cpb_line()
-# earlier this session).
-cpb_flush_expand_x <- function(p, x, data) {
+# A whole-number x axis (almost always a year) must never get a
+# fractional break -- left to its own default break algorithm,
+# ggplot2 can choose fractional ones for some ranges (2010-2022 ->
+# ..., 2012.5, ..., confirmed empirically), and base pretty() itself
+# does the same for short enough ones (2020-2021 -> 2020, 2020.2, ...,
+# 2021). So this generates pretty()'s usual candidates but keeps only
+# the whole-number ones, the same "trust pretty(), just guard its edge
+# case" approach the value axis's own flush breaks already use (see
+# cpb_flush_scale_args()) -- applied unconditionally, independent of
+# `flush`.
+#
+# `flush` itself (x_lim_follow_data's own job: no padding on either
+# side) is scale-based here *only* for a discrete x -- a numeric x's
+# flush is handled by the caller instead, as the coord's own xlim (see
+# cpb_x_flush_xlim() below), which -- unlike a scale's expand -- is
+# not silently discarded if the caller adds their own
+# scale_x_continuous() afterward (e.g. for minor ticks; ggplot2 keeps
+# only one scale per aesthetic, but coord and scale are separate plot
+# components). A discrete x cannot use that same trick: a blanket
+# coord-level expand = FALSE also strips its own default padding
+# (expansion(add = 0.6)), clipping markers/labels at the first/last
+# category -- a real bug found and fixed on cpb_col()/cpb_line()
+# previously, so discrete x keeps the more limited, collision-prone
+# scale-based flush instead.
+cpb_x_scale <- function(p, x, data, flush) {
   xvals <- rlang::eval_tidy(x, data)
-  p + if (is.numeric(xvals)) {
-    ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = 0))
+  if (is.numeric(xvals)) {
+    if (!all(xvals == round(xvals))) return(p)
+    p + ggplot2::scale_x_continuous(breaks = function(range) {
+      br <- pretty(range)
+      br[br == round(br)]
+    })
+  } else if (isTRUE(flush)) {
+    p + ggplot2::scale_x_discrete(expand = ggplot2::expansion(mult = 0))
   } else {
-    ggplot2::scale_x_discrete(expand = ggplot2::expansion(mult = 0))
+    p
   }
+}
+
+# The coord-based half of x_lim_follow_data's flush, for a numeric x
+# only -- see cpb_x_scale() above for why. Returns NULL (nothing to
+# add) for a discrete x or when flush is not wanted, so callers can
+# unconditionally fold this into whatever xlim they would otherwise
+# pass their own coord_cartesian()/coord_flip() -- an explicit x_lim
+# from the caller already wins outright (this is never called when
+# x_lim is set).
+#
+# `pad` extends the raw data range by a fixed amount on each side --
+# for cpb_col()'s own bars specifically (see there for why: a bar's
+# own width sticks out past its x position by half of it, which the
+# data values alone know nothing about, and clip is "off" here by
+# default now, so that overhang would otherwise render spilling past
+# the panel instead of being invisibly cropped the way it used to be).
+cpb_x_flush_xlim <- function(x, data, flush, pad = 0) {
+  if (!isTRUE(flush)) return(NULL)
+  xvals <- rlang::eval_tidy(x, data)
+  if (!is.numeric(xvals)) return(NULL)
+  range(xvals, na.rm = TRUE) + c(-pad, pad)
 }
 
 # cpb_box() and cpb_dot() share the same orientation-aware coord +
 # x_lim_follow_data handling byte for byte; kept as one function so
-# the two can't drift apart when either one changes. clip is passed
-# in rather than computed here because what drives it (box_labels,
-# box_style) only exists on cpb_box()'s side.
-cpb_apply_coord <- function(p, orientation, x_lim, value_limits, clip,
-                            x, data, x_lim_follow_data, has_group) {
+# the two can't drift apart when either one changes. skip_x_flush:
+# cpb_box() adds its own wider x scale right after this call when
+# box_labels needs the room (see below), which would otherwise just
+# get silently added on top of (and replace) the flush one from here,
+# for no visible difference other than a "scale already present"
+# warning.
+#
+# clip is always "off" unless the caller explicitly zoomed with
+# x_lim -- every flush axis (x or value) legitimately puts a real
+# data point (a p5/p95 marker, box_style = "dot"'s own dot, ...)
+# exactly on the panel edge, and clip = "on" would cut half of its
+# symbol off there. An explicit x_lim is different: it is documented
+# as a deliberate visual crop ("a bar just outside the window still
+# contributes to breaks/totals but is only clipped for display"), so
+# that one case keeps clipping.
+cpb_apply_coord <- function(p, orientation, x_lim, value_limits,
+                            x, data, x_lim_follow_data, has_group,
+                            skip_x_flush = FALSE) {
+  clip <- if (is.null(x_lim)) "off" else "on"
+  do_flush <- is.null(x_lim) && !has_group && !skip_x_flush
+  flush_xlim <- if (do_flush) cpb_x_flush_xlim(x, data, x_lim_follow_data) else NULL
+  xlim_final <- if (!is.null(x_lim)) x_lim else flush_xlim
+
+  # expand = FALSE only to skip the *default* expansion flush_xlim
+  # itself already excludes -- ggplot2's coord_cartesian(expand =)
+  # is otherwise a single blanket switch for both axes, which would
+  # strip the value axis's own (already zero, via cpb_flush_scale_args())
+  # expansion too if forced off unconditionally; TRUE here just means
+  # "leave that alone", not "add padding"
+  expand <- is.null(flush_xlim)
   if (orientation == "horizontal") {
-    p <- p + if (!is.null(value_limits) || !is.null(x_lim)) {
-      ggplot2::coord_flip(xlim = x_lim, ylim = value_limits, clip = clip)
+    p <- p + if (!is.null(value_limits) || !is.null(xlim_final)) {
+      ggplot2::coord_flip(xlim = xlim_final, ylim = value_limits, clip = clip, expand = expand)
     } else {
       ggplot2::coord_flip(clip = clip)
     }
-  } else if (!is.null(value_limits) || !is.null(x_lim)) {
-    p <- p + ggplot2::coord_cartesian(xlim = x_lim, ylim = value_limits, clip = clip)
+  } else if (!is.null(value_limits) || !is.null(xlim_final)) {
+    p <- p + ggplot2::coord_cartesian(xlim = xlim_final, ylim = value_limits, clip = clip, expand = expand)
   } else if (clip == "off") {
     # covers every other reason the caller asked for clip = "off"
     # (has_group, box_labels, box_style = "dot", has_sec, ...) even
@@ -221,8 +292,8 @@ cpb_apply_coord <- function(p, orientation, x_lim, value_limits, clip,
     # coord_cartesian() call at all
     p <- p + ggplot2::coord_cartesian(clip = "off")
   }
-  if (isTRUE(x_lim_follow_data) && is.null(x_lim) && !has_group) {
-    p <- cpb_flush_expand_x(p, x, data)
+  if (do_flush) {
+    p <- cpb_x_scale(p, x, data, flush = isTRUE(x_lim_follow_data))
   }
   p
 }
@@ -271,19 +342,32 @@ cpb_sec_map <- function(sec_vals, sec_limits, prim_min, prim_max) {
     stop("`sec_y` must be a numeric column.", call. = FALSE)
   }
   if (is.null(sec_limits)) {
-    sec_limits <- c(
-      min(c(0, sec_vals), na.rm = TRUE),
-      max(c(0, sec_vals), na.rm = TRUE)
-    )
+    # sec_y's own data range, not forced to include zero: it is drawn
+    # as an overlay (line/points/thin bars), not an area encoding like
+    # the primary bars, and a series that is e.g. always negative (a
+    # deficit) or confined to a narrow band (a price index around 100)
+    # would otherwise have most of its own axis wasted on values that
+    # never occur. Pass `sec_limits` explicitly for a forced zero
+    # baseline.
+    sec_limits <- range(sec_vals, na.rm = TRUE)
   }
   if (length(sec_limits) != 2 || !is.numeric(sec_limits) ||
-    sec_limits[[2]] == sec_limits[[1]]) {
+    isTRUE(all.equal(sec_limits[[1]], sec_limits[[2]]))) {
     stop("`sec_limits` must be a length-2 numeric vector spanning a ",
       "non-zero range.",
       call. = FALSE
     )
   }
-  if (prim_max == prim_min) {
+  # all.equal() rather than == : a primary axis of exactly 0 to 0 is
+  # the obvious case, but the two can also merely be *representable*
+  # as unequal floating-point doubles while being the same value in
+  # every way that matters (e.g. a breaks/limits computation landing
+  # on 0.06 one way and 0.06000000000000001 the other) -- == would let
+  # that slip through into a division by a not-quite-zero range next,
+  # which is exactly the kind of near-zero denominator that produces
+  # wildly unstable, meaningless secondary-axis positions rather than
+  # a clean error.
+  if (isTRUE(all.equal(prim_min, prim_max))) {
     stop("the primary value axis has no range for `sec_y` to map onto.",
       call. = FALSE
     )
@@ -305,11 +389,14 @@ cpb_sec_to_primary <- function(v, sec_map) {
 # Step 3: the right-hand axis itself. It needs to undo step 2's
 # conversion, so that even though the secondary series is physically
 # drawn using primary-axis positions, the axis labels next to it show
-# the secondary series' real values -- always plain Dutch numbers,
-# regardless of whether the primary axis is a percentage. sec_y is
-# usually a different kind of quantity from the primary series (e.g.
-# a price alongside a percentage share), so it must never silently
-# inherit the primary axis's own pct_axis formatting.
+# the secondary series' real values -- plain Dutch numbers by default,
+# regardless of whether the primary axis is a percentage, since sec_y
+# is usually a different kind of quantity from the primary series
+# (e.g. a price alongside a percentage share) and must not silently
+# inherit the primary axis's own pct_axis formatting. `accuracy` (see
+# each wrapper's `sec_accuracy`) still works the same as it does for
+# the primary axis's own `value_accuracy`, for whenever the default
+# rounding is not the right one for this particular secondary series.
 #
 # Left to compute its own breaks, ggplot2's sec_axis() would pick
 # "nice" numbers independently in the secondary series' own units --
@@ -324,7 +411,7 @@ cpb_sec_to_primary <- function(v, sec_map) {
 # the panel to decide where to draw it), so each primary break first
 # has to be run through this same `transform` to get the matching
 # secondary-space number to hand it.
-cpb_sec_axis <- function(sec_map, primary_breaks) {
+cpb_sec_axis <- function(sec_map, primary_breaks, accuracy = NULL) {
   to_sec <- function(v) {
     (v - sec_map$prim_min) / (sec_map$prim_max - sec_map$prim_min) *
       (sec_map$sec_max - sec_map$sec_min) + sec_map$sec_min
@@ -332,7 +419,7 @@ cpb_sec_axis <- function(sec_map, primary_breaks) {
   ggplot2::sec_axis(
     transform = to_sec,
     breaks = to_sec(primary_breaks),
-    labels = label_number_nl()
+    labels = label_number_nl(accuracy = accuracy)
   )
 }
 
@@ -341,25 +428,31 @@ cpb_sec_axis <- function(sec_map, primary_breaks) {
 # it its own legend key. The key's label always gets " (rechteras)"
 # ("right axis" in Dutch) appended, which is the CPB house convention
 # for showing the reader which axis a legend entry belongs to.
+#
+# sec_point_size/sec_col_width are exposed (not hardcoded) so that,
+# say, sec_type = "point" on cpb_dot() can be sized to match that
+# wrapper's own primary `size` if the two are meant to read as the
+# same kind of mark -- each wrapper's own call site decides its
+# default, cpb_dot()'s defaulting to `size` itself, everyone else's to
+# a plain standalone default.
 cpb_sec_layer <- function(p, data, x, sec_vals, sec_map, sec_type,
-                          sec_col, sec_lab, sec_linewidth, sec_points) {
+                          sec_col, sec_lab, sec_linewidth, sec_points,
+                          sec_point_size, sec_col_width) {
   sec_df <- as.data.frame(data)
   sec_df[["cpb__sec"]] <- cpb_sec_to_primary(sec_vals, sec_map)
   sec_df <- sec_df[!duplicated(rlang::eval_tidy(x, data)), , drop = FALSE]
 
   if (sec_type == "col") {
-    # drawn narrower than the primary bars (whose default width is
-    # about 0.9), so the two don't just fully overlap each other
     p <- p + ggplot2::geom_col(
       data = sec_df,
       ggplot2::aes(x = !!x, y = .data[["cpb__sec"]], colour = sec_lab),
-      fill = sec_col, width = 0.3
+      fill = sec_col, width = sec_col_width
     )
   } else if (sec_type == "point") {
     p <- p + ggplot2::geom_point(
       data = sec_df,
       ggplot2::aes(x = !!x, y = .data[["cpb__sec"]], colour = sec_lab),
-      size = 1.6
+      size = sec_point_size
     )
   } else {
     p <- p + ggplot2::geom_line(
@@ -371,10 +464,12 @@ cpb_sec_layer <- function(p, data, x, sec_vals, sec_map, sec_type,
       linewidth = sec_linewidth
     )
     if (isTRUE(sec_points)) {
+      # a smaller marker than a standalone sec_type = "point" series --
+      # here it is decorating a line, not standing in as the only mark
       p <- p + ggplot2::geom_point(
         data = sec_df,
         ggplot2::aes(x = !!x, y = .data[["cpb__sec"]], colour = sec_lab),
-        size = 1.1
+        size = sec_point_size * 0.7
       )
     }
   }
@@ -568,6 +663,18 @@ cpb_forecast_label <- function(forecast_x, xvals, label) {
 #' @param sec_points If `TRUE`, add a marker at every point of the
 #'   `sec_y` line. Only used when `sec_type = "line"` -- for markers
 #'   without a connecting line, use `sec_type = "point"` instead.
+#' @param sec_point_size Point size; only used when `sec_type = "point"`
+#'   (the main marker) or `sec_type = "line"` with `sec_points = TRUE`
+#'   (a smaller marker decorating the line, at 0.7x this). Defaults
+#'   to `1.6`.
+#' @param sec_col_width Column width; only used when `sec_type = "col"`,
+#'   drawn narrower than the primary bars' own default width (about
+#'   `0.9`) so the two do not simply overlap. Defaults to `0.3`.
+#' @param sec_accuracy Rounding accuracy for the right-hand axis's own
+#'   labels, passed to [label_number_nl()]. `NULL` (default) uses that
+#'   function's own automatic rounding -- set this when `sec_y` needs
+#'   a different precision than its default (e.g. whole numbers for a
+#'   count alongside a one-decimal percentage share).
 #' @param value_limits Optional length-2 numeric vector giving the
 #'   value-axis range (the `y` axis, or the flipped axis when
 #'   `orientation = "horizontal"`). Applied as the wrapper-built value
@@ -583,12 +690,20 @@ cpb_forecast_label <- function(forecast_x, xvals, label) {
 #'   [ggplot2::coord_flip()] `xlim`), so a bar just outside the window
 #'   still contributes to breaks/totals but is only clipped for
 #'   display. `NULL` (default) shows the full range.
-#' @param x_lim_follow_data If `TRUE`, remove the default margin on
-#'   either side of the category axis so it sits flush to the data's
-#'   actual range, at the cost of ggplot2 picking its own breaks
-#'   within that (possibly non-round) range instead of the usual
-#'   padded, evenly spaced ones. Matches nicerplot's parameter of the
-#'   same name. Defaults to `FALSE`. Ignored when `x_lim` is set.
+#' @param x_lim_follow_data If `TRUE`, the category axis sits flush to
+#'   the data's own range, with no padding on either side (the bars'
+#'   own width is accounted for too, so the outermost bars never spill
+#'   past the panel edge). A whole-number `x` (almost always a year)
+#'   still only ever gets whole-number breaks, never a fractional one.
+#'   Defaults to `FALSE`: unlike a thin line, a bar's solid fill runs
+#'   edge-to-edge, so a flush axis leaves no visual cue for where the
+#'   data actually starts and ends -- ggplot2's usual padded, evenly
+#'   spaced margin (the default here) keeps that visible. Matches
+#'   nicerplot's parameter of the same name. Ignored when `x_lim` is
+#'   set. Adding your own `scale_x_continuous()`/`scale_x_discrete()`
+#'   afterward replaces this one entirely (ggplot2 keeps only one
+#'   scale per aesthetic) -- add `expand = ggplot2::expansion(mult = 0)`
+#'   to it to keep the flush behaviour when this is `TRUE`.
 #' @param palette CPB palette to use for `fill`; one of
 #'   `"qualitative"` (default), `"discr"`, `"sequential"`
 #'   (pink ramp), or `"blues"` (blue ramp).
@@ -693,6 +808,9 @@ cpb_col <- function(data, x, y, fill = NULL,
                      sec_colour = NULL,
                      sec_linewidth = 0.55,
                      sec_points = FALSE,
+                     sec_point_size = 1.6,
+                     sec_col_width = 0.3,
+                     sec_accuracy = NULL,
                      palette = "qualitative",
                      fill_index = NULL,
                      index = NULL,
@@ -874,7 +992,8 @@ cpb_col <- function(data, x, y, fill = NULL,
     sec_lab <- if (is.null(sec_label)) rlang::as_label(sec_y) else sec_label
     sec_col <- cpb_single_colour(sec_colour, 2)
     p <- cpb_sec_layer(p, data, x, sec_vals, sec_map, sec_type,
-                       sec_col, sec_lab, sec_linewidth, sec_points)
+                       sec_col, sec_lab, sec_linewidth, sec_points,
+                       sec_point_size, sec_col_width)
   }
 
   # The zero line sits on the value axis (the y aesthetic even under
@@ -887,6 +1006,53 @@ cpb_col <- function(data, x, y, fill = NULL,
       cpb_forecast_pos(forecast_x, rlang::eval_tidy(x, data)),
       rlang::eval_tidy(x, data), forecast_label)
   }
+
+  # x_lim_follow_data's flush: for a numeric x, computed as the
+  # coord's own xlim below (survives a caller's own follow-up
+  # scale_x_continuous(), e.g. for minor ticks -- see cpb_x_scale()'s
+  # own comment for why); for a discrete x, scale-based instead
+  # (cpb_x_scale(), further down) since a coord-level flush also
+  # strips a discrete axis's own default padding, clipping
+  # markers/labels at the first/last category. Ignored for the
+  # grouped layout, which needs its own fixed margin for the heading
+  # rows, and superseded by an explicit x_lim either way.
+  #
+  # padded by half the bars' own width: a numeric x's flush range is
+  # otherwise only as wide as the data *positions*, but a bar drawn at
+  # the outermost position still extends half its width past it --
+  # invisibly cropped before (clip defaulted to "on"), but clip is
+  # "off" by default now (see below), so that overhang would otherwise
+  # spill visibly past the panel instead. position = "dodge" splits
+  # the width *within* one x position across groups, so the outermost
+  # edge of the whole cluster is still this same half-width, regardless
+  # of how many groups share it.
+  bar_width <- list(...)$width
+  if (is.null(bar_width)) {
+    xvals_for_width <- rlang::eval_tidy(x, data)
+    bar_width <- if (is.numeric(xvals_for_width)) {
+      0.9 * ggplot2::resolution(xvals_for_width, zero = FALSE)
+    } else {
+      0.9
+    }
+  }
+  do_flush <- is.null(x_lim) && !has_group
+  flush_xlim <- if (do_flush) {
+    cpb_x_flush_xlim(x, data, x_lim_follow_data, pad = bar_width / 2)
+  } else {
+    NULL
+  }
+  xlim_final <- if (!is.null(x_lim)) x_lim else flush_xlim
+  # always off unless the caller explicitly zoomed with x_lim -- every
+  # flush axis (x or value) legitimately puts a real data point (a
+  # sec_y marker, for instance -- its default range runs to the data's
+  # own max) exactly on the panel edge, and clip = "on" would cut half
+  # of its symbol off there; an explicit x_lim is a deliberate visual
+  # crop instead, so that one case keeps clipping. expand = FALSE only
+  # skips the default expansion flush_xlim itself already excludes --
+  # the value axis's own expansion is already zero either way (see
+  # cpb_flush_scale_args()), so this never strips anything from it
+  clip <- if (is.null(x_lim)) "off" else "on"
+  expand <- is.null(flush_xlim)
 
   if (has_group) {
     p <- p +
@@ -905,28 +1071,18 @@ cpb_col <- function(data, x, y, fill = NULL,
       ) +
       ggplot2::coord_cartesian(xlim = x_lim, ylim = value_limits, clip = "off")
   } else if (orientation == "horizontal") {
-    p <- p + if (!is.null(value_limits) || !is.null(x_lim)) {
-      ggplot2::coord_flip(xlim = x_lim, ylim = value_limits)
+    p <- p + if (!is.null(value_limits) || !is.null(xlim_final)) {
+      ggplot2::coord_flip(xlim = xlim_final, ylim = value_limits, clip = clip, expand = expand)
     } else {
-      ggplot2::coord_flip()
+      ggplot2::coord_flip(clip = clip)
     }
-  } else if (has_sec) {
-    # sec_y's own markers can legitimately sit exactly on the flush
-    # axis boundary (its default range runs to the data's own max), so
-    # a point or line there would otherwise be half-cropped by the
-    # panel edge; the secondary unit caption, when present, is drawn
-    # above the panel and needs the same
-    p <- p + ggplot2::coord_cartesian(xlim = x_lim, ylim = value_limits, clip = "off")
-  } else if (!is.null(value_limits) || !is.null(x_lim)) {
-    p <- p + ggplot2::coord_cartesian(xlim = x_lim, ylim = value_limits)
+  } else if (!is.null(value_limits) || !is.null(xlim_final) || clip == "off") {
+    p <- p + ggplot2::coord_cartesian(
+      xlim = xlim_final, ylim = value_limits, clip = clip, expand = expand
+    )
   }
-  # x_lim_follow_data strips the category axis's default margin so it
-  # sits flush to the data's own range -- a scale-level expand (not a
-  # coord one, which would also strip the value axis's own expansion);
-  # ignored for the grouped layout, which needs its own fixed margin
-  # for the heading rows, and superseded by an explicit x_lim
-  if (isTRUE(x_lim_follow_data) && is.null(x_lim) && !has_group) {
-    p <- cpb_flush_expand_x(p, x, data)
+  if (do_flush) {
+    p <- cpb_x_scale(p, x, data, flush = isTRUE(x_lim_follow_data))
   }
 
   if (has_sec && !is.null(sec_ylab)) {
@@ -949,7 +1105,7 @@ cpb_col <- function(data, x, y, fill = NULL,
     value_limits = value_limits
   )
   if (has_sec) {
-    scale_args$sec.axis <- cpb_sec_axis(sec_map, scale_args$breaks)
+    scale_args$sec.axis <- cpb_sec_axis(sec_map, scale_args$breaks, sec_accuracy)
   }
   if (length(scale_args)) {
     p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
@@ -1081,6 +1237,18 @@ cpb_col <- function(data, x, y, fill = NULL,
 #' @param sec_points If `TRUE`, add a marker at every point of the
 #'   `sec_y` line. Only used when `sec_type = "line"` -- for markers
 #'   without a connecting line, use `sec_type = "point"` instead.
+#' @param sec_point_size Point size; only used when `sec_type = "point"`
+#'   (the main marker) or `sec_type = "line"` with `sec_points = TRUE`
+#'   (a smaller marker decorating the line, at 0.7x this). Defaults
+#'   to `1.6`.
+#' @param sec_col_width Column width; only used when `sec_type = "col"`,
+#'   drawn narrower than the primary bars' own default width (about
+#'   `0.9`) so the two do not simply overlap. Defaults to `0.3`.
+#' @param sec_accuracy Rounding accuracy for the right-hand axis's own
+#'   labels, passed to [label_number_nl()]. `NULL` (default) uses that
+#'   function's own automatic rounding -- set this when `sec_y` needs
+#'   a different precision than its default (e.g. whole numbers for a
+#'   count alongside a one-decimal percentage share).
 #' @param palette CPB palette to use for `fill`; one of
 #'   `"qualitative"` (default), `"discr"`, `"sequential"`
 #'   (pink ramp), or `"blues"` (blue ramp).
@@ -1112,12 +1280,19 @@ cpb_col <- function(data, x, y, fill = NULL,
 #'   range, without dropping data -- applied as a coordinate-system
 #'   zoom ([ggplot2::coord_cartesian()] `xlim`). `NULL` (default) shows
 #'   the full range.
-#' @param x_lim_follow_data If `TRUE`, remove the default margin on
-#'   either side of the `x` axis so it sits flush to the data's actual
-#'   range, at the cost of ggplot2 picking its own breaks within that
-#'   (possibly non-round) range instead of the usual padded, evenly
-#'   spaced ones. Matches nicerplot's parameter of the same name.
-#'   Defaults to `FALSE`. Ignored when `x_lim` is set.
+#' @param x_lim_follow_data If `TRUE`, the `x` axis sits flush to the
+#'   data's own range, with no padding on either side. A whole-number
+#'   `x` (almost always a year) still only ever gets whole-number
+#'   breaks, never a fractional one. Defaults to `FALSE`: unlike a
+#'   thin line, an area's solid fill runs edge-to-edge, so a flush
+#'   axis leaves no visual cue for where the data actually starts and
+#'   ends -- ggplot2's usual padded, evenly spaced margin (the default
+#'   here) keeps that visible. Matches nicerplot's parameter of the
+#'   same name. Ignored when `x_lim` is set. Adding your own
+#'   `scale_x_continuous()`/`scale_x_discrete()` afterward replaces
+#'   this one entirely (ggplot2 keeps only one scale per aesthetic) --
+#'   add `expand = ggplot2::expansion(mult = 0)` to it to keep the
+#'   flush behaviour when this is `TRUE`.
 #' @param reverse_legend If `TRUE` (default), reverse the fill legend
 #'   order via `guide_legend(reverse = TRUE)`.
 #' @param legend_ncol Number of columns to lay the legend keys out in,
@@ -1175,6 +1350,9 @@ cpb_area <- function(data, x, y, fill,
                       sec_colour = NULL,
                       sec_linewidth = 0.55,
                       sec_points = FALSE,
+                      sec_point_size = 1.6,
+                      sec_col_width = 0.3,
+                      sec_accuracy = NULL,
                       palette = "qualitative",
                       fill_index = NULL,
                       index = NULL,
@@ -1269,23 +1447,40 @@ cpb_area <- function(data, x, y, fill,
     sec_lab <- if (is.null(sec_label)) rlang::as_label(sec_y) else sec_label
     sec_col <- cpb_single_colour(sec_colour, 2)
     p <- cpb_sec_layer(p, data, x, sec_vals, sec_map, sec_type,
-                       sec_col, sec_lab, sec_linewidth, sec_points)
-    scale_args$sec.axis <- cpb_sec_axis(sec_map, scale_args$breaks)
+                       sec_col, sec_lab, sec_linewidth, sec_points,
+                       sec_point_size, sec_col_width)
+    scale_args$sec.axis <- cpb_sec_axis(sec_map, scale_args$breaks, sec_accuracy)
   }
   if (length(scale_args)) {
     p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
   }
-  # sec_y's own markers can legitimately sit exactly on the flush axis
-  # boundary (its default range runs to the data's own max), so a
-  # point or line there would otherwise be half-cropped by the panel
-  # edge; the secondary unit caption, when present, is drawn above the
-  # panel and needs the same
-  clip <- if (has_sec) "off" else "on"
-  if (!is.null(value_limits) || !is.null(x_lim) || clip == "off") {
-    p <- p + ggplot2::coord_cartesian(xlim = x_lim, ylim = value_limits, clip = clip)
+  # x_lim_follow_data's flush: for a numeric x, computed as the
+  # coord's own xlim (survives a caller's own follow-up
+  # scale_x_continuous(), e.g. for minor ticks -- see cpb_x_scale()'s
+  # own comment for why); for a discrete x, scale-based instead
+  # (cpb_x_scale(), below). Superseded by an explicit x_lim.
+  do_flush <- is.null(x_lim)
+  flush_xlim <- if (do_flush) cpb_x_flush_xlim(x, data, x_lim_follow_data) else NULL
+  xlim_final <- if (!is.null(x_lim)) x_lim else flush_xlim
+  # always off unless the caller explicitly zoomed with x_lim -- every
+  # flush axis (x or value) legitimately puts a real data point (a
+  # sec_y marker, for instance -- its default range runs to the data's
+  # own max) exactly on the panel edge, and clip = "on" would cut half
+  # of its symbol off there; an explicit x_lim is a deliberate visual
+  # crop instead, so that one case keeps clipping
+  clip <- if (is.null(x_lim)) "off" else "on"
+  if (!is.null(value_limits) || !is.null(xlim_final) || clip == "off") {
+    # expand = FALSE only skips the default expansion flush_xlim
+    # itself already excludes -- the value axis's own expansion is
+    # already zero either way (see cpb_flush_scale_args()), so this
+    # never strips anything from it
+    p <- p + ggplot2::coord_cartesian(
+      xlim = xlim_final, ylim = value_limits, clip = clip,
+      expand = is.null(flush_xlim)
+    )
   }
-  if (isTRUE(x_lim_follow_data) && is.null(x_lim)) {
-    p <- cpb_flush_expand_x(p, x, data)
+  if (do_flush) {
+    p <- cpb_x_scale(p, x, data, flush = isTRUE(x_lim_follow_data))
   }
 
   if (has_sec && !is.null(sec_ylab)) {
@@ -1420,6 +1615,18 @@ cpb_area <- function(data, x, y, fill,
 #' @param sec_points If `TRUE`, add a marker at every point of the
 #'   `sec_y` line. Only used when `sec_type = "line"` -- for markers
 #'   without a connecting line, use `sec_type = "point"` instead.
+#' @param sec_point_size Point size; only used when `sec_type = "point"`
+#'   (the main marker) or `sec_type = "line"` with `sec_points = TRUE`
+#'   (a smaller marker decorating the line, at 0.7x this). Defaults
+#'   to `1.6`.
+#' @param sec_col_width Column width; only used when `sec_type = "col"`,
+#'   drawn narrower than the primary bars' own default width (about
+#'   `0.9`) so the two do not simply overlap. Defaults to `0.3`.
+#' @param sec_accuracy Rounding accuracy for the right-hand axis's own
+#'   labels, passed to [label_number_nl()]. `NULL` (default) uses that
+#'   function's own automatic rounding -- set this when `sec_y` needs
+#'   a different precision than its default (e.g. whole numbers for a
+#'   count alongside a one-decimal percentage share).
 #' @param palette CPB palette to use for `colour`; one of
 #'   `"qualitative"` (default), `"discr"`, `"sequential"`
 #'   (pink ramp), or `"blues"` (blue ramp).
@@ -1456,12 +1663,17 @@ cpb_area <- function(data, x, y, fill,
 #'   range, without dropping data -- applied as a coordinate-system
 #'   zoom ([ggplot2::coord_cartesian()] `xlim`). `NULL` (default) shows
 #'   the full range.
-#' @param x_lim_follow_data If `TRUE`, remove the default margin on
-#'   either side of the `x` axis so it sits flush to the data's actual
-#'   range, at the cost of ggplot2 picking its own breaks within that
-#'   (possibly non-round) range instead of the usual padded, evenly
-#'   spaced ones. Matches nicerplot's parameter of the same name.
-#'   Defaults to `FALSE`. Ignored when `x_lim` is set.
+#' @param x_lim_follow_data If `TRUE` (default), the `x` axis sits
+#'   flush to the data's own range, with no padding on either side. A
+#'   whole-number `x` (almost always a year) still only ever gets
+#'   whole-number breaks, never a fractional one. Set to `FALSE` to
+#'   restore ggplot2's usual padded, evenly spaced margin instead.
+#'   Matches nicerplot's parameter of the same name. Ignored when
+#'   `x_lim` is set.
+#'   Adding your own `scale_x_continuous()`/`scale_x_discrete()`
+#'   afterward replaces this one entirely (ggplot2 keeps only one
+#'   scale per aesthetic) -- add `expand = ggplot2::expansion(mult = 0)`
+#'   to it to keep the flush behaviour.
 #' @param reverse_legend If `TRUE`, reverse the colour legend order
 #'   via `guide_legend(reverse = TRUE)`. Defaults to `FALSE`: unlike
 #'   the stacked wrappers, line order carries no stacking convention.
@@ -1533,6 +1745,9 @@ cpb_line <- function(data, x, y, colour = NULL,
                       sec_colour = NULL,
                       sec_linewidth = NULL,
                       sec_points = FALSE,
+                      sec_point_size = 1.6,
+                      sec_col_width = 0.3,
+                      sec_accuracy = NULL,
                       palette = "qualitative",
                       colour_index = NULL,
                       color_index = NULL,
@@ -1542,7 +1757,7 @@ cpb_line <- function(data, x, y, colour = NULL,
                       value_breaks = NULL,
                       value_limits = NULL,
                       x_lim = NULL,
-                      x_lim_follow_data = FALSE,
+                      x_lim_follow_data = TRUE,
                       ymin = NULL,
                       ymax = NULL,
                       forecast_x = NULL,
@@ -1737,30 +1952,7 @@ cpb_line <- function(data, x, y, colour = NULL,
     )
   }
 
-  # the panel is drawn tight around the data/limits, so the axis line
-  # and ticks meet the outermost gridlines instead of floating beyond
-  # them. A secondary unit caption is drawn above the panel, so it has
-  # to survive clipping.
-  #
-  # Markers, unlike a line, have a radius: against a panel pinned
-  # exactly to the data range the first, last and extreme points get
-  # sliced in half by the panel edge. So when points are drawn, fall
-  # back to ggplot2's default expansion for the margin they need.
-  # Clipping stays on either way, so `value_limits` still crops rather
-  # than letting out-of-range data spill over the axis labels.
-  p <- p + ggplot2::coord_cartesian(
-    clip = if (has_sec && !is.null(sec_ylab)) "off" else "on")
-
-  # A continuous x axis is flushed the same way -- zero expansion --
-  # unless points are drawn, in which case it needs the same marker
-  # margin as the value axis. A discrete x axis is left alone: it
-  # always keeps ggplot2's own categorical padding.
-  if (!isTRUE(points) && is.numeric(rlang::eval_tidy(x, data))) {
-    p <- p + ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = c(0, 0)))
-  }
-
   # Use pretty() breaks as scale limits to keep the value axis flush.
-  # Keep default coord expansion so discrete x keeps its edge padding.
   axis_values <- rlang::eval_tidy(y, data)
   if (has_band) {
     axis_values <- c(
@@ -1791,29 +1983,34 @@ cpb_line <- function(data, x, y, colour = NULL,
     p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
   }
 
-  if (!is.null(x_lim)) {
-    # sec_y's own markers can legitimately sit exactly on the flush
-    # axis boundary (its default range runs to the data's own max), so
-    # a point or line there would otherwise be half-cropped by the
-    # panel edge
-    p <- p + ggplot2::coord_cartesian(xlim = x_lim, clip = if (has_sec) "off" else "on")
-  } else if (has_sec) {
-    p <- p + ggplot2::coord_cartesian(clip = "off")
-  }
-  if (isTRUE(x_lim_follow_data) && is.null(x_lim)) {
-    # scale-level, not coord's own expand = FALSE, which is blanket
-    # across both axes and would strip the value axis's own flush
-    # expansion too (see the discrete-x clipping fix above)
-    p <- cpb_flush_expand_x(p, x, data)
-  }
-  if (has_sec && !is.null(sec_ylab)) {
-    # mirrors the left-hand unit that `ylab` puts in the subtitle:
-    # right-aligned, italic, on the line just above the panel
-    p <- p + ggplot2::annotate(
-      "text", x = Inf, y = Inf, label = sec_ylab,
-      hjust = 1, vjust = -0.9, fontface = "italic",
-      size = 7 / ggplot2::.pt, family = cpb_font_family()
+  # x_lim_follow_data's flush: for a numeric x, computed as the
+  # coord's own xlim (survives a caller's own follow-up
+  # scale_x_continuous(), e.g. for minor ticks -- this is exactly the
+  # coord-based approach the comment above found and reverted, just
+  # scoped to numeric x only this time); for a discrete x, scale-based
+  # instead (cpb_x_scale(), below). Superseded by an explicit x_lim.
+  do_flush <- is.null(x_lim)
+  flush_xlim <- if (do_flush) cpb_x_flush_xlim(x, data, x_lim_follow_data) else NULL
+  xlim_final <- if (!is.null(x_lim)) x_lim else flush_xlim
+  # always off unless the caller explicitly zoomed with x_lim -- every
+  # flush axis (x or value) legitimately puts a real data point (a
+  # sec_y marker, a points = TRUE marker, ...) exactly on the panel
+  # edge, and clip = "on" would cut half of its symbol off there; an
+  # explicit x_lim is a deliberate visual crop instead, so that one
+  # case keeps clipping
+  clip <- if (is.null(x_lim)) "off" else "on"
+
+  if (!is.null(xlim_final) || clip == "off") {
+    # expand = FALSE only skips the default expansion flush_xlim
+    # itself already excludes -- the value axis's own expansion is
+    # already zero either way (see cpb_flush_scale_args()), so this
+    # never strips anything from it
+    p <- p + ggplot2::coord_cartesian(
+      xlim = xlim_final, clip = clip, expand = is.null(flush_xlim)
     )
+  }
+  if (do_flush) {
+    p <- cpb_x_scale(p, x, data, flush = isTRUE(x_lim_follow_data))
   }
 
   if (has_colour || has_sec) {
@@ -1964,14 +2161,18 @@ cpb_line <- function(data, x, y, colour = NULL,
 #'   coordinate-system zoom ([ggplot2::coord_cartesian()] /
 #'   [ggplot2::coord_flip()] `xlim`). `NULL` (default) shows the full
 #'   range.
-#' @param x_lim_follow_data If `TRUE`, remove the default margin on
-#'   either side of the category axis so it sits flush to the data's
-#'   actual range, at the cost of ggplot2 picking its own breaks within
-#'   that (possibly non-round) range instead of the usual padded,
-#'   evenly spaced ones. Matches nicerplot's parameter of the same
-#'   name. Defaults to `FALSE`. Ignored when `x_lim` is set, and when
-#'   `group` is mapped (the grouped layout needs its own fixed margin
-#'   for the heading rows).
+#' @param x_lim_follow_data If `TRUE` (default), the category axis
+#'   sits flush to the data's own range, with no padding on either
+#'   side. A whole-number `x` (almost always a year) still only ever
+#'   gets whole-number breaks, never a fractional one. Set to `FALSE`
+#'   to restore ggplot2's usual padded, evenly spaced margin instead.
+#'   Matches nicerplot's parameter of the same name. Ignored when
+#'   `x_lim` is set, and when `group` is mapped (the grouped layout
+#'   needs its own fixed margin for the heading rows).
+#'   Adding your own `scale_x_continuous()`/`scale_x_discrete()`
+#'   afterward replaces this one entirely (ggplot2 keeps only one
+#'   scale per aesthetic) -- add `expand = ggplot2::expansion(mult = 0)`
+#'   to it to keep the flush behaviour.
 #' @param orientation `"vertical"` (default) or `"horizontal"` (adds
 #'   [ggplot2::coord_flip()] and is forwarded to [theme_cpb()]).
 #' @param sec_y Optional column (tidy eval) holding a series to draw
@@ -2003,6 +2204,18 @@ cpb_line <- function(data, x, y, colour = NULL,
 #' @param sec_points If `TRUE`, add a marker at every point of the
 #'   `sec_y` line. Only used when `sec_type = "line"` -- for markers
 #'   without a connecting line, use `sec_type = "point"` instead.
+#' @param sec_point_size Point size; only used when `sec_type = "point"`
+#'   (the main marker) or `sec_type = "line"` with `sec_points = TRUE`
+#'   (a smaller marker decorating the line, at 0.7x this). Defaults
+#'   to `1.6`.
+#' @param sec_col_width Column width; only used when `sec_type = "col"`,
+#'   drawn narrower than the primary bars' own default width (about
+#'   `0.9`) so the two do not simply overlap. Defaults to `0.3`.
+#' @param sec_accuracy Rounding accuracy for the right-hand axis's own
+#'   labels, passed to [label_number_nl()]. `NULL` (default) uses that
+#'   function's own automatic rounding -- set this when `sec_y` needs
+#'   a different precision than its default (e.g. whole numbers for a
+#'   count alongside a one-decimal percentage share).
 #' @param reverse_legend If `TRUE`, reverse the fill legend order via
 #'   `guide_legend(reverse = TRUE)`. Defaults to `FALSE`; useful when
 #'   the fill levels were reversed to control the dodge order under
@@ -2073,7 +2286,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                      value_limits = NULL,
                      value_axis = c("bottom", "top"),
                      x_lim = NULL,
-                     x_lim_follow_data = FALSE,
+                     x_lim_follow_data = TRUE,
                      orientation = c("vertical", "horizontal"),
                      sec_y = NULL,
                      sec_type = c("line", "point", "col"),
@@ -2083,6 +2296,9 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                      sec_colour = NULL,
                      sec_linewidth = 0.55,
                      sec_points = FALSE,
+                     sec_point_size = 1.6,
+                     sec_col_width = 0.3,
+                     sec_accuracy = NULL,
                      facet = NULL,
                      facet_ncol = NULL,
                      facet_scales = "fixed",
@@ -2455,24 +2671,15 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     sec_lab <- if (is.null(sec_label)) rlang::as_label(sec_y) else sec_label
     sec_col <- cpb_single_colour(sec_colour, 2)
     p <- cpb_sec_layer(p, data, x, sec_vals, sec_map, sec_type,
-                       sec_col, sec_lab, sec_linewidth, sec_points)
-    scale_args$sec.axis <- cpb_sec_axis(sec_map, scale_args$breaks)
+                       sec_col, sec_lab, sec_linewidth, sec_points,
+                       sec_point_size, sec_col_width)
+    scale_args$sec.axis <- cpb_sec_axis(sec_map, scale_args$breaks, sec_accuracy)
   }
 
-  # the grouped layout draws its bold headings outside the panel, the
-  # james/modern value labels are nudged past their box's own category
-  # slot (the median label above it, the modern quartile labels
-  # below), the dot style's p5/p95 markers can legitimately land
-  # exactly on the flush value-axis boundary (e.g. a p5 of zero on a
-  # zero-flush axis), and sec_y's own markers can just as legitimately
-  # land on it too (its default range runs to the data's own max) --
-  # all would otherwise get half-cropped by the panel edge, so
-  # clipping is turned off in all these cases
-  clip <- if (has_group || isTRUE(box_labels) || box_style == "dot" ||
-             has_sec) "off" else "on"
   p <- cpb_apply_coord(
-    p, orientation, x_lim, value_limits, clip,
-    x, data, x_lim_follow_data, has_group
+    p, orientation, x_lim, value_limits,
+    x, data, x_lim_follow_data, has_group,
+    skip_x_flush = isTRUE(box_labels) && !has_group
   )
 
   # value_axis = "top" draws the value scale at the top of the panel
@@ -2800,9 +3007,14 @@ cpb_scatter <- function(data, x, y, colour = NULL,
     flush_xlim <- range(x_breaks)
   }
   y_breaks <- pretty(range(rlang::eval_tidy(y, data), na.rm = TRUE))
+  # always off unless the caller explicitly zoomed with x_lim -- a
+  # point can legitimately land exactly on either flush boundary, and
+  # clip = "on" would cut half its symbol off there; an explicit
+  # x_lim is a deliberate visual crop instead, so that one case keeps
+  # clipping
   p <- p + ggplot2::coord_cartesian(
     xlim = flush_xlim, ylim = range(y_breaks),
-    expand = FALSE
+    expand = FALSE, clip = if (is.null(x_lim)) "off" else "on"
   )
   x_scale_args <- if (!is.null(x_breaks)) list(breaks = x_breaks) else list()
   p <- p + do.call(ggplot2::scale_x_continuous, x_scale_args) +
@@ -2979,8 +3191,8 @@ cpb_hist <- function(data, x, fill = NULL,
   # x_lim only ever changes what is visible, never the binning itself
   if (!is.null(x_lim)) {
     p <- p + ggplot2::coord_cartesian(xlim = x_lim)
-  } else if (isTRUE(x_lim_follow_data)) {
-    p <- cpb_flush_expand_x(p, x, data)
+  } else {
+    p <- cpb_x_scale(p, x, data, flush = isTRUE(x_lim_follow_data))
   }
 
   if (has_fill) {
@@ -3073,6 +3285,18 @@ cpb_hist <- function(data, x, fill = NULL,
 #' @param sec_points If `TRUE`, add a marker at every point of the
 #'   `sec_y` line. Only used when `sec_type = "line"` -- for markers
 #'   without a connecting line, use `sec_type = "point"` instead.
+#' @param sec_point_size Point size; only used when `sec_type = "point"`
+#'   (the main marker) or `sec_type = "line"` with `sec_points = TRUE`
+#'   (a smaller marker decorating the line, at 0.7x this). Defaults to
+#'   `size`, matching the primary points.
+#' @param sec_col_width Column width; only used when `sec_type = "col"`,
+#'   drawn narrow enough not to visually compete with the point/interval
+#'   marks. Defaults to `0.3`.
+#' @param sec_accuracy Rounding accuracy for the right-hand axis's own
+#'   labels, passed to [label_number_nl()]. `NULL` (default) uses that
+#'   function's own automatic rounding -- set this when `sec_y` needs
+#'   a different precision than its default (e.g. whole numbers for a
+#'   count alongside a one-decimal percentage share).
 #' @param palette CPB palette to use for `colour`; one of
 #'   `"qualitative"` (default), `"discr"`, `"sequential"`
 #'   (pink ramp), or `"blues"` (blue ramp).
@@ -3110,14 +3334,18 @@ cpb_hist <- function(data, x, fill = NULL,
 #'   coordinate-system zoom ([ggplot2::coord_cartesian()] /
 #'   [ggplot2::coord_flip()] `xlim`). `NULL` (default) shows the full
 #'   range.
-#' @param x_lim_follow_data If `TRUE`, remove the default margin on
-#'   either side of the category axis so it sits flush to the data's
-#'   actual range, at the cost of ggplot2 picking its own breaks within
-#'   that (possibly non-round) range instead of the usual padded,
-#'   evenly spaced ones. Matches nicerplot's parameter of the same
-#'   name. Defaults to `FALSE`. Ignored when `x_lim` is set, and when
-#'   `group` is mapped (the grouped layout needs its own fixed margin
-#'   for the heading rows).
+#' @param x_lim_follow_data If `TRUE` (default), the category axis
+#'   sits flush to the data's own range, with no padding on either
+#'   side. A whole-number `x` (almost always a year) still only ever
+#'   gets whole-number breaks, never a fractional one. Set to `FALSE`
+#'   to restore ggplot2's usual padded, evenly spaced margin instead.
+#'   Matches nicerplot's parameter of the same name. Ignored when
+#'   `x_lim` is set, and when `group` is mapped (the grouped layout
+#'   needs its own fixed margin for the heading rows).
+#'   Adding your own `scale_x_continuous()`/`scale_x_discrete()`
+#'   afterward replaces this one entirely (ggplot2 keeps only one
+#'   scale per aesthetic) -- add `expand = ggplot2::expansion(mult = 0)`
+#'   to it to keep the flush behaviour.
 #' @param zeroline If `TRUE` (default), draw a solid black reference
 #'   line at zero on the value axis -- the line the intervals are read
 #'   against.
@@ -3174,6 +3402,9 @@ cpb_dot <- function(data, x, y, lower, upper,
                      sec_colour = NULL,
                      sec_linewidth = 0.55,
                      sec_points = FALSE,
+                     sec_point_size = size,
+                     sec_col_width = 0.3,
+                     sec_accuracy = NULL,
                      palette = "qualitative",
                      colour_index = NULL,
                      color_index = NULL,
@@ -3183,7 +3414,7 @@ cpb_dot <- function(data, x, y, lower, upper,
                      value_breaks = NULL,
                      value_limits = NULL,
                      x_lim = NULL,
-                     x_lim_follow_data = FALSE,
+                     x_lim_follow_data = TRUE,
                      zeroline = TRUE,
                      reverse_legend = FALSE,
                      legend_ncol = NULL,
@@ -3328,18 +3559,13 @@ cpb_dot <- function(data, x, y, lower, upper,
     sec_lab <- if (is.null(sec_label)) rlang::as_label(sec_y) else sec_label
     sec_col <- cpb_single_colour(sec_colour, 2)
     p <- cpb_sec_layer(p, data, x, sec_vals, sec_map, sec_type,
-                       sec_col, sec_lab, sec_linewidth, sec_points)
-    scale_args$sec.axis <- cpb_sec_axis(sec_map, scale_args$breaks)
+                       sec_col, sec_lab, sec_linewidth, sec_points,
+                       sec_point_size, sec_col_width)
+    scale_args$sec.axis <- cpb_sec_axis(sec_map, scale_args$breaks, sec_accuracy)
   }
 
-  # the grouped layout draws its bold headings outside the panel, and
-  # sec_y's own markers can legitimately land exactly on the flush
-  # value-axis boundary (its default range runs to the data's own
-  # max) -- both would otherwise get half-cropped by the panel edge,
-  # so clipping is turned off in both cases
-  clip <- if (has_group || has_sec) "off" else "on"
   p <- cpb_apply_coord(
-    p, orientation, x_lim, value_limits, clip,
+    p, orientation, x_lim, value_limits,
     x, data, x_lim_follow_data, has_group
   )
 

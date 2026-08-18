@@ -26,6 +26,9 @@ cpb_dot(
   sec_colour = NULL,
   sec_linewidth = 0.55,
   sec_points = FALSE,
+  sec_point_size = size,
+  sec_col_width = 0.3,
+  sec_accuracy = NULL,
   palette = "qualitative",
   colour_index = NULL,
   color_index = NULL,
@@ -35,7 +38,7 @@ cpb_dot(
   value_breaks = NULL,
   value_limits = NULL,
   x_lim = NULL,
-  x_lim_follow_data = FALSE,
+  x_lim_follow_data = TRUE,
   zeroline = TRUE,
   reverse_legend = FALSE,
   legend_ncol = NULL,
@@ -132,6 +135,21 @@ Defaults to \code{0.55}.}
 \code{sec_y} line. Only used when \code{sec_type = "line"} -- for markers
 without a connecting line, use \code{sec_type = "point"} instead.}
 
+\item{sec_point_size}{Point size; only used when \code{sec_type = "point"}
+(the main marker) or \code{sec_type = "line"} with \code{sec_points = TRUE}
+(a smaller marker decorating the line, at 0.7x this). Defaults to
+\code{size}, matching the primary points.}
+
+\item{sec_col_width}{Column width; only used when \code{sec_type = "col"},
+drawn narrow enough not to visually compete with the point/interval
+marks. Defaults to \code{0.3}.}
+
+\item{sec_accuracy}{Rounding accuracy for the right-hand axis's own
+labels, passed to \code{\link[=label_number_nl]{label_number_nl()}}. \code{NULL} (default) uses that
+function's own automatic rounding -- set this when \code{sec_y} needs
+a different precision than its default (e.g. whole numbers for a
+count alongside a one-decimal percentage share).}
+
 \item{palette}{CPB palette to use for \code{colour}; one of
 \code{"qualitative"} (default), \code{"discr"}, \code{"sequential"}
 (pink ramp), or \code{"blues"} (blue ramp).}
@@ -178,14 +196,18 @@ coordinate-system zoom (\code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cart
 \code{\link[ggplot2:coord_flip]{ggplot2::coord_flip()}} \code{xlim}). \code{NULL} (default) shows the full
 range.}
 
-\item{x_lim_follow_data}{If \code{TRUE}, remove the default margin on
-either side of the category axis so it sits flush to the data's
-actual range, at the cost of ggplot2 picking its own breaks within
-that (possibly non-round) range instead of the usual padded,
-evenly spaced ones. Matches nicerplot's parameter of the same
-name. Defaults to \code{FALSE}. Ignored when \code{x_lim} is set, and when
-\code{group} is mapped (the grouped layout needs its own fixed margin
-for the heading rows).}
+\item{x_lim_follow_data}{If \code{TRUE} (default), the category axis
+sits flush to the data's own range, with no padding on either
+side. A whole-number \code{x} (almost always a year) still only ever
+gets whole-number breaks, never a fractional one. Set to \code{FALSE}
+to restore ggplot2's usual padded, evenly spaced margin instead.
+Matches nicerplot's parameter of the same name. Ignored when
+\code{x_lim} is set, and when \code{group} is mapped (the grouped layout
+needs its own fixed margin for the heading rows).
+Adding your own \code{scale_x_continuous()}/\code{scale_x_discrete()}
+afterward replaces this one entirely (ggplot2 keeps only one
+scale per aesthetic) -- add \code{expand = ggplot2::expansion(mult = 0)}
+to it to keep the flush behaviour.}
 
 \item{zeroline}{If \code{TRUE} (default), draw a solid black reference
 line at zero on the value axis -- the line the intervals are read

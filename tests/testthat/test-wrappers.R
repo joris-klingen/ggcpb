@@ -213,31 +213,68 @@ test_that("cpb_col value_breaks land on the wrapper-built value scale", {
 })
 
 test_that("cpb_line draws the value axis flush via the scale, not a blanket coord expand", {
-  df <- data.frame(x = 1:3, y = 4:6)
+  df <- data.frame(x = c("a", "b", "c"), y = 4:6)
   p <- cpb_line(df, x = x, y = y)
   # coord is left at its default expand so a discrete x axis keeps its
   # normal padding (a blanket coord_cartesian(expand = FALSE) here
   # previously clipped markers/labels at the first or last category);
-  # the value axis flush comes from the scale's own limits/expand
+  # the value axis flush comes from the scale's own limits/expand. (A
+  # *numeric* x instead gets its own coord-based flush by default now
+  # -- see the x_lim_follow_data tests -- since only that survives a
+  # caller's own follow-up scale_x_continuous(); a discrete x cannot
+  # use the same trick, for the reason above, so it keeps the
+  # scale-based flush and this test's original x = 1:3 case no longer
+  # demonstrates it.)
   expect_true(p$coordinates$expand)
   sc <- p$scales$get_scales("y")
   expect_equal(sc$expand, ggplot2::expansion(mult = c(0, 0)))
   expect_true(sc$limits[1] <= 4 && sc$limits[2] >= 6)
 })
 
-test_that("cpb_line keeps discrete x-axis padding with points = TRUE (regression)", {
-  df <- data.frame(
-    cat = factor(c("18-25", "26-35", "36-45"),
-      levels = c("18-25", "26-35", "36-45")
-    ),
-    y = c(5, 12, 18)
-  )
-  p <- cpb_line(df, x = cat, y = y, points = TRUE)
+test_that("cpb_line keeps discrete x-axis padding with points = TRUE, when asked to (regression)", {
+  df <- data.frame(cat = factor(c("18-25", "26-35", "36-45"),
+                                levels = c("18-25", "26-35", "36-45")),
+                    y = c(5, 12, 18))
+  # x_lim_follow_data defaults to TRUE now (see below), so this only
+  # still protects against points = TRUE stripping the padding via
+  # some *other*, unintended path when the caller has opted back into
+  # ggplot2's normal padded margin
+  p <- cpb_line(df, x = cat, y = y, points = TRUE, x_lim_follow_data = FALSE)
   built <- ggplot2::ggplot_build(p)
   xr <- built$layout$panel_params[[1]]$x.range
   # category positions are 1:3; a stripped discrete expansion would
   # make the range exactly c(1, 3) with no padding at either end
   expect_true(xr[1] < 1 && xr[2] > 3)
+})
+
+test_that("x_lim_follow_data defaults to TRUE: the x axis sits flush to the data by default", {
+  df <- data.frame(cat = factor(c("18-25", "26-35", "36-45"),
+                                levels = c("18-25", "26-35", "36-45")),
+                    y = c(5, 12, 18))
+  p <- cpb_line(df, x = cat, y = y)
+  built <- ggplot2::ggplot_build(p)
+  xr <- built$layout$panel_params[[1]]$x.range
+  expect_equal(xr, c(1, 3))
+})
+
+test_that("a whole-number x axis never gets a fractional break, flush or not", {
+  # confirmed empirically to trip ggplot2's own default break algorithm
+  # for a plain integer `x` (2010-2022 -> ..., 2012.5, ..., 2022.5)
+  df <- data.frame(jaar = 2010:2022, mld = seq_len(13))
+  for (follow in c(TRUE, FALSE)) {
+    p <- cpb_line(df, x = jaar, y = mld, x_lim_follow_data = follow)
+    br <- ggplot2::ggplot_build(p)$layout$panel_params[[1]]$x$breaks
+    br <- br[!is.na(br)]
+    expect_true(all(br == round(br)), info = paste("follow =", follow))
+  }
+  # a very short range trips even base pretty() itself
+  # (2020-2021 -> 2020, 2020.2, 2020.4, ...)
+  df2 <- data.frame(jaar = 2020:2021, mld = c(1, 2))
+  p2 <- cpb_line(df2, x = jaar, y = mld, x_lim_follow_data = TRUE)
+  br2 <- ggplot2::ggplot_build(p2)$layout$panel_params[[1]]$x$breaks
+  br2 <- br2[!is.na(br2)]
+  expect_true(all(br2 == round(br2)))
+  expect_true(length(br2) >= 2)
 })
 
 test_that("titled wrappers reserve the subtitle line when none is given", {
@@ -430,13 +467,16 @@ test_that("value_breaks and value_limits work in area, line and box", {
   # limits go through the coordinate system (zoom), never dropping data
   p <- cpb_area(num, x = x, y = y, fill = g, value_limits = c(0, 10))
   expect_equal(p$coordinates$limits$y, c(0, 10))
-  # cpb_line() applies value_limits on the scale instead (a blanket
-  # coord expand = FALSE clipped a discrete x axis's padding -- see the
-  # dedicated regression test above), so both the scale's limits and
-  # the coord's default expand reflect that here
+  # cpb_line() applies value_limits on the scale too, not just the
+  # coord -- but here `num`'s x (2015:2017) is numeric, so it also
+  # gets its own coord-based flush by default (x_lim_follow_data),
+  # which folds expand = FALSE into this same coord_cartesian() call;
+  # that is safe for the value axis's own already-zero expansion (see
+  # cpb_flush_scale_args()), so both agree on the same (0, 10) either
+  # way
   p <- cpb_line(num, x = x, y = y, colour = g, value_limits = c(0, 10))
   expect_equal(p$scales$get_scales("y")$limits, c(0, 10))
-  expect_true(p$coordinates$expand)
+  expect_false(p$coordinates$expand)
   p <- cpb_box(box_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                value_limits = c(0, 10))
   expect_equal(p$coordinates$limits$y, c(0, 10))
@@ -1046,6 +1086,92 @@ test_that("cpb_col(sec_y) rescales a line onto a secondary axis", {
             position = "fill"),
     "position = \"fill\""
   )
+})
+
+test_that("sec_y's default sec_limits use its own data range, not forced through zero", {
+  df <- data.frame(jaar = 2018:2020, mld = c(10, 12, 9), tekort = c(-30, -20, -25))
+
+  p_default <- cpb_col(df, x = jaar, y = mld, sec_y = tekort)
+  p_explicit <- cpb_col(df, x = jaar, y = mld, sec_y = tekort,
+                        sec_limits = range(df$tekort))
+  line_default <- Filter(function(l) inherits(l$geom, "GeomLine"), p_default$layers)[[1]]
+  line_explicit <- Filter(function(l) inherits(l$geom, "GeomLine"), p_explicit$layers)[[1]]
+  expect_equal(line_default$data$cpb__sec, line_explicit$data$cpb__sec)
+
+  # forcing 0 into an all-negative series' range is a different,
+  # visually much more compressed mapping -- confirms the default
+  # actually changed, not just that it matches one particular
+  # explicit sec_limits
+  p_zero_forced <- cpb_col(df, x = jaar, y = mld, sec_y = tekort,
+                           sec_limits = c(-30, 0))
+  line_zero_forced <- Filter(function(l) inherits(l$geom, "GeomLine"), p_zero_forced$layers)[[1]]
+  expect_false(isTRUE(all.equal(line_default$data$cpb__sec, line_zero_forced$data$cpb__sec)))
+})
+
+test_that("sec_limits' non-zero-range check tolerates floating point noise, not just exact equality", {
+  df <- data.frame(jaar = 2018:2020, mld = c(10, 12, 9), heffing = c(1.2, 1.4, 1.1))
+
+  # representable as unequal doubles, but the same value in every way
+  # that matters -- must still be caught, not treated as a valid range
+  expect_error(
+    cpb_col(df, x = jaar, y = mld, sec_y = heffing,
+            sec_limits = c(0.06, 0.06 + 1e-10)),
+    "non-zero range"
+  )
+  # a genuinely narrow range is a different thing and must still work
+  expect_no_error(
+    cpb_col(df, x = jaar, y = mld, sec_y = heffing,
+            sec_limits = c(0.02, 0.06))
+  )
+})
+
+test_that("cpb_sec_map()'s primary-range check also uses floating point tolerance", {
+  # exercised directly: a primary axis with genuinely no data range to
+  # map onto is very hard to reach through any wrapper's own public
+  # arguments (their value-axis breaks already guard against it), so
+  # this is the one sec_y check tested against the shared helper
+  # itself rather than through a wrapper
+  expect_error(
+    cpb_sec_map(c(1, 2), NULL, 5, 5 + 1e-10),
+    "no range for `sec_y`"
+  )
+  expect_no_error(cpb_sec_map(c(1, 2), NULL, 0.02, 0.06))
+})
+
+test_that("sec_accuracy rounds the secondary axis's own labels independently of the primary axis", {
+  df <- data.frame(jaar = 2018:2020, mld = c(10, 12, 9), heffing = c(1.234, 1.456, 1.789))
+  p <- cpb_col(df, x = jaar, y = mld, sec_y = heffing, sec_accuracy = 0.01)
+  sc <- p$scales$get_scales("y")
+  expect_equal(sc$secondary.axis$labels(c(1.234, 1.5)), c("1,23", "1,50"))
+})
+
+test_that("sec_point_size and sec_col_width replace the old hardcoded sizes", {
+  df <- data.frame(jaar = 2018:2020, mld = c(10, 12, 9), heffing = c(1.2, 1.4, 1.1))
+
+  p <- cpb_col(df, x = jaar, y = mld, sec_y = heffing, sec_type = "point",
+              sec_point_size = 3)
+  pt <- Filter(function(l) inherits(l$geom, "GeomPoint"), p$layers)[[1]]
+  expect_equal(pt$aes_params$size, 3)
+
+  p <- cpb_col(df, x = jaar, y = mld, sec_y = heffing, sec_type = "col",
+              sec_col_width = 0.7)
+  cols <- Filter(function(l) inherits(l$geom, "GeomCol"), p$layers)
+  expect_equal(cols[[2]]$aes_params$width, 0.7) # [[1]] is the primary bars
+
+  # cpb_dot()'s own sec_point_size defaults to its primary `size`, so a
+  # sec_type = "point" series reads as the same kind of mark by default
+  df2 <- data.frame(
+    term = c("a", "b", "c"), est = c(1, 2, 3), lo = c(0, 1, 2), hi = c(2, 3, 4),
+    heffing = c(1.2, 1.4, 1.1)
+  )
+  p <- cpb_dot(df2, x = term, y = est, lower = lo, upper = hi,
+              sec_y = heffing, sec_type = "point", size = 2.5,
+              orientation = "vertical")
+  point_sizes <- vapply(
+    Filter(function(l) inherits(l$geom, "GeomPoint"), p$layers),
+    function(l) l$aes_params$size, numeric(1)
+  )
+  expect_true(all(point_sizes == 2.5))
 })
 
 test_that("cpb_donut returns a ring built from GeomCol + coord_polar with a fill scale", {

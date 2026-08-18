@@ -315,7 +315,33 @@ import_csv <- function(data_csv, params_csv, sep = ",", ...) {
       next
     }
 
-    built <- cpb_import_build_one(params, data_df, extra_params)
+    # A bad figure (e.g. sec_y pointing at a non-numeric column, or any
+    # other cpb_*() argument validation failure) must not take the
+    # whole batch down with it, in an unattended run especially -- one
+    # broken figure among twenty should still leave the other nineteen
+    # built. Recorded the same way an explicit create = "n" skip is,
+    # with the actual error message as the detail (not just a pointer
+    # to the console warning() below, which an unattended run may
+    # never show -- the log has to carry the real reason on its own).
+    build_error <- NULL
+    built <- tryCatch(
+      cpb_import_build_one(params, data_df, extra_params),
+      error = function(e) {
+        build_error <<- conditionMessage(e)
+        NULL
+      }
+    )
+    if (!is.null(build_error)) {
+      warning("Figure ", i, " \"", label, "\": ", build_error,
+        " -- skipped.",
+        call. = FALSE
+      )
+      entries[[i]] <- list(
+        label = label, status = "skipped",
+        detail = paste0("error: ", build_error)
+      )
+      next
+    }
     entries[[i]] <- list(
       label = label, status = "built",
       plot_type = built$plot_type, unknown = built$unknown
@@ -325,7 +351,21 @@ import_csv <- function(data_csv, params_csv, sep = ",", ...) {
     plots[[fig_id]] <- built$plot
   }
 
-  cpb_import_write_log(params_csv, data_csv, entries)
+  log_path <- cpb_import_write_log(params_csv, data_csv, entries)
+
+  # a partial batch (some figures built, some skipped or failed) is a
+  # legitimate, useful result and must not error -- but coming back
+  # with nothing at all almost never is, and should not do so quietly;
+  # the individual reasons are already in the log, and repeated here
+  # since an unattended run may never show this console error either
+  if (!length(plots)) {
+    detail <- vapply(entries, function(e) paste0("\"", e$label, "\": ", e$detail), character(1))
+    stop("No figures were built from `params_csv` (", length(figs),
+      " figure(s) defined, all skipped) -- ", paste(detail, collapse = "; "),
+      ". See the run log: ", log_path,
+      call. = FALSE
+    )
+  }
 
   if (length(plots) == 1) plots[[1]] else plots
 }
