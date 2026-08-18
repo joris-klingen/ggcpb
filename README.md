@@ -77,7 +77,38 @@ The four Rijksoverheid Sans Text TTFs ship in `inst/fonts/` and
 register automatically on load; if the files or a font backend are
 missing, the theme falls back to the ggplot2 default with a single
 warning. `cpb_register_fonts()` re-runs registration,
-`cpb_font_family()` reports the family in use. **Note:** confirm with
+`cpb_font_family()` reports the family in use.
+
+Point it at a directory to register your own fonts alongside the house
+one -- family and regular/bold/italic face are read from each file's
+metadata, falling back to the file name:
+
+```r
+cpb_register_fonts(path = "~/fonts", recursive = TRUE)
+#>                  family               faces n_files systemfonts sysfonts windows
+#> 1 RijksoverheidSansText plain, bold, italic       3        TRUE     TRUE   FALSE
+```
+
+Registering a font does not by itself teach a graphics device about
+it: on the base Windows device that shows up as `"font family not
+found in Windows font database"` even though the font is registered.
+`cpb_register_fonts()` therefore calls `showtext::showtext_auto()` by
+default, which draws text on *any* device. (Attaching the package does
+not -- `.onLoad` registers with `enable_showtext = FALSE`, so
+`library(ggcpb)` never changes how the rest of your session renders
+text.) The `ragg`/`svglite` devices consult `systemfonts` and need
+none of this, which is why `save_cpb()` works either way.
+
+With showtext on, keep its DPI equal to the device's or text comes out
+the wrong size while the rest of the plot is fine:
+
+```r
+showtext::showtext_opts(dpi = 300)
+ggsave("fig.png", p, dpi = 300)
+showtext::showtext_opts(dpi = 96)   # back to screen
+```
+
+**Note:** confirm with
 CPB that the bundled TTFs may be redistributed in this repository; if
 not, register them by path against an internal copy instead:
 
