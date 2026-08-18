@@ -2257,7 +2257,7 @@ cpb_line <- function(data, x, y, colour = NULL,
 #' library(ggplot2)
 #' df <- data.frame(
 #'   groep = c("laag inkomen", "midden inkomen", "hoog inkomen"),
-#'   p5 = c(-8, -6, -4),
+#'   p5  = c(-8, -6, -4),
 #'   p25 = c(-4, -3, -2),
 #'   p50 = c(-2, -1, 0),
 #'   p75 = c(0, 1, 2),
@@ -2328,7 +2328,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   sec_type <- match.arg(sec_type)
 
   x <- rlang::enquo(x)
-  p5 <- rlang::enquo(p5)
+  p5  <- rlang::enquo(p5)
   p25 <- rlang::enquo(p25)
   p50 <- rlang::enquo(p50)
   p75 <- rlang::enquo(p75)
@@ -2479,7 +2479,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     )
     if (!is.null(dot_labels)) {
       if (is.null(names(dot_labels)) ||
-        !all(names(dot_labels) %in% names(labs_default))) {
+          !all(names(dot_labels) %in% names(labs_default))) {
         stop("`dot_labels` must be a named character vector using the names ",
           paste0("\"", names(labs_default), "\"", collapse = ", "), ".",
           call. = FALSE
@@ -2507,12 +2507,10 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
         width = 0, linewidth = 0.25, linetype = "dashed", colour = light
       ) +
       ggplot2::geom_point(
-        ggplot2::aes(x = !!x, y = !!p5, colour = lab$p5),
-        size = 1.1
+        ggplot2::aes(x = !!x, y = !!p5, colour = lab$p5), size = 1.1
       ) +
       ggplot2::geom_point(
-        ggplot2::aes(x = !!x, y = !!p95, colour = lab$p95),
-        size = 1.1
+        ggplot2::aes(x = !!x, y = !!p95, colour = lab$p95), size = 1.1
       ) +
       ggplot2::geom_errorbar(
         ggplot2::aes(x = !!x, ymin = !!p25, ymax = !!p75, colour = lab$iqr),
@@ -2520,8 +2518,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
         key_glyph = cpb_key_errorbar(orientation)
       ) +
       ggplot2::geom_point(
-        ggplot2::aes(x = !!x, y = !!p50, colour = lab$p50),
-        size = 1.6, ...
+        ggplot2::aes(x = !!x, y = !!p50, colour = lab$p50), size = 1.6, ...
       )
     if (has_mean) {
       p <- p + ggplot2::geom_point(
@@ -2564,14 +2561,14 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
         whisk_lw = 0.4,
         med_col = "black", med_lw = 0.4, med_ext = 0.15,
         med_lab_col = "black", med_lab_face = "plain", med_lab_size = 2.2,
-        q_labels = FALSE
+        q_labels  = FALSE
       ),
       modern = list(
         box_col = cpb_single_colour(fill_colour, 5),
         whisk_lw = 0.55,
         med_col = unname(cpb_cols(6)), med_lw = 1.3, med_ext = 0.2,
         med_lab_col = unname(cpb_cols(6)), med_lab_face = "bold", med_lab_size = 2.6,
-        q_labels = TRUE, q_lab_col = "#00a5ff", q_lab_size = 2.2
+        q_labels  = TRUE, q_lab_col = "#00a5ff", q_lab_size = 2.2
       )
     )
     fmt <- label_number_nl(accuracy = label_accuracy)
@@ -2720,14 +2717,12 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     # for vertical boxes just below the category labels
     if (nrow(head_rows)) {
       p <- p + if (orientation == "horizontal") {
-        ggplot2::annotate("text",
-          x = head_rows$pos, y = -Inf,
+        ggplot2::annotate("text", x = head_rows$pos, y = -Inf,
           label = head_rows$label, hjust = 1.03, vjust = 0.5,
           fontface = "bold", size = 7 / ggplot2::.pt, family = cpb_font_family()
         )
       } else {
-        ggplot2::annotate("text",
-          x = head_rows$pos, y = -Inf,
+        ggplot2::annotate("text", x = head_rows$pos, y = -Inf,
           label = head_rows$label, hjust = 0.5, vjust = 2.6,
           fontface = "bold", size = 7 / ggplot2::.pt, family = cpb_font_family()
         )
@@ -3577,14 +3572,12 @@ cpb_dot <- function(data, x, y, lower, upper,
     )
     if (nrow(head_rows)) {
       p <- p + if (orientation == "horizontal") {
-        ggplot2::annotate("text",
-          x = head_rows$pos, y = -Inf,
+        ggplot2::annotate("text", x = head_rows$pos, y = -Inf,
           label = head_rows$label, hjust = 1.03, vjust = 0.5,
           fontface = "bold", size = 7 / ggplot2::.pt, family = cpb_font_family()
         )
       } else {
-        ggplot2::annotate("text",
-          x = head_rows$pos, y = -Inf,
+        ggplot2::annotate("text", x = head_rows$pos, y = -Inf,
           label = head_rows$label, hjust = 0.5, vjust = 2.6,
           fontface = "bold", size = 7 / ggplot2::.pt, family = cpb_font_family()
         )
