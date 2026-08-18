@@ -1,11 +1,15 @@
 # zzz.R ----
 
 .onLoad <- function(libname, pkgname) {
-  # font registration must never fail package load; cpb_register_fonts()
+  # Font registration must never fail package load; cpb_register_fonts()
   # already reports problems via a single warning() rather than an error,
   # so only guard against an unexpected hard error here.
+  #
+  # enable_showtext = FALSE: attaching a package must not change how the
+  # rest of the session draws text. Users who want showtext on every
+  # device call cpb_register_fonts() themselves.
   tryCatch(
-    cpb_register_fonts(),
+    cpb_register_fonts(enable_showtext = FALSE),
     error = function(e) invisible(NULL)
   )
   invisible(NULL)

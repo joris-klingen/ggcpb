@@ -4,20 +4,51 @@
 \alias{cpb_register_fonts}
 \title{Register the CPB "RijksoverheidSansText" font family}
 \usage{
-cpb_register_fonts()
+cpb_register_fonts(
+  path = NULL,
+  recursive = FALSE,
+  enable_showtext = TRUE,
+  windows_device = TRUE
+)
+}
+\arguments{
+\item{path}{Optional single directory holding font files (\code{.ttf},
+\code{.otf}, \code{.ttc}) to register in addition to the bundled family. Each
+file's family and face are read from its own metadata where
+possible, falling back to the file name, and the regular/bold/
+italic/bold-italic variants of one family are mapped onto the
+matching \code{\link[sysfonts:font_add]{sysfonts::font_add()}} slots. \code{NULL} (default) registers
+only the bundled font.}
+
+\item{recursive}{If \code{TRUE}, search \code{path} recursively. Defaults to
+\code{FALSE}.}
+
+\item{enable_showtext}{If \code{TRUE} (default), call
+\code{\link[showtext:showtext_auto]{showtext::showtext_auto()}} so the registered fonts render on every
+device. Set to \code{FALSE} to leave the session's rendering path
+untouched -- this is what package load does, so merely attaching
+ggcpb never changes how your other plots draw text. Ignored with a
+warning if \pkg{showtext} is not installed.}
+
+\item{windows_device}{If \code{TRUE} (default), also map each family
+through \code{\link[grDevices:windowsFonts]{grDevices::windowsFonts()}}. No effect off Windows; see
+the section above for when it helps.}
 }
 \value{
-Invisibly, \code{TRUE} if at least one backend registered the
-font successfully, \code{FALSE} otherwise.
+Invisibly, a data frame with one row per family registered
+and columns \code{family}, \code{faces}, \code{n_files}, \code{systemfonts},
+\code{sysfonts} and \code{windows}, so you can check what actually took. It
+carries a \code{showtext} attribute recording whether showtext
+rendering is on.
 }
 \description{
-Registers the bundled Rijksoverheid Sans Text font family with both
-\pkg{systemfonts} (so \code{ragg}/\code{ggplot2} output picks it up) and
-\pkg{sysfonts} (so a \code{showtext::showtext_auto()} rendering path picks
-it up as well). This is run automatically when ggcpb is loaded, but
-can be re-run on demand -- e.g. after toggling \code{showtext_auto()}, or
-in a fresh parallel worker that does not inherit the main session's
-font registry.
+Registers the bundled Rijksoverheid Sans Text font family with
+\pkg{systemfonts} (so \code{ragg}/\code{svglite}/\code{ggplot2} output picks it up)
+and \pkg{sysfonts} (the registry \pkg{showtext} draws from), and
+optionally turns \pkg{showtext} on so the font also renders on
+devices that do their own font lookup. Run automatically when ggcpb
+is loaded, and safe to re-run on demand -- e.g. in a fresh parallel
+worker that does not inherit the main session's font registry.
 }
 \details{
 Registration never raises an error: if the bundled font files cannot
@@ -25,7 +56,54 @@ be found, or a backend fails to register them, a single warning is
 issued and \code{\link[=cpb_font_family]{cpb_font_family()}} subsequently returns \code{""}, letting
 \code{\link[=theme_cpb]{theme_cpb()}} fall back to the ggplot2 default font.
 }
+\section{Why registration alone is not enough}{
+
+\code{sysfonts::font_add()} adds a font to showtext's own registry; it
+does \strong{not} teach a graphics device about it. On the base Windows
+device that surfaces as
+\code{"font family not found in Windows font database"} at draw time even
+though \code{sysfonts::font_families()} lists the font. Something has to
+actually draw the glyphs:
+\itemize{
+\item \code{enable_showtext = TRUE} (the default) calls
+\code{\link[showtext:showtext_auto]{showtext::showtext_auto()}}, which makes showtext render text on
+\emph{any} device, including the base Windows one and the RStudio pane.
+This is the route that reliably works for a bundled font.
+\item \code{windows_device = TRUE} additionally maps the family through
+\code{\link[grDevices:windowsFonts]{grDevices::windowsFonts()}}. This is a no-op off Windows, and it
+only helps for fonts \strong{installed in Windows itself} --
+\code{windowsFont()} maps a name onto a font the OS already knows and
+cannot load a file. Install the font system-wide to use this route
+without showtext.
+\item The modern devices (\code{ragg::agg_png()}, \code{svglite}, the RStudio
+\code{AGG} pane) consult \pkg{systemfonts} and need neither.
+}
+}
+
+\section{The showtext DPI gotcha}{
+
+showtext rasterises text at a DPI it is told about, \emph{not} the one the
+device is using. If the two disagree, text comes out too large or too
+small while the rest of the plot is fine -- most visibly when saving
+at high resolution:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{showtext::showtext_opts(dpi = 300)
+ggplot2::ggsave("fig.png", p, dpi = 300)
+showtext::showtext_opts(dpi = 96)    # back to screen
+}\if{html}{\out{</div>}}
+
+Keep \code{showtext_opts(dpi =)} equal to the device \code{res}/\code{dpi} for every
+save. \code{\link[=save_cpb]{save_cpb()}} and the \code{ragg} devices go through
+\pkg{systemfonts} instead, so they size text correctly regardless and
+are the simpler path when you are only exporting files.
+}
+
 \examples{
-cpb_register_fonts()
+cpb_register_fonts(enable_showtext = FALSE)
 cpb_font_family()
+
+# register every font in a directory as well
+\dontrun{
+cpb_register_fonts(path = "~/fonts", recursive = TRUE)
+}
 }

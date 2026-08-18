@@ -133,8 +133,10 @@ not cover.
 
 `save_cpb()` writes the figure at the strict CPB page widths –
 `page = "half"` (2.98 in) or `page = "full"` (5.96 in) – through the
-`ragg` device, so the bundled Rijksoverheid font (registered
-automatically on load; see `cpb_register_fonts()`) renders correctly:
+`ragg` device, which consults `systemfonts` – so the bundled
+Rijksoverheid font (registered automatically on load; see
+`cpb_register_fonts()`) renders correctly with no further setup, and
+without the showtext DPI caveat described in that help page:
 
 ``` r
 save_cpb("koopkracht.png", p, page = "half")
