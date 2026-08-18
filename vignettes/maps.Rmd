@@ -109,6 +109,46 @@ cpb_map(provincies, region = naam, value = klasse, level = "provincie",
   title = "Groei ten opzichte van het\nlandelijk gemiddelde")
 ```
 
+A raw numeric `value` works the same way at this level too, with the
+same continuous gradient and colourbar the gemeente example above
+used:
+
+```{r map-provincie-ct, fig.height = 4.8}
+provincies_ct <- tibble(naam = unique(cpb_nl_geo("provincie")$name)) |>
+  mutate(index = rnorm(n(), 100, 12))
+
+cpb_map(provincies_ct, region = naam, value = index, level = "provincie",
+  title    = "Voorbeeldindex per provincie",
+  subtitle = "index (Nederland = 100)")
+```
+
+COROP regions -- the 40-region tier between municipality and province
+that Dutch regional-economic statistics are usually published at --
+work identically, classed:
+
+```{r map-corop, fig.height = 5.2}
+corops <- tibble(code = unique(cpb_nl_geo("corop")$code)) |>
+  mutate(aandeel = runif(n(), 5, 75),
+         klasse  = cpb_cut(aandeel, breaks = c(0, 20, 30, 40, 50, 60, Inf),
+                           labeller = label_pct_nl()))
+
+cpb_map(corops, region = code, value = klasse, level = "corop",
+  palette = "blues",
+  title   = "Aandeel huishoudens met zonnepanelen",
+  filllab = "aandeel")
+```
+
+and continuous:
+
+```{r map-corop-ct, fig.height = 4.8}
+corops_ct <- tibble(code = unique(cpb_nl_geo("corop")$code)) |>
+  mutate(index = rnorm(n(), 100, 15))
+
+cpb_map(corops_ct, region = code, value = index, level = "corop",
+  title    = "Voorbeeldindex per COROP-gebied",
+  subtitle = "index (Nederland = 100)")
+```
+
 # Styling and raw boundaries
 
 The border seams are controlled with `border_colour` (default the CPB
