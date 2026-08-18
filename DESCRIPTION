@@ -25,6 +25,7 @@ Imports:
     systemfonts,
     sysfonts,
     grid,
+    gtable,
     grDevices,
     utils,
     rlang,

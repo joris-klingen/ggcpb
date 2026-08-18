@@ -120,20 +120,106 @@ cpb_fix_panel_size <- function(plot, size, page_width, page_height) {
   g
 }
 
-# Draws a fixed-size gtable (see cpb_fix_panel_size()) straight to a
-# graphics device, since ggplot2::ggsave() only accepts a ggplot
-# object for `plot`, not an already-built grob. Every cell in `grob`
-# is already an absolute unit (see cpb_fix_panel_size()), so the
-# device is opened at the gtable's own natural total size rather than
-# the originally requested width/height: fixing the panel can only
-# ever make the whole figure need a little more or less room than the
-# dynamic layout would have, and forcing it back into the original
-# size is exactly the "shrink the panel to fit" behaviour this exists
-# to avoid.
+# The wrappers' sec_ylab (see cpb_add_sec_ylab() in wrappers.R) is drawn
+# twice over: once approximately, as an ordinary annotate() layer, so a
+# bare print()/knitr display still shows *something*; save_cpb() lifts
+# that layer back out here and draws an exact replacement instead (see
+# cpb_add_sec_ylab_grob()), positioned against the plot's own rendered
+# gtable rather than guessed at build time.
+# @return A list with the (possibly unchanged) `plot` and the `label`
+#   to re-draw exactly, or `label = NULL` when there was nothing to do.
 # @noRd
-cpb_ggsave_grob <- function(filename, grob, dpi, device, bg, ...) {
-  width <- sum(grid::convertWidth(grob$widths, "in", valueOnly = TRUE))
-  height <- sum(grid::convertHeight(grob$heights, "in", valueOnly = TRUE))
+cpb_take_sec_ylab <- function(plot) {
+  info <- attr(plot, "cpb_sec_ylab")
+  if (is.null(info)) {
+    return(list(plot = plot, label = NULL))
+  }
+  plot$layers[[info$layer]] <- NULL
+  list(plot = plot, label = info$label)
+}
+
+# Places `label` in gtable `g` on the same row as the plot's subtitle
+# (so it lands at the same height as the left-hand unit ylab() puts
+# there) and horizontally centred on the secondary axis's own tick
+# *values* (so, right-aligned from that centre, the label's last
+# character sits above their middle and the rest read leftward from
+# it) -- both cells always exist once a wrapper's sec_y has produced a
+# right axis, whether or not they hold anything yet (ggplot2 always
+# reserves a "subtitle" row; it is just a zeroGrob when empty).
+#
+# The "axis-r" cell is not *only* the tick text: ggplot2 nests a nested
+# gtable in there with the tick marks' own reserved length to its left
+# (a "null" column, zero-width in this theme since ticks are blank,
+# but still part of the cell) and the text flush to the right -- so the
+# whole cell's own npc centre sits left of the text's true centre,
+# which is why `page_width`/`page_height` are needed here: they let
+# the elastic "null" widths resolve to what they really come out to at
+# that size (see cpb_resolve_gtable_units()), the same way
+# cpb_fix_panel_size() already has to.
+# @noRd
+cpb_add_sec_ylab_grob <- function(g, label, page_width, page_height) {
+  row <- g$layout$t[g$layout$name == "subtitle"]
+  axis_idx <- which(g$layout$name == "axis-r")
+  if (length(row) != 1 || length(axis_idx) != 1) {
+    stop("save_cpb(): could not find the \"subtitle\" row and/or the ",
+      "\"axis-r\" column to align sec_ylab against; is `plot` a sec_y ",
+      "chart built by one of the ggcpb wrappers?",
+      call. = FALSE
+    )
+  }
+  col <- g$layout$l[axis_idx]
+
+  g <- cpb_resolve_gtable_units(g, page_width, page_height)
+  cell_width <- grid::convertWidth(g$widths[col], "in", valueOnly = TRUE)
+
+  # the tick text is the only non-zero-width grob in the nested
+  # per-axis gtable, flush to the right of the outer "axis-r" cell (any
+  # tick-mark length sits to its left) -- found by grob class, not a
+  # hardcoded column index, since that shifts with tick/theme settings
+  inner <- g$grobs[[axis_idx]]$children$axis
+  text_idx <- which(vapply(inner$grobs, inherits, logical(1), what = "titleGrob"))
+  anchor_npc <- if (length(text_idx) == 1) {
+    # inner$grobs is indexed by placed grob (one per occupied column,
+    # skipping empty ones); inner$widths is indexed by column -- map
+    # through the layout to convert from one indexing to the other
+    text_col <- inner$layout$l[text_idx]
+    text_width <- grid::convertWidth(inner$widths[[text_col]], "in", valueOnly = TRUE)
+    1 - (text_width / cell_width) / 2
+  } else {
+    # no tick text found (e.g. axis.text suppressed) -- the whole
+    # cell's own centre is the least-wrong fallback
+    0.5
+  }
+
+  grob <- grid::textGrob(
+    label, x = grid::unit(anchor_npc, "npc"), y = grid::unit(0.5, "npc"),
+    hjust = 1, vjust = 0.5,
+    gp = grid::gpar(fontface = "italic", fontsize = 7, fontfamily = cpb_font_family())
+  )
+  gtable::gtable_add_grob(g, grob, t = row, l = col, clip = "off", name = "sec-ylab")
+}
+
+# Draws a gtable straight to a graphics device, since ggplot2::ggsave()
+# only accepts a ggplot object for `plot`, not an already-built grob.
+#
+# `width`/`height` are only an escape hatch for a grob whose panel cell
+# is still a "null" unit (sec_ylab-only, no panel_size -- see
+# save_cpb()): a null unit only resolves once drawn against a viewport
+# of a real size, so it must be told what that size is. Left NULL (the
+# cpb_fix_panel_size() case), every cell in `grob` is already an
+# absolute unit, so the device is instead opened at the gtable's own
+# natural total size: fixing the panel can only ever make the whole
+# figure need a little more or less room than the dynamic layout
+# would have, and forcing it back into the original size is exactly
+# the "shrink the panel to fit" behaviour this exists to avoid.
+# @noRd
+cpb_ggsave_grob <- function(filename, grob, dpi, device, bg, width = NULL, height = NULL, ...) {
+  if (is.null(width)) {
+    width <- sum(grid::convertWidth(grob$widths, "in", valueOnly = TRUE))
+  }
+  if (is.null(height)) {
+    height <- sum(grid::convertHeight(grob$heights, "in", valueOnly = TRUE))
+  }
   device(
     filename = filename, width = width, height = height,
     units = "in", res = dpi, background = bg, ...
@@ -243,7 +329,13 @@ save_cpb <- function(filename,
     panel_size <- attr(plot, "cpb_panel_size")
   }
 
-  if (is.null(panel_size)) {
+  # lifts out the approximate sec_ylab layer a wrapper may have added
+  # (see cpb_add_sec_ylab() in wrappers.R); sec_ylab$label is NULL, and
+  # plot unchanged, when there is nothing to do
+  sec_ylab <- cpb_take_sec_ylab(plot)
+  plot <- sec_ylab$plot
+
+  if (is.null(panel_size) && is.null(sec_ylab$label)) {
     ggplot2::ggsave(
       filename = filename,
       plot     = plot,
@@ -256,21 +348,44 @@ save_cpb <- function(filename,
       ...
     )
   } else {
-    grob <- cpb_fix_panel_size(plot, panel_size, width, height)
-    # fixing the panel can leave the figure needing a little more or
-    # less room than the page's usual width/height -- see
-    # cpb_ggsave_grob() -- so what actually gets written here is
-    # reported below rather than the originally requested width/height
-    width <- sum(grid::convertWidth(grob$widths, "in", valueOnly = TRUE))
-    height <- sum(grid::convertHeight(grob$heights, "in", valueOnly = TRUE))
-    cpb_ggsave_grob(
-      filename = filename,
-      grob     = grob,
-      dpi      = dpi,
-      device   = device,
-      bg       = bg,
-      ...
-    )
+    grob <- if (is.null(panel_size)) {
+      ggplot2::ggplotGrob(plot)
+    } else {
+      cpb_fix_panel_size(plot, panel_size, width, height)
+    }
+    if (!is.null(sec_ylab$label)) {
+      grob <- cpb_add_sec_ylab_grob(grob, sec_ylab$label, width, height)
+    }
+    if (!is.null(panel_size)) {
+      # fixing the panel can leave the figure needing a little more or
+      # less room than the page's usual width/height -- see
+      # cpb_ggsave_grob() -- so what actually gets written here is
+      # reported below rather than the originally requested width/height
+      width <- sum(grid::convertWidth(grob$widths, "in", valueOnly = TRUE))
+      height <- sum(grid::convertHeight(grob$heights, "in", valueOnly = TRUE))
+      cpb_ggsave_grob(
+        filename = filename,
+        grob     = grob,
+        dpi      = dpi,
+        device   = device,
+        bg       = bg,
+        ...
+      )
+    } else {
+      # no panel_size: the panel cell is still a "null" unit, so it
+      # must be told the page size to resolve against rather than
+      # (wrongly) reading one back off the still-elastic grob
+      cpb_ggsave_grob(
+        filename = filename,
+        grob     = grob,
+        dpi      = dpi,
+        device   = device,
+        bg       = bg,
+        width    = width,
+        height   = height,
+        ...
+      )
+    }
   }
 
   tcat("ggcpb: wrote ", filename, " (", round(width, 2), " x ", round(height, 2), " in, ", dpi, " dpi)")

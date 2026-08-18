@@ -491,6 +491,31 @@ cpb_linkeras_labels <- function(has_sec) {
   if (isTRUE(has_sec)) function(b) paste0(b, " (linkeras)") else ggplot2::waiver()
 }
 
+# Draws sec_ylab as an approximate placement -- right-aligned, italic,
+# nudged just above the panel -- so a bare print()/knitr display still
+# shows it without going through save_cpb(). That approximation only
+# ever lands close, not exactly, on the primary title's own subtitle
+# row or the secondary axis's tick label column, since at this point
+# the plot has not been rendered yet and neither position is known.
+# save_cpb() replaces it with an exact one (see cpb_take_sec_ylab() and
+# cpb_add_sec_ylab_grob() in save.R) read directly off the rendered
+# gtable, which is why this layer's position is recorded as an
+# attribute here: `+` always appends layers, never reorders them, so
+# this index still points at the same layer however many more get
+# added afterwards.
+cpb_add_sec_ylab <- function(p, has_sec, sec_ylab) {
+  if (!has_sec || is.null(sec_ylab)) {
+    return(p)
+  }
+  p <- p + ggplot2::annotate(
+    "text", x = Inf, y = Inf, label = sec_ylab,
+    hjust = 1, vjust = -0.9, fontface = "italic",
+    size = 7 / ggplot2::.pt, family = cpb_font_family()
+  )
+  attr(p, "cpb_sec_ylab") <- list(label = sec_ylab, layer = length(p$layers))
+  p
+}
+
 # Scale args assembled once so pct labels, custom breaks, and flush
 # limits land in a single scale_y_continuous() -- a second call would
 # silently replace the first.
@@ -1085,16 +1110,7 @@ cpb_col <- function(data, x, y, fill = NULL,
     p <- cpb_x_scale(p, x, data, flush = isTRUE(x_lim_follow_data))
   }
 
-  if (has_sec && !is.null(sec_ylab)) {
-    # mirrors the left-hand unit that `ylab` puts in the subtitle:
-    # right-aligned, italic, on the line just above the panel
-    p <- p + ggplot2::annotate(
-      "text",
-      x = Inf, y = Inf, label = sec_ylab,
-      hjust = 1, vjust = -0.9, fontface = "italic",
-      size = 7 / ggplot2::.pt, family = cpb_font_family()
-    )
-  }
+  p <- cpb_add_sec_ylab(p, has_sec, sec_ylab)
 
   scale_args <- cpb_flush_scale_args(
     axis_values  = axis_values,
@@ -1483,15 +1499,7 @@ cpb_area <- function(data, x, y, fill,
     p <- cpb_x_scale(p, x, data, flush = isTRUE(x_lim_follow_data))
   }
 
-  if (has_sec && !is.null(sec_ylab)) {
-    # mirrors the left-hand unit that `ylab` puts in the subtitle:
-    # right-aligned, italic, on the line just above the panel
-    p <- p + ggplot2::annotate(
-      "text", x = Inf, y = Inf, label = sec_ylab,
-      hjust = 1, vjust = -0.9, fontface = "italic",
-      size = 7 / ggplot2::.pt, family = cpb_font_family()
-    )
-  }
+  p <- cpb_add_sec_ylab(p, has_sec, sec_ylab)
 
   p <- p + cpb_discrete_scale("fill", index, palette,
                               labels = cpb_linkeras_labels(has_sec))
@@ -1942,15 +1950,7 @@ cpb_line <- function(data, x, y, colour = NULL,
       rlang::eval_tidy(x, data), forecast_label)
   }
 
-  if (has_sec && !is.null(sec_ylab)) {
-    # mirrors the left-hand unit that `ylab` puts in the subtitle:
-    # right-aligned, italic, on the line just above the panel
-    p <- p + ggplot2::annotate(
-      "text", x = Inf, y = Inf, label = sec_ylab,
-      hjust = 1, vjust = -0.9, fontface = "italic",
-      size = 7 / ggplot2::.pt, family = cpb_font_family()
-    )
-  }
+  p <- cpb_add_sec_ylab(p, has_sec, sec_ylab)
 
   # Use pretty() breaks as scale limits to keep the value axis flush.
   axis_values <- rlang::eval_tidy(y, data)
@@ -2689,15 +2689,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   if (length(scale_args)) {
     p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
   }
-  if (has_sec && !is.null(sec_ylab)) {
-    # mirrors the left-hand unit that `ylab` puts in the subtitle:
-    # right-aligned, italic, on the line just above the panel
-    p <- p + ggplot2::annotate(
-      "text", x = Inf, y = Inf, label = sec_ylab,
-      hjust = 1, vjust = -0.9, fontface = "italic",
-      size = 7 / ggplot2::.pt, family = cpb_font_family()
-    )
-  }
+  p <- cpb_add_sec_ylab(p, has_sec, sec_ylab)
 
   if (isTRUE(box_labels) && !has_group) {
     # the value labels are nudged along the category axis past their
@@ -3572,15 +3564,7 @@ cpb_dot <- function(data, x, y, lower, upper,
   if (length(scale_args)) {
     p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
   }
-  if (has_sec && !is.null(sec_ylab)) {
-    # mirrors the left-hand unit that `ylab` puts in the subtitle:
-    # right-aligned, italic, on the line just above the panel
-    p <- p + ggplot2::annotate(
-      "text", x = Inf, y = Inf, label = sec_ylab,
-      hjust = 1, vjust = -0.9, fontface = "italic",
-      size = 7 / ggplot2::.pt, family = cpb_font_family()
-    )
-  }
+  p <- cpb_add_sec_ylab(p, has_sec, sec_ylab)
 
   if (has_group) {
     cat_rows <- slots[!slots$heading, , drop = FALSE]
