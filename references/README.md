@@ -26,6 +26,7 @@ When judging whether a ggcpb figure is "right", compare it against the
   | --- | --- |
   | `CPB_publicatie_erfbelasting_in_beeld_20260803` | [Erfbelasting in beeld: feiten, percepties en voorkeuren van Nederlanders](https://www.cpb.nl/publicatie/erfbelasting-beeld-feiten-percepties-en-voorkeuren-van-nederlanders) |
   | `CPB_publicatie_inkomenseffecten_hogere_energie_en_brandstofprijzen` | [Inkomenseffecten van hogere energie- en brandstofprijzen](https://www.cpb.nl/publicatie/inkomenseffecten-van-hogere-energie-en-brandstofprijzen) |
+  | `CPBRamingcMEV2027_0` | Concept-Macro Economische Verkenning 2027 (CPB Raming, augustus 2026) — *URL not yet recorded* |
 
   Add a row when you drop a new publication's figures in here, so the
   ground truth can always be traced back to what was actually
@@ -42,6 +43,10 @@ When judging whether a ggcpb figure is "right", compare it against the
 - **`nicerplot/`** *(gitignored, local only)* — a clone of the internal
   `nicerplot` package, the source of `nplot()`. Read it here to see exactly
   what output ggcpb is chasing.
+
+Figure-by-figure coverage of the cMEV 2027 figures against the wrappers,
+including what is deliberately out of scope, is in
+[`cmev2027-coverage.md`](cmev2027-coverage.md).
 
 ## Notes for whoever iterates on this
 

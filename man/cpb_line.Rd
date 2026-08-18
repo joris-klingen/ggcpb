@@ -11,6 +11,11 @@ cpb_line(
   colour = NULL,
   line_colour = NULL,
   linewidth = 0.55,
+  sec_y = NULL,
+  sec_limits = NULL,
+  sec_label = NULL,
+  sec_ylab = NULL,
+  sec_linewidth = NULL,
   points = FALSE,
   point_size = 1.1,
   palette = "qualitative",
@@ -60,6 +65,31 @@ supplied.}
 
 \item{linewidth}{Line width; defaults to \code{0.55}, matching the
 published CPB figures.}
+
+\item{sec_y}{Optional column (tidy eval) holding a series to draw
+against a \strong{secondary value axis} on the right, the house
+dual-axis line chart (e.g. two rates in \% on the left and an index
+on the right). One value per \code{x}. Unlike \code{\link[=cpb_col]{cpb_col()}}, where the
+columns key on \code{fill} and the secondary line on \code{colour}, here the
+primary series already key on \code{colour}: the secondary line joins
+that same scale and takes the next palette position, so all series
+share one legend block. House style names the axis in each label,
+e.g. \code{"inflatie (linkeras)"} and \code{"reeel loon (rechteras)"}.}
+
+\item{sec_limits}{Length-2 numeric vector giving the range the
+secondary axis spans. \code{NULL} (default) uses the range of \code{sec_y}.
+The line is placed by mapping this range linearly onto the primary
+range, so the two axes always start together.}
+
+\item{sec_label}{Legend label for the secondary line. \code{NULL}
+(default) uses the \code{sec_y} column name.}
+
+\item{sec_ylab}{Unit caption for the secondary axis, drawn
+right-aligned above the panel to mirror the left-hand unit that
+\code{ylab} puts in the subtitle. \code{NULL} (default) draws none.}
+
+\item{sec_linewidth}{Line width for \code{sec_y}; \code{NULL} (default) uses
+\code{linewidth}, so the secondary line matches the primary ones.}
 
 \item{points}{If \code{TRUE}, draw a point marker at every observation on
 top of the line, the house variant used when the x axis holds a

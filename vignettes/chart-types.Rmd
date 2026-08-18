@@ -269,6 +269,43 @@ says which axis it belongs to. The combination is refused where it
 cannot be read: horizontal bars, grouped categories, and
 `position = "fill"` all error rather than draw something misleading.
 
+`cpb_line()` takes the same arguments, for the figure that puts two
+rates on the left axis and an index on the right:
+
+```{r line-secondary, fig.width = 2.98, fig.height = 3.0}
+lonen <- tibble(
+  jaar  = 2020:2027,
+  cao   = c(3.0, 2.2, 3.2, 5.8, 6.7, 5.1, 4.2, 3.8),
+  cpi   = c(1.3, 2.7, 10.0, 3.8, 3.3, 3.3, 3.3, 2.8),
+  reeel = c(100.5, 100.0, 96.8, 98.5, 99.2, 100.4, 101.6, 102.5)
+)
+
+lonen |>
+  pivot_longer(c(cao, cpi), names_to = "reeks", values_to = "waarde") |>
+  mutate(reeks = recode(reeks,
+    cao = "cao-loon bedrijven (linkeras)",
+    cpi = "inflatie (cpi, linkeras)")) |>
+  cpb_line(x = jaar, y = waarde, colour = reeks,
+    sec_y      = reeel,
+    sec_limits = c(95, 110),
+    sec_label  = "reële cao-loon bedrijven (rechteras)",
+    sec_ylab   = "geïndexeerd, 2021 = 100",
+    index        = c(6, 2, 8),
+    value_limits = c(-5, 10),
+    value_breaks = seq(-5, 10, 5),
+    forecast_x   = 2025,
+    zeroline     = TRUE,
+    title = "Cao-loon bedrijven en inflatie (cpi)",
+    ylab  = "mutatie in %") +
+  scale_x_continuous(breaks = seq(2020, 2026, 2))
+```
+
+The one difference from `cpb_col()`: there the columns key on `fill`
+and the secondary line on `colour`, so they form two legend blocks.
+Here the primary series already key on `colour`, so the secondary line
+joins that same scale, takes the next `index` position and shares a
+single legend -- which is why all three labels name their axis.
+
 # Area charts
 
 `cpb_area()` draws the recurring share-of-total-over-time figure.
