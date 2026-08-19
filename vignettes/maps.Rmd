@@ -63,9 +63,12 @@ cpb_map(gemeenten, region = code, value = klasse,
 The map fills the half-page width (`page = "half"` in `save_cpb()`);
 because the Netherlands is taller than it is wide, a map figure needs
 a taller canvas than a chart -- here `fig.height` is set so the map is
-not squeezed. A title that runs wider than the panel triggers a
-warning from `save_cpb()`, which suggests breaking it over two lines
-with `"\n"` (see the province example below).
+not squeezed (this vignette displays plots directly through knitr, so
+that is a chunk option; `save_cpb()` itself does this automatically --
+see "Styling and raw boundaries" below). A title that runs wider than
+the panel triggers a warning from `save_cpb()`, which suggests
+breaking it over two lines with `"\n"` (see the province example
+below).
 
 `cpb_cut()` is a house-styled wrapper around `cut()`: give it the
 `breaks` (including the outer bounds, `Inf` for an open top class) and
@@ -150,6 +153,13 @@ cpb_map(corops_ct, region = code, value = index, level = "corop",
 ```
 
 # Styling and raw boundaries
+
+`save_cpb(plot, page = ...)` auto-fits a `cpb_map()` panel to the
+boundaries' true geographic aspect ratio when `height` is left at its
+default, so the map fills the figure exactly instead of sitting
+letterboxed inside a fixed-height page -- no more guessing a `height`
+by eye. Pass `height` explicitly to opt back into a fixed height, e.g.
+to match a neighbouring figure.
 
 The border seams are controlled with `border_colour` (default the CPB
 background colour; pass `"white"` for more contrast, e.g. on a

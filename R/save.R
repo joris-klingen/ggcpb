@@ -245,7 +245,13 @@ cpb_ggsave_grob <- function(filename, grob, dpi, device, bg, width = NULL, heigh
 #' Height defaults to 2.98 in (the `"report"` preset). Pass
 #' `preset = "presentation"` for the 2.5 in presentation height, or set
 #' `height` explicitly for anything else (e.g. a tall stacked-facet
-#' export) -- an explicit `height` always wins over `preset`.
+#' export) -- an explicit `height` always wins over `preset`. A
+#' `cpb_map()` plot is the one exception: left at its default (no
+#' explicit `height`), its panel is instead auto-sized to the
+#' boundaries' true geographic aspect ratio, so the map fills the
+#' figure exactly rather than sitting letterboxed inside a
+#' fixed-height page (pass `height` explicitly to opt back into a
+#' fixed height, e.g. to match a neighbouring figure).
 #'
 #' @param filename Path to write to; passed to [ggplot2::ggsave()].
 #' @param plot The plot to save; defaults to [ggplot2::last_plot()].
@@ -317,6 +323,10 @@ save_cpb <- function(filename,
     )
   }
 
+  # NULL means the caller left height to us; used below to decide
+  # whether cpb_map()'s own aspect ratio gets to auto-size the panel,
+  # or an explicit height (like an explicit panel_size) wins outright
+  height_auto <- is.null(height)
   if (is.null(height)) {
     height <- if (preset == "presentation") 2.5 else 2.98
   }
@@ -327,6 +337,23 @@ save_cpb <- function(filename,
   # cpb_donut() so far) may have already asked for one of its own
   if (is.null(panel_size)) {
     panel_size <- attr(plot, "cpb_panel_size")
+  }
+
+  # failing that, cpb_map() tags its plot with the boundaries' true
+  # (metres) aspect ratio: measure the panel width the plot would get
+  # at this page width regardless (title/legend chrome span the full
+  # width, so it does not depend on height) and pin the panel to that
+  # width at the matching height, so the map fills its panel exactly
+  # instead of sitting letterboxed inside a too-tall/too-short one. An
+  # explicit height opts out, the same way an explicit panel_size does.
+  if (is.null(panel_size) && height_auto) {
+    map_aspect <- attr(plot, "cpb_map_aspect")
+    if (!is.null(map_aspect)) {
+      g0 <- cpb_resolve_gtable_units(ggplot2::ggplotGrob(plot), width, height)
+      panel_col <- unique(g0$layout$l[g0$layout$name == "panel"])
+      panel_w <- grid::convertWidth(g0$widths[panel_col], "in", valueOnly = TRUE)
+      panel_size <- c(panel_w, panel_w * map_aspect)
+    }
   }
 
   # lifts out the approximate sec_ylab layer a wrapper may have added

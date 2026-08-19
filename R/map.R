@@ -202,5 +202,12 @@ cpb_map <- function(data, region, value,
       legend.direction       = "vertical"
     )
   }
+
+  # coord_fixed(1) locks the panel to the boundaries' true (metres)
+  # aspect ratio; save_cpb() reads this back to size the panel itself
+  # to that ratio (rather than the panel sitting undersized inside a
+  # taller/wider page, leaving blank background above/below or beside
+  # it) unless the caller asks for an explicit height of their own.
+  attr(p, "cpb_map_aspect") <- diff(range(geo$y)) / diff(range(geo$x))
   p
 }

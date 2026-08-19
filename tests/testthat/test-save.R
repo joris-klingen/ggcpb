@@ -48,6 +48,24 @@ test_that("preset controls the default height, and an explicit height wins", {
   expect_match(msg2, "2.98 x 4 in", fixed = TRUE)
 })
 
+test_that("save_cpb auto-fits a cpb_map() panel to its geographic aspect ratio", {
+  skip_if_not_installed("ragg")
+  prov <- data.frame(naam = unique(cpb_nl_geo("provincie")$name))
+  prov$w <- seq_len(nrow(prov))
+  p <- cpb_map(prov, region = naam, value = w, level = "provincie")
+  expect_false(is.null(attr(p, "cpb_map_aspect")))
+
+  path <- withr::local_tempfile(fileext = ".png")
+  msg <- testthat::capture_output(save_cpb(path, p, page = "half"))
+  # not the 2.98 in "report" preset square -- the panel drove the height
+  expect_false(grepl("2.98 x 2.98 in", msg, fixed = TRUE))
+  expect_true(file.exists(path))
+
+  # an explicit height opts back out, same as an explicit panel_size does
+  msg2 <- testthat::capture_output(save_cpb(path, p, page = "half", height = 3))
+  expect_match(msg2, "2.98 x 3 in", fixed = TRUE)
+})
+
 test_that("save_cpb warns on a title too long for the page, not when wrapped", {
   skip_if_not_installed("ragg")
   df <- data.frame(x = c("a", "b"), y = 1:2)

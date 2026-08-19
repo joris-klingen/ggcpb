@@ -896,6 +896,11 @@ test_that("cpb_map joins by code or name and styles the borders", {
   expect_s3_class(p$scales$get_scales("fill"), "ScaleContinuous")
   # map theme: no axes
   expect_s3_class(p$theme$axis.text, "element_blank")
+  # tagged with the boundaries' true aspect ratio, for save_cpb() to
+  # auto-fit the panel to (see test-save.R)
+  geo <- cpb_nl_geo("provincie")
+  expect_equal(attr(p, "cpb_map_aspect"),
+               diff(range(geo$y)) / diff(range(geo$x)))
 
   # join by name works too, and a missing region fills as NA
   prov2 <- data.frame(naam = unique(cpb_nl_geo("provincie")$name)[1:11])
