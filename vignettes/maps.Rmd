@@ -13,6 +13,15 @@ vignette: >
 # any other canvas distorts the text-to-figure proportion) and only
 # *displayed* smaller via out.width, at a consistent 2:1 scale:
 # half-page figures at 350px, full-page figures at 700px.
+#
+# dev.args sets the *device's own* background to the CPB background
+# colour (cpb_tokens()$bg, hardcoded here since ggcpb isn't loaded
+# yet): coord_fixed() maps (this page's fig.height is only an estimate
+# of the true, boundary-driven aspect ratio) leave any leftover margin
+# entirely unpainted -- not even by theme_cpb()'s plot.background --
+# so without this the margin falls through to the device's own
+# default (white), the same gap save_cpb() papers over via its own
+# `bg` argument for a real export.
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -20,7 +29,8 @@ knitr::opts_chunk$set(
   fig.height = 2.98,
   dpi = 300,
   out.width = "350px",
-  dev = if (requireNamespace("ragg", quietly = TRUE)) "ragg_png" else "png"
+  dev = if (requireNamespace("ragg", quietly = TRUE)) "ragg_png" else "png",
+  dev.args = list(background = "#eef8ff")
 )
 ```
 
