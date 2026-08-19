@@ -95,7 +95,12 @@ right-aligned above the panel to mirror the left-hand unit that
 top of the line, the house variant used when the x axis holds a
 handful of discrete categories (age brackets, quintiles) rather
 than a dense time series. Markers take the line colour, and the
-legend key shows a line with a marker on it.}
+legend key shows a line with a marker on it.
+Markers have a radius, so drawing them expands the panel slightly
+beyond the data range -- otherwise the first, last and extreme
+points are sliced in half by the panel edge. A line on its own
+keeps the tight panel, where the axis meets the outermost
+gridlines.}
 
 \item{point_size}{Marker size when \code{points = TRUE}; defaults to
 \code{1.1}, which reads as the published dot against the default

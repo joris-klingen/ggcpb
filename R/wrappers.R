@@ -847,6 +847,11 @@ cpb_area <- function(data, x, y, fill,
 #'   handful of discrete categories (age brackets, quintiles) rather
 #'   than a dense time series. Markers take the line colour, and the
 #'   legend key shows a line with a marker on it.
+#'   Markers have a radius, so drawing them expands the panel slightly
+#'   beyond the data range -- otherwise the first, last and extreme
+#'   points are sliced in half by the panel edge. A line on its own
+#'   keeps the tight panel, where the axis meets the outermost
+#'   gridlines.
 #' @param point_size Marker size when `points = TRUE`; defaults to
 #'   `1.1`, which reads as the published dot against the default
 #'   `linewidth`.
@@ -1133,12 +1138,19 @@ cpb_line <- function(data, x, y, colour = NULL,
   # and ticks meet the outermost gridlines instead of floating beyond
   # them. A secondary unit caption is drawn above the panel, so it has
   # to survive clipping.
+  #
+  # Markers, unlike a line, have a radius: against a panel pinned
+  # exactly to the data range the first, last and extreme points get
+  # sliced in half by the panel edge. So when points are drawn, fall
+  # back to ggplot2's default expansion for the margin they need.
+  # Clipping stays on either way, so `value_limits` still crops rather
+  # than letting out-of-range data spill over the axis labels.
   p <- p + ggplot2::coord_cartesian(
-    ylim = value_limits, expand = FALSE,
+    ylim = value_limits, expand = isTRUE(points),
     clip = if (has_sec && !is.null(sec_ylab)) "off" else "on")
 
-  # no zero-flush expansion here: the tight coord above already pins
-  # the panel to the data/limits
+  # no zero-flush expansion here: the coord above already pins the panel
+  # to the data/limits (or expands it just enough for the markers)
   scale_args <- cpb_value_scale_args(pct_axis = pct_axis,
                                      value_breaks = value_breaks)
   if (has_sec) {
