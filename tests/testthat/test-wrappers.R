@@ -46,7 +46,9 @@ test_that("cpb_line adds a colour scale only when colour is mapped", {
   df1 <- data.frame(jaar = 2018:2020, waarde = c(1, 2, 3))
   p1 <- cpb_line(df1, x = jaar, y = waarde)
   expect_true(inherits(p1$layers[[1]]$geom, "GeomLine"))
-  expect_length(p1$scales$scales, 0)
+  # a value scale is always present (it carries the Dutch number
+  # labels); what must be absent is a *colour* scale
+  expect_null(p1$scales$get_scales("colour"))
 
   df2 <- data.frame(
     jaar   = rep(2018:2019, 2),
@@ -180,9 +182,11 @@ test_that("the value axis is zero-flush for single-signed data", {
   sc2 <- cpb_col(df_neg, x = x, y = y)$scales$get_scales("y")
   expect_equal(sc2$expand, ggplot2::expansion(mult = c(0.05, 0)))
 
-  # mixed-sign data keeps the default expansion (no wrapper scale)
+  # mixed-sign data keeps ggplot2's default expansion: the scale exists
+  # (for the Dutch number labels) but sets no zero-flush expansion
   df_mix <- data.frame(x = c("a", "b"), y = c(-1, 2))
-  expect_null(cpb_col(df_mix, x = x, y = y)$scales$get_scales("y"))
+  sc3 <- cpb_col(df_mix, x = x, y = y)$scales$get_scales("y")
+  expect_true(inherits(sc3$expand, "waiver"))
 })
 
 test_that("cpb_col value_breaks land on the wrapper-built value scale", {

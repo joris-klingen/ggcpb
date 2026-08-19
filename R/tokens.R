@@ -11,6 +11,19 @@ cpb_colors <- c(
   "#005faf", "#193c69", "#96827d", "#64504b", "lightgrey"
 )
 
+# The order the published figures actually use for series colours. CPB
+# figures lead with the primary blue, then magenta, then taupe -- see
+# references/plots/ (fig 1.1 left, 1.3 right, and the two p10 charts,
+# which use exactly cpb_colors[c(6, 2, 8)]). The swatch vector above
+# stays in its own order, because cpb_cols() and the `index =` argument
+# address it by position and CPB source scripts write cpb_colors[c(6, 2)].
+# Only the *cycling* order of the qualitative palette follows this.
+#
+# The first three positions are what the publication demonstrates; the
+# rest keep the remaining swatches roughly strongest-first, so a chart
+# with many series stays legible.
+cpb_series_order <- c(6, 2, 8, 7, 3, 5, 9, 1, 4)
+
 # alternate discrete ordering (blue/pink lead) ----
 cpb_colors_discr <- c(
   "#eb0073", "#005795", "#fad1e8", "#b7e4ff",
