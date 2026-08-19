@@ -18,16 +18,12 @@
 # drifting apart.
 cpb_wrapper_theme <- function(env = parent.frame()) {
   args <- mget(
-    c(
-      "legend", "minor", "ticks", "flush_legend", "axis_text_size",
-      "legend_key_size", "grid_colour", "grid_linewidth"
-    ),
+    c("legend", "minor", "ticks", "flush_legend", "axis_text_size",
+      "legend_key_size", "grid_colour", "grid_linewidth"),
     envir = env
   )
-  args$orientation <- mget("orientation",
-    envir = env,
-    ifnotfound = list("vertical")
-  )[[1]]
+  args$orientation <- mget("orientation", envir = env,
+                           ifnotfound = list("vertical"))[[1]]
   do.call(theme_cpb, args)
 }
 
@@ -70,23 +66,17 @@ cpb_group_heading_positions <- function(cats, groups, gap = 0.7) {
       # a single-category group named after itself collapses onto its
       # heading row (e.g. the "Alle huishoudens" total)
       pos <- pos - 1
-      out <- rbind(out, data.frame(
-        label = g, cat = cts,
-        heading = TRUE, pos = pos
-      ))
+      out <- rbind(out, data.frame(label = g, cat = cts,
+                                   heading = TRUE, pos = pos))
       next
     }
     pos <- pos - 1
-    out <- rbind(out, data.frame(
-      label = g, cat = NA_character_,
-      heading = TRUE, pos = pos
-    ))
+    out <- rbind(out, data.frame(label = g, cat = NA_character_,
+                                 heading = TRUE, pos = pos))
     for (ct in cts) {
       pos <- pos - 1
-      out <- rbind(out, data.frame(
-        label = ct, cat = ct,
-        heading = FALSE, pos = pos
-      ))
+      out <- rbind(out, data.frame(label = ct, cat = ct,
+                                   heading = FALSE, pos = pos))
     }
   }
   out$pos <- out$pos - min(out$pos) + 1
@@ -97,15 +87,11 @@ cpb_group_heading_positions <- function(cats, groups, gap = 0.7) {
 # its panel (the legacy nicerplot placement) and every panel is a
 # complete mini-figure with its own axes and axis labels.
 cpb_add_facet <- function(p, facet, facet_ncol = NULL, facet_scales = "fixed") {
-  if (rlang::quo_is_null(facet)) {
-    return(p)
-  }
-  p + ggplot2::facet_wrap(ggplot2::vars(!!facet),
-    ncol = facet_ncol,
-    scales = facet_scales,
-    strip.position = "bottom",
-    axes = "all", axis.labels = "all"
-  )
+  if (rlang::quo_is_null(facet)) return(p)
+  p + ggplot2::facet_wrap(ggplot2::vars(!!facet), ncol = facet_ncol,
+                          scales = facet_scales,
+                          strip.position = "bottom",
+                          axes = "all", axis.labels = "all")
 }
 
 # reverse_legend and legend_ncol both configure the same guide_legend(),
@@ -605,9 +591,7 @@ cpb_forecast_rect <- function(forecast_x) {
 
 #' @noRd
 cpb_forecast_label <- function(forecast_x, xvals, label) {
-  if (is.null(label) || !nzchar(label)) {
-    return(NULL)
-  }
+  if (is.null(label) || !nzchar(label)) return(NULL)
   x_max <- suppressWarnings(max(as.numeric(xvals), na.rm = TRUE))
   if (is.finite(x_max) && x_max > forecast_x) {
     # centred in the window, as the legacy plotter does
@@ -617,12 +601,10 @@ cpb_forecast_label <- function(forecast_x, xvals, label) {
     label_x <- forecast_x
     hjust <- -0.15
   }
-  ggplot2::annotate("text",
-    x = label_x, y = Inf, label = label,
-    vjust = 1.8, hjust = hjust, size = 2.2,
-    colour = "#666666", family = cpb_font_family(),
-    fontface = "italic"
-  )
+  ggplot2::annotate("text", x = label_x, y = Inf, label = label,
+                    vjust = 1.8, hjust = hjust, size = 2.2,
+                    colour = "#666666", family = cpb_font_family(),
+                    fontface = "italic")
 }
 
 #' A CPB-styled column (bar) chart
