@@ -84,6 +84,8 @@ cpb_box(kk, x = groep,
   subtitle = "inkomensgroep",
   ylab     = "% koopkrachtmutatie") +
   scale_y_continuous(labels = label_number_nl(accuracy = 0.1))
+#> Scale for y is already present.
+#> Adding another scale for y, which will replace the existing scale.
 ```
 
 <img src="boxplots_files/figure-gfm/box-modern-1.png" width="350px" />
@@ -144,6 +146,8 @@ cpb_box(kk2, x = groep,
   title    = "Koopkracht per jaar, 2026 en 2027",
   ylab     = "% koopkrachtmutatie") +
   scale_y_continuous(labels = label_number_nl())
+#> Scale for y is already present.
+#> Adding another scale for y, which will replace the existing scale.
 ```
 
 <img src="boxplots_files/figure-gfm/box-dodged-1.png" width="700px" />
