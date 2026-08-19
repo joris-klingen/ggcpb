@@ -1,12 +1,26 @@
 # test-palettes.R ----
 
-test_that("cpb_pal returns the exact qualitative palette values", {
+test_that("cpb_pal cycles the qualitative palette in published order", {
   qual <- cpb_pal("qualitative")(9)
   expect_equal(qual, c(
-    "#F596AF", "#e6006e", "#820050", "#d7c8c8", "#87d2ff",
-    "#005faf", "#193c69", "#96827d", "#64504b"
+    "#005faf", "#e6006e", "#96827d", "#193c69", "#820050",
+    "#87d2ff", "#64504b", "#F596AF", "#d7c8c8"
   ))
   expect_false("lightgrey" %in% qual)
+
+  # the published figures lead blue, magenta, taupe -- cpb_colors[c(6, 2, 8)]
+  # (references/plots/: fig 1.1 left, 1.3 right, both p10 charts), so a
+  # default chart must reach those without the caller passing `index =`
+  expect_equal(cpb_pal("qualitative")(3), unname(cpb_cols(6, 2, 8)))
+})
+
+test_that("swatch access stays positional despite the cycling order", {
+  # cpb_cols() and `index =` address the raw swatch vector by position,
+  # the way CPB source scripts write cpb_colors[c(6, 2)]; reordering the
+  # palette cycle must not renumber them
+  expect_equal(unname(cpb_cols(1)), "#F596AF")
+  expect_equal(unname(cpb_cols(6)), "#005faf")
+  expect_equal(unname(cpb_cols(2)), "#e6006e")
 })
 
 test_that("cpb_pal returns the exact discr palette values", {

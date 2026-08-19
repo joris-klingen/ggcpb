@@ -118,7 +118,14 @@ cpb_reserve_subtitle <- function(title, subtitle) {
 cpb_value_scale_args <- function(values = NULL, pct_axis = FALSE, pct_scale = 1,
                                  value_breaks = NULL) {
   args <- list()
-  if (isTRUE(pct_axis)) args$labels <- label_pct_nl(scale = pct_scale)
+  # CPB figures are Dutch-language throughout: the value axis uses a
+  # decimal comma (and a point as thousands separator), never the
+  # ggplot2 default "0.5". Only whole-number breaks hide the difference.
+  args$labels <- if (isTRUE(pct_axis)) {
+    label_pct_nl(scale = pct_scale)
+  } else {
+    label_number_nl()
+  }
   if (!is.null(value_breaks)) args$breaks <- value_breaks
   if (!is.null(values)) {
     expand <- cpb_zero_flush_expand(values)
@@ -160,6 +167,25 @@ cpb_zero_flush_expand <- function(values) {
 #' panel, drawn on top. Split in two helpers so the wrappers can layer
 #' them on either side of their geoms.
 #'
+#' Resolve `forecast_x` to a numeric position on the panel
+#'
+#' A discrete scale places category `i` at position `i`, so a category
+#' name has to become its level index before any arithmetic. The window
+#' then starts at that category's left edge rather than its centre, so
+#' the shaded band covers the whole bar. Numeric x axes pass straight
+#' through.
+#' @noRd
+cpb_forecast_pos <- function(forecast_x, xvals) {
+  if (is.numeric(forecast_x)) return(forecast_x)
+  levs <- if (is.factor(xvals)) levels(xvals) else sort(unique(as.character(xvals)))
+  pos <- match(as.character(forecast_x), levs)
+  if (is.na(pos)) {
+    stop("`forecast_x` (\"", forecast_x, "\") is not one of the values on ",
+         "the x axis.", call. = FALSE)
+  }
+  pos - 0.5
+}
+
 #' @noRd
 cpb_forecast_rect <- function(forecast_x) {
   ggplot2::annotate("rect", xmin = forecast_x, xmax = Inf,
@@ -417,7 +443,8 @@ cpb_col <- function(data, x, y, fill = NULL,
 
   # the forecast window sits underneath the bars
   if (!is.null(forecast_x)) {
-    p <- p + cpb_forecast_rect(forecast_x)
+    p <- p + cpb_forecast_rect(
+      cpb_forecast_pos(forecast_x, rlang::eval_tidy(x, data)))
   }
 
   p <- p + if (has_fill) {
@@ -510,7 +537,9 @@ cpb_col <- function(data, x, y, fill = NULL,
     p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black", linewidth = 0.25)
   }
   if (!is.null(forecast_x)) {
-    p <- p + cpb_forecast_label(forecast_x, rlang::eval_tidy(x, data), forecast_label)
+    p <- p + cpb_forecast_label(
+      cpb_forecast_pos(forecast_x, rlang::eval_tidy(x, data)),
+      rlang::eval_tidy(x, data), forecast_label)
   }
 
   if (has_group) {
@@ -754,7 +783,8 @@ cpb_area <- function(data, x, y, fill,
 
   # the forecast window sits underneath the areas
   if (!is.null(forecast_x)) {
-    p <- p + cpb_forecast_rect(forecast_x)
+    p <- p + cpb_forecast_rect(
+      cpb_forecast_pos(forecast_x, rlang::eval_tidy(x, data)))
   }
 
   p <- p + ggplot2::geom_area(show.legend = TRUE, ...)
@@ -764,7 +794,9 @@ cpb_area <- function(data, x, y, fill,
     p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black", linewidth = 0.25)
   }
   if (!is.null(forecast_x)) {
-    p <- p + cpb_forecast_label(forecast_x, rlang::eval_tidy(x, data), forecast_label)
+    p <- p + cpb_forecast_label(
+      cpb_forecast_pos(forecast_x, rlang::eval_tidy(x, data)),
+      rlang::eval_tidy(x, data), forecast_label)
   }
 
   scale_args <- cpb_value_scale_args(
@@ -1048,7 +1080,8 @@ cpb_line <- function(data, x, y, colour = NULL,
   # background layers first: the forecast window, then the zero line,
   # then the uncertainty band, so the data lines stay on top
   if (!is.null(forecast_x)) {
-    p <- p + cpb_forecast_rect(forecast_x)
+    p <- p + cpb_forecast_rect(
+      cpb_forecast_pos(forecast_x, rlang::eval_tidy(x, data)))
   }
   if (isTRUE(zeroline)) {
     p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black", linewidth = 0.25)
@@ -1121,7 +1154,9 @@ cpb_line <- function(data, x, y, colour = NULL,
 
   # the label sits on top of everything
   if (!is.null(forecast_x)) {
-    p <- p + cpb_forecast_label(forecast_x, rlang::eval_tidy(x, data), forecast_label)
+    p <- p + cpb_forecast_label(
+      cpb_forecast_pos(forecast_x, rlang::eval_tidy(x, data)),
+      rlang::eval_tidy(x, data), forecast_label)
   }
 
   if (has_sec && !is.null(sec_ylab)) {
@@ -1842,7 +1877,8 @@ cpb_scatter <- function(data, x, y, colour = NULL,
 
   # underneath the points: first the forecast window, then the zero line
   if (!is.null(forecast_x)) {
-    p <- p + cpb_forecast_rect(forecast_x)
+    p <- p + cpb_forecast_rect(
+      cpb_forecast_pos(forecast_x, rlang::eval_tidy(x, data)))
   }
   if (isTRUE(zeroline)) {
     p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black", linewidth = 0.25)
@@ -1857,7 +1893,9 @@ cpb_scatter <- function(data, x, y, colour = NULL,
 
   # the label sits on top of everything
   if (!is.null(forecast_x)) {
-    p <- p + cpb_forecast_label(forecast_x, rlang::eval_tidy(x, data), forecast_label)
+    p <- p + cpb_forecast_label(
+      cpb_forecast_pos(forecast_x, rlang::eval_tidy(x, data)),
+      rlang::eval_tidy(x, data), forecast_label)
   }
 
   # a numeric colour column gets the continuous gradient, anything

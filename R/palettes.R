@@ -31,6 +31,14 @@
 cpb_pal <- function(palette = c("qualitative", "discr", "sequential", "blues"), reverse = FALSE) {
   palette <- match.arg(palette)
   cols <- cpb_palette_colours(palette)
+  # the qualitative swatches are stored in their own (CPB source-script)
+  # order; series cycle through them in the order the published figures
+  # use, which leads with the primary blue rather than the pale pink.
+  # cpb_cols() below deliberately keeps the raw order, because it and
+  # the `index =` argument address swatches by position.
+  if (identical(palette, "qualitative")) {
+    cols <- cols[cpb_series_order[cpb_series_order <= length(cols)]]
+  }
   if (isTRUE(reverse)) cols <- rev(cols)
 
   function(n) {
