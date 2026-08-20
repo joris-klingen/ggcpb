@@ -36,7 +36,7 @@ cpb_col(regios, x = jaar, y = waarde, fill = groep,
   position   = "dodge",
   facet      = regio,
   facet_ncol = 2,
-  index      = c(6, 2, 5),
+  fill_index = c(6, 2, 5),
   title = "Ontwikkeling per regio",
   ylab  = "mld euro")
 ```
@@ -65,7 +65,7 @@ zakkans <- tibble(
   pct   = c(8.7, 8.7, 9.7, 5.1, 11.2, 8.0, 8.1, 6.0))
 
 cpb_col(zakkans, x = cat, y = pct, fill = serie, group = grp,
-  position = "dodge", index = c(6, 2), width = 0.75,
+  position = "dodge", fill_index = c(6, 2), width = 0.75,
   value_breaks = seq(0, 12, 2), value_limits = c(0, 12),
   title = "VWO", ylab = "zakkans (%)")
 ```

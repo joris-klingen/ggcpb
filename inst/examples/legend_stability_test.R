@@ -97,7 +97,7 @@ box_df <- data.frame(x = c("a", "b"), g = c("s1", "s2"),
 
 col2 <- function(df, ...) {
   cpb_col(df, x = x, y = y, fill = g, position = "dodge",
-          index = c(6, 2), title = "t", ...)
+          fill_index = c(6, 2), title = "t", ...)
 }
 # each variant: name, glyph family, plot and canvas size (inches)
 variant <- function(name, family, plot, width = 4, height = 4) {
@@ -142,7 +142,7 @@ for (n in c(1, 2, 3, 5, 8)) {
   variants[[length(variants) + 1]] <- variant(
     paste0("items_", n), "rect",
     cpb_col(df, x = x, y = y, fill = g, position = "dodge",
-            index = c(6, 2, 3, 4, 5, 1, 7, 8)[seq_len(n)], title = "t")
+            fill_index = c(6, 2, 3, 4, 5, 1, 7, 8)[seq_len(n)], title = "t")
   )
 }
 
@@ -150,42 +150,42 @@ for (n in c(1, 2, 3, 5, 8)) {
 variants <- c(variants, list(
   variant("type_col_stack", "rect",
           cpb_col(dodge_df(c("s1", "s2")), x = x, y = y, fill = g,
-                  index = c(6, 2), title = "t")),
+                  fill_index = c(6, 2), title = "t")),
   variant("type_area", "rect",
-          cpb_area(num_df, x = x, y = y, fill = g, index = c(6, 2), title = "t")),
+          cpb_area(num_df, x = x, y = y, fill = g, fill_index = c(6, 2), title = "t")),
   variant("type_hist", "rect",
           cpb_hist(hist_df, x = v, fill = g, binwidth = 1,
-                   index = c(6, 2), title = "t")),
+                   fill_index = c(6, 2), title = "t")),
   variant("type_box", "rect",
           cpb_box(box_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-                  fill = g, reverse_legend = TRUE, index = c(6, 2), title = "t")),
+                  fill = g, reverse_legend = TRUE, fill_index = c(6, 2), title = "t")),
   variant("type_col_grouped", "rect",
           cpb_col(transform(dodge_df(c("s1", "s2")),
                             grp = factor(rep(c("blok A", "blok B"), each = 2))),
                   x = x, y = y, fill = g, position = "dodge", group = grp,
-                  index = c(6, 2), title = "t")),
+                  fill_index = c(6, 2), title = "t")),
   variant("type_col_facet", "rect",
           cpb_col(transform(dodge_df(c("s1", "s2")),
                             f = rep(c("paneel 1", "paneel 2"), 2)),
                   x = x, y = y, fill = g, position = "dodge", facet = f,
-                  index = c(6, 2), title = "t")),
+                  fill_index = c(6, 2), title = "t")),
   variant("type_line_short", "line",
           cpb_line(num_df, x = x, y = y, colour = g,
-                   index = c(6, 2), reverse_legend = TRUE, title = "t")),
+                   colour_index = c(6, 2), reverse_legend = TRUE, title = "t")),
   variant("type_line_long", "line",
           cpb_line(transform(num_df,
                              g = factor(g, labels = c("mediane koopkrachtontwikkeling",
                                                       "gemiddelde contractloonstijging"))),
-                   x = x, y = y, colour = g, index = c(6, 2),
+                   x = x, y = y, colour = g, colour_index = c(6, 2),
                    reverse_legend = TRUE, title = "t")),
   variant("type_scatter_short", "point",
           cpb_scatter(num_df, x = x, y = y, colour = g,
-                      index = c(6, 2), reverse_legend = TRUE, title = "t")),
+                      colour_index = c(6, 2), reverse_legend = TRUE, title = "t")),
   variant("type_scatter_long", "point",
           cpb_scatter(transform(num_df,
                                 g = factor(g, labels = c("huishoudens met kinderen",
                                                          "huishoudens zonder kinderen"))),
-                      x = x, y = y, colour = g, index = c(6, 2),
+                      x = x, y = y, colour = g, colour_index = c(6, 2),
                       reverse_legend = TRUE, title = "t"))
 ))
 
@@ -202,7 +202,7 @@ for (nm in names(sizes)) {
 # 6) titles and axis titles around the panel
 base_df <- dodge_df(c("s1", "s2"))
 mk <- function(...) cpb_col(base_df, x = x, y = y, fill = g, position = "dodge",
-                            index = c(6, 2), ...)
+                            fill_index = c(6, 2), ...)
 variants <- c(variants, list(
   variant("ann_plain", "rect", mk()),
   variant("ann_title", "rect", mk(title = "titel")),

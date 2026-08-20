@@ -267,9 +267,16 @@ cpb_forecast_label <- function(forecast_x, xvals, label) {
 #' @param palette CPB palette to use for `fill`; one of
 #'   `"qualitative"` (default), `"discr"`, `"sequential"`
 #'   (pink ramp), or `"blues"` (blue ramp).
-#' @param index Optional integer vector of palette positions, forwarded
-#'   to [scale_fill_cpb_manual()] instead of the default
-#'   [scale_fill_cpb_d()] when supplied.
+#' @param fill_index Which house colours the series get. Either a vector
+#'   of palette positions -- `c(2, 5, 6)`, forwarded to
+#'   [scale_fill_cpb_manual()] -- or a keyword naming a palette:
+#'   `"discrete"` for the qualitative house palette (blue, magenta,
+#'   taupe, ...) and `"continuous"` for the sequential ramp. `NULL`
+#'   (default) uses `palette`, which is `"discrete"` for every wrapper
+#'   except [cpb_map()]. A keyword and a non-matching `palette` are a
+#'   conflict and raise an error, since both set the same thing.
+#' @param index Deprecated. Former name of
+#'   `fill_index`. Still accepted, with a warning.
 #' @param pct_axis If `TRUE`, format the value axis with
 #'   [label_pct_nl()]. Uses `scale = 100` automatically when
 #'   `position = "fill"` (proportions), and `scale = 1` otherwise
@@ -355,6 +362,7 @@ cpb_col <- function(data, x, y, fill = NULL,
                      sec_linewidth = 0.55,
                      sec_points = FALSE,
                      palette = "qualitative",
+                     fill_index = NULL,
                      index = NULL,
                      pct_axis = FALSE,
                      value_breaks = NULL,
@@ -382,6 +390,9 @@ cpb_col <- function(data, x, y, fill = NULL,
                      ylab = NULL,
                      filllab = NULL,
                      ...) {
+  .cpb_idx <- cpb_resolve_index(fill_index, index, palette, !missing(palette), "fill_index")
+  index <- .cpb_idx$index
+  palette <- .cpb_idx$palette
   position <- match.arg(position)
   orientation <- match.arg(orientation)
 
@@ -690,9 +701,16 @@ cpb_col <- function(data, x, y, fill = NULL,
 #' @param palette CPB palette to use for `fill`; one of
 #'   `"qualitative"` (default), `"discr"`, `"sequential"`
 #'   (pink ramp), or `"blues"` (blue ramp).
-#' @param index Optional integer vector of palette positions, forwarded
-#'   to [scale_fill_cpb_manual()] instead of the default
-#'   [scale_fill_cpb_d()] when supplied.
+#' @param fill_index Which house colours the series get. Either a vector
+#'   of palette positions -- `c(2, 5, 6)`, forwarded to
+#'   [scale_fill_cpb_manual()] -- or a keyword naming a palette:
+#'   `"discrete"` for the qualitative house palette (blue, magenta,
+#'   taupe, ...) and `"continuous"` for the sequential ramp. `NULL`
+#'   (default) uses `palette`, which is `"discrete"` for every wrapper
+#'   except [cpb_map()]. A keyword and a non-matching `palette` are a
+#'   conflict and raise an error, since both set the same thing.
+#' @param index Deprecated. Former name of
+#'   `fill_index`. Still accepted, with a warning.
 #' @param pct_axis If `TRUE`, format the y axis with [label_pct_nl()].
 #' @param value_breaks Optional breaks for the value axis (passed to
 #'   the wrapper-built [ggplot2::scale_y_continuous()]). Use this
@@ -748,6 +766,7 @@ cpb_col <- function(data, x, y, fill = NULL,
 #' @export
 cpb_area <- function(data, x, y, fill,
                       palette = "qualitative",
+                      fill_index = NULL,
                       index = NULL,
                       pct_axis = FALSE,
                       value_breaks = NULL,
@@ -774,6 +793,9 @@ cpb_area <- function(data, x, y, fill,
                       ylab = NULL,
                       filllab = NULL,
                       ...) {
+  .cpb_idx <- cpb_resolve_index(fill_index, index, palette, !missing(palette), "fill_index")
+  index <- .cpb_idx$index
+  palette <- .cpb_idx$palette
   x <- rlang::enquo(x)
   y <- rlang::enquo(y)
   fill <- rlang::enquo(fill)
@@ -890,9 +912,18 @@ cpb_area <- function(data, x, y, fill,
 #' @param palette CPB palette to use for `colour`; one of
 #'   `"qualitative"` (default), `"discr"`, `"sequential"`
 #'   (pink ramp), or `"blues"` (blue ramp).
-#' @param index Optional integer vector of palette positions, forwarded
-#'   to [scale_colour_cpb_manual()] instead of the default
-#'   [scale_colour_cpb_d()] when supplied.
+#' @param colour_index Which house colours the series get. Either a vector
+#'   of palette positions -- `c(2, 5, 6)`, forwarded to
+#'   [scale_colour_cpb_manual()] -- or a keyword naming a palette:
+#'   `"discrete"` for the qualitative house palette (blue, magenta,
+#'   taupe, ...) and `"continuous"` for the sequential ramp. `NULL`
+#'   (default) uses `palette`, which is `"discrete"` for every wrapper
+#'   except [cpb_map()]. A keyword and a non-matching `palette` are a
+#'   conflict and raise an error, since both set the same thing.
+#' @param color_index American-spelling alias for `colour_index`; ignored
+#'   when `colour_index` is given.
+#' @param index Deprecated. Former name of
+#'   `colour_index`. Still accepted, with a warning.
 #' @param pct_axis If `TRUE`, format the y axis with [label_pct_nl()].
 #' @param value_breaks Optional breaks for the value axis (passed to
 #'   the wrapper-built [ggplot2::scale_y_continuous()]). Use this
@@ -967,6 +998,8 @@ cpb_line <- function(data, x, y, colour = NULL,
                       points = FALSE,
                       point_size = 1.1,
                       palette = "qualitative",
+                      colour_index = NULL,
+                      color_index = NULL,
                       index = NULL,
                       pct_axis = FALSE,
                       value_breaks = NULL,
@@ -995,6 +1028,10 @@ cpb_line <- function(data, x, y, colour = NULL,
                       ylab = NULL,
                       colourlab = NULL,
                       ...) {
+  if (is.null(colour_index)) colour_index <- color_index
+  .cpb_idx <- cpb_resolve_index(colour_index, index, palette, !missing(palette), "colour_index")
+  index <- .cpb_idx$index
+  palette <- .cpb_idx$palette
   x <- rlang::enquo(x)
   y <- rlang::enquo(y)
   colour <- rlang::enquo(colour)
@@ -1317,9 +1354,16 @@ cpb_line <- function(data, x, y, colour = NULL,
 #' @param palette CPB palette to use for `fill`; one of
 #'   `"qualitative"` (default), `"discr"`, `"sequential"`
 #'   (pink ramp), or `"blues"` (blue ramp).
-#' @param index Optional integer vector of palette positions, forwarded
-#'   to [scale_fill_cpb_manual()] instead of the default
-#'   [scale_fill_cpb_d()] when supplied.
+#' @param fill_index Which house colours the series get. Either a vector
+#'   of palette positions -- `c(2, 5, 6)`, forwarded to
+#'   [scale_fill_cpb_manual()] -- or a keyword naming a palette:
+#'   `"discrete"` for the qualitative house palette (blue, magenta,
+#'   taupe, ...) and `"continuous"` for the sequential ramp. `NULL`
+#'   (default) uses `palette`, which is `"discrete"` for every wrapper
+#'   except [cpb_map()]. A keyword and a non-matching `palette` are a
+#'   conflict and raise an error, since both set the same thing.
+#' @param index Deprecated. Former name of
+#'   `fill_index`. Still accepted, with a warning.
 #' @param pct_axis If `TRUE`, format the value axis with
 #'   [label_pct_nl()].
 #' @param value_breaks Optional breaks for the value axis (passed to
@@ -1398,6 +1442,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                      width = 0.5,
                      linewidth = 0.25,
                      palette = "qualitative",
+                     fill_index = NULL,
                      index = NULL,
                      pct_axis = FALSE,
                      value_breaks = NULL,
@@ -1424,6 +1469,9 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                      ylab = NULL,
                      filllab = NULL,
                      ...) {
+  .cpb_idx <- cpb_resolve_index(fill_index, index, palette, !missing(palette), "fill_index")
+  index <- .cpb_idx$index
+  palette <- .cpb_idx$palette
   orientation <- match.arg(orientation)
   box_style <- match.arg(box_style)
   value_axis <- match.arg(value_axis)
@@ -1779,9 +1827,18 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
 #' @param palette CPB palette used for a *discrete* `colour` column;
 #'   one of `"qualitative"` (default), `"discr"`, `"sequential"`
 #'   (pink ramp), or `"blues"` (blue ramp).
-#' @param index Optional integer vector of palette positions for a
-#'   discrete `colour` column, forwarded to
-#'   [scale_colour_cpb_manual()].
+#' @param colour_index Which house colours the series get. Either a vector
+#'   of palette positions -- `c(2, 5, 6)`, forwarded to
+#'   [scale_colour_cpb_manual()] -- or a keyword naming a palette:
+#'   `"discrete"` for the qualitative house palette (blue, magenta,
+#'   taupe, ...) and `"continuous"` for the sequential ramp. `NULL`
+#'   (default) uses `palette`, which is `"discrete"` for every wrapper
+#'   except [cpb_map()]. A keyword and a non-matching `palette` are a
+#'   conflict and raise an error, since both set the same thing.
+#' @param color_index American-spelling alias for `colour_index`; ignored
+#'   when `colour_index` is given.
+#' @param index Deprecated. Former name of
+#'   `colour_index`. Still accepted, with a warning.
 #' @param forecast_x Optional x value where the forecast window
 #'   starts; overlaid and labelled as in [cpb_line()].
 #' @param forecast_label Label for the forecast window; defaults to
@@ -1832,6 +1889,8 @@ cpb_scatter <- function(data, x, y, colour = NULL,
                          point_colour = NULL,
                          size = 0.8,
                          palette = "qualitative",
+                         colour_index = NULL,
+                         color_index = NULL,
                          index = NULL,
                          forecast_x = NULL,
                          forecast_label = "raming",
@@ -1855,6 +1914,10 @@ cpb_scatter <- function(data, x, y, colour = NULL,
                          ylab = NULL,
                          colourlab = NULL,
                          ...) {
+  if (is.null(colour_index)) colour_index <- color_index
+  .cpb_idx <- cpb_resolve_index(colour_index, index, palette, !missing(palette), "colour_index")
+  index <- .cpb_idx$index
+  palette <- .cpb_idx$palette
   x <- rlang::enquo(x)
   y <- rlang::enquo(y)
   colour <- rlang::enquo(colour)
@@ -1958,8 +2021,16 @@ cpb_scatter <- function(data, x, y, colour = NULL,
 #' @param palette CPB palette to use for `fill`; one of
 #'   `"qualitative"` (default), `"discr"`, `"sequential"`
 #'   (pink ramp), or `"blues"` (blue ramp).
-#' @param index Optional integer vector of palette positions, forwarded
-#'   to [scale_fill_cpb_manual()].
+#' @param fill_index Which house colours the series get. Either a vector
+#'   of palette positions -- `c(2, 5, 6)`, forwarded to
+#'   [scale_fill_cpb_manual()] -- or a keyword naming a palette:
+#'   `"discrete"` for the qualitative house palette (blue, magenta,
+#'   taupe, ...) and `"continuous"` for the sequential ramp. `NULL`
+#'   (default) uses `palette`, which is `"discrete"` for every wrapper
+#'   except [cpb_map()]. A keyword and a non-matching `palette` are a
+#'   conflict and raise an error, since both set the same thing.
+#' @param index Deprecated. Former name of
+#'   `fill_index`. Still accepted, with a warning.
 #' @param reverse_legend If `TRUE` (default), reverse the fill legend
 #'   order via `guide_legend(reverse = TRUE)`.
 #' @param legend_ncol Number of columns to lay the legend keys out in,
@@ -2005,6 +2076,7 @@ cpb_hist <- function(data, x, fill = NULL,
                       outline = "white",
                       position = "stack",
                       palette = "qualitative",
+                      fill_index = NULL,
                       index = NULL,
                       reverse_legend = TRUE,
                       legend_ncol = NULL,
@@ -2026,6 +2098,9 @@ cpb_hist <- function(data, x, fill = NULL,
                       ylab = NULL,
                       filllab = NULL,
                       ...) {
+  .cpb_idx <- cpb_resolve_index(fill_index, index, palette, !missing(palette), "fill_index")
+  index <- .cpb_idx$index
+  palette <- .cpb_idx$palette
   x <- rlang::enquo(x)
   fill <- rlang::enquo(fill)
   facet <- rlang::enquo(facet)
@@ -2124,9 +2199,18 @@ cpb_hist <- function(data, x, fill = NULL,
 #' @param palette CPB palette to use for `colour`; one of
 #'   `"qualitative"` (default), `"discr"`, `"sequential"`
 #'   (pink ramp), or `"blues"` (blue ramp).
-#' @param index Optional integer vector of palette positions, forwarded
-#'   to [scale_colour_cpb_manual()] instead of the default
-#'   [scale_colour_cpb_d()] when supplied.
+#' @param colour_index Which house colours the series get. Either a vector
+#'   of palette positions -- `c(2, 5, 6)`, forwarded to
+#'   [scale_colour_cpb_manual()] -- or a keyword naming a palette:
+#'   `"discrete"` for the qualitative house palette (blue, magenta,
+#'   taupe, ...) and `"continuous"` for the sequential ramp. `NULL`
+#'   (default) uses `palette`, which is `"discrete"` for every wrapper
+#'   except [cpb_map()]. A keyword and a non-matching `palette` are a
+#'   conflict and raise an error, since both set the same thing.
+#' @param color_index American-spelling alias for `colour_index`; ignored
+#'   when `colour_index` is given.
+#' @param index Deprecated. Former name of
+#'   `colour_index`. Still accepted, with a warning.
 #' @param pct_axis If `TRUE`, format the value axis with
 #'   [label_pct_nl()].
 #' @param value_breaks Optional breaks for the value axis (passed to
@@ -2180,6 +2264,8 @@ cpb_dot <- function(data, x, y, lower, upper,
                      cap_width = 0.25,
                      orientation = c("horizontal", "vertical"),
                      palette = "qualitative",
+                     colour_index = NULL,
+                     color_index = NULL,
                      index = NULL,
                      pct_axis = FALSE,
                      value_breaks = NULL,
@@ -2204,6 +2290,10 @@ cpb_dot <- function(data, x, y, lower, upper,
                      ylab = NULL,
                      colourlab = NULL,
                      ...) {
+  if (is.null(colour_index)) colour_index <- color_index
+  .cpb_idx <- cpb_resolve_index(colour_index, index, palette, !missing(palette), "colour_index")
+  index <- .cpb_idx$index
+  palette <- .cpb_idx$palette
   orientation <- match.arg(orientation)
 
   x <- rlang::enquo(x)

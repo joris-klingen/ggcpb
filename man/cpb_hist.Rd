@@ -14,6 +14,7 @@ cpb_hist(
   outline = "white",
   position = "stack",
   palette = "qualitative",
+  fill_index = NULL,
   index = NULL,
   reverse_legend = TRUE,
   legend_ncol = NULL,
@@ -64,8 +65,17 @@ defaults to \code{"stack"}.}
 \code{"qualitative"} (default), \code{"discr"}, \code{"sequential"}
 (pink ramp), or \code{"blues"} (blue ramp).}
 
-\item{index}{Optional integer vector of palette positions, forwarded
-to \code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}}.}
+\item{fill_index}{Which house colours the series get. Either a vector
+of palette positions -- \code{c(2, 5, 6)}, forwarded to
+\code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} -- or a keyword naming a palette:
+\code{"discrete"} for the qualitative house palette (blue, magenta,
+taupe, ...) and \code{"continuous"} for the sequential ramp. \code{NULL}
+(default) uses \code{palette}, which is \code{"discrete"} for every wrapper
+except \code{\link[=cpb_map]{cpb_map()}}. A keyword and a non-matching \code{palette} are a
+conflict and raise an error, since both set the same thing.}
+
+\item{index}{Deprecated. Former name of
+\code{fill_index}. Still accepted, with a warning.}
 
 \item{reverse_legend}{If \code{TRUE} (default), reverse the fill legend
 order via \code{guide_legend(reverse = TRUE)}.}

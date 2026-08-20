@@ -28,6 +28,9 @@ that you can keep extending with `+`.
 - **[Box plots](doc/boxplots.md)** -- `vignette("boxplots")`: the
   three box styles, a fill per year, and grouped boxes with a fill
   per year.
+- **[Colours](doc/colours.md)** -- `vignette("colours")`: how series
+  get their house colours, choosing swatches by position, and the
+  sequential ramp for ordered classes.
 - **[Maps](doc/maps.md)** -- `vignette("maps")`: choropleths of the
   Netherlands at municipality, COROP or province level.
 

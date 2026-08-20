@@ -17,8 +17,9 @@ The other vignettes go deeper:
 type, [`vignette("layout")`](layout.md) for facets and grouped axes,
 [`vignette("annotation")`](annotation.md) for reference lines and
 forecast windows, [`vignette("boxplots")`](boxplots.md) for the
-box-plot styles, and [`vignette("maps")`](maps.md) for choropleths of
-the Netherlands.
+box-plot styles, [`vignette("colours")`](colours.md) for how series
+get their colours, and [`vignette("maps")`](maps.md) for choropleths
+of the Netherlands.
 
 ``` r
 library(ggcpb)

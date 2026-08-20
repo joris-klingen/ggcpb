@@ -12,6 +12,8 @@ cpb_scatter(
   point_colour = NULL,
   size = 0.8,
   palette = "qualitative",
+  colour_index = NULL,
+  color_index = NULL,
   index = NULL,
   forecast_x = NULL,
   forecast_label = "raming",
@@ -57,9 +59,20 @@ primary blue (\code{cpb_cols(6)}, \code{"#005faf"}).}
 one of \code{"qualitative"} (default), \code{"discr"}, \code{"sequential"}
 (pink ramp), or \code{"blues"} (blue ramp).}
 
-\item{index}{Optional integer vector of palette positions for a
-discrete \code{colour} column, forwarded to
-\code{\link[=scale_colour_cpb_manual]{scale_colour_cpb_manual()}}.}
+\item{colour_index}{Which house colours the series get. Either a vector
+of palette positions -- \code{c(2, 5, 6)}, forwarded to
+\code{\link[=scale_colour_cpb_manual]{scale_colour_cpb_manual()}} -- or a keyword naming a palette:
+\code{"discrete"} for the qualitative house palette (blue, magenta,
+taupe, ...) and \code{"continuous"} for the sequential ramp. \code{NULL}
+(default) uses \code{palette}, which is \code{"discrete"} for every wrapper
+except \code{\link[=cpb_map]{cpb_map()}}. A keyword and a non-matching \code{palette} are a
+conflict and raise an error, since both set the same thing.}
+
+\item{color_index}{American-spelling alias for \code{colour_index}; ignored
+when \code{colour_index} is given.}
+
+\item{index}{Deprecated. Former name of
+\code{colour_index}. Still accepted, with a warning.}
 
 \item{forecast_x}{Optional x value where the forecast window
 starts; overlaid and labelled as in \code{\link[=cpb_line]{cpb_line()}}.}

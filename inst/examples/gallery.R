@@ -47,7 +47,7 @@ bijdrage <- expand_grid(jaar = 2021:2024,
 
 print(
   cpb_col(bijdrage, x = jaar, y = waarde, fill = groep, position = "stack",
-    index = c(6, 5, 2),
+    fill_index = c(6, 5, 2),
     title = "Investeringen per groep",
     ylab  = "mld euro")
 )
@@ -63,7 +63,7 @@ energie <- expand_grid(jaar = 2018:2024,
 
 print(
   cpb_area(energie, x = jaar, y = aandeel, fill = bron, pct_axis = TRUE,
-    index = c(6, 5, 2, 4),
+    fill_index = c(6, 5, 2, 4),
     title = "Energiemix van huishoudens",
     ylab  = "aandeel")
 )
