@@ -19,7 +19,8 @@ Variants and extras live in the other vignettes:
 axes, [`vignette("boxplots")`](boxplots.md) for the box-plot styles
 and combinations, [`vignette("annotation")`](annotation.md) for
 reference lines and forecast windows, [`vignette("maps")`](maps.md)
-for choropleths, and [`vignette("ggcpb")`](ggcpb.md) for the basic
+for choropleths, [`vignette("colours")`](colours.md) for picking
+series colours, and [`vignette("ggcpb")`](ggcpb.md) for the basic
 setup and export.
 
 Two house conventions to know up front:
@@ -53,10 +54,9 @@ cpb_line(bbp, x = jaar, y = index,
 
 <img src="chart-types_files/figure-gfm/line-single-1.png" width="350px" />
 
-Map a column to `colour` for multiple series, and pick house colours by
-palette position with `colour_index` – `c(6, 2)` is the recurring
-blue/magenta pair. Growth rates span zero, so the black zero line
-appears by itself:
+Map a column to `colour` for multiple series. The series take the house
+colours in their published order – blue, then magenta – with nothing to
+set. Growth rates span zero, so the black zero line appears by itself:
 
 ``` r
 groei <- expand_grid(reeks = c("arbeidsproductiviteit", "tfp"),
@@ -64,7 +64,6 @@ groei <- expand_grid(reeks = c("arbeidsproductiviteit", "tfp"),
   mutate(waarde = round(rnorm(n(), mean = 1, sd = 1.6), 1))
 
 cpb_line(groei, x = jaar, y = waarde, colour = reeks,
-  colour_index = c(6, 2),
   title = "Productiviteitsgroei",
   ylab  = "%") +
   scale_x_continuous(
@@ -101,7 +100,6 @@ tarieven <- expand_grid(
 
 cpb_line(tarieven, x = leeftijd, y = tarief, colour = erfenis,
   points       = TRUE,
-  colour_index = c(6, 2, 8),
   value_limits = c(0, 40),
   title = "Voorkeurstarieven erfbelasting naar leeftijd",
   ylab  = "% gemiddeld voorkeurstarief")
@@ -125,7 +123,6 @@ tw <- expand_grid(jaar   = 2023:2027,
   mutate(waarde = round(runif(n(), 5, 25), 1))
 
 cpb_col(tw, x = jaar, y = waarde, fill = sector,
-  fill_index = c(6, 5, 2, 4),
   title = "Toegevoegde waarde per sector",
   ylab  = "mld euro")
 ```
@@ -143,7 +140,6 @@ scenario <- expand_grid(regio    = c("Noord", "Oost", "Zuid", "West"),
 
 cpb_col(scenario, x = regio, y = effect, fill = scenario,
   position = "dodge",
-  fill_index = c(6, 2),
   reverse_legend = FALSE,
   title = "Effect per regio en scenario",
   ylab  = "% mutatie")
@@ -183,9 +179,8 @@ cpb_col(auto, x = inkomensgroep, y = share,
 
 A horizontal *dodged* bar needs one extra trick. Under `coord_flip()`
 the dodge draws the *last* factor level on top within each group, so to
-show (say) 2021 above 2024 you reverse the `jaar` levels, swap the
-`fill_index` to keep each year its colour, and let `reverse_legend`
-restore the reading order:
+show (say) 2021 above 2024 you reverse the `jaar` levels and let
+`reverse_legend` restore the reading order:
 
 ``` r
 pv <- expand_grid(
@@ -198,7 +193,6 @@ pv <- expand_grid(
 cpb_col(pv, x = inkomensgroep, y = share, fill = jaar,
   position     = "dodge",
   orientation  = "horizontal",
-  fill_index = c(2, 6),        # level order is (2024, 2021)
   value_breaks = seq(0, 70, 10),
   value_limits = c(0, 70),
   width        = 0.85,
@@ -248,7 +242,6 @@ nalatenschap |>
     sec_limits = c(0, 3),
     sec_label  = "erfbelasting (rechteras)",
     sec_ylab   = "mld euro",
-    fill_index = c(8, 6),
     title = "Belasting over erfenissen, prijzen 2022",
     ylab  = "mld euro")
 ```
@@ -282,7 +275,6 @@ lonen |>
     sec_limits = c(95, 110),
     sec_label  = "reële cao-loon bedrijven (rechteras)",
     sec_ylab   = "geïndexeerd, 2021 = 100",
-    colour_index = c(6, 2, 8),
     value_limits = c(-5, 10),
     value_breaks = seq(-5, 10, 5),
     forecast_x   = 2025,
@@ -314,7 +306,6 @@ mix <- expand_grid(jaar = 2018:2027,
 
 cpb_area(mix, x = jaar, y = aandeel, fill = bron,
   pct_axis = TRUE,
-  fill_index = c(6, 5, 2, 4),
   title    = "Energiemix van huishoudens",
   ylab     = "aandeel") +
   scale_x_continuous(breaks = seq(2018, 2027, 3), minor_breaks = 2018:2027,
