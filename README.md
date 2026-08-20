@@ -10,7 +10,7 @@ that you can keep extending with `+`.
 > of published reference figures, but robustness still needs to be
 > checked and improved (edge cases, unusual data shapes, device/font
 > environments), and wrappers for more chart types will be added
-> later.
+> later. 
 
 ## Documentation
 
