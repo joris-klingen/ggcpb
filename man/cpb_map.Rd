@@ -12,6 +12,7 @@ cpb_map(
   border_colour = NULL,
   border_linewidth = 0.15,
   palette = "sequential",
+  fill_index = NULL,
   index = NULL,
   reverse = FALSE,
   na_fill = NULL,
@@ -48,8 +49,17 @@ thin seam that keeps adjacent regions legible without outlines.}
 \code{"qualitative"}, \code{"discr"}, \code{"sequential"} (pink ramp), or
 \code{"blues"} (blue ramp -- the usual choice for classed maps).}
 
-\item{index}{Optional integer vector of palette positions for a
-discrete \code{value} column, forwarded to \code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}}.}
+\item{fill_index}{Which house colours the series get. Either a vector
+of palette positions -- \code{c(2, 5, 6)}, forwarded to
+\code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} -- or a keyword naming a palette:
+\code{"discrete"} for the qualitative house palette (blue, magenta,
+taupe, ...) and \code{"continuous"} for the sequential ramp. \code{NULL}
+(default) uses \code{palette}, which is \code{"discrete"} for every wrapper
+except \code{\link[=cpb_map]{cpb_map()}}. A keyword and a non-matching \code{palette} are a
+conflict and raise an error, since both set the same thing.}
+
+\item{index}{Deprecated. Former name of
+\code{fill_index}. Still accepted, with a warning.}
 
 \item{reverse}{For a numeric \code{value} column: reverse the sequential
 gradient (passed to \code{\link[=scale_fill_cpb_c]{scale_fill_cpb_c()}}).}

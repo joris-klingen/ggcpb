@@ -86,7 +86,7 @@ provincies <- tibble(naam = unique(cpb_nl_geo("provincie")$name)) |>
   ))
 
 cpb_map(provincies, region = naam, value = klasse, level = "provincie",
-  index = c(2, 6),
+  fill_index = c(2, 6),
   title = "Groei ten opzichte van het\nlandelijk gemiddelde")
 ```
 

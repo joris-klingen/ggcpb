@@ -68,8 +68,16 @@ cpb_nl_geo <- function(level = c("gemeente", "corop", "provincie")) {
 #' @param palette CPB palette for a *discrete* `value` column; one of
 #'   `"qualitative"`, `"discr"`, `"sequential"` (pink ramp), or
 #'   `"blues"` (blue ramp -- the usual choice for classed maps).
-#' @param index Optional integer vector of palette positions for a
-#'   discrete `value` column, forwarded to [scale_fill_cpb_manual()].
+#' @param fill_index Which house colours the series get. Either a vector
+#'   of palette positions -- `c(2, 5, 6)`, forwarded to
+#'   [scale_fill_cpb_manual()] -- or a keyword naming a palette:
+#'   `"discrete"` for the qualitative house palette (blue, magenta,
+#'   taupe, ...) and `"continuous"` for the sequential ramp. `NULL`
+#'   (default) uses `palette`, which is `"discrete"` for every wrapper
+#'   except [cpb_map()]. A keyword and a non-matching `palette` are a
+#'   conflict and raise an error, since both set the same thing.
+#' @param index Deprecated. Former name of
+#'   `fill_index`. Still accepted, with a warning.
 #' @param reverse For a numeric `value` column: reverse the sequential
 #'   gradient (passed to [scale_fill_cpb_c()]).
 #' @param na_fill Fill for regions without a value in `data`; defaults
@@ -96,6 +104,7 @@ cpb_map <- function(data, region, value,
                     border_colour = NULL,
                     border_linewidth = 0.15,
                     palette = "sequential",
+                    fill_index = NULL,
                     index = NULL,
                     reverse = FALSE,
                     na_fill = NULL,
@@ -105,6 +114,9 @@ cpb_map <- function(data, region, value,
                     subtitle = NULL,
                     filllab = NULL,
                     ...) {
+  .cpb_idx <- cpb_resolve_index(fill_index, index, palette, !missing(palette), "fill_index")
+  index <- .cpb_idx$index
+  palette <- .cpb_idx$palette
   level <- match.arg(level)
   region <- rlang::enquo(region)
   value <- rlang::enquo(value)

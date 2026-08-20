@@ -78,7 +78,7 @@ totaal <- dec |>
 
 cpb_col(dec, x = jaar, y = bijdrage, fill = component,
   position = "stack",
-  index    = c(2, 5, 6),
+  fill_index = c(2, 5, 6),
   width    = 0.75,
   title    = "Opbouw productiviteitsgroei",
   ylab     = "%") +

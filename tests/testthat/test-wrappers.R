@@ -227,7 +227,7 @@ test_that("cpb_scatter picks the right colour treatment", {
   expect_s3_class(sc2, "ScaleContinuous")
 
   # discrete colour column: discrete CPB scale
-  p3 <- cpb_scatter(df, x = x, y = y, colour = grp, index = c(6, 2))
+  p3 <- cpb_scatter(df, x = x, y = y, colour = grp, colour_index = c(6, 2))
   sc3 <- p3$scales$get_scales("colour")
   expect_s3_class(sc3, "ScaleDiscrete")
 })
@@ -256,7 +256,7 @@ test_that("cpb_hist bins with house-blue bars, white outlines and flush counts",
 
 test_that("cpb_hist maps fill for grouped histograms", {
   df <- data.frame(waarde = rnorm(200), grp = rep(c("a", "b"), 100))
-  p <- cpb_hist(df, x = waarde, fill = grp, bins = 10, index = c(6, 2))
+  p <- cpb_hist(df, x = waarde, fill = grp, bins = 10, fill_index = c(6, 2))
   has_fill_scale <- any(vapply(p$scales$scales, function(s) "fill" %in% s$aesthetics, logical(1)))
   expect_true(has_fill_scale)
 })
@@ -302,7 +302,7 @@ test_that("cpb_line draws an uncertainty band under the lines", {
   df2 <- rbind(df, transform(df, waarde = waarde + 3, lo = lo + 3, hi = hi + 3))
   df2$reeks <- rep(c("a", "b"), each = 6)
   p2 <- cpb_line(df2, x = jaar, y = waarde, colour = reeks,
-                 ymin = lo, ymax = hi, index = c(6, 2))
+                 ymin = lo, ymax = hi, colour_index = c(6, 2))
   expect_no_error(ggplot2::ggplotGrob(p2))
   expect_identical(p2$guides$guides$fill, "none")
 })
@@ -592,7 +592,7 @@ test_that("cpb_box group combines with a fill mapping (dodged boxes)", {
   p <- cpb_box(df, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                fill = jaar, group = grp, orientation = "horizontal",
                position = ggplot2::position_dodge(width = 0.6),
-               index = c(6, 2), title = "t")
+               fill_index = c(6, 2), title = "t")
   built <- ggplot2::ggplot_build(p)
   box_data <- built$data[[which(vapply(p$layers, function(l)
     inherits(l$geom, "GeomBoxplot"), logical(1)))]]

@@ -19,6 +19,8 @@ cpb_line(
   points = FALSE,
   point_size = 1.1,
   palette = "qualitative",
+  colour_index = NULL,
+  color_index = NULL,
   index = NULL,
   pct_axis = FALSE,
   value_breaks = NULL,
@@ -110,9 +112,20 @@ gridlines.}
 \code{"qualitative"} (default), \code{"discr"}, \code{"sequential"}
 (pink ramp), or \code{"blues"} (blue ramp).}
 
-\item{index}{Optional integer vector of palette positions, forwarded
-to \code{\link[=scale_colour_cpb_manual]{scale_colour_cpb_manual()}} instead of the default
-\code{\link[=scale_colour_cpb_d]{scale_colour_cpb_d()}} when supplied.}
+\item{colour_index}{Which house colours the series get. Either a vector
+of palette positions -- \code{c(2, 5, 6)}, forwarded to
+\code{\link[=scale_colour_cpb_manual]{scale_colour_cpb_manual()}} -- or a keyword naming a palette:
+\code{"discrete"} for the qualitative house palette (blue, magenta,
+taupe, ...) and \code{"continuous"} for the sequential ramp. \code{NULL}
+(default) uses \code{palette}, which is \code{"discrete"} for every wrapper
+except \code{\link[=cpb_map]{cpb_map()}}. A keyword and a non-matching \code{palette} are a
+conflict and raise an error, since both set the same thing.}
+
+\item{color_index}{American-spelling alias for \code{colour_index}; ignored
+when \code{colour_index} is given.}
+
+\item{index}{Deprecated. Former name of
+\code{colour_index}. Still accepted, with a warning.}
 
 \item{pct_axis}{If \code{TRUE}, format the y axis with \code{\link[=label_pct_nl]{label_pct_nl()}}.}
 

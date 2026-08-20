@@ -100,3 +100,77 @@ cpb_cols <- function(..., palette = c("qualitative", "discr", "sequential"), rev
   names(out) <- idx
   out
 }
+
+# Colour/fill index resolution ----
+
+# The keyword vocabulary for `colour_index` / `fill_index`. "discrete"
+# and "continuous" are the two the house style is described in; the raw
+# palette names are accepted as synonyms so there are not two competing
+# vocabularies for the same thing.
+cpb_index_keywords <- c(
+  discrete    = "qualitative",
+  continuous  = "sequential",
+  qualitative = "qualitative",
+  sequential  = "sequential",
+  discr       = "discr",
+  blues       = "blues"
+)
+
+#' Resolve a `colour_index` / `fill_index` argument
+#'
+#' The argument does double duty: a numeric vector picks swatches out of
+#' the palette by position, while a keyword picks the palette itself.
+#' `NULL` defers to `palette`, so existing calls keep their behaviour.
+#'
+#' @param value The `colour_index`/`fill_index` value.
+#' @param legacy The deprecated `index` value, if any.
+#' @param palette The wrapper's `palette` argument.
+#' @param palette_supplied Was `palette` given explicitly by the caller?
+#' @param arg Argument name, for error messages.
+#' @return A list with `index` (integer vector or `NULL`) and `palette`.
+#' @noRd
+cpb_resolve_index <- function(value, legacy, palette, palette_supplied,
+                              arg = "colour_index") {
+  if (!is.null(legacy)) {
+    if (!is.null(value)) {
+      stop("`index` and `", arg, "` cannot both be set. `index` is ",
+           "deprecated -- use `", arg, "` on its own.", call. = FALSE)
+    }
+    warning("`index` is deprecated; use `", arg, "` instead.", call. = FALSE)
+    value <- legacy
+  }
+  if (is.null(value)) return(list(index = NULL, palette = palette))
+
+  if (is.character(value)) {
+    if (length(value) != 1L || is.na(value)) {
+      stop("`", arg, "` must be a single keyword (", 
+           paste0("\"", names(cpb_index_keywords)[1:2], "\"", collapse = " or "),
+           ") or a vector of palette positions.", call. = FALSE)
+    }
+    if (!value %in% names(cpb_index_keywords)) {
+      stop("`", arg, "` keyword \"", value, "\" is not recognised. Use one of ",
+           paste0("\"", names(cpb_index_keywords), "\"", collapse = ", "),
+           ", or a vector of palette positions.", call. = FALSE)
+    }
+    resolved <- unname(cpb_index_keywords[[value]])
+    # a keyword *is* a palette choice, so it cannot also be given as one
+    if (isTRUE(palette_supplied) && !identical(resolved, palette)) {
+      stop("`", arg, " = \"", value, "\"` and `palette = \"", palette,
+           "\"` both set the palette, and they disagree. Pass one of them.",
+           call. = FALSE)
+    }
+    return(list(index = NULL, palette = resolved))
+  }
+
+  if (is.numeric(value)) {
+    if (!length(value) || anyNA(value) || any(value < 1) ||
+        any(value != round(value))) {
+      stop("`", arg, "` must be positive whole numbers giving palette ",
+           "positions, e.g. c(2, 5, 6).", call. = FALSE)
+    }
+    return(list(index = as.integer(value), palette = palette))
+  }
+
+  stop("`", arg, "` must be a keyword or a vector of palette positions.",
+       call. = FALSE)
+}
