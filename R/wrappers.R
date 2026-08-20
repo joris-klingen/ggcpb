@@ -203,11 +203,70 @@ cpb_x_scale <- function(p, x, data, flush) {
       br <- pretty(range)
       br[br == round(br)]
     })
-  } else if (isTRUE(flush)) {
-    p + ggplot2::scale_x_discrete(expand = ggplot2::expansion(mult = 0))
   } else {
-    p
+    p + ggplot2::scale_x_discrete(
+      labels = cpb_label_wrap(),
+      expand = if (isTRUE(flush)) ggplot2::expansion(mult = 0) else ggplot2::waiver()
+    )
   }
+}
+
+# Wraps each element of `text` at `width` characters -- but any "\n"
+# already in an element is the caller's own deliberate line break and
+# is always kept exactly as given, never reflowed away by a fresh
+# scales::label_wrap() pass (which alone would just collapse it back
+# to a space and rewrap the whole thing from scratch, silently
+# discarding where the caller actually wanted the break); only an
+# individual *line* that is itself still too wide for `width` gets
+# wrapped further, on its own. Shared by cpb_label_wrap() and
+# cpb_wrap_capped() below, so a manual "\n" a caller puts in a
+# category, legend, or wedge label is honoured the same way in each.
+cpb_wrap_respecting_breaks <- function(text, width) {
+  vapply(text, function(t) {
+    if (is.na(t)) return(NA_character_)
+    lines_in <- strsplit(t, "\n", fixed = TRUE)[[1]]
+    if (length(lines_in) <= 1) return(unname(scales::label_wrap(width)(t)))
+    out <- vapply(lines_in, function(ln) {
+      if (nchar(ln) <= width) ln else unname(scales::label_wrap(width)(ln))
+    }, character(1))
+    paste(out, collapse = "\n")
+  }, character(1), USE.NAMES = FALSE)
+}
+
+# A category label wraps onto more lines past a fixed width instead of
+# growing its axis's reserved space without bound: a few long labels
+# would otherwise keep shrinking the panel itself (the category axis
+# drawn vertically, e.g. cpb_col(orientation = "horizontal")) or
+# overlapping each other (drawn horizontally), however long the text
+# runs. Used both as a scale `labels` formatter (a function) and
+# applied directly to a literal label vector (the grouped wrappers'
+# own custom-positioned scale_x_continuous() breaks/labels).
+cpb_label_wrap <- function(width = 18) {
+  function(x) cpb_wrap_respecting_breaks(x, width)
+}
+
+# Wraps text at `width` (respecting any manual "\n" already in it --
+# see cpb_wrap_respecting_breaks()), then caps the *number* of
+# resulting lines at `max_lines` -- an unbounded wrap still leaves an
+# unbounded label height (a full sentence wraps onto as many lines as
+# it takes), which can grow taller than whatever fixed vertical
+# spacing the label sits in (e.g. adjacent donut wedge labels, or the
+# fixed line height a plot title's panel budgets for). Cutting the
+# *text* off at some fixed character count instead would break words
+# mid-word and still not bound the line count if width is small;
+# capping lines directly bounds height regardless of width, input
+# length, or how many of those lines came from a manual break. Only
+# the truncated case gets a trailing "..." -- a label that already fit
+# within max_lines is returned exactly as wrapped.
+cpb_wrap_capped <- function(text, width = 18, max_lines = 3) {
+  wrapped <- cpb_wrap_respecting_breaks(text, width)
+  vapply(wrapped, function(w) {
+    lines <- strsplit(w, "\n", fixed = TRUE)[[1]]
+    if (length(lines) <= max_lines) return(w)
+    kept <- lines[seq_len(max_lines)]
+    kept[max_lines] <- paste0(kept[max_lines], "...")
+    paste(kept, collapse = "\n")
+  }, character(1), USE.NAMES = FALSE)
 }
 
 # The coord-based half of x_lim_follow_data's flush, for a numeric x
@@ -1065,7 +1124,7 @@ cpb_col <- function(data, x, y, fill = NULL,
     p <- p +
       ggplot2::scale_x_continuous(
         breaks = grp$map$pos,
-        labels = as.character(grp$map$cat),
+        labels = cpb_label_wrap()(as.character(grp$map$cat)),
         expand = ggplot2::expansion(add = 0.7)
       ) +
       # the group names sit in bold under the category labels, on the
@@ -2677,7 +2736,10 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     # the ggplot2 discrete default (add = 0.6) can crop them. 0.9
     # matches the margin the grouped layout already uses below for
     # its own heading rows.
-    p <- p + ggplot2::scale_x_discrete(expand = ggplot2::expansion(add = 0.9))
+    p <- p + ggplot2::scale_x_discrete(
+      labels = cpb_label_wrap(),
+      expand = ggplot2::expansion(add = 0.9)
+    )
   }
 
   if (has_group) {
@@ -2688,7 +2750,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     head_rows <- slots[slots$heading, , drop = FALSE]
     p <- p + ggplot2::scale_x_continuous(
       breaks = cat_rows$pos,
-      labels = cat_rows$label,
+      labels = cpb_label_wrap()(cat_rows$label),
       # keep the heading-only rows inside the panel range
       limits = range(slots$pos) + c(-0.9, 0.9),
       expand = ggplot2::expansion(add = 0)
@@ -2729,22 +2791,27 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
 
   p <- cpb_add_facet(p, facet, facet_ncol, facet_scales)
 
-  # CPB house style has no rotated axis titles: whichever aesthetic
-  # coord_flip() leaves drawn vertically gets its label promoted to a
-  # caption above the panel instead, matching how the OTHER box
-  # examples in this vignette use `subtitle` to name the category axis
-  # -- ylab for the value axis when vertical, xlab for the category
-  # axis when horizontal. Either keeps a plain, un-rotated axis title
-  # when it lands on the horizontal axis instead. A titled figure
-  # always reserves the subtitle line for a stable gap.
-  lab_x <- xlab
-  lab_y <- ylab
-  if (orientation == "vertical" && is.null(subtitle) && !is.null(ylab)) {
-    subtitle <- ylab
-    lab_y <- NULL
-  } else if (orientation == "horizontal" && is.null(subtitle) && !is.null(xlab)) {
-    subtitle <- xlab
+  # CPB house style has no rotated axis titles: `ylab` always describes
+  # whichever axis coord_flip() leaves drawn vertically and is
+  # promoted to a caption above the panel instead -- the value axis
+  # when orientation = "vertical", the category axis for "horizontal"
+  # (matching cpb_col()'s own, identical convention). `xlab` always
+  # describes whichever axis ends up horizontal, as a plain, un-rotated
+  # axis title. A titled figure always reserves the subtitle line for
+  # a stable gap.
+  if (orientation == "horizontal") {
     lab_x <- NULL
+    lab_y <- xlab
+  } else {
+    lab_x <- xlab
+    lab_y <- NULL
+  }
+  if (is.null(subtitle)) {
+    subtitle <- ylab
+  } else if (!is.null(ylab) && orientation == "vertical") {
+    # an explicit subtitle occupies the caption line, so the value-axis
+    # label falls back to a rotated axis title, as in the other wrappers
+    lab_y <- ylab
   }
   subtitle <- cpb_reserve_subtitle(title, subtitle)
 
@@ -3548,7 +3615,7 @@ cpb_dot <- function(data, x, y, lower, upper,
     head_rows <- slots[slots$heading, , drop = FALSE]
     p <- p + ggplot2::scale_x_continuous(
       breaks = cat_rows$pos,
-      labels = cat_rows$label,
+      labels = cpb_label_wrap()(cat_rows$label),
       limits = range(slots$pos) + c(-0.9, 0.9),
       expand = ggplot2::expansion(add = 0)
     )
@@ -3574,14 +3641,26 @@ cpb_dot <- function(data, x, y, lower, upper,
 
   p <- cpb_add_facet(p, facet, facet_ncol, facet_scales)
 
-  # as in cpb_box(): vertically the value-axis label doubles as the
-  # subtitle, horizontally the value axis is drawn at the bottom after
-  # coord_flip(), where a real axis title is appropriate
-  lab_x <- ylab
-  lab_y <- xlab
-  if (orientation == "vertical") {
+  # same x = category / y = value mapping and cpb_apply_coord()
+  # flip-on-"horizontal" as cpb_col(): `ylab` always describes whichever
+  # axis ends up vertical, doubling as the subtitle -- the value axis
+  # when orientation = "vertical", the category axis for the default
+  # "horizontal" (where the value axis lands at the bottom after
+  # coord_flip() instead, where a real, un-rotated axis title -- from
+  # `xlab` -- is appropriate)
+  if (orientation == "horizontal") {
+    lab_x <- NULL
+    lab_y <- xlab
+  } else {
+    lab_x <- xlab
     lab_y <- NULL
-    if (is.null(subtitle) && !is.null(xlab)) subtitle <- xlab
+  }
+  if (is.null(subtitle)) {
+    subtitle <- ylab
+  } else if (!is.null(ylab) && orientation == "vertical") {
+    # an explicit subtitle occupies the caption line, so the value-axis
+    # label falls back to a rotated axis title, as in the other wrappers
+    lab_y <- ylab
   }
   subtitle <- cpb_reserve_subtitle(title, subtitle)
 
@@ -3762,7 +3841,17 @@ cpb_donut <- function(data, fill, y,
   x_pos <- 1
   data <- as.data.frame(data)
   data[["cpb__wedge_label"]] <- if (has_label) {
-    paste0(rlang::eval_tidy(label, data), " (", fmt_pct(pct), ")")
+    # wraps only the label text, not the trailing " (pct%)" -- so the
+    # percentage always stays intact on the label's last line rather
+    # than risking a break of its own. Capped at 3 lines (not a bare
+    # wrap()): "leader" places labels with its own collision-avoidance
+    # math (min_row_gap, above) sized for a roughly-bounded label
+    # height, which an arbitrarily long, arbitrarily tall label would
+    # defeat -- capping the line count keeps that height bounded
+    # regardless of how long the input text runs.
+    label_text <- cpb_wrap_capped(as.character(rlang::eval_tidy(label, data)),
+                                  max_lines = 3)
+    paste0(label_text, " (", fmt_pct(pct), ")")
   } else {
     fmt_pct(pct)
   }
@@ -3965,6 +4054,9 @@ cpb_donut <- function(data, fill, y,
       )
   }
 
+  # each legend entry stays a single line (unlike the wedge/leader
+  # labels and the axis ticks elsewhere, which do wrap) -- ggplot2's
+  # own waiver() default, i.e. the plain category text
   fill_labels <- ggplot2::waiver()
   if (isTRUE(legend_pct)) {
     fill_chr <- as.character(rlang::eval_tidy(fill, data))

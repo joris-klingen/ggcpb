@@ -941,6 +941,31 @@ test_that("cpb_box value_axis = 'top' puts the value scale on top", {
   expect_false(identical(p2$scales$get_scales("y")$position, "right"))
 })
 
+test_that("cpb_box's ylab/xlab follow cpb_col()'s convention in both orientations", {
+  # ylab always describes whichever axis ends up vertical and is
+  # promoted to the subtitle; xlab always describes whichever axis
+  # ends up horizontal, as an ordinary (un-rotated) axis title --
+  # verified against cpb_col()'s own, already-correct behaviour
+  # (cpb_box()'s horizontal case used to promote xlab instead, the
+  # opposite of cpb_col())
+  df <- data.frame(groep = factor(c("a", "b", "c")),
+                   p5 = -1, p25 = -0.2, p50 = 0.1, p75 = 0.3, p95 = 1)
+
+  # default "vertical": ylab -> subtitle (value), xlab -> bottom title (category)
+  p_v <- cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+                orientation = "vertical", ylab = "eenheid", xlab = "categorie")
+  expect_identical(p_v$labels$subtitle, "eenheid")
+  expect_identical(p_v$labels$x, "categorie")
+  expect_null(p_v$labels$y)
+
+  # "horizontal": ylab -> subtitle (category), xlab -> bottom title (value)
+  p_h <- cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+                orientation = "horizontal", ylab = "categorie", xlab = "eenheid")
+  expect_identical(p_h$labels$subtitle, "categorie")
+  expect_identical(p_h$labels$y, "eenheid")
+  expect_null(p_h$labels$x)
+})
+
 test_that("cpb_map seams and legend fall back on request", {
   prov <- data.frame(code = unique(cpb_nl_geo("provincie")$code), w = 1:12)
   p <- cpb_map(prov, region = code, value = w, level = "provincie")
@@ -1046,6 +1071,30 @@ test_that("cpb_dot draws estimates with intervals and a zero line", {
   pv <- cpb_dot(df, x = term, y = est, lower = lo, upper = hi,
                 orientation = "vertical")
   expect_false(inherits(pv$coordinates, "CoordFlip"))
+})
+
+test_that("cpb_dot's ylab/xlab follow cpb_col()'s convention in both orientations", {
+  # ylab always describes whichever axis ends up vertical and is
+  # promoted to the subtitle; xlab always describes whichever axis
+  # ends up horizontal, as an ordinary (un-rotated) axis title --
+  # verified against cpb_col()'s own, already-correct behaviour, not
+  # just re-asserting whatever cpb_dot() used to do
+  df <- data.frame(term = c("a", "b", "c"), est = c(1, -2, 0.5),
+                   lo = c(0.2, -3, -0.4), hi = c(1.8, -1, 1.4))
+
+  # default "horizontal": ylab -> subtitle (category), xlab -> bottom title (value)
+  p_h <- cpb_dot(df, x = term, y = est, lower = lo, upper = hi,
+                orientation = "horizontal", ylab = "categorie", xlab = "eenheid")
+  expect_identical(p_h$labels$subtitle, "categorie")
+  expect_identical(p_h$labels$y, "eenheid")
+  expect_null(p_h$labels$x)
+
+  # "vertical": ylab -> subtitle (value), xlab -> bottom title (category)
+  p_v <- cpb_dot(df, x = term, y = est, lower = lo, upper = hi,
+                orientation = "vertical", ylab = "eenheid", xlab = "categorie")
+  expect_identical(p_v$labels$subtitle, "eenheid")
+  expect_identical(p_v$labels$x, "categorie")
+  expect_null(p_v$labels$y)
 })
 
 test_that("cpb_dot lays groups out under bold headings", {
@@ -1292,4 +1341,132 @@ test_that("cpb_donut's label_style = \"leader\" separates labels whose wedges ar
   small <- txt$data[txt$data$wedge_label == "1%", ]
   expect_equal(nrow(small), 2L)
   expect_gt(abs(diff(small$y_text)), 0.3)
+})
+
+test_that("cpb_label_wrap() wraps long text and leaves short text alone", {
+  long <- "Een erg lange categorienaam die nooit helemaal past"
+  short <- "kort"
+  wrapped <- cpb_label_wrap()(c(long, short))
+  expect_true(grepl("\n", wrapped[[1]], fixed = TRUE))
+  expect_false(grepl("\n", wrapped[[2]], fixed = TRUE))
+})
+
+test_that("long category tick labels wrap instead of shrinking the panel", {
+  long_cats <- c("Een erg lange categorienaam die nooit helemaal past",
+                 "Nog een categorienaam die veel te lang is voor de as")
+  get_x_labels <- function(p) {
+    ggplot2::ggplot_build(p)$layout$panel_params[[1]]$x$get_labels()
+  }
+  # coord_flip() (orientation = "horizontal") swaps which built
+  # panel_params slot the category axis ends up in: still the "x"
+  # aesthetic's own scale, but drawn -- and read back here -- as "y"
+  get_category_labels <- function(p) {
+    ggplot2::ggplot_build(p)$layout$panel_params[[1]]$y$get_labels()
+  }
+
+  # plain discrete x (cpb_x_scale())
+  df <- data.frame(cat = long_cats, y = c(1, 2))
+  labs <- get_x_labels(cpb_col(df, x = cat, y = y))
+  expect_true(all(grepl("\n", labs, fixed = TRUE)))
+
+  # grouped x (cpb_col()'s own scale_x_continuous(breaks/labels))
+  df_grp <- data.frame(cat = long_cats, grp = c("g1", "g1"), y = c(1, 2))
+  labs_grp <- get_x_labels(cpb_col(df_grp, x = cat, y = y, group = grp))
+  expect_true(all(grepl("\n", labs_grp, fixed = TRUE)))
+
+  # cpb_box(), horizontal (coord_flip() draws the category axis as "y")
+  box_df <- data.frame(cat = long_cats, p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5)
+  labs_box <- get_category_labels(cpb_box(box_df, x = cat, p5 = p5, p25 = p25, p50 = p50,
+                                          p75 = p75, p95 = p95, orientation = "horizontal"))
+  expect_true(all(grepl("\n", labs_box, fixed = TRUE)))
+
+  # cpb_dot(), default horizontal orientation (category axis as "y" too)
+  dot_df <- data.frame(cat = long_cats, y = c(1, 2), lower = c(0, 1), upper = c(2, 3))
+  labs_dot <- get_category_labels(cpb_dot(dot_df, x = cat, y = y, lower = lower, upper = upper))
+  expect_true(all(grepl("\n", labs_dot, fixed = TRUE)))
+})
+
+test_that("cpb_donut keeps legend labels single-line but wraps wedge labels (wedge and leader alike)", {
+  long_cats <- c("Een erg lange categorienaam die nooit helemaal past",
+                 "Nog een categorienaam die veel te lang is voor de as")
+  df <- data.frame(bron = long_cats, share = c(60, 40))
+
+  # unlike the axis ticks and wedge/leader labels, a legend entry stays
+  # exactly one row -- however long the category name runs
+  p_legend <- cpb_donut(df, fill = bron, y = share)
+  built <- ggplot2::ggplot_build(p_legend)
+  fill_scale <- Filter(function(s) "fill" %in% s$aesthetics, built$plot$scales$scales)[[1]]
+  legend_labs <- fill_scale$get_labels(fill_scale$get_breaks())
+  expect_false(any(grepl("\n", legend_labs, fixed = TRUE)))
+  expect_setequal(legend_labs, long_cats)
+
+  p_wedge <- cpb_donut(df, fill = bron, y = share, label = bron, label_style = "wedge")
+  wedge_txt <- Filter(function(l) inherits(l$geom, "GeomText"), p_wedge$layers)[[1]]
+  expect_true(all(grepl("\n", wedge_txt$data$cpb__wedge_label, fixed = TRUE)))
+
+  # "leader" places labels with its own collision-avoidance math sized
+  # for a roughly-bounded label height (see cpb_wrap_capped()'s use in
+  # cpb_donut()'s cpb__wedge_label build) -- wraps too, capped at 3 lines
+  p_leader <- cpb_donut(df, fill = bron, y = share, label = bron, label_style = "leader")
+  leader_txt <- Filter(function(l) inherits(l$geom, "GeomText"), p_leader$layers)[[1]]
+  expect_true(all(grepl("\n", leader_txt$data$wedge_label, fixed = TRUE)))
+  n_lines <- lengths(strsplit(leader_txt$data$wedge_label, "\n", fixed = TRUE))
+  expect_true(all(n_lines <= 3))
+})
+
+test_that("cpb_wrap_capped() caps line count and truncates with '...' only when needed", {
+  short <- "kort"
+  long <- "Een erg lange naam die net past"
+  xlong <- paste(
+    "Deze allereerste categorienaam is opzettelijk absurd lang gemaakt",
+    "om te zien wat er gebeurt als een label vele regels zou beslaan"
+  )
+
+  expect_identical(cpb_wrap_capped(short, max_lines = 3), short)
+
+  wrapped <- cpb_wrap_capped(long, max_lines = 3)
+  expect_false(grepl("...", wrapped, fixed = TRUE))
+  expect_lte(length(strsplit(wrapped, "\n", fixed = TRUE)[[1]]), 3)
+
+  capped <- cpb_wrap_capped(xlong, max_lines = 3)
+  expect_length(strsplit(capped, "\n", fixed = TRUE)[[1]], 3)
+  expect_match(capped, "\\.\\.\\.$")
+})
+
+test_that("cpb_label_wrap()/cpb_wrap_capped() respect a manual '\\n' instead of collapsing it", {
+  # a manual break is kept exactly as given, not reflowed back into
+  # one line and rewrapped from scratch (which a bare
+  # scales::label_wrap() would do)
+  manual <- "Noord\nregio"
+  expect_identical(cpb_label_wrap()(manual), manual)
+  expect_identical(cpb_wrap_capped(manual, max_lines = 3), manual)
+
+  # a manual break with one line still too wide on its own -> that
+  # line wraps further, but "Noord" itself is kept intact as line one
+  mixed <- "Noord\nEen erg lange categorienaam die nooit helemaal past"
+  out <- cpb_label_wrap()(mixed)
+  out_lines <- strsplit(out, "\n", fixed = TRUE)[[1]]
+  expect_identical(out_lines[[1]], "Noord")
+  expect_gt(length(out_lines), 2)
+
+  # max_lines still caps a manually-broken label with too many lines
+  four_lines <- "Regel een\nRegel twee\nRegel drie\nRegel vier"
+  capped <- cpb_wrap_capped(four_lines, max_lines = 3)
+  expect_length(strsplit(capped, "\n", fixed = TRUE)[[1]], 3)
+  expect_match(capped, "\\.\\.\\.$")
+
+  # no manual break at all: unaffected, still auto-wraps as before
+  auto <- "Een erg lange categorienaam die nooit helemaal past"
+  expect_identical(cpb_label_wrap()(auto), cpb_label_wrap()(auto))
+  expect_true(grepl("\n", cpb_label_wrap()(auto), fixed = TRUE))
+})
+
+test_that("cpb_dot()'s x-axis tick labels respect a manual '\\n'", {
+  manual_cats <- c("Noord\nregio", "Oost\nregio")
+  df <- data.frame(cat = factor(manual_cats, levels = manual_cats),
+                   y = c(1, 2), lower = c(0, 1), upper = c(2, 3))
+  p <- cpb_dot(df, x = cat, y = y, lower = lower, upper = upper,
+              orientation = "horizontal")
+  labs <- ggplot2::ggplot_build(p)$layout$panel_params[[1]]$y$get_labels()
+  expect_setequal(labs, manual_cats)
 })
