@@ -1293,6 +1293,14 @@ test_that("cpb_donut's wedge_labels = FALSE omits the text layer", {
   expect_false(any(vapply(p$layers, function(l) inherits(l$geom, "GeomText"), logical(1))))
 })
 
+test_that("cpb_donut rejects legend = \"none\" when wedge_labels = FALSE", {
+  df <- data.frame(bron = c("gas", "elektriciteit"), share = c(75, 25))
+  expect_error(
+    cpb_donut(df, fill = bron, y = share, wedge_labels = FALSE, legend = "none"),
+    "wedge_labels"
+  )
+})
+
 test_that("cpb_donut's legend_pct suffixes the fill legend with each share", {
   df <- data.frame(bron = c("gas", "elektriciteit"), share = c(75, 25))
   p <- cpb_donut(df, fill = bron, y = share, wedge_labels = FALSE, legend_pct = TRUE)
