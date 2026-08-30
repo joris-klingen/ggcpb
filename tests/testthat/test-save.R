@@ -220,3 +220,50 @@ test_that("save_cpb aligns the value-axis title without a panel_size or sec_y se
   expect_no_error(save_cpb(path, p, page = "full"))
   expect_true(file.exists(path))
 })
+
+test_that("cpb_donut()/cpb_map() tag their plot with class \"cpb_plot\", a plain ggplot does not", {
+  d <- tibble::tibble(bron = factor(c("a", "b")), share = c(60, 40))
+  expect_true(inherits(cpb_donut(d, fill = bron, y = share), "cpb_plot"))
+
+  df <- ggplot2::ggplot(mtcars, ggplot2::aes(factor(cyl))) + ggplot2::geom_bar()
+  expect_false(inherits(df, "cpb_plot"))
+})
+
+test_that("the \"cpb_plot\" class (and so the warning) survives an ordinary + theme() call", {
+  d <- tibble::tibble(bron = factor(c("a", "b")), share = c(60, 40))
+  p <- cpb_donut(d, fill = bron, y = share) + ggplot2::theme(legend.position = "none")
+  expect_true(inherits(p, "cpb_plot"))
+})
+
+test_that("print.cpb_plot() warns that a bare print shows an approximate placement", {
+  # rlang::warn(.frequency = "once") tracks each distinct .frequency_id
+  # globally for the R session, not per test -- a fresh, distinct
+  # colour/fill combination keeps this test's warning independent of
+  # any other test that already printed a cpb_donut()/cpb_map() plot
+  d <- tibble::tibble(
+    bron = factor(paste0("bron_", sample.int(1e6, 1))), share = 100
+  )
+  p <- cpb_donut(d, fill = bron, y = share)
+  expect_warning(print(p), "only render\\(s\\) exactly when written out through save_cpb\\(\\)")
+})
+
+test_that("save_cpb() never triggers print.cpb_plot()'s warning, on either its fast or grob path", {
+  d <- tibble::tibble(bron = factor(c("a", "b")), share = c(60, 40))
+  p <- cpb_donut(d, fill = bron, y = share)
+  path <- withr::local_tempfile(fileext = ".png")
+  # the fast path (ggplot2::ggsave()) prints the plot internally to
+  # render it -- without save_cpb() stripping the "cpb_plot" class
+  # first, that internal print() would trigger the same warning on
+  # every ordinary save_cpb() call
+  expect_no_warning(save_cpb(path, p, page = "half"))
+
+  # the map aspect fit forces the grob path (cpb_fix_panel_size())
+  # whenever height is left auto; an explicit height instead takes the
+  # plain ggsave() fast path even though cpb_map_aspect is still set,
+  # since the caller explicitly opted out of the aspect fit
+  prov <- data.frame(naam = unique(cpb_nl_geo("provincie")$name))
+  prov$w <- seq_len(nrow(prov))
+  m <- cpb_map(prov, region = naam, value = w, level = "provincie")
+  path2 <- withr::local_tempfile(fileext = ".png")
+  expect_no_warning(save_cpb(path2, m, page = "half", height = 3))
+})

@@ -561,6 +561,10 @@ cpb_add_sec_ylab <- function(p, has_sec, sec_ylab) {
   # under it. cpb_take_sec_ylab() (save.R) looks this up by identity
   # instead, which survives that.
   attr(p, "cpb_sec_ylab") <- list(label = sec_ylab, layer_obj = p$layers[[length(p$layers)]])
+  # print.cpb_plot() (see save.R) warns, once, that a bare print()
+  # shows this approximately rather than exactly -- only save_cpb()
+  # reads the attribute above
+  class(p) <- union("cpb_plot", class(p))
   p
 }
 
@@ -4001,5 +4005,9 @@ cpb_donut <- function(data, fill, y,
   # panel_size at the save call too (though they still can, to
   # override it)
   attr(p, "cpb_panel_size") <- panel_size
+  # print.cpb_plot() (see save.R) warns, once, that a bare print()
+  # shows this approximately rather than exactly -- only save_cpb()
+  # reads the attribute above
+  class(p) <- union("cpb_plot", class(p))
   p
 }

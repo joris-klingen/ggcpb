@@ -4,6 +4,44 @@
 # (half or full page); height defaults to the CPB report height but has
 # a "presentation" preset and can always be overridden explicitly.
 
+# cpb_donut()'s panel_size, cpb_add_sec_ylab()'s sec_ylab caption, and
+# cpb_map()'s aspect fit (see cpb_fix_panel_size()/
+# cpb_add_sec_ylab_grob() below, and cpb_map_aspect handling in
+# save_cpb() itself) are only ever exact through save_cpb() -- a bare
+# print(), a knitr chunk that never calls save_cpb(), a Shiny render,
+# all fall back to an approximate placement instead, with nothing to
+# say so. Every wrapper that sets one of these three attributes also
+# tags its plot with the "cpb_plot" class so this fires; save_cpb()
+# itself never triggers it, since it never calls print() on the plot.
+#
+# Warned once per distinct feature combination per session
+# (rlang::warn()'s own .frequency_id mechanism), not on every print --
+# cpb_donut()/cpb_map() set their attribute unconditionally, so an
+# every-time warning would fire on every single donut/map a caller
+# glances at in the console, which is normal, expected use, not a
+# mistake to flag.
+#' @export
+print.cpb_plot <- function(x, ...) {
+  features <- c(
+    if (!is.null(attr(x, "cpb_panel_size"))) "a fixed panel size (cpb_donut())",
+    if (!is.null(attr(x, "cpb_sec_ylab"))) "a secondary-axis caption (sec_ylab)",
+    if (!is.null(attr(x, "cpb_map_aspect"))) "a geographic aspect fit (cpb_map())"
+  )
+  if (length(features)) {
+    rlang::warn(
+      paste0(
+        "ggcpb: this plot has ", paste(features, collapse = " and "),
+        ", which only render(s) exactly when written out through ",
+        "save_cpb() -- a bare print() (this one included) shows an ",
+        "approximate placement instead."
+      ),
+      .frequency = "once",
+      .frequency_id = paste("cpb_plot_approx_print", paste(features, collapse = "|"))
+    )
+  }
+  NextMethod()
+}
+
 # ggplot2 sizes the panel from whatever room is left after title and
 # legend take what they need -- usually right, but it makes the data
 # area grow or shrink with title/legend length. cpb_donut() instead
@@ -383,6 +421,14 @@ save_cpb <- function(filename,
                       bg = cpb_bg,
                       panel_size = NULL,
                       ...) {
+  # print.cpb_plot() (above) only exists to catch a bare print()
+  # skipping the exact positioning below -- ggplot2::ggsave() itself
+  # calls print() internally to render, so without this, the fast path
+  # a few lines down would trigger that same warning on every ordinary
+  # save_cpb() call for a cpb_donut()/cpb_map()/sec_ylab plot, exactly
+  # the false alarm this is meant to avoid
+  class(plot) <- setdiff(class(plot), "cpb_plot")
+
   # cpb_fix_panel_size()/cpb_add_sec_ylab_grob()/the map aspect fit
   # below all measure a grob's width/height via grid::convertWidth() --
   # even "in" to "in", this resolves through whatever device is

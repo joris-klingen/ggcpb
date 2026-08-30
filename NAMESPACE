@@ -2,6 +2,7 @@
 
 S3method("$",cpb_tokens)
 S3method("[[",cpb_tokens)
+S3method(print,cpb_plot)
 export(autogenerate_plots)
 export(cpb_area)
 export(cpb_box)
