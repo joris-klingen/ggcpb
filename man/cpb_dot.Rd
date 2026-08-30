@@ -180,7 +180,7 @@ adding a second \code{scale_y_continuous()}, which would discard the
 wrapper's flush axis (see \code{value_breaks}).}
 
 \item{value_breaks}{Optional breaks for the value axis (passed to
-\code{\link[ggplot2:scale_continuous]{ggplot2::scale_y_continuous()}}).}
+\code{\link[ggplot2:scale_y_continuous]{ggplot2::scale_y_continuous()}}).}
 
 \item{value_limits}{Optional length-2 numeric vector giving the
 value-axis range, applied as the wrapper-built value scale's own

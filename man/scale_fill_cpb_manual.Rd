@@ -38,8 +38,8 @@ the full palette is used in its original order.}
 \item{na.value}{Colour used for \code{NA} values; defaults to the CPB NA
 colour (\code{"lightgrey"}).}
 
-\item{...}{Passed through to \code{\link[ggplot2:scale_manual]{ggplot2::scale_fill_manual()}} /
-\code{\link[ggplot2:scale_manual]{ggplot2::scale_colour_manual()}}.}
+\item{...}{Passed through to \code{\link[ggplot2:scale_fill_manual]{ggplot2::scale_fill_manual()}} /
+\code{\link[ggplot2:scale_colour_manual]{ggplot2::scale_colour_manual()}}.}
 }
 \value{
 A ggplot2 \code{Scale} object.

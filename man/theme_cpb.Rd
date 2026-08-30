@@ -74,7 +74,7 @@ keeps the house 0.25 x 0.30 cm keys.}
 A ggplot2 \code{theme} object.
 }
 \description{
-Applies the CPB house style on top of \code{\link[ggplot2:ggtheme]{ggplot2::theme_minimal()}}:
+Applies the CPB house style on top of \code{\link[ggplot2:theme_minimal]{ggplot2::theme_minimal()}}:
 a left-aligned bold title, italic right-aligned axis titles,
 hairline black gridlines at labelled breaks on the value axis only
 (by default), black tick marks with an axis line on the category

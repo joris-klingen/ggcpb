@@ -183,7 +183,7 @@ adding a second \code{scale_y_continuous()}, which would discard the
 wrapper's flush axis (see \code{value_breaks}).}
 
 \item{value_breaks}{Optional breaks for the value axis (passed to
-the wrapper-built \code{\link[ggplot2:scale_continuous]{ggplot2::scale_y_continuous()}}). Use this
+the wrapper-built \code{\link[ggplot2:scale_y_continuous]{ggplot2::scale_y_continuous()}}). Use this
 instead of adding a second y scale, which would discard the
 wrapper's axis formatting and expansion.}
 
@@ -318,7 +318,7 @@ to \code{NULL} (no axis title), matching CPB house style.}
 it as the plot \emph{subtitle} -- unless an explicit \code{subtitle} is also
 given, in which case it falls back to a rotated y-axis title.}
 
-\item{...}{Further arguments passed to both \code{\link[ggplot2:geom_linerange]{ggplot2::geom_errorbar()}}
+\item{...}{Further arguments passed to both \code{\link[ggplot2:geom_errorbar]{ggplot2::geom_errorbar()}}
 and \code{\link[ggplot2:geom_boxplot]{ggplot2::geom_boxplot()}}.}
 }
 \value{
@@ -336,7 +336,7 @@ rather than raw observations.
 library(ggplot2)
 df <- data.frame(
   groep = c("laag inkomen", "midden inkomen", "hoog inkomen"),
-  p5 = c(-8, -6, -4),
+  p5  = c(-8, -6, -4),
   p25 = c(-4, -3, -2),
   p50 = c(-2, -1, 0),
   p75 = c(0, 1, 2),

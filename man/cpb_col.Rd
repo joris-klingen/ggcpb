@@ -176,7 +176,7 @@ adding a second \code{scale_y_continuous()}, which would discard the
 wrapper's flush axis (see \code{value_breaks}).}
 
 \item{value_breaks}{Optional breaks for the value axis (passed to
-the wrapper-built \code{\link[ggplot2:scale_continuous]{ggplot2::scale_y_continuous()}}). Use this
+the wrapper-built \code{\link[ggplot2:scale_y_continuous]{ggplot2::scale_y_continuous()}}). Use this
 instead of adding a second y scale, which would discard the
 wrapper's axis formatting and expansion.}
 
@@ -278,13 +278,13 @@ axis is the category axis; in a vertical one it is the value axis.}
 \item{filllab}{Legend title override; defaults to \code{NULL} (no legend
 title), matching CPB house style.}
 
-\item{...}{Further arguments passed to \code{\link[ggplot2:geom_bar]{ggplot2::geom_col()}}.}
+\item{...}{Further arguments passed to \code{\link[ggplot2:geom_col]{ggplot2::geom_col()}}.}
 }
 \value{
 A \code{ggplot} object.
 }
 \description{
-Thin wrapper around \code{\link[ggplot2:geom_bar]{ggplot2::geom_col()}} with CPB theming and
+Thin wrapper around \code{\link[ggplot2:geom_col]{ggplot2::geom_col()}} with CPB theming and
 colour scale applied. Returns a real ggplot object that can be
 extended further with \code{+}.
 }

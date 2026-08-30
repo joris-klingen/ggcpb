@@ -11,11 +11,6 @@ cpb_line(
   colour = NULL,
   line_colour = NULL,
   linewidth = 0.55,
-  sec_y = NULL,
-  sec_limits = NULL,
-  sec_label = NULL,
-  sec_ylab = NULL,
-  sec_linewidth = NULL,
   points = FALSE,
   point_size = 1.1,
   sec_y = NULL,
@@ -24,7 +19,7 @@ cpb_line(
   sec_label = NULL,
   sec_ylab = NULL,
   sec_colour = NULL,
-  sec_linewidth = 0.55,
+  sec_linewidth = NULL,
   sec_points = FALSE,
   sec_point_size = 1.6,
   sec_col_width = 0.3,
@@ -84,31 +79,6 @@ supplied.}
 
 \item{linewidth}{Line width; defaults to \code{0.55}, matching the
 published CPB figures.}
-
-\item{sec_y}{Optional column (tidy eval) holding a series to draw
-against a \strong{secondary value axis} on the right, the house
-dual-axis line chart (e.g. two rates in \% on the left and an index
-on the right). One value per \code{x}. Unlike \code{\link[=cpb_col]{cpb_col()}}, where the
-columns key on \code{fill} and the secondary line on \code{colour}, here the
-primary series already key on \code{colour}: the secondary line joins
-that same scale and takes the next palette position, so all series
-share one legend block. House style names the axis in each label,
-e.g. \code{"inflatie (linkeras)"} and \code{"reeel loon (rechteras)"}.}
-
-\item{sec_limits}{Length-2 numeric vector giving the range the
-secondary axis spans. \code{NULL} (default) uses the range of \code{sec_y}.
-The line is placed by mapping this range linearly onto the primary
-range, so the two axes always start together.}
-
-\item{sec_label}{Legend label for the secondary line. \code{NULL}
-(default) uses the \code{sec_y} column name.}
-
-\item{sec_ylab}{Unit caption for the secondary axis, drawn
-right-aligned above the panel to mirror the left-hand unit that
-\code{ylab} puts in the subtitle. \code{NULL} (default) draws none.}
-
-\item{sec_linewidth}{Line width for \code{sec_y}; \code{NULL} (default) uses
-\code{linewidth}, so the secondary line matches the primary ones.}
 
 \item{points}{If \code{TRUE}, draw a point marker at every observation on
 top of the line, the house variant used when the x axis holds a
@@ -201,7 +171,7 @@ adding a second \code{scale_y_continuous()}, which would discard the
 wrapper's flush axis (see \code{value_breaks}).}
 
 \item{value_breaks}{Optional breaks for the value axis (passed to
-the wrapper-built \code{\link[ggplot2:scale_continuous]{ggplot2::scale_y_continuous()}}). Use this
+the wrapper-built \code{\link[ggplot2:scale_y_continuous]{ggplot2::scale_y_continuous()}}). Use this
 instead of adding a second y scale, which would discard the
 wrapper's axis formatting and expansion.}
 
@@ -286,13 +256,13 @@ caption above the panel (e.g. the unit, \code{"\%"}) -- unless an
 explicit \code{subtitle} is also given, in which case it falls back to
 a rotated y-axis title.}
 
-\item{...}{Further arguments passed to \code{\link[ggplot2:geom_path]{ggplot2::geom_line()}}.}
+\item{...}{Further arguments passed to \code{\link[ggplot2:geom_line]{ggplot2::geom_line()}}.}
 }
 \value{
 A \code{ggplot} object.
 }
 \description{
-Thin wrapper around \code{\link[ggplot2:geom_path]{ggplot2::geom_line()}} with CPB theming and
+Thin wrapper around \code{\link[ggplot2:geom_line]{ggplot2::geom_line()}} with CPB theming and
 colour scale applied.
 }
 \examples{

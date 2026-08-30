@@ -18,8 +18,8 @@ scale_color_cpb_c(reverse = FALSE, na.value = cpb_na, ...)
 \item{na.value}{Colour used for \code{NA} values; defaults to the CPB NA
 colour (\code{"lightgrey"}).}
 
-\item{...}{Passed through to \code{\link[ggplot2:scale_gradient]{ggplot2::scale_fill_gradientn()}} /
-\code{\link[ggplot2:scale_gradient]{ggplot2::scale_colour_gradientn()}}.}
+\item{...}{Passed through to \code{\link[ggplot2:scale_fill_gradientn]{ggplot2::scale_fill_gradientn()}} /
+\code{\link[ggplot2:scale_colour_gradientn]{ggplot2::scale_colour_gradientn()}}.}
 }
 \value{
 A ggplot2 \code{Scale} object.

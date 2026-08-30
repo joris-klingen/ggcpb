@@ -141,7 +141,7 @@ adding a second \code{scale_y_continuous()}, which would discard the
 wrapper's flush axis (see \code{value_breaks}).}
 
 \item{value_breaks}{Optional breaks for the value axis (passed to
-the wrapper-built \code{\link[ggplot2:scale_continuous]{ggplot2::scale_y_continuous()}}). Use this
+the wrapper-built \code{\link[ggplot2:scale_y_continuous]{ggplot2::scale_y_continuous()}}). Use this
 instead of adding a second y scale, which would discard the
 wrapper's axis formatting and expansion.}
 
@@ -214,13 +214,13 @@ it is rendered as the plot \emph{subtitle} -- a left-aligned italic
 caption above the panel -- unless an explicit \code{subtitle} is also
 given, in which case it falls back to a rotated y-axis title.}
 
-\item{...}{Further arguments passed to \code{\link[ggplot2:geom_ribbon]{ggplot2::geom_area()}}.}
+\item{...}{Further arguments passed to \code{\link[ggplot2:geom_area]{ggplot2::geom_area()}}.}
 }
 \value{
 A \code{ggplot} object.
 }
 \description{
-Thin wrapper around \code{\link[ggplot2:geom_ribbon]{ggplot2::geom_area()}} with CPB theming and
+Thin wrapper around \code{\link[ggplot2:geom_area]{ggplot2::geom_area()}} with CPB theming and
 colour scale applied, for the recurring "share of total over time"
 chart.
 }
