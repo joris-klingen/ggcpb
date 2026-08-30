@@ -229,6 +229,12 @@ cpb_wrap_respecting_breaks <- function(text, width) {
   }, character(1), USE.NAMES = FALSE)
 }
 
+# The house default wrap width, in characters, for a category/legend/
+# wedge label -- one named constant rather than the literal 18 typed
+# twice (cpb_label_wrap()/cpb_wrap_capped() below), so the two can't
+# quietly drift apart if this default is ever revisited.
+cpb_wrap_width_default <- 18
+
 # A category label wraps onto more lines past a fixed width instead of
 # growing its axis's reserved space without bound: a few long labels
 # would otherwise keep shrinking the panel itself (the category axis
@@ -237,7 +243,7 @@ cpb_wrap_respecting_breaks <- function(text, width) {
 # runs. Used both as a scale `labels` formatter (a function) and
 # applied directly to a literal label vector (the grouped wrappers'
 # own custom-positioned scale_x_continuous() breaks/labels).
-cpb_label_wrap <- function(width = 18) {
+cpb_label_wrap <- function(width = cpb_wrap_width_default) {
   function(x) cpb_wrap_respecting_breaks(x, width)
 }
 
@@ -254,7 +260,7 @@ cpb_label_wrap <- function(width = 18) {
 # length, or how many of those lines came from a manual break. Only
 # the truncated case gets a trailing "..." -- a label that already fit
 # within max_lines is returned exactly as wrapped.
-cpb_wrap_capped <- function(text, width = 18, max_lines = 3) {
+cpb_wrap_capped <- function(text, width = cpb_wrap_width_default, max_lines = 3) {
   wrapped <- cpb_wrap_respecting_breaks(text, width)
   vapply(wrapped, function(w) {
     lines <- strsplit(w, "\n", fixed = TRUE)[[1]]
