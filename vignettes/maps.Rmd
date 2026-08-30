@@ -49,7 +49,7 @@ inside a guessed `fig.height` instead, the way `cpb_donut()`'s
 ```{r show_map}
 show_map <- function(...) {
   f <- tempfile(fileext = ".png")
-  save_cpb(f, cpb_map(...), page = "half")
+  invisible(utils::capture.output(save_cpb(f, cpb_map(...), page = "half")))
   knitr::include_graphics(f)
 }
 ```

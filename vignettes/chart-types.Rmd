@@ -288,7 +288,7 @@ and displayed from that file:
 ```{r show_cpb}
 show_cpb <- function(plot, ...) {
   f <- tempfile(fileext = ".png")
-  save_cpb(f, plot, ...)
+  invisible(utils::capture.output(save_cpb(f, plot, ...)))
   knitr::include_graphics(f)
 }
 ```
@@ -404,7 +404,7 @@ look saved for a report:
 ```{r show_donut}
 show_donut <- function(...) {
   f <- tempfile(fileext = ".png")
-  save_cpb(f, cpb_donut(...), page = "half")
+  invisible(utils::capture.output(save_cpb(f, cpb_donut(...), page = "half")))
   knitr::include_graphics(f)
 }
 ```

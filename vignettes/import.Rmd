@@ -133,7 +133,7 @@ written out through `save_cpb()` first and shown from that file:
 
 ```{r fig-koopkracht, out.width = "700px"}
 path <- tempfile(fileext = ".png")
-save_cpb(path, figs$koopkracht, page = "full")
+invisible(utils::capture.output(save_cpb(path, figs$koopkracht, page = "full")))
 knitr::include_graphics(path)
 ```
 
@@ -200,7 +200,8 @@ When the parameter file describes one figure, `import_csv()` returns
 that figure directly rather than a named list.
 
 ```{r vertical-build}
-import_csv(data_csv, params_vertical)
+invisible(utils::capture.output(fig_vertical <- import_csv(data_csv, params_vertical)))
+fig_vertical
 ```
 
 # Handling problems
