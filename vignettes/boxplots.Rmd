@@ -248,6 +248,39 @@ cpb_boxplot_extended(kk2, x = groep,
   ylab  = "% koopkrachtmutatie")
 ```
 
+`group` works the same way it does on `cpb_box()` itself: every
+category belongs to a group, and each group gets its own bold heading
+row above its categories, with the categories underneath left at the
+ordinary text weight -- so the two read apart from each other without
+needing a legend. A taller figure with three groups, a mix of income
+brackets and income sources:
+
+```{r box-extended-groups, fig.width = 5.96, fig.height = 6.5, out.width = "700px"}
+groepen2 <- c("tot 120% wml", "120% wml - mod.", "1 - 1,5x mod.",
+             "1,5 - 2x mod.", "2 - 3x mod.", "boven 3x mod.", "nog extra boven",
+             "groep 8", "groep 9")
+
+ink <- tibble(
+  cat = factor(c("Totaal", groepen2,
+                 "Werkenden", "Uitkeringsgerechtigden", "Gepensioneerden",
+                 "Inkomensbron 4", "Inkomensbron 5"),
+               levels = c("Totaal", groepen2,
+                          "Werkenden", "Uitkeringsgerechtigden", "Gepensioneerden",
+                          "Inkomensbron 4", "Inkomensbron 5")),
+  grp = factor(rep(c("Totaal", "Inkomensgroepen", "Inkomensbron"), c(1, 9, 5)),
+               levels = c("Totaal", "Inkomensgroepen", "Inkomensbron")),
+  p50 = c(0.09, 0.02, 0.07, 0.07, 0.06, 0.04, 0.05, 0.04, 0.05, 0.06,
+          0.09, 0.04, 0.05, 0.06, 0.07)
+) |>
+  mutate(p25 = p50 - runif(n(), 0.02, 0.15), p75 = p50 + runif(n(), 0.02, 0.12),
+         p5  = p25 - runif(n(), 0.1, 0.6),   p95 = p75 + runif(n(), 0.1, 0.6))
+
+cpb_boxplot_extended(ink, x = cat, group = grp,
+  p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  title = "Koopkracht naar inkomensgroep en -bron",
+  ylab  = "% koopkrachtmutatie")
+```
+
 # Sources
 
 The quantile data above is **simulated**; the layouts follow real CPB

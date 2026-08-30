@@ -53,6 +53,10 @@
 #'   of the usual white one.
 #' @param panel_fill Panel background colour. Defaults to `"#eef8ff"`,
 #'   the light blue this look is built around.
+#' @param value_axis_linewidth Line width of the bold value-axis edge
+#'   (`axis.line.x.top`/`axis.line.x.bottom` when `orientation` is
+#'   `"horizontal"`, `axis.line.y` when `"vertical"`); defaults to
+#'   `0.7`.
 #' @param zero_indicator If `TRUE` (default), draw a thick white
 #'   reference line at zero underneath every other layer, standing in
 #'   for [cpb_box()]'s own black `zeroline` (forced off here, see
@@ -129,6 +133,7 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
                                   ylab = NULL,
                                   filllab = NULL,
                                   panel_fill = "#eef8ff",
+                                  value_axis_linewidth = 0.7,
                                   zero_indicator = TRUE,
                                   zero_indicator_linewidth = 2,
                                   ...) {
@@ -178,7 +183,7 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
   # instead of the data
   if (orientation == "horizontal") {
     value_axis_line <- if (value_axis == "top") {
-      ggplot2::element_line(colour = "black", linewidth = 0.9)
+      ggplot2::element_line(colour = "black", linewidth = value_axis_linewidth)
     } else {
       ggplot2::element_blank()
     }
@@ -193,7 +198,7 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
     # the vertical case has no published example to check this
     # against; mapped by the same left-right/top-bottom symmetry as
     # the horizontal case above, on a best-effort basis
-    value_axis_line <- ggplot2::element_line(colour = "black", linewidth = 0.9)
+    value_axis_line <- ggplot2::element_line(colour = "black", linewidth = value_axis_linewidth)
     theme_extra <- ggplot2::theme(
       axis.line.y         = value_axis_line,
       axis.line.x         = ggplot2::element_blank(),

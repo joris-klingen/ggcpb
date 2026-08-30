@@ -64,6 +64,7 @@ cpb_boxplot_extended(
   ylab = NULL,
   filllab = NULL,
   panel_fill = "#eef8ff",
+  value_axis_linewidth = 0.7,
   zero_indicator = TRUE,
   zero_indicator_linewidth = 2,
   ...
@@ -299,6 +300,11 @@ given, in which case it falls back to a rotated y-axis title.}
 
 \item{panel_fill}{Panel background colour. Defaults to \code{"#eef8ff"},
 the light blue this look is built around.}
+
+\item{value_axis_linewidth}{Line width of the bold value-axis edge
+(\code{axis.line.x.top}/\code{axis.line.x.bottom} when \code{orientation} is
+\code{"horizontal"}, \code{axis.line.y} when \code{"vertical"}); defaults to
+\code{0.7}.}
 
 \item{zero_indicator}{If \code{TRUE} (default), draw a thick white
 reference line at zero underneath every other layer, standing in

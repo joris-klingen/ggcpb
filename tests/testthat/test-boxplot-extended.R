@@ -126,3 +126,14 @@ test_that("cpb_boxplot_extended's value_axis auto-resolves around sec_y", {
     "value_axis"
   )
 })
+
+test_that("cpb_boxplot_extended's value_axis_linewidth defaults to 0.7 and is overridable", {
+  d <- local_boxplot_extended_data()
+  p <- cpb_boxplot_extended(d, x = cat, p5 = p5, p25 = p25, p50 = p50,
+                             p75 = p75, p95 = p95)
+  expect_equal(p$theme$axis.line.x.top$linewidth, 0.7)
+
+  p2 <- cpb_boxplot_extended(d, x = cat, p5 = p5, p25 = p25, p50 = p50,
+                              p75 = p75, p95 = p95, value_axis_linewidth = 1.2)
+  expect_equal(p2$theme$axis.line.x.top$linewidth, 1.2)
+})
