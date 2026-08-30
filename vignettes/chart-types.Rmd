@@ -326,7 +326,22 @@ instead of a stacked area over time -- one wedge per category, sized
 by `y`. There is no value axis to read (nothing to label), so wedge
 sizes are read off the legend or the data itself. `ring_width`
 controls how thick the ring is, from a thin ring around a large hole
-up to `2` (no hole at all -- a full pie):
+up to `2` (no hole at all -- a full pie).
+
+`cpb_donut()`'s ring keeps a fixed physical size regardless of title
+or legend length (see `panel_size`), which knitr's own plotting device
+does not apply on its own -- only `save_cpb()` does. So instead of
+printing the plot directly, every donut here is written out through
+`save_cpb()` first and displayed from that file, exactly as it would
+look saved for a report:
+
+```{r show_donut}
+show_donut <- function(...) {
+  f <- tempfile(fileext = ".png")
+  save_cpb(f, cpb_donut(...), page = "half")
+  knitr::include_graphics(f)
+}
+```
 
 ```{r donut}
 energie <- tibble(
@@ -334,9 +349,33 @@ energie <- tibble(
   share = c(45, 30, 15, 10)
 )
 
-cpb_donut(energie, fill = bron, y = share,
+show_donut(energie, fill = bron, y = share,
   index = c(6, 5, 2, 4),
   title = "Energiemix van huishoudens")
+```
+
+With more wedges, printing the value on the wedge itself gets cramped
+for the thin slices. `label_style = "leader"` moves every value
+outside the ring instead, connected back to its own wedge by a line
+that stays perpendicular to the wedge and straight the rest of the
+way out -- and automatically spaces out any wedges whose values would
+otherwise land on top of each other, like the two thinnest slices
+here:
+
+```{r donut-leader}
+niveaus <- c("aardgas", "overig", "windenergie op land", "zonne-energie",
+             "kernenergie", "windenergie op zee")
+energie2 <- tibble(
+  bron  = factor(c("aardgas", "windenergie op land", "overig",
+                    "kernenergie", "windenergie op zee", "zonne-energie"),
+                 levels = niveaus),
+  share = c(40, 35, 13, 3, 2, 7)
+)
+
+show_donut(energie2, fill = bron, y = share,
+  label_style = "leader",
+  index = c(6, 4, 5, 1, 3, 2),
+  title = "Energiemix, met lijnlabels")
 ```
 
 # Quantile boxplots
