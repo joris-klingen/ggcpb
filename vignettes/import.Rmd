@@ -1,0 +1,177 @@
+---
+title: "Import from CSV"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Import from CSV}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+# Figures are drawn on the REAL CPB canvas (page = "half" is 2.98 in,
+# "full" is 5.96 in; text sizes in theme_cpb() are absolute points, so
+# any other canvas distorts the text-to-figure proportion) and only
+# *displayed* smaller via out.width, at a consistent 2:1 scale:
+# half-page figures at 350px, full-page figures at 700px.
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 2.98,
+  fig.height = 2.98,
+  dpi = 300,
+  out.width = "350px",
+  dev = if (requireNamespace("ragg", quietly = TRUE)) "ragg_png" else "png"
+)
+```
+
+```{r setup, message = FALSE}
+library(ggcpb)
+```
+
+Every other vignette builds figures by calling a `cpb_*()` wrapper
+directly from R. `import_csv()` is a CSV-only alternative to that: two
+plain CSV files -- one with the data, one naming which figures to
+build from it -- and no R code at all beyond the one `import_csv()`
+call. It exists for the case where the data and the desired figures
+live in a spreadsheet workflow rather than an R script -- a colleague
+who edits `params.csv` in Excel gets a new or restyled figure without
+ever opening R.
+
+# The data
+
+`data_csv` is the plain series data, in long format: one row per
+x/series combination, exactly what any `cpb_*()` wrapper's own `data`
+argument expects. Here is the example CSV this vignette uses, shipped
+with the package so you can open it yourself:
+
+```{r data-path}
+data_csv <- system.file("extdata", "import_example_data.csv", package = "ggcpb")
+data_csv
+```
+
+Its raw contents -- this is exactly what a colleague would see opening
+it in a text editor or Excel:
+
+```{r data-raw, echo = FALSE, comment = ""}
+cat(readLines(data_csv), sep = "\n")
+```
+
+`import_csv()` reads it with `read.csv(check.names = FALSE)`, giving
+an ordinary data.frame:
+
+```{r data-frame}
+read.csv(data_csv)
+```
+
+Four columns: `jaar` and `groep` are the axes/grouping columns,
+`koopkracht` is the main series (percentage purchasing-power change),
+`werkloosheid` a second series (the unemployment rate) that repeats
+across `groep` within a year -- it is one figure's worth of data, not
+per group, and a repeated value in a long-format column like this is
+completely normal.
+
+# The parameters
+
+`params_csv` names, for each figure, which `cpb_*()` wrapper to call
+(`plot_type`) and its arguments. It can be laid out either way --
+detected automatically -- and this example uses the **horizontal**
+layout: one column per parameter, one row per figure (a spreadsheet's
+natural shape). Column-referencing arguments (`x`, `y`, `fill`,
+`sec_y`, ...) take a column name from `data_csv`; everything else
+(`title`, `ylab`, `position`, ...) is a literal value:
+
+```{r params-path}
+params_csv <- system.file("extdata", "import_example_params.csv", package = "ggcpb")
+```
+
+```{r params-raw, echo = FALSE, comment = ""}
+cat(readLines(params_csv), sep = "\n")
+```
+
+Two figures:
+
+* **`koopkracht`** -- `cpb_col()`, `koopkracht` by `jaar`, dodged bars
+  coloured by `groep` (`position = "dodge"`; the default `"stack"`
+  would sum the three groups' percentages, which does not mean
+  anything), plus `werkloosheid` overlaid as a secondary-axis line
+  (`sec_y`/`sec_type`/`sec_label`/`sec_ylab`).
+* **`werkloosheid`** -- a plain `cpb_line()` of the same series on its
+  own.
+
+For the full list of a given `plot_type`'s own parameters (column
+reference or literal, and its default), see
+`system.file("extdata", "parameter_settings.csv", package = "ggcpb")`
+or `?import_csv`.
+
+# Building the figures
+
+One call builds every figure `params_csv` defines, keyed by each
+figure's `id`:
+
+```{r build}
+# import_csv() (over)writes a run log next to params_csv -- fine for a
+# params.csv living in a project folder, but this one lives inside the
+# installed package, so the call below points at a throwaway copy
+# instead of writing into that installation.
+tmp_params <- tempfile(fileext = ".csv")
+file.copy(params_csv, tmp_params, overwrite = TRUE)
+
+figs <- import_csv(data_csv, tmp_params)
+names(figs)
+```
+
+```{r fig-koopkracht, fig.width = 5.96, out.width = "700px"}
+figs$koopkracht
+```
+
+```{r fig-werkloosheid}
+figs$werkloosheid
+```
+
+Every call also writes a plain-text run log next to `params_csv`,
+listing each figure's outcome (built, skipped and why, or built with
+any parameter names it ignored) -- the log is there so a script run
+unattended (e.g. from a scheduled task, where the console may not be
+visible) still leaves a record:
+
+```{r log, echo = FALSE, comment = ""}
+log_path <- paste0(tools::file_path_sans_ext(tmp_params), "_log.txt")
+cat(readLines(log_path), sep = "\n")
+```
+
+# The vertical layout
+
+The other `params_csv` layout -- **vertical**, meta-tab style -- suits
+a single figure with many parameters better: column 1 holds parameter
+names, one row each, and column 2 holds that one figure's values. Same
+idea, transposed:
+
+```{r vertical}
+params_vertical <- tempfile(fileext = ".csv")
+writeLines(c(
+  "plot_type,line",
+  "title,Werkloosheid",
+  "x,jaar",
+  "y,werkloosheid",
+  "ylab,%"
+), params_vertical)
+cat(readLines(params_vertical), sep = "\n")
+```
+
+`params_csv` defining a single figure, `import_csv()` returns that
+`ggplot` object directly rather than a named list:
+
+```{r vertical-build}
+import_csv(data_csv, params_vertical)
+```
+
+# Handling mistakes
+
+A blank cell, or a parameter name that is not a real argument of the
+chosen `plot_type`, is simply skipped -- the wrapper's own default
+applies, so a typo in `params_csv` never breaks the import (a
+`warning()` is still raised, and recorded in the run log). A figure
+that fails outright (e.g. a column name that does not exist in
+`data_csv`) is skipped the same way, with the actual error recorded --
+one broken row in `params_csv` never takes the rest of the batch down
+with it. See `?import_csv` for the details.

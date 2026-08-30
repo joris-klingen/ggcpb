@@ -43,8 +43,10 @@ axes, [`vignette("boxplots")`](boxplots.html) for the box-plot styles
 and combinations, [`vignette("annotation")`](annotation.html) for
 reference lines and forecast windows,
 [`vignette("maps")`](maps.html) for choropleths,
-[`vignette("colours")`](colours.html) for picking series colours, and
-[`vignette("ggcpb")`](ggcpb.html) for the basic setup and export.
+[`vignette("colours")`](colours.html) for picking series colours,
+[`vignette("import")`](import.html) for building figures straight
+from a CSV, and [`vignette("ggcpb")`](ggcpb.html) for the basic setup
+and export.
 
 Two house conventions to know up front:
 
