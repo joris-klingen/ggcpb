@@ -6,10 +6,12 @@ test_that("cpb_line(points = TRUE) leaves room for the markers", {
     list(x = pp$x.range, y = pp$y.range)
   }
 
-  # a plain line keeps the tight panel: the axis meets the data exactly
+  # a plain line keeps the tight panel on x (the axis meets the data
+  # exactly); y is flush to pretty() breaks instead of the raw data,
+  # so its range can run a little past the data on either side
   bare <- rng(cpb_line(d, x = x, y = y))
   expect_equal(bare$x, c(1, 10))
-  expect_equal(bare$y, range(d$y))
+  expect_equal(bare$y, range(pretty(range(d$y))))
 
   # markers have a radius, so the panel has to grow past the data or the
   # first, last and extreme points are cut in half by the panel edge
