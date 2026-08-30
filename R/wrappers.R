@@ -144,6 +144,85 @@ cpb_reserve_subtitle <- function(title, subtitle) {
   if (!is.null(title) && is.null(subtitle)) " " else subtitle
 }
 
+# The discrete fill/colour scale every wrapper falls back to: an
+# index-based manual palette when `index` is supplied, the ordinary
+# discrete CPB palette otherwise. One source of truth for this choice
+# so it can't drift apart between the fill wrappers and the colour
+# ones.
+cpb_discrete_scale <- function(aesthetic = c("fill", "colour"), index = NULL,
+                               palette = "qualitative") {
+  aesthetic <- match.arg(aesthetic)
+  if (aesthetic == "fill") {
+    if (!is.null(index)) {
+      scale_fill_cpb_manual(index = index, palette = palette)
+    } else {
+      scale_fill_cpb_d(palette = palette)
+    }
+  } else {
+    if (!is.null(index)) {
+      scale_colour_cpb_manual(index = index, palette = palette)
+    } else {
+      scale_colour_cpb_d(palette = palette)
+    }
+  }
+}
+
+# x_lim_follow_data's flush: zero expansion on the x scale, whichever
+# type it turns out to be. Scale-level, not coord's own expand = FALSE
+# (which is blanket across both axes and would strip the value axis's
+# own flush expansion too -- the exact bug fixed in cpb_line()
+# earlier this session).
+cpb_flush_expand_x <- function(p, x, data) {
+  xvals <- rlang::eval_tidy(x, data)
+  p + if (is.numeric(xvals)) {
+    ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = 0))
+  } else {
+    ggplot2::scale_x_discrete(expand = ggplot2::expansion(mult = 0))
+  }
+}
+
+# cpb_box() and cpb_dot() share the same orientation-aware coord +
+# x_lim_follow_data handling byte for byte; kept as one function so
+# the two can't drift apart when either one changes. clip is passed
+# in rather than computed here because what drives it (box_labels,
+# box_style) only exists on cpb_box()'s side.
+cpb_apply_coord <- function(p, orientation, x_lim, value_limits, clip,
+                            x, data, x_lim_follow_data, has_group) {
+  if (orientation == "horizontal") {
+    p <- p + if (!is.null(value_limits) || !is.null(x_lim)) {
+      ggplot2::coord_flip(xlim = x_lim, ylim = value_limits, clip = clip)
+    } else {
+      ggplot2::coord_flip(clip = clip)
+    }
+  } else if (!is.null(value_limits) || !is.null(x_lim)) {
+    p <- p + ggplot2::coord_cartesian(xlim = x_lim, ylim = value_limits, clip = clip)
+  } else if (has_group) {
+    p <- p + ggplot2::coord_cartesian(clip = "off")
+  }
+  if (isTRUE(x_lim_follow_data) && is.null(x_lim) && !has_group) {
+    p <- cpb_flush_expand_x(p, x, data)
+  }
+  p
+}
+
+# The house single-colour fallback used wherever a wrapper draws one
+# flat colour in the absence of a fill/colour mapping: an explicit
+# override if supplied, else the given CPB palette position. One
+# source of truth for the "no mapping" default across every wrapper.
+cpb_single_colour <- function(value, index = 6) {
+  if (is.null(value)) unname(cpb_cols(index)) else value
+}
+
+# The house style bolds the zero line only when zero actually falls
+# within the lo-hi span -- an unconditional hline at 0 would stretch
+# an all-positive chart (e.g. an index series) down to zero. Used
+# wherever `zeroline` defaults to auto-detecting from the data instead
+# of a fixed TRUE/FALSE.
+cpb_zeroline_auto <- function(lo, hi) {
+  is.numeric(lo) && is.numeric(hi) &&
+    min(lo, na.rm = TRUE) <= 0 && max(hi, na.rm = TRUE) >= 0
+}
+
 # Scale args assembled once so pct labels, custom breaks, and flush
 # limits land in a single scale_y_continuous() -- a second call would
 # silently replace the first.
@@ -526,7 +605,7 @@ cpb_col <- function(data, x, y, fill = NULL,
   } else {
     # No fill mapping: draw one flat house-style colour (CPB primary blue
     # by default) rather than ggplot2's grey.
-    single_fill <- if (is.null(fill_colour)) unname(cpb_cols(6)) else fill_colour
+    single_fill <- cpb_single_colour(fill_colour, 6)
     ggplot2::geom_col(position = position, fill = single_fill, ...)
   }
 
@@ -574,7 +653,7 @@ cpb_col <- function(data, x, y, fill = NULL,
     sec_df[["cpb__sec"]] <- to_primary(sec_vals)
     sec_df <- sec_df[!duplicated(rlang::eval_tidy(x, data)), , drop = FALSE]
     sec_lab <- if (is.null(sec_label)) rlang::as_label(sec_y) else sec_label
-    sec_col <- if (is.null(sec_colour)) unname(cpb_cols(2)) else sec_colour
+    sec_col <- cpb_single_colour(sec_colour, 2)
 
     # the line carries its own one-level colour scale, so it gets a
     # legend key of its own next to the fill keys
@@ -643,12 +722,7 @@ cpb_col <- function(data, x, y, fill = NULL,
   # ignored for the grouped layout, which needs its own fixed margin
   # for the heading rows, and superseded by an explicit x_lim
   if (isTRUE(x_lim_follow_data) && is.null(x_lim) && !has_group) {
-    xvals_type <- rlang::eval_tidy(x, data)
-    p <- p + if (is.numeric(xvals_type)) {
-      ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = 0))
-    } else {
-      ggplot2::scale_x_discrete(expand = ggplot2::expansion(mult = 0))
-    }
+    p <- cpb_flush_expand_x(p, x, data)
   }
 
   if (has_sec && !is.null(sec_ylab)) {
@@ -699,11 +773,7 @@ cpb_col <- function(data, x, y, fill = NULL,
   }
 
   if (has_fill) {
-    p <- p + if (!is.null(index)) {
-      scale_fill_cpb_manual(index = index, palette = palette)
-    } else {
-      scale_fill_cpb_d(palette = palette)
-    }
+    p <- p + cpb_discrete_scale("fill", index, palette)
     p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol)
   }
 
@@ -926,19 +996,10 @@ cpb_area <- function(data, x, y, fill,
     p <- p + ggplot2::coord_cartesian(xlim = x_lim, ylim = value_limits)
   }
   if (isTRUE(x_lim_follow_data) && is.null(x_lim)) {
-    xvals_type <- rlang::eval_tidy(x, data)
-    p <- p + if (is.numeric(xvals_type)) {
-      ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = 0))
-    } else {
-      ggplot2::scale_x_discrete(expand = ggplot2::expansion(mult = 0))
-    }
+    p <- cpb_flush_expand_x(p, x, data)
   }
 
-  p <- p + if (!is.null(index)) {
-    scale_fill_cpb_manual(index = index, palette = palette)
-  } else {
-    scale_fill_cpb_d(palette = palette)
-  }
+  p <- p + cpb_discrete_scale("fill", index, palette)
 
   p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol)
 
@@ -1162,14 +1223,9 @@ cpb_line <- function(data, x, y, colour = NULL,
   has_sec <- !rlang::quo_is_null(sec_y)
   has_band <- !rlang::quo_is_null(ymin) && !rlang::quo_is_null(ymax)
 
-  # the house style bolds the zero line only when zero is on the axis, so
-  # the auto setting checks whether the data spans (or touches) zero --
-  # an unconditional hline at 0 would stretch the y range of an
-  # all-positive chart (e.g. an index series) down to zero
   if (is.null(zeroline)) {
     yvals <- rlang::eval_tidy(y, data)
-    zeroline <- is.numeric(yvals) &&
-      min(yvals, na.rm = TRUE) <= 0 && max(yvals, na.rm = TRUE) >= 0
+    zeroline <- cpb_zeroline_auto(yvals, yvals)
   }
 
   # `group` is set explicitly rather than left to ggplot2, which infers
@@ -1243,7 +1299,7 @@ cpb_line <- function(data, x, y, colour = NULL,
     p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black", linewidth = 0.25)
   }
 
-  single_colour <- if (is.null(line_colour)) unname(cpb_cols(6)) else line_colour
+  single_colour <- cpb_single_colour(line_colour, 6)
 
   if (has_band) {
     if (has_colour) {
@@ -1251,11 +1307,7 @@ cpb_line <- function(data, x, y, colour = NULL,
         ggplot2::aes(ymin = !!ymin, ymax = !!ymax, fill = !!colour),
         alpha = 0.25, colour = NA
       ) +
-        (if (!is.null(index)) {
-          scale_fill_cpb_manual(index = index, palette = palette)
-        } else {
-          scale_fill_cpb_d(palette = palette)
-        }) +
+        cpb_discrete_scale("fill", index, palette) +
         ggplot2::guides(fill = "none")
     } else {
       p <- p + ggplot2::geom_ribbon(
@@ -1384,20 +1436,11 @@ cpb_line <- function(data, x, y, colour = NULL,
     # scale-level, not coord's own expand = FALSE, which is blanket
     # across both axes and would strip the value axis's own flush
     # expansion too (see the discrete-x clipping fix above)
-    xvals_type <- rlang::eval_tidy(x, data)
-    p <- p + if (is.numeric(xvals_type)) {
-      ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = 0))
-    } else {
-      ggplot2::scale_x_discrete(expand = ggplot2::expansion(mult = 0))
-    }
+    p <- cpb_flush_expand_x(p, x, data)
   }
 
   if (has_colour || has_sec) {
-    p <- p + if (!is.null(index)) {
-      scale_colour_cpb_manual(index = index, palette = palette)
-    } else {
-      scale_colour_cpb_d(palette = palette)
-    }
+    p <- p + cpb_discrete_scale("colour", index, palette)
     p <- cpb_add_legend_guide(p, "colour", reverse_legend, legend_ncol)
   }
 
@@ -1689,12 +1732,8 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
          "no published mean marker.", call. = FALSE)
   }
 
-  # as in cpb_line(): only bold the zero line when zero is on the axis
   if (is.null(zeroline)) {
-    lo <- rlang::eval_tidy(p5, data)
-    hi <- rlang::eval_tidy(p95, data)
-    zeroline <- is.numeric(lo) && is.numeric(hi) &&
-      min(lo, na.rm = TRUE) <= 0 && max(hi, na.rm = TRUE) >= 0
+    zeroline <- cpb_zeroline_auto(rlang::eval_tidy(p5, data), rlang::eval_tidy(p95, data))
   }
 
   if (has_fill) {
@@ -1757,7 +1796,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     }
     lab <- as.list(labs_default)
 
-    accent <- if (is.null(fill_colour)) unname(cpb_cols(2)) else fill_colour[[1]]
+    accent <- cpb_single_colour(fill_colour, 2)[[1]]
     light  <- unname(cpb_cols(1))
     meancol <- unname(cpb_cols(5))
 
@@ -1805,7 +1844,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                      linewidth = linewidth, key_glyph = "rect",
                      show.legend = TRUE, ...)
     if (!has_fill) {
-      box_args$fill <- if (is.null(fill_colour)) unname(cpb_cols(6)) else fill_colour
+      box_args$fill <- cpb_single_colour(fill_colour, 6)
     }
     p <- p +
       ggplot2::geom_errorbar(mapping = mapping_errorbar, width = width / 2,
@@ -1819,14 +1858,14 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     # weights and which value labels are printed.
     sty <- switch(box_style,
       james = list(
-        box_col   = if (is.null(fill_colour)) unname(cpb_cols(6)) else fill_colour,
+        box_col   = cpb_single_colour(fill_colour, 6),
         whisk_lw  = 0.4,
         med_col   = "black", med_lw = 0.4, med_ext = 0.15,
         med_lab_col = "black", med_lab_face = "plain", med_lab_size = 2.2,
         q_labels  = FALSE
       ),
       modern = list(
-        box_col   = if (is.null(fill_colour)) unname(cpb_cols(5)) else fill_colour,
+        box_col   = cpb_single_colour(fill_colour, 5),
         whisk_lw  = 0.55,
         med_col   = unname(cpb_cols(6)), med_lw = 1.3, med_ext = 0.2,
         med_lab_col = unname(cpb_cols(6)), med_lab_face = "bold", med_lab_size = 2.6,
@@ -1902,25 +1941,8 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   # zero-flush axis) -- all three would otherwise get half-cropped by
   # the panel edge, so clipping is turned off in all three cases
   clip <- if (has_group || isTRUE(box_labels) || box_style == "dot") "off" else "on"
-  if (orientation == "horizontal") {
-    p <- p + if (!is.null(value_limits) || !is.null(x_lim)) {
-      ggplot2::coord_flip(xlim = x_lim, ylim = value_limits, clip = clip)
-    } else {
-      ggplot2::coord_flip(clip = clip)
-    }
-  } else if (!is.null(value_limits) || !is.null(x_lim)) {
-    p <- p + ggplot2::coord_cartesian(xlim = x_lim, ylim = value_limits, clip = clip)
-  } else if (has_group) {
-    p <- p + ggplot2::coord_cartesian(clip = "off")
-  }
-  if (isTRUE(x_lim_follow_data) && is.null(x_lim) && !has_group) {
-    xvals_type <- rlang::eval_tidy(x, data)
-    p <- p + if (is.numeric(xvals_type)) {
-      ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = 0))
-    } else {
-      ggplot2::scale_x_discrete(expand = ggplot2::expansion(mult = 0))
-    }
-  }
+  p <- cpb_apply_coord(p, orientation, x_lim, value_limits, clip,
+                       x, data, x_lim_follow_data, has_group)
 
   # boxes do not grow from the axis (no forced zero baseline, unlike
   # cpb_col()), but both ends are still drawn flush to the p5-p95 (and
@@ -1981,11 +2003,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   }
 
   if (has_fill) {
-    p <- p + if (!is.null(index)) {
-      scale_fill_cpb_manual(index = index, palette = palette)
-    } else {
-      scale_fill_cpb_d(palette = palette)
-    }
+    p <- p + cpb_discrete_scale("fill", index, palette)
     p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol)
   }
 
@@ -2146,8 +2164,7 @@ cpb_scatter <- function(data, x, y, colour = NULL,
 
   if (is.null(zeroline)) {
     yvals <- rlang::eval_tidy(y, data)
-    zeroline <- is.numeric(yvals) &&
-      min(yvals, na.rm = TRUE) <= 0 && max(yvals, na.rm = TRUE) >= 0
+    zeroline <- cpb_zeroline_auto(yvals, yvals)
   }
 
   if (has_colour) {
@@ -2170,7 +2187,7 @@ cpb_scatter <- function(data, x, y, colour = NULL,
   p <- p + if (has_colour) {
     ggplot2::geom_point(size = size, show.legend = TRUE, ...)
   } else {
-    single_colour <- if (is.null(point_colour)) unname(cpb_cols(6)) else point_colour
+    single_colour <- cpb_single_colour(point_colour, 6)
     ggplot2::geom_point(size = size, colour = single_colour, ...)
   }
 
@@ -2187,10 +2204,8 @@ cpb_scatter <- function(data, x, y, colour = NULL,
     colvals <- rlang::eval_tidy(colour, data)
     p <- p + if (is.numeric(colvals)) {
       scale_colour_cpb_c()
-    } else if (!is.null(index)) {
-      scale_colour_cpb_manual(index = index, palette = palette)
     } else {
-      scale_colour_cpb_d(palette = palette)
+      cpb_discrete_scale("colour", index, palette)
     }
     if (!is.numeric(colvals)) {
       p <- cpb_add_legend_guide(p, "colour", reverse_legend, legend_ncol)
@@ -2379,7 +2394,7 @@ cpb_hist <- function(data, x, fill = NULL,
                             colour = outline, linewidth = 0.2,
                             show.legend = TRUE, ...)
   } else {
-    single_fill <- if (is.null(fill_colour)) unname(cpb_cols(6)) else fill_colour
+    single_fill <- cpb_single_colour(fill_colour, 6)
     ggplot2::geom_histogram(binwidth = binwidth, bins = bins, position = position,
                             colour = outline, linewidth = 0.2, fill = single_fill, ...)
   }
@@ -2396,20 +2411,11 @@ cpb_hist <- function(data, x, fill = NULL,
   if (!is.null(x_lim)) {
     p <- p + ggplot2::coord_cartesian(xlim = x_lim)
   } else if (isTRUE(x_lim_follow_data)) {
-    xvals_type <- rlang::eval_tidy(x, data)
-    p <- p + if (is.numeric(xvals_type)) {
-      ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = 0))
-    } else {
-      ggplot2::scale_x_discrete(expand = ggplot2::expansion(mult = 0))
-    }
+    p <- cpb_flush_expand_x(p, x, data)
   }
 
   if (has_fill) {
-    p <- p + if (!is.null(index)) {
-      scale_fill_cpb_manual(index = index, palette = palette)
-    } else {
-      scale_fill_cpb_d(palette = palette)
-    }
+    p <- p + cpb_discrete_scale("fill", index, palette)
     p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol)
   }
 
@@ -2599,7 +2605,7 @@ cpb_dot <- function(data, x, y, lower, upper,
   has_colour <- !rlang::quo_is_null(colour)
   has_group <- !rlang::quo_is_null(group)
 
-  single_colour <- if (is.null(point_colour)) unname(cpb_cols(2)) else point_colour
+  single_colour <- cpb_single_colour(point_colour, 2)
 
   slots <- NULL
   if (has_group) {
@@ -2650,25 +2656,8 @@ cpb_dot <- function(data, x, y, lower, upper,
 
   # the grouped layout draws its bold headings outside the panel
   clip <- if (has_group) "off" else "on"
-  if (orientation == "horizontal") {
-    p <- p + if (!is.null(value_limits) || !is.null(x_lim)) {
-      ggplot2::coord_flip(xlim = x_lim, ylim = value_limits, clip = clip)
-    } else {
-      ggplot2::coord_flip(clip = clip)
-    }
-  } else if (!is.null(value_limits) || !is.null(x_lim)) {
-    p <- p + ggplot2::coord_cartesian(xlim = x_lim, ylim = value_limits, clip = clip)
-  } else if (has_group) {
-    p <- p + ggplot2::coord_cartesian(clip = "off")
-  }
-  if (isTRUE(x_lim_follow_data) && is.null(x_lim) && !has_group) {
-    xvals_type <- rlang::eval_tidy(x, data)
-    p <- p + if (is.numeric(xvals_type)) {
-      ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = 0))
-    } else {
-      ggplot2::scale_x_discrete(expand = ggplot2::expansion(mult = 0))
-    }
-  }
+  p <- cpb_apply_coord(p, orientation, x_lim, value_limits, clip,
+                       x, data, x_lim_follow_data, has_group)
 
   # estimates do not grow from the axis (no forced zero baseline), but
   # both ends are still drawn flush to the lower-upper (and point) range
@@ -2708,11 +2697,7 @@ cpb_dot <- function(data, x, y, lower, upper,
   }
 
   if (has_colour) {
-    p <- p + if (!is.null(index)) {
-      scale_colour_cpb_manual(index = index, palette = palette)
-    } else {
-      scale_colour_cpb_d(palette = palette)
-    }
+    p <- p + cpb_discrete_scale("colour", index, palette)
     p <- cpb_add_legend_guide(p, "colour", reverse_legend, legend_ncol)
   }
 
