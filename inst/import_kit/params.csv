@@ -1,0 +1,3 @@
+plot_type,id,title,x,y,fill,ylab,position,sec_y,sec_type,sec_label,sec_ylab,create
+col,koopkracht,Koopkrachtontwikkeling naar groep,jaar,koopkracht,groep,% mutatie,dodge,werkloosheid,line,werkloosheid,%,y
+line,werkloosheid,Werkloosheid,jaar,werkloosheid,,%,,,,,,y

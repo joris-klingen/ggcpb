@@ -170,3 +170,42 @@ test_that("import_csv applies ... overrides on top of params.csv", {
 
   expect_equal(p$theme$legend.position, "right")
 })
+
+test_that("cpb_import_kit copies every kit file into a new folder", {
+  dest <- withr::local_tempdir()
+  cpb_import_kit(dest)
+
+  kit_dir <- system.file("import_kit", package = "ggcpb")
+  expect_true(dir.exists(kit_dir))
+  expect_setequal(list.files(dest), list.files(kit_dir))
+
+  # the two data files ship ready to run as-is
+  p <- import_csv(file.path(dest, "data.csv"), file.path(dest, "params.csv"))
+  expect_type(p, "list")
+})
+
+test_that("cpb_import_kit keeps run_import.command executable", {
+  dest <- withr::local_tempdir()
+  cpb_import_kit(dest)
+
+  command_file <- file.path(dest, "run_import.command")
+  expect_true(file.exists(command_file))
+  expect_equal(as.character(file.info(command_file)$mode), "755")
+})
+
+test_that("cpb_import_kit refuses to overwrite without being asked to", {
+  dest <- withr::local_tempdir()
+  cpb_import_kit(dest)
+
+  expect_error(cpb_import_kit(dest), "already exist")
+  expect_no_error(cpb_import_kit(dest, overwrite = TRUE))
+})
+
+test_that("cpb_import_kit creates the destination folder if needed", {
+  dest <- file.path(withr::local_tempdir(), "nieuwe_map")
+  expect_false(dir.exists(dest))
+
+  cpb_import_kit(dest)
+
+  expect_true(file.exists(file.path(dest, "run_import.R")))
+})

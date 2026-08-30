@@ -369,3 +369,69 @@ import_csv <- function(data_csv, params_csv, sep = ",", ...) {
 
   if (length(plots) == 1) plots[[1]] else plots
 }
+
+#' Copy a ready-to-run import kit to a folder
+#'
+#' `import_csv()` itself still needs R to be started by hand. This copies
+#' a small kit to `dest`: an example `data.csv` and `params.csv`, a
+#' `run_import.R` script that reads them and saves each figure as a PNG
+#' in a `generated` subfolder, and two launchers that run it with a
+#' double click instead of opening R at all -- `run_import.bat` on
+#' Windows, `run_import.command` on a Mac. R itself, and the ggcpb
+#' package, still need to be installed on the machine the launcher runs
+#' on; the launcher only skips having to open R and type a command by
+#' hand each time.
+#'
+#' The example `data.csv` and `params.csv` are meant to be replaced.
+#' Edit them (a plain text editor or a spreadsheet program both work),
+#' keep the same file names, and the launcher builds whatever figures
+#' the new `params.csv` describes on the next run.
+#'
+#' @param dest Destination folder. Created if it does not exist yet.
+#' @param overwrite If `FALSE` (default), the function stops instead of
+#'   replacing any file already present in `dest`. Set to `TRUE` to
+#'   replace them (e.g. to update the launcher after a package update,
+#'   without touching an already-edited `data.csv`/`params.csv` -- copy
+#'   to an empty folder first in that case, then move just the two
+#'   scripts over by hand).
+#' @return Invisibly, `dest`.
+#' @examples
+#' \dontrun{
+#' cpb_import_kit("~/Desktop/mijn_figuren")
+#' }
+#' @export
+cpb_import_kit <- function(dest, overwrite = FALSE) {
+  kit_dir <- system.file("import_kit", package = "ggcpb")
+  if (!nzchar(kit_dir)) {
+    stop("The import kit was not found in the installed ggcpb package.",
+      call. = FALSE
+    )
+  }
+
+  if (!dir.exists(dest)) {
+    dir.create(dest, recursive = TRUE)
+  }
+
+  files <- list.files(kit_dir)
+  already_there <- files[file.exists(file.path(dest, files))]
+  if (length(already_there) && !isTRUE(overwrite)) {
+    stop("The following file(s) already exist in `dest` and were not ",
+      "replaced: ", paste(already_there, collapse = ", "),
+      ". Set `overwrite = TRUE` to replace them.",
+      call. = FALSE
+    )
+  }
+
+  file.copy(file.path(kit_dir, files), dest, overwrite = TRUE)
+
+  # a Mac launcher has to keep its executable bit to double-click at
+  # all; file.copy() does not promise to carry permissions over, so it
+  # is set again explicitly on the copy
+  command_file <- file.path(dest, "run_import.command")
+  if (file.exists(command_file)) {
+    Sys.chmod(command_file, mode = "0755")
+  }
+
+  tcat("ggcpb: copied the import kit to ", normalizePath(dest))
+  invisible(dest)
+}
