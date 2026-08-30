@@ -510,6 +510,34 @@ cpb_linkeras_labels <- function(has_sec) {
   if (isTRUE(has_sec)) function(b) paste0(b, " (linkeras)") else ggplot2::waiver()
 }
 
+# Step 6: once has_sec is TRUE, the primary fill guide and sec_y's own
+# colour guide are two separate ggplot2 guides; stack them into one
+# left-aligned block instead of letting them sit side by side, fill
+# named first, as in the published figures. override.aes: without
+# this, ggplot2 sometimes carries the sec_y point/line layer's own
+# colour and point shape into the fill guide's key background (a
+# stray dot rendered on top of a fill square) when the two guides are
+# stacked like this -- telling the fill guide explicitly to ignore
+# those aesthetics is the documented ggplot2 fix for that.
+#
+# Shared by every fill-primary wrapper with sec_y (cpb_col(),
+# cpb_area(), cpb_box()); cpb_line()/cpb_dot() key their primary
+# series on colour directly, so sec_y joins that same scale instead
+# and never needs this. Previously duplicated byte-for-byte across
+# those three wrappers -- kept here as one function so a fix to this
+# guide-stacking logic can't land in one wrapper and miss the others.
+cpb_add_sec_guides <- function(p, has_sec, reverse_legend, legend_ncol) {
+  if (!isTRUE(has_sec)) return(p)
+  p +
+    ggplot2::guides(
+      fill = ggplot2::guide_legend(order = 1, reverse = isTRUE(reverse_legend),
+                                   ncol = legend_ncol,
+                                   override.aes = list(colour = NA, shape = NA)),
+      colour = ggplot2::guide_legend(order = 2)
+    ) +
+    ggplot2::theme(legend.box = "vertical", legend.box.just = "left")
+}
+
 # Draws sec_ylab as an approximate placement -- right-aligned, italic,
 # nudged above the panel -- so a bare print()/knitr display still shows
 # something without going through save_cpb(). It only lands close, not
@@ -1193,26 +1221,7 @@ cpb_col <- function(data, x, y, fill = NULL,
     ggplot2::labs(title = title, subtitle = subtitle, x = lab_x, y = lab_y, fill = filllab) +
     cpb_wrapper_theme()
 
-  # the fill keys and the line key are two guides; stack them into one
-  # left-aligned block instead of letting them sit side by side, with
-  # the columns named before the line, as in the published figures
-  if (has_sec) {
-    # override.aes: without this, ggplot2 sometimes carries the
-    # sec_y point/line layer's own colour and point shape into the
-    # fill guide's key background (a stray dot rendered on top of
-    # a fill square) when the two guides are stacked like this --
-    # telling the fill guide explicitly to ignore those aesthetics
-    # is the documented ggplot2 fix for that
-    p <- p +
-      ggplot2::guides(
-        fill = ggplot2::guide_legend(order = 1, reverse = isTRUE(reverse_legend),
-                                     ncol = legend_ncol,
-                                     override.aes = list(colour = NA, shape = NA)),
-        colour = ggplot2::guide_legend(order = 2)
-      ) +
-      ggplot2::theme(legend.box = "vertical", legend.box.just = "left")
-  }
-  p
+  cpb_add_sec_guides(p, has_sec, reverse_legend, legend_ncol)
 }
 
 # stacked area ----
@@ -1531,26 +1540,7 @@ cpb_area <- function(data, x, y, fill,
     ggplot2::labs(title = title, subtitle = subtitle, x = xlab, y = lab_y, fill = filllab) +
     cpb_wrapper_theme()
 
-  # the fill keys and sec_y's own key are two separate guides; stack
-  # them into one left-aligned block instead of letting them sit side
-  # by side, fill named first, as in the published figures
-  if (has_sec) {
-    p <- p +
-      ggplot2::guides(
-        # override.aes: without this, ggplot2 sometimes carries the
-        # sec_y point/line layer's own colour and point shape into the
-        # fill guide's key background (a stray dot rendered on top of
-        # a fill square) when the two guides are stacked like this --
-        # telling the fill guide explicitly to ignore those aesthetics
-        # is the documented ggplot2 fix for that
-        fill = ggplot2::guide_legend(order = 1, reverse = isTRUE(reverse_legend),
-                                     ncol = legend_ncol,
-                                     override.aes = list(colour = NA, shape = NA)),
-        colour = ggplot2::guide_legend(order = 2)
-      ) +
-      ggplot2::theme(legend.box = "vertical", legend.box.just = "left")
-  }
-  p
+  cpb_add_sec_guides(p, has_sec, reverse_legend, legend_ncol)
 }
 
 # lines ----
@@ -2763,26 +2753,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     ggplot2::labs(title = title, subtitle = subtitle, x = lab_x, y = lab_y, fill = filllab) +
     cpb_wrapper_theme()
 
-  if (has_sec) {
-    # the boxes' fill key and sec_y's own key are two separate guides;
-    # stack them into one left-aligned block instead of letting them
-    # sit side by side, fill named first, as in the published figures.
-    # override.aes: without this, ggplot2 sometimes carries the sec_y
-    # point/line layer's own colour and point shape into the fill
-    # guide's key background (a stray dot rendered on top of a fill
-    # square) when the two guides are stacked like this -- telling the
-    # fill guide explicitly to ignore those aesthetics is the
-    # documented ggplot2 fix for that
-    p <- p +
-      ggplot2::guides(
-        fill = ggplot2::guide_legend(order = 1, reverse = isTRUE(reverse_legend),
-                                     ncol = legend_ncol,
-                                     override.aes = list(colour = NA, shape = NA)),
-        colour = ggplot2::guide_legend(order = 2)
-      ) +
-      ggplot2::theme(legend.box = "vertical", legend.box.just = "left")
-  }
-  p
+  cpb_add_sec_guides(p, has_sec, reverse_legend, legend_ncol)
 }
 
 # scatter ----

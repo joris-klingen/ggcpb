@@ -1192,6 +1192,25 @@ test_that("cpb_sec_map()'s primary-range check also uses floating point toleranc
   expect_no_error(cpb_sec_map(c(1, 2), NULL, 0.02, 0.06))
 })
 
+test_that("cpb_add_sec_guides() -- shared by cpb_col/area/box -- is a no-op without sec_y", {
+  p <- ggplot2::ggplot()
+  expect_identical(cpb_add_sec_guides(p, FALSE, FALSE, NULL), p)
+})
+
+test_that("cpb_add_sec_guides() stacks the fill/colour guides and legend.box when sec_y is present", {
+  p <- ggplot2::ggplot() + ggplot2::geom_blank()
+  out <- cpb_add_sec_guides(p, TRUE, reverse_legend = TRUE, legend_ncol = 2)
+
+  fill_params <- out$guides$guides[["fill"]]$params
+  expect_equal(fill_params$reverse, TRUE)
+  expect_equal(fill_params$ncol, 2)
+  expect_equal(fill_params$override.aes, list(colour = NA, shape = NA))
+  expect_equal(fill_params$order, 1)
+  expect_equal(out$guides$guides[["colour"]]$params$order, 2)
+  expect_equal(out$theme$legend.box, "vertical")
+  expect_equal(out$theme$legend.box.just, "left")
+})
+
 test_that("sec_accuracy rounds the secondary axis's own labels independently of the primary axis", {
   df <- data.frame(jaar = 2018:2020, mld = c(10, 12, 9), heffing = c(1.234, 1.456, 1.789))
   p <- cpb_col(df, x = jaar, y = mld, sec_y = heffing, sec_accuracy = 0.01)
