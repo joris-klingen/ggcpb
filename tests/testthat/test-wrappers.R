@@ -118,8 +118,8 @@ test_that("the zero line layers correctly: over bars, under lines", {
 test_that("wrappers forward the theme knobs to theme_cpb", {
   df <- data.frame(x = c("a", "b"), y = c(1, 2))
   p <- cpb_col(df, x = x, y = y,
-    minor = TRUE, ticks = FALSE, axis_text_size = 6,
-    legend_key_size = 0.45, grid_colour = "grey50")
+               minor = TRUE, ticks = FALSE, axis_text_size = 6,
+               legend_key_size = 0.45, grid_colour = "grey50")
   th <- p$theme
   expect_s3_class(th$panel.grid.minor.y, "element_line")
   expect_null(th$axis.ticks.x)
@@ -137,8 +137,8 @@ test_that("cpb_box errorbars dodge by group without a fill warning", {
   expect_no_warning(
     ggplot2::ggplotGrob(
       cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-        fill = jaar, position = ggplot2::position_dodge(width = 0.75),
-        reverse_legend = TRUE)
+              fill = jaar, position = ggplot2::position_dodge(width = 0.75),
+              reverse_legend = TRUE)
     )
   )
 })
@@ -166,7 +166,7 @@ test_that("cpb_line and cpb_area render ylab as the subtitle", {
 
 test_that("cpb_box fills unmapped boxes in CPB blue with thin strokes", {
   df <- data.frame(groep = c("a", "b"),
-      p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5)
+                   p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5)
   p <- cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95)
   box <- p$layers[[2]]
   expect_equal(box$aes_params$fill, unname(cpb_cols(6)))
@@ -194,7 +194,7 @@ test_that("the value axis is always flush at both ends via pretty() breaks", {
 test_that("cpb_col value_breaks land on the wrapper-built value scale", {
   df <- data.frame(x = c("a", "b"), y = c(10, 60))
   sc <- cpb_col(df, x = x, y = y, pct_axis = TRUE,
-    value_breaks = seq(0, 70, 10))$scales$get_scales("y")
+                value_breaks = seq(0, 70, 10))$scales$get_scales("y")
   expect_equal(sc$breaks, seq(0, 70, 10))
   expect_true(is.function(sc$labels))
 })
@@ -238,7 +238,7 @@ test_that("titled wrappers reserve the subtitle line when none is given", {
 
 test_that("cpb_scatter picks the right colour treatment", {
   df <- data.frame(x = 1:4, y = 5:8, num = c(1, 2, 3, 4),
-    grp = c("a", "b", "a", "b"))
+                   grp = c("a", "b", "a", "b"))
 
   # no colour mapping: house blue points
   p <- cpb_scatter(df, x = x, y = y)
@@ -258,7 +258,7 @@ test_that("cpb_scatter picks the right colour treatment", {
 
 test_that("cpb_scatter draws the zero line only when y spans zero", {
   has_hline <- function(p) any(vapply(p$layers, function(l)
-      inherits(l$geom, "GeomHline"), logical(1)))
+    inherits(l$geom, "GeomHline"), logical(1)))
   df <- data.frame(x = 1:3, y = c(1, 2, 3))
   expect_false(has_hline(cpb_scatter(df, x = x, y = y)))
   df2 <- data.frame(x = 1:3, y = c(-1, 0, 2))
@@ -307,7 +307,7 @@ test_that("forecast_x adds the raming window under the data with a label on top"
   # also available on columns and areas
   df$grp <- "a"
   for (p3 in list(cpb_col(df, x = jaar, y = waarde, forecast_x = 2024.5),
-    cpb_area(df, x = jaar, y = waarde, fill = grp, forecast_x = 2024.5))) {
+                  cpb_area(df, x = jaar, y = waarde, fill = grp, forecast_x = 2024.5))) {
     geoms3 <- vapply(p3$layers, function(l) class(l$geom)[1], character(1))
     expect_true(all(c("GeomRect", "GeomText") %in% geoms3))
   }
@@ -326,17 +326,17 @@ test_that("cpb_line draws an uncertainty band under the lines", {
   df2 <- rbind(df, transform(df, waarde = waarde + 3, lo = lo + 3, hi = hi + 3))
   df2$reeks <- rep(c("a", "b"), each = 6)
   p2 <- cpb_line(df2, x = jaar, y = waarde, colour = reeks,
-    ymin = lo, ymax = hi, colour_index = c(6, 2))
+                 ymin = lo, ymax = hi, colour_index = c(6, 2))
   expect_no_error(ggplot2::ggplotGrob(p2))
   expect_identical(p2$guides$guides$fill, "none")
 })
 
 test_that("cpb_box box_style = 'james' and 'modern' build the legacy box", {
   df <- data.frame(groep = c("a", "b"),
-    p5 = 0.2, p25 = 0.4, p50 = 0.6, p75 = 0.7, p95 = 0.9)
+                   p5 = 0.2, p25 = 0.4, p50 = 0.6, p75 = 0.7, p95 = 0.9)
   for (style in c("james", "modern")) {
     p <- cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-      box_style = style, orientation = "horizontal")
+                 box_style = style, orientation = "horizontal")
     geoms <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
     # two capless whiskers, borderless box, median tick
     expect_equal(sum(geoms == "GeomErrorbar"), 3)
@@ -351,18 +351,18 @@ test_that("cpb_box box_style = 'james' and 'modern' build the legacy box", {
   # style-specific colours: james blue box/black median, modern light
   # blue box/dark blue median
   pj <- cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-    box_style = "james")
+                box_style = "james")
   gj <- vapply(pj$layers, function(l) class(l$geom)[1], character(1))
   expect_equal(pj$layers[[which(gj == "GeomBoxplot")]]$aes_params$fill,
-    unname(cpb_cols(6)))
+               unname(cpb_cols(6)))
   med_j <- pj$layers[[max(which(gj == "GeomErrorbar"))]]
   expect_equal(med_j$aes_params$colour, "black")
 
   pm <- cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-    box_style = "modern")
+                box_style = "modern")
   gm <- vapply(pm$layers, function(l) class(l$geom)[1], character(1))
   expect_equal(pm$layers[[which(gm == "GeomBoxplot")]]$aes_params$fill,
-    unname(cpb_cols(5)))
+               unname(cpb_cols(5)))
   med_m <- pm$layers[[max(which(gm == "GeomErrorbar"))]]
   expect_equal(med_m$aes_params$colour, unname(cpb_cols(6)))
 
@@ -371,16 +371,16 @@ test_that("cpb_box box_style = 'james' and 'modern' build the legacy box", {
   expect_equal(sum(gm == "GeomText"), 3)
   expect_equal(sum(gj == "GeomText"), 1)
   p0 <- cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-    box_style = "modern", box_labels = FALSE)
+                box_style = "modern", box_labels = FALSE)
   expect_false("GeomText" %in% vapply(p0$layers, function(l) class(l$geom)[1], character(1)))
 })
 
 test_that("james/modern box styles reject a fill mapping", {
   df <- data.frame(groep = c("a", "b"), g = c("x", "y"),
-    p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5)
+                   p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5)
   expect_error(
     cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-      fill = g, box_style = "modern"),
+            fill = g, box_style = "modern"),
     "single-colour"
   )
 })
@@ -394,24 +394,24 @@ test_that("cpb_col supports an explicit subtitle with ylab falling back to the a
   expect_equal(p$labels$y, "unit")
   # horizontal charts keep xlab on the value axis; ylab stays the subtitle
   p2 <- cpb_col(df, x = x, y = y, orientation = "horizontal",
-    title = "t", ylab = "unit", xlab = "mld euro")
+                title = "t", ylab = "unit", xlab = "mld euro")
   expect_equal(p2$labels$subtitle, "unit")
   expect_equal(p2$labels$y, "mld euro")
 })
 
 test_that("value_breaks and value_limits work in area, line and box", {
   num <- data.frame(x = rep(2015:2017, 2), g = rep(c("s1", "s2"), each = 3),
-    y = c(1:3, 2:4))
+                    y = c(1:3, 2:4))
   box_df <- data.frame(x = c("a", "b"), p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5)
 
   sc <- cpb_area(num, x = x, y = y, fill = g,
-    value_breaks = c(0, 2, 4))$scales$get_scales("y")
+                 value_breaks = c(0, 2, 4))$scales$get_scales("y")
   expect_equal(sc$breaks, c(0, 2, 4))
   sc <- cpb_line(num, x = x, y = y, colour = g,
-    value_breaks = c(1, 3))$scales$get_scales("y")
+                 value_breaks = c(1, 3))$scales$get_scales("y")
   expect_equal(sc$breaks, c(1, 3))
   sc <- cpb_box(box_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-    value_breaks = c(1, 3, 5))$scales$get_scales("y")
+                value_breaks = c(1, 3, 5))$scales$get_scales("y")
   expect_equal(sc$breaks, c(1, 3, 5))
 
   # limits go through the coordinate system (zoom), never dropping data
@@ -425,11 +425,11 @@ test_that("value_breaks and value_limits work in area, line and box", {
   expect_equal(p$scales$get_scales("y")$limits, c(0, 10))
   expect_true(p$coordinates$expand)
   p <- cpb_box(box_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-    value_limits = c(0, 10))
+               value_limits = c(0, 10))
   expect_equal(p$coordinates$limits$y, c(0, 10))
   # horizontal box: the limits ride along on coord_flip()
   p <- cpb_box(box_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-    orientation = "horizontal", value_limits = c(0, 10))
+               orientation = "horizontal", value_limits = c(0, 10))
   expect_s3_class(p$coordinates, "CoordFlip")
   expect_equal(p$coordinates$limits$y, c(0, 10))
 })
@@ -437,13 +437,13 @@ test_that("value_breaks and value_limits work in area, line and box", {
 test_that("pct_axis works in cpb_box", {
   box_df <- data.frame(x = c("a", "b"), p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5)
   sc <- cpb_box(box_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-    pct_axis = TRUE)$scales$get_scales("y")
+                pct_axis = TRUE)$scales$get_scales("y")
   expect_equal(sc$labels(c(2.5, 50)), c("2%", "50%"))
 })
 
 test_that("reverse_legend reverses the colour guide in line and scatter", {
   num <- data.frame(x = rep(2015:2017, 2), g = rep(c("s1", "s2"), each = 3),
-    y = c(1:3, 2:4))
+                    y = c(1:3, 2:4))
   p <- cpb_line(num, x = x, y = y, colour = g, reverse_legend = TRUE)
   expect_true(p$guides$guides$colour$params$reverse)
   p <- cpb_scatter(num, x = x, y = y, colour = g, reverse_legend = TRUE)
@@ -456,9 +456,47 @@ test_that("reverse_legend reverses the colour guide in line and scatter", {
   expect_null(p$guides$guides$colour)
 })
 
+test_that("legend_ncol lays the legend out in the requested number of columns", {
+  num <- data.frame(x = rep(2015:2017, 2), g = rep(c("s1", "s2"), each = 3),
+                    y = c(1:3, 2:4))
+  cat_df <- data.frame(x = c("a", "b"), y = c(1, 2), g = c("s1", "s2"))
+
+  # fill-based wrappers
+  expect_equal(cpb_col(cat_df, x = x, y = y, fill = g, legend_ncol = 2)$guides$guides$fill$params$ncol, 2)
+  expect_equal(cpb_area(num, x = x, y = y, fill = g, legend_ncol = 2)$guides$guides$fill$params$ncol, 2)
+  box_df <- data.frame(x = c("a", "b"), p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5, g = c("s1", "s2"))
+  expect_equal(cpb_box(box_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+                       fill = g, legend_ncol = 2)$guides$guides$fill$params$ncol, 2)
+  expect_equal(cpb_hist(num, x = y, fill = g, legend_ncol = 2)$guides$guides$fill$params$ncol, 2)
+
+  # colour-based wrappers
+  expect_equal(cpb_line(num, x = x, y = y, colour = g, legend_ncol = 3)$guides$guides$colour$params$ncol, 3)
+  expect_equal(cpb_scatter(num, x = x, y = y, colour = g, legend_ncol = 3)$guides$guides$colour$params$ncol, 3)
+  dot_df <- data.frame(x = c("a", "b"), y = c(1, 2), lower = c(0, 1), upper = c(2, 3), g = c("s1", "s2"))
+  expect_equal(cpb_dot(dot_df, x = x, y = y, lower = lower, upper = upper,
+                       colour = g, legend_ncol = 3)$guides$guides$colour$params$ncol, 3)
+
+  # a numeric colour column keeps its continuous colourbar untouched
+  numc <- transform(num, g = as.numeric(factor(g)))
+  expect_null(cpb_scatter(numc, x = x, y = y, colour = g, legend_ncol = 2)$guides$guides$colour)
+
+  # NULL (default) is a no-op: no guides() call added at all
+  expect_null(cpb_col(cat_df, x = x, y = y, fill = g, reverse_legend = FALSE)$guides$guides$fill)
+
+  # reverse_legend and legend_ncol combine in the same guide_legend()
+  p <- cpb_col(cat_df, x = x, y = y, fill = g, reverse_legend = TRUE, legend_ncol = 2)
+  expect_true(p$guides$guides$fill$params$reverse)
+  expect_equal(p$guides$guides$fill$params$ncol, 2)
+
+  # cpb_col's secondary-axis layout (order = 1/2) also honours legend_ncol
+  sec_df <- data.frame(x = c("a", "b", "c"), y = c(1, 2, 3), s = c(0.5, 1.5, 1.0))
+  p_sec <- cpb_col(sec_df, x = x, y = y, sec_y = s, legend_ncol = 2)
+  expect_equal(p_sec$guides$guides$fill$params$ncol, 2)
+})
+
 test_that("cpb_scatter draws the forecast window like cpb_line", {
   num <- data.frame(x = rep(2015:2019, 2), g = rep(c("s1", "s2"), each = 5),
-    y = c(1:5, 2:6))
+                    y = c(1:5, 2:6))
   p <- cpb_scatter(num, x = x, y = y, colour = g, forecast_x = 2017.5)
   classes <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
   rect_i  <- which(classes == "GeomRect")
@@ -760,7 +798,7 @@ test_that("cpb_line(points = TRUE) adds markers and keeps the lines joined", {
   # markers are off by default
   p0 <- cpb_line(df, x = cat, y = y, colour = reeks)
   expect_false("GeomPoint" %in%
-    vapply(p0$layers, function(l) class(l$geom)[1], character(1)))
+                 vapply(p0$layers, function(l) class(l$geom)[1], character(1)))
   # without a colour mapping the single series stays one group
   p1 <- cpb_line(df[df$reeks == "a", ], x = cat, y = y, points = TRUE)
   expect_equal(nrow(unique(ggplot2::layer_data(p1, 1)["group"])), 1)
@@ -781,7 +819,7 @@ test_that("cpb_box box_style = 'dot' draws markers with a named legend", {
                 p95 = p95, box_style = "dot")
   expect_equal(
     sum(vapply(p0$layers, function(l) class(l$geom)[1], character(1)) ==
-      "GeomPoint"), 3L
+          "GeomPoint"), 3L
   )
   # every statistic is named in the legend, in the published order
   sc <- p$scales$get_scales("colour")
@@ -825,7 +863,7 @@ test_that("cpb_dot draws estimates with intervals and a zero line", {
   # the reference line can be turned off
   p0 <- cpb_dot(df, x = term, y = est, lower = lo, upper = hi, zeroline = FALSE)
   expect_false("GeomHline" %in%
-    vapply(p0$layers, function(l) class(l$geom)[1], character(1)))
+                 vapply(p0$layers, function(l) class(l$geom)[1], character(1)))
   # vertical drops coord_flip()
   pv <- cpb_dot(df, x = term, y = est, lower = lo, upper = hi,
                 orientation = "vertical")
