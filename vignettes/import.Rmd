@@ -124,9 +124,20 @@ figs <- import_csv(data_csv, tmp_params)
 When the parameter file contains multiple figures, `import_csv()`
 returns a named list. The names come from the `id` parameter.
 
-```{r fig-koopkracht, fig.width = 5.96, out.width = "700px"}
-figs$koopkracht
+The `koopkracht` figure has a second value axis (`sec_y`), and its
+right side caption is only placed exactly by `save_cpb()`. Printed
+directly, an approximate placement is shown instead, close but not
+exact, since at that point the figure has not actually been saved yet
+to measure against. So, rather than printing it directly, it is
+written out through `save_cpb()` first and shown from that file:
+
+```{r fig-koopkracht, out.width = "700px"}
+path <- tempfile(fileext = ".png")
+save_cpb(path, figs$koopkracht, page = "full")
+knitr::include_graphics(path)
 ```
+
+`werkloosheid` has no second axis, so it can be shown directly:
 
 ```{r fig-werkloosheid}
 figs$werkloosheid
