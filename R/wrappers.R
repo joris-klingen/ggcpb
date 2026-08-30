@@ -642,10 +642,8 @@ cpb_forecast_pos <- function(forecast_x, xvals) {
 
 #' @noRd
 cpb_forecast_rect <- function(forecast_x) {
-  ggplot2::annotate("rect",
-    xmin = forecast_x, xmax = Inf,
-    ymin = -Inf, ymax = Inf, fill = "white", alpha = 0.45
-  )
+  ggplot2::annotate("rect", xmin = forecast_x, xmax = Inf,
+                    ymin = -Inf, ymax = Inf, fill = "white", alpha = 0.45)
 }
 
 #' @noRd
@@ -929,22 +927,18 @@ cpb_col <- function(data, x, y, fill = NULL,
   if (has_sec) {
     if (orientation == "horizontal") {
       stop("`sec_y` is only supported for vertical column charts: the ",
-        "secondary axis is drawn on the right of the value axis.",
-        call. = FALSE
-      )
+           "secondary axis is drawn on the right of the value axis.",
+           call. = FALSE)
     }
     if (has_group) {
       stop("`sec_y` and `group` cannot be combined: the bold group headings ",
-        "and the secondary axis both claim the space beside the panel.",
-        call. = FALSE
-      )
+           "and the secondary axis both claim the space beside the panel.",
+           call. = FALSE)
     }
     if (position == "fill") {
       stop("`sec_y` cannot be combined with position = \"fill\": a ",
-        "proportional value axis has no scale for a second series to ",
-        "share.",
-        call. = FALSE
-      )
+           "proportional value axis has no scale for a second series to ",
+           "share.", call. = FALSE)
     }
   }
 
@@ -980,26 +974,19 @@ cpb_col <- function(data, x, y, fill = NULL,
     # one shared value axis, group names in bold under the categories
     if (orientation == "horizontal") {
       stop("`group` is only supported for vertical column charts; for ",
-        "horizontal grouped categories see the `group` argument of ",
-        "cpb_box().",
-        call. = FALSE
-      )
+           "horizontal grouped categories see the `group` argument of ",
+           "cpb_box().", call. = FALSE)
     }
     if (!is.null(forecast_x)) {
       stop("`group` and `forecast_x` cannot be combined: the grouped ",
-        "category axis is not a time axis.",
-        call. = FALSE
-      )
+           "category axis is not a time axis.", call. = FALSE)
     }
     grp <- cpb_group_positions(rlang::eval_tidy(x, data),
-      rlang::eval_tidy(group, data),
-      gap = group_gap
-    )
+                               rlang::eval_tidy(group, data),
+                               gap = group_gap)
     data <- as.data.frame(data)
-    data[["cpb__x"]] <- grp$map$pos[match(
-      as.character(rlang::eval_tidy(x, data)),
-      as.character(grp$map$cat)
-    )]
+    data[["cpb__x"]] <- grp$map$pos[match(as.character(rlang::eval_tidy(x, data)),
+                                             as.character(grp$map$cat))]
     x <- rlang::quo(.data[["cpb__x"]])
   }
 
@@ -2414,37 +2401,28 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     # vertical grouping: every group gets a bold heading row above its
     # categories; all boxes share one value axis
     slots <- cpb_group_heading_positions(rlang::eval_tidy(x, data),
-      rlang::eval_tidy(group, data),
-      gap = group_gap
-    )
+                                         rlang::eval_tidy(group, data),
+                                         gap = group_gap)
     data <- as.data.frame(data)
-    data[["cpb__x"]] <- slots$pos[match(
-      as.character(rlang::eval_tidy(x, data)),
-      slots$cat
-    )]
+    data[["cpb__x"]] <- slots$pos[match(as.character(rlang::eval_tidy(x, data)),
+                                           slots$cat)]
     x <- rlang::quo(.data[["cpb__x"]])
   }
 
   if (has_fill && box_style != "ggcpb") {
     stop("box_style = \"", box_style, "\" draws single-colour boxes and does ",
-      "not support a `fill` mapping; use box_style = \"ggcpb\" for ",
-      "fill-grouped boxes.",
-      call. = FALSE
-    )
+         "not support a `fill` mapping; use box_style = \"ggcpb\" for ",
+         "fill-grouped boxes.", call. = FALSE)
   }
   # the "dot" style carries a legend instead of printed values
   if (is.null(box_labels)) box_labels <- box_style %in% c("james", "modern")
   if (isTRUE(box_labels) && box_style == "dot") {
     stop("box_style = \"dot\" does not print value labels; it names the ",
-      "markers in a legend instead (see `dot_labels`).",
-      call. = FALSE
-    )
+         "markers in a legend instead (see `dot_labels`).", call. = FALSE)
   }
   if (has_mean && box_style != "dot") {
     stop("`mean` is only drawn by box_style = \"dot\"; the box styles have ",
-      "no published mean marker.",
-      call. = FALSE
-    )
+         "no published mean marker.", call. = FALSE)
   }
 
   if (is.null(zeroline)) {
@@ -2455,10 +2433,8 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     # the x-fill interaction drives the dodge: errorbars have no fill
     # aesthetic (mapping one only warns), and on the numeric category
     # axis of the grouped layout fill alone would chain across rows
-    mapping_errorbar <- ggplot2::aes(
-      x = !!x, ymin = !!p5, ymax = !!p95,
-      group = interaction(!!x, !!fill)
-    )
+    mapping_errorbar <- ggplot2::aes(x = !!x, ymin = !!p5, ymax = !!p95,
+                                     group = interaction(!!x, !!fill))
     mapping_box <- ggplot2::aes(
       x = !!x, ymin = !!p25, lower = !!p25, middle = !!p50, upper = !!p75,
       ymax = !!p75, fill = !!fill, group = interaction(!!x, !!fill)
@@ -2467,10 +2443,8 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     # no real fill mapping, but a second axis means the boxes need
     # their own legend key too, not just sec_y's -- see "always show a
     # legend for both series" below
-    mapping_errorbar <- ggplot2::aes(
-      x = !!x, ymin = !!p5, ymax = !!p95,
-      group = !!x
-    )
+    mapping_errorbar <- ggplot2::aes(x = !!x, ymin = !!p5, ymax = !!p95,
+                                     group = !!x)
     mapping_box <- ggplot2::aes(
       x = !!x, ymin = !!p25, lower = !!p25, middle = !!p50, upper = !!p75,
       ymax = !!p75, fill = primary_lab, group = !!x
@@ -2478,10 +2452,8 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   } else {
     # the explicit group keeps one box per category when the category
     # axis is numeric (the grouped-slots layout)
-    mapping_errorbar <- ggplot2::aes(
-      x = !!x, ymin = !!p5, ymax = !!p95,
-      group = !!x
-    )
+    mapping_errorbar <- ggplot2::aes(x = !!x, ymin = !!p5, ymax = !!p95,
+                                     group = !!x)
     mapping_box <- ggplot2::aes(
       x = !!x, ymin = !!p25, lower = !!p25, middle = !!p50, upper = !!p75,
       ymax = !!p75, group = !!x
@@ -2513,25 +2485,22 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     # the markers get named legend keys; because each layer's data
     # holds exactly one level, a key row only ever picks up the glyph
     # of the layer it belongs to.
-    labs_default <- c(
-      p5 = "5e percentiel", iqr = "25e-75e percentiel",
-      p50 = "mediaan", p95 = "95e percentiel",
-      mean = "gemiddelde"
-    )
+    labs_default <- c(p5 = "5e percentiel", iqr = "25e-75e percentiel",
+                      p50 = "mediaan", p95 = "95e percentiel",
+                      mean = "gemiddelde")
     if (!is.null(dot_labels)) {
       if (is.null(names(dot_labels)) ||
           !all(names(dot_labels) %in% names(labs_default))) {
         stop("`dot_labels` must be a named character vector using the names ",
-          paste0("\"", names(labs_default), "\"", collapse = ", "), ".",
-          call. = FALSE
-        )
+             paste0("\"", names(labs_default), "\"", collapse = ", "), ".",
+             call. = FALSE)
       }
       labs_default[names(dot_labels)] <- dot_labels
     }
     lab <- as.list(labs_default)
 
     accent <- cpb_single_colour(fill_colour, 2)[[1]]
-    light <- unname(cpb_cols(1))
+    light  <- unname(cpb_cols(1))
     meancol <- unname(cpb_cols(5))
 
     # legend order follows the published figure: the two tails first,
@@ -2585,10 +2554,8 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
       box_args$fill <- style_fill_col
     }
     p <- p +
-      ggplot2::geom_errorbar(
-        mapping = mapping_errorbar, width = width / 2,
-        linewidth = linewidth, ...
-      ) +
+      ggplot2::geom_errorbar(mapping = mapping_errorbar, width = width / 2,
+                             linewidth = linewidth, ...) +
       do.call(ggplot2::geom_boxplot, box_args)
   } else {
     # "james" (the legacy nplot() box) and "modern" (its designer
@@ -2622,10 +2589,8 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     whisk_lo <- ggplot2::aes(x = !!x, ymin = !!p5, ymax = !!p25)
     whisk_hi <- ggplot2::aes(x = !!x, ymin = !!p75, ymax = !!p95)
     whisk_args <- list(width = 0, linewidth = sty$whisk_lw)
-    box_args2 <- list(
-      mapping = mapping_box, stat = "identity",
-      width = width, colour = NA, key_glyph = "rect"
-    )
+    box_args2 <- list(mapping = mapping_box, stat = "identity",
+                      width = width, colour = NA, key_glyph = "rect")
     style_fill_col <- sty$box_col
     if (is.null(row_cols)) {
       whisk_args$colour <- sty$box_col
@@ -2646,21 +2611,16 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     }
 
     p <- p +
-      do.call(
-        ggplot2::geom_errorbar,
-        c(list(mapping = whisk_lo), whisk_args, list(...))
-      ) +
-      do.call(
-        ggplot2::geom_errorbar,
-        c(list(mapping = whisk_hi), whisk_args, list(...))
-      ) +
+      do.call(ggplot2::geom_errorbar,
+              c(list(mapping = whisk_lo), whisk_args, list(...))) +
+      do.call(ggplot2::geom_errorbar,
+              c(list(mapping = whisk_hi), whisk_args, list(...))) +
       do.call(ggplot2::geom_boxplot, c(box_args2, list(...))) +
       # the median: a zero-span errorbar whose cap IS the median line,
       # slightly wider than the box
       ggplot2::geom_errorbar(ggplot2::aes(x = !!x, ymin = !!p50, ymax = !!p50),
-        width = width * (1 + 2 * sty$med_ext),
-        linewidth = sty$med_lw, colour = sty$med_col, ...
-      )
+                             width = width * (1 + 2 * sty$med_ext),
+                             linewidth = sty$med_lw, colour = sty$med_col, ...)
 
     if (isTRUE(box_labels)) {
       # labels are offset along the category axis: the median value
@@ -2763,13 +2723,11 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
       p <- p + if (orientation == "horizontal") {
         ggplot2::annotate("text", x = head_rows$pos, y = -Inf,
           label = head_rows$label, hjust = 1.03, vjust = 0.5,
-          fontface = "bold", size = 7 / ggplot2::.pt, family = cpb_font_family()
-        )
+          fontface = "bold", size = 7 / ggplot2::.pt, family = cpb_font_family())
       } else {
         ggplot2::annotate("text", x = head_rows$pos, y = -Inf,
           label = head_rows$label, hjust = 0.5, vjust = 2.6,
-          fontface = "bold", size = 7 / ggplot2::.pt, family = cpb_font_family()
-        )
+          fontface = "bold", size = 7 / ggplot2::.pt, family = cpb_font_family())
       }
     }
   }
@@ -3016,6 +2974,7 @@ cpb_scatter <- function(data, x, y, colour = NULL,
       cpb_discrete_scale("colour", index, palette)
     }
     if (!is.numeric(colvals)) {
+      # a numeric colour draws a colourbar, which takes neither setting
       p <- cpb_add_legend_guide(p, "colour", reverse_legend, legend_ncol)
     }
   }
@@ -3210,10 +3169,8 @@ cpb_hist <- function(data, x, fill = NULL,
                             show.legend = TRUE, ...)
   } else {
     single_fill <- cpb_single_colour(fill_colour, 6)
-    ggplot2::geom_histogram(
-      binwidth = binwidth, bins = bins, position = position,
-      colour = outline, linewidth = 0.2, fill = single_fill, ...
-    )
+    ggplot2::geom_histogram(binwidth = binwidth, bins = bins, position = position,
+                            colour = outline, linewidth = 0.2, fill = single_fill, ...)
   }
 
   # counts are anchored at zero: black zero line on top of the bars and
@@ -3519,34 +3476,25 @@ cpb_dot <- function(data, x, y, lower, upper,
     # same two-level category axis as cpb_box(): bold heading rows
     # above the categories they collect, one shared value axis
     slots <- cpb_group_heading_positions(rlang::eval_tidy(x, data),
-      rlang::eval_tidy(group, data),
-      gap = group_gap
-    )
+                                         rlang::eval_tidy(group, data),
+                                         gap = group_gap)
     data <- as.data.frame(data)
-    data[["cpb__x"]] <- slots$pos[match(
-      as.character(rlang::eval_tidy(x, data)),
-      slots$cat
-    )]
+    data[["cpb__x"]] <- slots$pos[match(as.character(rlang::eval_tidy(x, data)),
+                                           slots$cat)]
     x <- rlang::quo(.data[["cpb__x"]])
   }
 
   # the interaction keeps one interval per category when the category
   # axis is numeric (the grouped-slots layout) and colour is mapped
   if (has_colour) {
-    mapping_interval <- ggplot2::aes(
-      x = !!x, ymin = !!lower, ymax = !!upper,
-      colour = !!colour,
-      group = interaction(!!x, !!colour)
-    )
-    mapping_point <- ggplot2::aes(
-      x = !!x, y = !!y, colour = !!colour,
-      group = interaction(!!x, !!colour)
-    )
+    mapping_interval <- ggplot2::aes(x = !!x, ymin = !!lower, ymax = !!upper,
+                                     colour = !!colour,
+                                     group = interaction(!!x, !!colour))
+    mapping_point <- ggplot2::aes(x = !!x, y = !!y, colour = !!colour,
+                                  group = interaction(!!x, !!colour))
   } else {
-    mapping_interval <- ggplot2::aes(
-      x = !!x, ymin = !!lower, ymax = !!upper,
-      group = !!x
-    )
+    mapping_interval <- ggplot2::aes(x = !!x, ymin = !!lower, ymax = !!upper,
+                                     group = !!x)
     mapping_point <- ggplot2::aes(x = !!x, y = !!y, group = !!x)
   }
 
@@ -3554,10 +3502,8 @@ cpb_dot <- function(data, x, y, lower, upper,
 
   # the reference line sits underneath the estimates
   if (isTRUE(zeroline)) {
-    p <- p + ggplot2::geom_hline(
-      yintercept = 0, colour = "black",
-      linewidth = 0.25
-    )
+    p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black",
+                                 linewidth = 0.25)
   }
 
   interval_args <- list(mapping = mapping_interval, width = cap_width,
@@ -3623,13 +3569,11 @@ cpb_dot <- function(data, x, y, lower, upper,
       p <- p + if (orientation == "horizontal") {
         ggplot2::annotate("text", x = head_rows$pos, y = -Inf,
           label = head_rows$label, hjust = 1.03, vjust = 0.5,
-          fontface = "bold", size = 7 / ggplot2::.pt, family = cpb_font_family()
-        )
+          fontface = "bold", size = 7 / ggplot2::.pt, family = cpb_font_family())
       } else {
         ggplot2::annotate("text", x = head_rows$pos, y = -Inf,
           label = head_rows$label, hjust = 0.5, vjust = 2.6,
-          fontface = "bold", size = 7 / ggplot2::.pt, family = cpb_font_family()
-        )
+          fontface = "bold", size = 7 / ggplot2::.pt, family = cpb_font_family())
       }
     }
   }
@@ -3665,10 +3609,8 @@ cpb_dot <- function(data, x, y, lower, upper,
   subtitle <- cpb_reserve_subtitle(title, subtitle)
 
   p +
-    ggplot2::labs(
-      title = title, subtitle = subtitle, x = lab_x, y = lab_y,
-      colour = colourlab
-    ) +
+    ggplot2::labs(title = title, subtitle = subtitle, x = lab_x, y = lab_y,
+                  colour = colourlab) +
     cpb_wrapper_theme()
 }
 
