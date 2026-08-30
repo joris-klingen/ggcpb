@@ -14,13 +14,14 @@ save_cpb(
   dpi = 300,
   device = ragg::agg_png,
   bg = cpb_bg,
+  panel_size = NULL,
   ...
 )
 }
 \arguments{
 \item{filename}{Path to write to; passed to \code{\link[ggplot2:ggsave]{ggplot2::ggsave()}}.}
 
-\item{plot}{The plot to save; defaults to \code{\link[ggplot2:get_last_plot]{ggplot2::last_plot()}}.}
+\item{plot}{The plot to save; defaults to \code{\link[ggplot2:last_plot]{ggplot2::last_plot()}}.}
 
 \item{page}{Either \code{"half"} (default, 2.98 in wide) or \code{"full"}
 (5.96 in wide). Ignored if \code{width} is supplied explicitly.}
@@ -46,7 +47,18 @@ correctly.}
 colour so it matches \code{theme_cpb()}'s on-plot background. Use
 \code{bg = NA} for a transparent background.}
 
-\item{...}{Further arguments passed to \code{\link[ggplot2:ggsave]{ggplot2::ggsave()}}.}
+\item{panel_size}{Pin the plot's own data area (the panel -- the
+ring, for \code{cpb_donut()}) to a constant physical size in inches,
+regardless of how much room the title or legend need: a number
+for a square panel, or \code{c(width, height)}. \code{NULL} (default) uses
+whatever size \code{plot} already asks for (some wrappers, currently
+\code{cpb_donut()}, request one on their own; pass this to override
+it). Anything that does not fit around a fixed-size panel -- a
+long title, a legend entry -- overflows past the figure's edge
+instead of shrinking the panel to make room.}
+
+\item{...}{Further arguments passed to \code{\link[ggplot2:ggsave]{ggplot2::ggsave()}} (or, when
+\code{panel_size} applies, to \code{device} instead).}
 }
 \value{
 Invisibly, the \code{filename} that was written.

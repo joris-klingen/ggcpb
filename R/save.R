@@ -4,6 +4,146 @@
 # (half or full page); height defaults to the CPB report height but has
 # a "presentation" preset and can always be overridden explicitly.
 
+# ggplot2's own layout gives the panel whatever room is left over once
+# the title and legend have taken what they need -- normally the right
+# behaviour, but it means the same plot's data area visibly grows or
+# shrinks depending on how long the title or legend happens to be. A
+# few wrappers (cpb_donut() so far) instead want the data area itself
+# pinned to a constant physical size no matter what surrounds it, with
+# any chrome that does not fit simply overflowing/being clipped rather
+# than eating into it.
+#
+# The panel is the gtable's only "null" (elastic) cell; every other
+# cell -- title, legend, the fixed plot.margin -- is already sized in
+# absolute units by theme_cpb(). But a "null" unit only means anything
+# relative to a specific grid.layout(), and only actually resolves to
+# a real number once something establishes that layout at a specific
+# size and asks -- a bare convertWidth() on an unplaced "1null" silently
+# reads as zero. So this pushes exactly the viewport theme_cpb()'s own
+# layout would use, sized to what save_cpb() would otherwise have
+# rendered at, and reads each column/row back through it one at a time
+# (querying a whole gtable's worth of null units in one convertWidth()
+# call resolves them all against each other rather than the viewport,
+# which is not what's wanted here) -- freezing title/legend exactly
+# where they would normally land, before the panel cell gets
+# overridden.
+#
+# @param plot A ggplot object.
+# @param size Panel size in inches: a single number for a square panel
+#   (coord_polar() is aspect-locked, so this is what cpb_donut() uses),
+#   or `c(width, height)`.
+# @param page_width,page_height The size (inches) the plot would
+#   otherwise have been saved at -- what every other cell's size gets
+#   resolved against.
+# @return A gtable with its panel cell(s) fixed to `size`, and every
+#   other cell frozen to what it would be at `page_width`/`page_height`.
+# @noRd
+cpb_resolve_gtable_units <- function(g, page_width, page_height) {
+  tmp <- tempfile(fileext = ".png")
+  on.exit(unlink(tmp))
+  ragg::agg_png(tmp, width = page_width, height = page_height, units = "in", res = 72)
+  on.exit(grDevices::dev.off(), add = TRUE)
+
+  grid::pushViewport(grid::viewport(
+    layout = grid::grid.layout(
+      nrow = nrow(g), ncol = ncol(g), widths = g$widths, heights = g$heights
+    )
+  ))
+  g$widths <- grid::unit(vapply(seq_len(ncol(g)), function(i) {
+    grid::pushViewport(grid::viewport(layout.pos.row = 1, layout.pos.col = i))
+    on.exit(grid::popViewport())
+    grid::convertWidth(grid::unit(1, "npc"), "in", valueOnly = TRUE)
+  }, numeric(1)), "in")
+  g$heights <- grid::unit(vapply(seq_len(nrow(g)), function(i) {
+    grid::pushViewport(grid::viewport(layout.pos.row = i, layout.pos.col = 1))
+    on.exit(grid::popViewport())
+    grid::convertHeight(grid::unit(1, "npc"), "in", valueOnly = TRUE)
+  }, numeric(1)), "in")
+  grid::popViewport()
+  g
+}
+
+cpb_fix_panel_size <- function(plot, size, page_width, page_height) {
+  size <- rep_len(size, 2)
+  g <- ggplot2::ggplotGrob(plot)
+  g <- cpb_resolve_gtable_units(g, page_width, page_height)
+
+  panel <- which(g$layout$name == "panel")
+  if (length(panel) == 0) {
+    stop("save_cpb(): `panel_size` was given but no \"panel\" cell was ",
+      "found in the plot's layout.",
+      call. = FALSE
+    )
+  }
+  panel_col <- unique(g$layout$l[panel])
+  panel_row <- unique(g$layout$t[panel])
+  old_w <- grid::convertWidth(g$widths[panel_col], "in", valueOnly = TRUE)
+  old_h <- grid::convertHeight(g$heights[panel_row], "in", valueOnly = TRUE)
+
+  g$widths[panel_col] <- grid::unit(size[[1]], "in")
+  g$heights[panel_row] <- grid::unit(size[[2]], "in")
+
+  # title, subtitle and a top/bottom legend all span the plot's full
+  # width (theme_cpb() sets plot.title.position = "plot"), so shrinking
+  # the panel's own column/row directly would narrow their span along
+  # with it, throwing off exactly the alignment cpb_col() and friends
+  # share. Instead, half the size difference goes to each of the
+  # (normally near-empty) axis gutter cells flanking the panel -- still
+  # present, if blank, since a donut always turns its axes off -- which
+  # keeps every other cell's span the same width/height it would have
+  # had anyway and centres the fixed-size panel within it. If the
+  # panel needed to grow rather than shrink, and there is no gutter
+  # left to take space back from, cpb_ggsave_grob() reports the extra
+  # room the figure ends up needing.
+  cpb_grow_flank <- function(units, idx, delta, convert) {
+    if (length(idx) != 1) return(units)
+    cur <- convert(units[idx], "in", valueOnly = TRUE)
+    units[idx] <- grid::unit(max(cur + delta, 0), "in")
+    units
+  }
+  g$widths <- cpb_grow_flank(
+    g$widths, g$layout$l[g$layout$name == "axis-l"],
+    (old_w - size[[1]]) / 2, grid::convertWidth
+  )
+  g$widths <- cpb_grow_flank(
+    g$widths, g$layout$l[g$layout$name == "axis-r"],
+    (old_w - size[[1]]) / 2, grid::convertWidth
+  )
+  g$heights <- cpb_grow_flank(
+    g$heights, g$layout$t[g$layout$name == "axis-t"],
+    (old_h - size[[2]]) / 2, grid::convertHeight
+  )
+  g$heights <- cpb_grow_flank(
+    g$heights, g$layout$t[g$layout$name == "axis-b"],
+    (old_h - size[[2]]) / 2, grid::convertHeight
+  )
+  g
+}
+
+# Draws a fixed-size gtable (see cpb_fix_panel_size()) straight to a
+# graphics device, since ggplot2::ggsave() only accepts a ggplot
+# object for `plot`, not an already-built grob. Every cell in `grob`
+# is already an absolute unit (see cpb_fix_panel_size()), so the
+# device is opened at the gtable's own natural total size rather than
+# the originally requested width/height: fixing the panel can only
+# ever make the whole figure need a little more or less room than the
+# dynamic layout would have, and forcing it back into the original
+# size is exactly the "shrink the panel to fit" behaviour this exists
+# to avoid.
+# @noRd
+cpb_ggsave_grob <- function(filename, grob, dpi, device, bg, ...) {
+  width <- sum(grid::convertWidth(grob$widths, "in", valueOnly = TRUE))
+  height <- sum(grid::convertHeight(grob$heights, "in", valueOnly = TRUE))
+  device(
+    filename = filename, width = width, height = height,
+    units = "in", res = dpi, background = bg, ...
+  )
+  on.exit(grDevices::dev.off())
+  grid::grid.newpage()
+  grid::grid.draw(grob)
+  invisible(filename)
+}
+
 #' Save a plot at CPB page dimensions
 #'
 #' A wrapper around [ggplot2::ggsave()] that enforces the CPB page
@@ -40,7 +180,17 @@
 #' @param bg Output background colour; defaults to the CPB background
 #'   colour so it matches `theme_cpb()`'s on-plot background. Use
 #'   `bg = NA` for a transparent background.
-#' @param ... Further arguments passed to [ggplot2::ggsave()].
+#' @param panel_size Pin the plot's own data area (the panel -- the
+#'   ring, for `cpb_donut()`) to a constant physical size in inches,
+#'   regardless of how much room the title or legend need: a number
+#'   for a square panel, or `c(width, height)`. `NULL` (default) uses
+#'   whatever size `plot` already asks for (some wrappers, currently
+#'   `cpb_donut()`, request one on their own; pass this to override
+#'   it). Anything that does not fit around a fixed-size panel -- a
+#'   long title, a legend entry -- overflows past the figure's edge
+#'   instead of shrinking the panel to make room.
+#' @param ... Further arguments passed to [ggplot2::ggsave()] (or, when
+#'   `panel_size` applies, to `device` instead).
 #' @return Invisibly, the `filename` that was written.
 #' @examples
 #' \dontrun{
@@ -61,6 +211,7 @@ save_cpb <- function(filename,
                       dpi = 300,
                       device = ragg::agg_png,
                       bg = cpb_bg,
+                      panel_size = NULL,
                       ...) {
   page <- match.arg(page)
   preset <- match.arg(preset)
@@ -86,19 +237,43 @@ save_cpb <- function(filename,
 
   cpb_check_title(plot$labels$title, width)
 
-  ggplot2::ggsave(
-    filename = filename,
-    plot     = plot,
-    width    = width,
-    height   = height,
-    units    = "in",
-    dpi      = dpi,
-    device   = device,
-    bg       = bg,
-    ...
-  )
+  # an explicit panel_size always wins; failing that, a wrapper (only
+  # cpb_donut() so far) may have already asked for one of its own
+  if (is.null(panel_size)) {
+    panel_size <- attr(plot, "cpb_panel_size")
+  }
 
-  tcat("ggcpb: wrote ", filename, " (", width, " x ", height, " in, ", dpi, " dpi)")
+  if (is.null(panel_size)) {
+    ggplot2::ggsave(
+      filename = filename,
+      plot     = plot,
+      width    = width,
+      height   = height,
+      units    = "in",
+      dpi      = dpi,
+      device   = device,
+      bg       = bg,
+      ...
+    )
+  } else {
+    grob <- cpb_fix_panel_size(plot, panel_size, width, height)
+    # fixing the panel can leave the figure needing a little more or
+    # less room than the page's usual width/height -- see
+    # cpb_ggsave_grob() -- so what actually gets written here is
+    # reported below rather than the originally requested width/height
+    width <- sum(grid::convertWidth(grob$widths, "in", valueOnly = TRUE))
+    height <- sum(grid::convertHeight(grob$heights, "in", valueOnly = TRUE))
+    cpb_ggsave_grob(
+      filename = filename,
+      grob     = grob,
+      dpi      = dpi,
+      device   = device,
+      bg       = bg,
+      ...
+    )
+  }
+
+  tcat("ggcpb: wrote ", filename, " (", round(width, 2), " x ", round(height, 2), " in, ", dpi, " dpi)")
 
   invisible(filename)
 }

@@ -302,6 +302,7 @@
 "donut","legend_pct","literal","FALSE"
 "donut","label_accuracy","literal","1"
 "donut","ring_width","literal","0.6"
+"donut","panel_size","literal","1.8"
 "donut","palette","literal","qualitative"
 "donut","index","literal",""
 "donut","reverse_legend","literal","FALSE"

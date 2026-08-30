@@ -1121,26 +1121,29 @@ test_that("cpb_donut's legend_pct suffixes the fill legend with each share", {
   expect_equal(sc$labels(c("gas", "elektriciteit")), c("gas (75%)", "elektriciteit (25%)"))
 })
 
-test_that("cpb_donut's label_style = \"leader\" draws two segments + text outside the ring instead", {
+test_that("cpb_donut's label_style = \"leader\" draws a tick, a fan-out path and text outside the ring", {
   df <- data.frame(bron = c("gas", "elektriciteit"), share = c(75, 25))
   p <- cpb_donut(df, fill = bron, y = share, label_style = "leader", leader_length = 0.2)
 
   segs <- Filter(function(l) inherits(l$geom, "GeomSegment"), p$layers)
-  expect_length(segs, 2L) # a radial tick, then the fan-out to the label
+  expect_length(segs, 1L) # the radial tick, perpendicular to the wedge
+  paths <- Filter(function(l) inherits(l$geom, "GeomPath"), p$layers)
+  expect_length(paths, 1L) # the straight fan-out run to the label
   txt <- Filter(function(l) inherits(l$geom, "GeomText"), p$layers)
   expect_length(txt, 1L)
   expect_equal(txt[[1]]$data[["wedge_label"]], c("75%", "25%"))
-  # the tick starts exactly at the ring's own outer edge and ends
-  # leader_length further out, regardless of which wedge
+  # with nothing to separate, the tick starts exactly at the ring's
+  # own outer edge and ends leader_length further out, for both wedges
   outer_edge <- 1 + 0.6 / 2
   expect_equal(unique(segs[[1]]$data$x_wedge), outer_edge)
-  expect_equal(unique(segs[[1]]$data$x_bend), outer_edge + 0.2)
+  expect_equal(unique(segs[[1]]$data$x_tick), outer_edge + 0.2)
 })
 
 test_that("cpb_donut's label_style = \"wedge\" (default) draws no leader line", {
   df <- data.frame(bron = c("gas", "elektriciteit"), share = c(75, 25))
   p <- cpb_donut(df, fill = bron, y = share)
   expect_false(any(vapply(p$layers, function(l) inherits(l$geom, "GeomSegment"), logical(1))))
+  expect_false(any(vapply(p$layers, function(l) inherits(l$geom, "GeomPath"), logical(1))))
 })
 
 test_that("cpb_donut's label_style = \"leader\" separates labels whose wedges are close together", {
@@ -1151,9 +1154,11 @@ test_that("cpb_donut's label_style = \"leader\" separates labels whose wedges ar
 
   txt <- Filter(function(l) inherits(l$geom, "GeomText"), p$layers)[[1]]
   # both tiny wedges' labels are on the same side (both near the top);
-  # their final y_text values must differ by at least the minimum row
-  # gap the function enforces
+  # their final y_text values must differ by a real, visible amount --
+  # not just fail to be bit-for-bit identical, which a wedge that got
+  # clamped straight back to its own unadjusted position would still
+  # technically satisfy
   small <- txt$data[txt$data$wedge_label == "1%", ]
   expect_equal(nrow(small), 2L)
-  expect_false(isTRUE(all.equal(small$y_text[1], small$y_text[2])))
+  expect_gt(abs(diff(small$y_text)), 0.3)
 })

@@ -16,6 +16,7 @@ cpb_donut(
   legend_pct = FALSE,
   label_accuracy = 1,
   ring_width = 0.6,
+  panel_size = 1.8,
   palette = "qualitative",
   index = NULL,
   reverse_legend = FALSE,
@@ -50,21 +51,25 @@ instead.}
 \item{wedge_labels}{If \code{TRUE} (default), print a value/percentage
 label for every wedge (see \code{label}). Either style always sits at
 its wedge's own angular midpoint, using the same stacking order
-as the wedges themselves, so it can't drift out of sync. Very
-thin or many similarly-sized wedges are not treated specially --
-\code{"wedge"} labels can overlap their neighbours, and \code{"leader"}
-labels can overlap each other outside the ring.}
+as the wedges themselves, so it can't drift out of sync. With
+\code{"wedge"}, thin wedges can still overlap their own label; with
+\code{"leader"} the lines instead spread apart automatically (see
+\code{label_style}). If \code{FALSE}, \code{legend} may not be \code{"none"} -- with
+no values printed anywhere on the plot, the legend becomes the
+only way to tell the wedges apart.}
 
 \item{label_style}{Where the label sits: \code{"wedge"} (default,
 printed on the wedge itself) or \code{"leader"} (printed just outside
 the ring, connected to the wedge by a line). \code{"leader"}'s line
-has two parts: a short tick straight out from the wedge's own
-outer edge, then a second part that approximates a horizontal run
-out to the label, with every same-side label lined up at a shared
-distance. Wedges whose ticks would otherwise land close enough to
-overlap (several thin wedges bunched together) get nudged apart
-into their own row instead, so \code{"leader"} stays legible with
-many, or very unevenly sized, wedges where \code{"wedge"} would not.}
+always has two straight parts: a tick perpendicular to the wedge
+(starting at the ring's outer edge, see \code{leader_length}), then a
+horizontal run out to the label, with every same-side label lined
+up at one shared distance. Wedges whose ticks would otherwise
+land close enough for their labels to overlap (several thin
+wedges bunched together) get their \emph{own} tick extended further
+out first, just enough to clear their neighbour, before the
+horizontal run -- so \code{"leader"} stays legible with many, or very
+unevenly sized, wedges where \code{"wedge"} would not.}
 
 \item{label_colour}{Colour of the printed wedge/leader labels.
 Defaults to \code{"black"}; pass \code{"white"} (or another colour) if your
@@ -74,9 +79,15 @@ against the plot background, so contrast doesn't depend on the
 wedge colours).}
 
 \item{leader_length}{How far the \code{"leader"}-style line's first,
-radial part extends beyond the ring's outer edge before bending
-towards the label, in the same units as \code{ring_width}. Defaults to
-\code{0.15}. Ignored when \code{label_style = "wedge"}.}
+radial part extends beyond the ring's outer edge, before bending
+towards the label, in the same units as \code{ring_width}. This is a
+minimum: a tick whose wedge is crowded by a neighbour is extended
+further automatically (up to 6x \code{leader_length}) to keep the
+labels legible -- capped there because a tick's own physical room
+to extend into is itself fixed (see \code{panel_size}), so a longer
+cap would just run labels past the figure's own edge instead of
+separating them any further. Defaults to \code{0.15}. Ignored when
+\code{label_style = "wedge"}.}
 
 \item{legend_pct}{If \code{TRUE}, suffix every legend entry with its
 percentage share too, e.g. \code{"gas (45\%)"}. Independent of
@@ -90,6 +101,15 @@ to \code{\link[=label_pct_nl]{label_pct_nl()}}. Defaults to \code{1} (whole perc
 \item{ring_width}{Width of the ring, from just over \code{0} (a thin
 ring around a large hole) to \code{2} (no hole at all -- a full pie).
 Defaults to \code{0.6}.}
+
+\item{panel_size}{The ring's own physical size, in inches (a square
+panel; \code{coord_polar()} is aspect-locked so a single number is
+enough). Fixed regardless of the title or legend length, so the
+same donut always draws the same size -- unlike those, which
+overflow past the figure's edge if they do not fit rather than
+shrinking the ring to make room. Forwarded to \code{\link[=save_cpb]{save_cpb()}} as its
+\code{panel_size} (which can still override it at save time). Defaults
+to \code{1.8}.}
 
 \item{palette}{CPB palette to use for \code{fill}; one of
 \code{"qualitative"} (default), \code{"discr"}, \code{"sequential"}

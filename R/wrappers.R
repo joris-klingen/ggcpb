@@ -3434,20 +3434,24 @@ cpb_dot <- function(data, x, y, lower, upper,
 #' @param wedge_labels If `TRUE` (default), print a value/percentage
 #'   label for every wedge (see `label`). Either style always sits at
 #'   its wedge's own angular midpoint, using the same stacking order
-#'   as the wedges themselves, so it can't drift out of sync. Very
-#'   thin or many similarly-sized wedges are not treated specially --
-#'   `"wedge"` labels can overlap their neighbours, and `"leader"`
-#'   labels can overlap each other outside the ring.
+#'   as the wedges themselves, so it can't drift out of sync. With
+#'   `"wedge"`, thin wedges can still overlap their own label; with
+#'   `"leader"` the lines instead spread apart automatically (see
+#'   `label_style`). If `FALSE`, `legend` may not be `"none"` -- with
+#'   no values printed anywhere on the plot, the legend becomes the
+#'   only way to tell the wedges apart.
 #' @param label_style Where the label sits: `"wedge"` (default,
 #'   printed on the wedge itself) or `"leader"` (printed just outside
 #'   the ring, connected to the wedge by a line). `"leader"`'s line
-#'   has two parts: a short tick straight out from the wedge's own
-#'   outer edge, then a second part that approximates a horizontal run
-#'   out to the label, with every same-side label lined up at a shared
-#'   distance. Wedges whose ticks would otherwise land close enough to
-#'   overlap (several thin wedges bunched together) get nudged apart
-#'   into their own row instead, so `"leader"` stays legible with
-#'   many, or very unevenly sized, wedges where `"wedge"` would not.
+#'   always has two straight parts: a tick perpendicular to the wedge
+#'   (starting at the ring's outer edge, see `leader_length`), then a
+#'   horizontal run out to the label, with every same-side label lined
+#'   up at one shared distance. Wedges whose ticks would otherwise
+#'   land close enough for their labels to overlap (several thin
+#'   wedges bunched together) get their *own* tick extended further
+#'   out first, just enough to clear their neighbour, before the
+#'   horizontal run -- so `"leader"` stays legible with many, or very
+#'   unevenly sized, wedges where `"wedge"` would not.
 #' @param label_colour Colour of the printed wedge/leader labels.
 #'   Defaults to `"black"`; pass `"white"` (or another colour) if your
 #'   own `palette`/`index` choice comes out darker/more saturated (for
@@ -3455,9 +3459,15 @@ cpb_dot <- function(data, x, y, lower, upper,
 #'   against the plot background, so contrast doesn't depend on the
 #'   wedge colours).
 #' @param leader_length How far the `"leader"`-style line's first,
-#'   radial part extends beyond the ring's outer edge before bending
-#'   towards the label, in the same units as `ring_width`. Defaults to
-#'   `0.15`. Ignored when `label_style = "wedge"`.
+#'   radial part extends beyond the ring's outer edge, before bending
+#'   towards the label, in the same units as `ring_width`. This is a
+#'   minimum: a tick whose wedge is crowded by a neighbour is extended
+#'   further automatically (up to 6x `leader_length`) to keep the
+#'   labels legible -- capped there because a tick's own physical room
+#'   to extend into is itself fixed (see `panel_size`), so a longer
+#'   cap would just run labels past the figure's own edge instead of
+#'   separating them any further. Defaults to `0.15`. Ignored when
+#'   `label_style = "wedge"`.
 #' @param legend_pct If `TRUE`, suffix every legend entry with its
 #'   percentage share too, e.g. `"gas (45%)"`. Independent of
 #'   `wedge_labels` -- either, both, or neither can be on. Defaults to
@@ -3468,6 +3478,14 @@ cpb_dot <- function(data, x, y, lower, upper,
 #' @param ring_width Width of the ring, from just over `0` (a thin
 #'   ring around a large hole) to `2` (no hole at all -- a full pie).
 #'   Defaults to `0.6`.
+#' @param panel_size The ring's own physical size, in inches (a square
+#'   panel; `coord_polar()` is aspect-locked so a single number is
+#'   enough). Fixed regardless of the title or legend length, so the
+#'   same donut always draws the same size -- unlike those, which
+#'   overflow past the figure's edge if they do not fit rather than
+#'   shrinking the ring to make room. Forwarded to [save_cpb()] as its
+#'   `panel_size` (which can still override it at save time). Defaults
+#'   to `1.8`.
 #' @param palette CPB palette to use for `fill`; one of
 #'   `"qualitative"` (default), `"discr"`, `"sequential"`
 #'   (pink ramp), or `"blues"` (blue ramp).
@@ -3510,6 +3528,7 @@ cpb_donut <- function(data, fill, y,
                       legend_pct = FALSE,
                       label_accuracy = 1,
                       ring_width = 0.6,
+                      panel_size = 1.8,
                       palette = "qualitative",
                       index = NULL,
                       reverse_legend = FALSE,
@@ -3530,6 +3549,13 @@ cpb_donut <- function(data, fill, y,
   if (ring_width <= 0 || ring_width > 2) {
     stop("`ring_width` must be greater than 0 and at most 2 (2 draws a ",
       "full pie, with no hole).",
+      call. = FALSE
+    )
+  }
+  if (!isTRUE(wedge_labels) && identical(legend, "none")) {
+    stop("`legend` cannot be \"none\" when `wedge_labels = FALSE`: with no ",
+      "values printed on the wedges themselves, the legend is the only ",
+      "way to tell them apart.",
       call. = FALSE
     )
   }
@@ -3567,6 +3593,7 @@ cpb_donut <- function(data, fill, y,
     ggplot2::geom_col(width = ring_width, key_glyph = "rect", ...)
 
   leader_data <- NULL
+  path_data <- NULL
   if (isTRUE(wedge_labels) && label_style == "leader") {
     # Read back geom_col()'s own computed ymin/ymax (rather than
     # recomputing the stacking order by hand) so the leader lines can
@@ -3580,50 +3607,87 @@ cpb_donut <- function(data, fill, y,
     theta <- ymid / total * 2 * pi
     on_right <- theta >= 0 & theta <= pi
 
-    # The line has two parts: a short radial tick from the wedge's own
-    # outer edge (always at the wedge's own true angle, so it always
-    # points at exactly the right wedge), then a second part that
-    # approximates a horizontal run out to the label.
-    #
-    # coord_polar()'s own data space is fundamentally angular -- there
-    # is no way to ask it for "a horizontal line" directly the way
-    # coord_cartesian() would let you. So that second part is built
-    # the other way around: first decide the real Cartesian point the
-    # label needs to sit at (same height as the tick, out at a shared
-    # distance per side -- and nudged apart, see below), then invert
-    # coord_polar()'s own transform to find which (x, y) *in its data
-    # space* renders at exactly that Cartesian point. Feed that back
-    # in as an ordinary aes(x =, y =) position and coord_polar() draws
-    # a straight line to it, same as any other segment -- which, by
-    # construction, comes out horizontal-ish in the final image.
-    r_bend <- outer_edge + leader_length
-    bend_x <- r_bend * sin(theta)
-    bend_y <- r_bend * cos(theta)
+    # The line has two parts. The first is a radial tick from the
+    # wedge's own outer edge, always at the wedge's own true angle, so
+    # it is always perpendicular to the wedge and always points at
+    # exactly the right one. Its LENGTH is what resolves overlap: two
+    # ticks at nearly the same angle would otherwise land at nearly
+    # the same height, so a crowded tick is simply extended further
+    # out along its own angle until its end point clears its
+    # neighbour -- staying at the same angle the whole way, this is
+    # still an ordinary same-y, different-x move in the plot's own
+    # (angle, radius) data space, no trigonometry needed yet.
+    r_base <- outer_edge + leader_length
+    max_extend <- leader_length * 6
+    natural_y <- r_base * cos(theta)
 
-    # Thin wedges bunched close together would otherwise get their
-    # labels stacked at (near) the same height. Working top to bottom,
-    # separately for each side (a left-side and a right-side label at
-    # a similar height aren't competing for the same space), push any
-    # label whose tick is too close to the previous one further down.
-    min_row_gap <- 0.16
-    label_y <- bend_y
-    for (side in list(which(on_right), which(!on_right))) {
-      if (length(side) < 2) next
-      side <- side[order(label_y[side], decreasing = TRUE)]
-      for (i in seq_along(side)[-1]) {
-        cur <- side[i]
-        prev <- side[i - 1]
-        if (label_y[prev] - label_y[cur] < min_row_gap) {
-          label_y[cur] <- label_y[prev] - min_row_gap
+    # extending a tick's radius moves its end point along the line
+    # that already points straight out from the centre -- which only
+    # ever carries it further from the theta = 90/270 degree line
+    # (where a wedge sits exactly level with the centre), never back
+    # across it. So within each quarter of the circle, the wedge
+    # closest to that line is left as the anchor, and any other wedge
+    # in the same quarter that lands too close to an already-placed
+    # neighbour is pushed further away from that line -- the one
+    # direction a longer tick can actually reach.
+    min_row_gap <- 0.6
+    push_dir <- ifelse(cos(theta) >= 0, 1, -1)
+    target_y <- natural_y
+    for (grp in list(
+      which(on_right & push_dir > 0), which(on_right & push_dir < 0),
+      which(!on_right & push_dir > 0), which(!on_right & push_dir < 0)
+    )) {
+      if (length(grp) < 2) next
+      d <- push_dir[grp[1]]
+      grp <- grp[order(natural_y[grp] * d)]
+      for (i in seq_along(grp)[-1]) {
+        cur <- grp[i]
+        prev <- grp[i - 1]
+        if ((target_y[cur] - target_y[prev]) * d < min_row_gap) {
+          target_y[cur] <- target_y[prev] + min_row_gap * d
         }
       }
     }
-    # every same-side label lines up at one shared horizontal distance
-    # (plus a little extra for the text itself, so the line doesn't
-    # run straight into the first character)
-    horiz_reach <- r_bend + 0.35
-    line_x <- ifelse(on_right, horiz_reach, -horiz_reach)
-    text_x <- ifelse(on_right, horiz_reach + 0.06, -horiz_reach - 0.06)
+    # reaching a given height at this wedge's own fixed angle always
+    # takes the same radius: height / cos(angle). Near the sides
+    # (angle close to 90/270 degrees) height barely changes with
+    # radius at all, so the extension is capped rather than left to
+    # blow up chasing a target it cannot reach that way.
+    safe_cos <- ifelse(abs(cos(theta)) < 0.05, sign(cos(theta)) * 0.05, cos(theta))
+    r_tick <- pmin(pmax(target_y / safe_cos, r_base), r_base + max_extend)
+    tick_y <- r_tick * cos(theta)
+    tick_x <- r_tick * sin(theta)
+
+    # The second part runs from each tick's own end point out to one
+    # shared distance per side, lining every same-side label up in a
+    # column. coord_polar()'s own data space is fundamentally angular,
+    # with no way to ask it for "a horizontal line" directly -- and
+    # geom_segment() itself gets curved under coord_polar() whenever
+    # its two end points sit at different angles, since ggplot2 draws
+    # an arc between them rather than a straight chord. So instead of
+    # one segment, this samples several points along the real,
+    # straight Cartesian line, and inverts coord_polar()'s own
+    # transform on each one to find the (x, y) *in its data space*
+    # that renders there. Close enough together, the curve coord_polar()
+    # would otherwise add between any two of them is imperceptible, so
+    # the joined-up path reads as a straight line.
+    #
+    # That line's own height is target_y, not tick_y: near the sides
+    # (theta close to 90/270 degrees) a longer tick barely moves
+    # tick_y at all (see safe_cos, above) -- extending the tick alone
+    # cannot separate two labels there. Ending this second run at
+    # target_y instead means it picks up the rest of the separation
+    # that the tick's own radius could not reach, sloping slightly
+    # rather than running dead flat only in that situation.
+    #
+    # this only needs to clear whatever this data actually pushed a
+    # tick out to -- not the worst case max_extend could ever reach --
+    # so an uncrowded donut's labels stay close to the ring instead of
+    # always budgeting for a crowd that may not be there
+    reach <- max(r_base, r_tick) + 0.3
+    horiz_x_end <- ifelse(on_right, reach, -reach)
+    n_steps <- 12
+    step <- seq(0, 1, length.out = n_steps)
 
     # invert the transform: given the Cartesian point a point needs to
     # end up at, find the (r, y) pair that renders there
@@ -3632,31 +3696,58 @@ cpb_donut <- function(data, fill, y,
       th <- atan2(x_cart, y_cart) %% (2 * pi)
       list(r = r, y = th / (2 * pi) * total)
     }
-    line_pos <- to_polar_data(line_x, label_y)
-    text_pos <- to_polar_data(text_x, label_y)
+
+    path_rows <- lapply(seq_along(theta), function(i) {
+      xs <- tick_x[i] + step * (horiz_x_end[i] - tick_x[i])
+      ys <- tick_y[i] + step * (target_y[i] - tick_y[i])
+      pos <- to_polar_data(xs, ys)
+      data.frame(grp = i, x = pos$r, y = pos$y)
+    })
+    path_data <- do.call(rbind, path_rows)
+
+    # a small gap between the end of the line and the first character
+    gap_x <- ifelse(on_right, reach + 0.06, -(reach + 0.06))
+    text_pos <- to_polar_data(gap_x, target_y)
 
     leader_data <- data.frame(
-      x_wedge = outer_edge, x_bend = r_bend,
-      x_line  = line_pos$r, x_text = text_pos$r,
-      y_wedge = ymid, y_line = line_pos$y, y_text = text_pos$y,
+      x_wedge = outer_edge, x_tick = r_tick,
+      y_wedge = ymid,
+      x_text  = text_pos$r, y_text = text_pos$y,
       hjust   = ifelse(on_right, 0, 1),
       wedge_label = data[["cpb__wedge_label"]]
     )
   }
 
-  # the panel needs enough radial room for whatever "leader" actually
-  # computed above (the ring itself only ever needs a little margin
-  # past its own outer edge); xlim()'s limits genuinely drop any point
-  # outside them rather than just visually cropping it, so this has to
-  # cover the real maximum, not just approximate it
-  xlim_max <- if (!is.null(leader_data)) {
-    max(c(outer_edge + 0.05, leader_data$x_line, leader_data$x_text)) + 0.05
+  if (!is.null(leader_data)) {
+    # The ring's own size in the panel must never depend on how far a
+    # crowded dataset's ticks had to stretch to avoid overlapping --
+    # otherwise one dataset with several tiny, bunched wedges would
+    # render a visibly smaller ring than another with the same
+    # ring_width. So the radial scale's limit is fixed from the
+    # *uncrowded* defaults alone (the ring, one default-length tick,
+    # and the shared label column -- see leader_length and reach,
+    # above), never from any row's actual computed geometry.
+    #
+    # A tick that needed more room than that still gets it -- oob
+    # (out-of-bounds) normally converts anything past a scale's limits
+    # to NA and drops it even under clip = "off" (clip only controls
+    # whether in-range geometry gets cropped at the panel edge), so
+    # this swaps in a no-op oob that leaves those values alone. With
+    # clip = "off" they then draw exactly where they land, visibly
+    # past the ring's usual margin, rather than either vanishing or
+    # shrinking everyone else's ring to make room.
+    xlim_max <- outer_edge + leader_length + 0.3 + 0.1
+    p <- p +
+      ggplot2::coord_polar(theta = "y", clip = "off") +
+      ggplot2::scale_x_continuous(
+        limits = c(0, xlim_max),
+        oob = function(x, range) x
+      )
   } else {
-    outer_edge + 0.05
+    p <- p +
+      ggplot2::coord_polar(theta = "y") +
+      ggplot2::xlim(0, outer_edge + 0.05)
   }
-  p <- p +
-    ggplot2::coord_polar(theta = "y", clip = if (label_style == "leader") "off" else "on") +
-    ggplot2::xlim(0, xlim_max)
 
   if (isTRUE(wedge_labels) && label_style == "wedge") {
     # position_stack(vjust = 0.5) centres the label on its own wedge's
@@ -3673,12 +3764,12 @@ cpb_donut <- function(data, fill, y,
     p <- p +
       ggplot2::geom_segment(
         data = leader_data,
-        ggplot2::aes(x = x_wedge, xend = x_bend, y = y_wedge, yend = y_wedge),
+        ggplot2::aes(x = x_wedge, xend = x_tick, y = y_wedge, yend = y_wedge),
         inherit.aes = FALSE, colour = "grey30", linewidth = 0.3
       ) +
-      ggplot2::geom_segment(
-        data = leader_data,
-        ggplot2::aes(x = x_bend, xend = x_line, y = y_wedge, yend = y_line),
+      ggplot2::geom_path(
+        data = path_data,
+        ggplot2::aes(x = x, y = y, group = grp),
         inherit.aes = FALSE, colour = "grey30", linewidth = 0.3
       ) +
       ggplot2::geom_text(
@@ -3702,7 +3793,7 @@ cpb_donut <- function(data, fill, y,
 
   subtitle <- cpb_reserve_subtitle(title, subtitle)
 
-  p +
+  p <- p +
     ggplot2::labs(title = title, subtitle = subtitle, fill = filllab) +
     theme_cpb(
       legend = legend, flush_legend = flush_legend,
@@ -3713,6 +3804,19 @@ cpb_donut <- function(data, fill, y,
       axis.title = ggplot2::element_blank(),
       axis.ticks = ggplot2::element_blank(),
       axis.line  = ggplot2::element_blank(),
-      panel.grid = ggplot2::element_blank()
+      panel.grid = ggplot2::element_blank(),
+      # a donut's legend is often the longest in the house style (one
+      # row per wedge, no axis to share the load with), so the key/text
+      # gap is tightened from theme_cpb()'s usual 3.5 pt to fit more
+      # rows in the same fixed panel_size before running out of room
+      legend.text = ggplot2::element_text(
+        face = "italic", size = 7, margin = ggplot2::margin(l = 1.5)
+      )
     )
+  # read by save_cpb() so a plain save_cpb(cpb_donut(...)) gets a
+  # constant-size ring for free, without the caller having to repeat
+  # panel_size at the save call too (though they still can, to
+  # override it)
+  attr(p, "cpb_panel_size") <- panel_size
+  p
 }
