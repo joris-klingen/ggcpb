@@ -149,22 +149,23 @@ cpb_take_sec_ylab <- function(plot) {
 
 # Places `label` in gtable `g` on the same row as the plot's subtitle
 # (so it lands at the same height as the left-hand unit ylab() puts
-# there) and horizontally centred on the secondary axis's own tick
-# *values* (so, right-aligned from that centre, the label's last
-# character sits above their middle and the rest read leftward from
-# it) -- both cells always exist once a wrapper's sec_y has produced a
-# right axis, whether or not they hold anything yet (ggplot2 always
-# reserves a "subtitle" row; it is just a zeroGrob when empty).
+# there) and flush with the right edge of the secondary axis's own
+# tick values, i.e. right-aligned against the "axis-r" cell itself --
+# both cells always exist once a wrapper's sec_y has produced a right
+# axis, whether or not they hold anything yet (ggplot2 always reserves
+# a "subtitle" row; it is just a zeroGrob when empty).
 #
-# The "axis-r" cell is not *only* the tick text: ggplot2 nests a nested
-# gtable in there with the tick marks' own reserved length to its left
-# (a "null" column, zero-width in this theme since ticks are blank,
-# but still part of the cell) and the text flush to the right -- so the
-# whole cell's own npc centre sits left of the text's true centre,
-# which is why `page_width`/`page_height` are needed here: they let
-# the elastic "null" widths resolve to what they really come out to at
-# that size (see cpb_resolve_gtable_units()), the same way
-# cpb_fix_panel_size() already has to.
+# Flush against the cell, not centred on the tick text's own width: an
+# earlier version centred the label's last character over the tick
+# text's midpoint instead, which reads as stopping noticeably short of
+# the axis, not aligned with it -- flush right is both simpler and the
+# published look this is meant to match.
+#
+# `page_width`/`page_height` resolve the gtable's elastic "null"
+# widths to what they really come out to at that size (see
+# cpb_resolve_gtable_units()), the same way cpb_fix_panel_size()
+# already has to; the row/column placement below still needs it even
+# though the anchor itself no longer does.
 # @noRd
 cpb_add_sec_ylab_grob <- function(g, label, page_width, page_height) {
   row <- g$layout$t[g$layout$name == "subtitle"]
@@ -179,29 +180,9 @@ cpb_add_sec_ylab_grob <- function(g, label, page_width, page_height) {
   col <- g$layout$l[axis_idx]
 
   g <- cpb_resolve_gtable_units(g, page_width, page_height)
-  cell_width <- grid::convertWidth(g$widths[col], "in", valueOnly = TRUE)
-
-  # the tick text is the only non-zero-width grob in the nested
-  # per-axis gtable, flush to the right of the outer "axis-r" cell (any
-  # tick-mark length sits to its left) -- found by grob class, not a
-  # hardcoded column index, since that shifts with tick/theme settings
-  inner <- g$grobs[[axis_idx]]$children$axis
-  text_idx <- which(vapply(inner$grobs, inherits, logical(1), what = "titleGrob"))
-  anchor_npc <- if (length(text_idx) == 1) {
-    # inner$grobs is indexed by placed grob (one per occupied column,
-    # skipping empty ones); inner$widths is indexed by column -- map
-    # through the layout to convert from one indexing to the other
-    text_col <- inner$layout$l[text_idx]
-    text_width <- grid::convertWidth(inner$widths[[text_col]], "in", valueOnly = TRUE)
-    1 - (text_width / cell_width) / 2
-  } else {
-    # no tick text found (e.g. axis.text suppressed) -- the whole
-    # cell's own centre is the least-wrong fallback
-    0.5
-  }
 
   grob <- grid::textGrob(
-    label, x = grid::unit(anchor_npc, "npc"), y = grid::unit(0.5, "npc"),
+    label, x = grid::unit(1, "npc"), y = grid::unit(0.5, "npc"),
     hjust = 1, vjust = 0.5,
     gp = grid::gpar(fontface = "italic", fontsize = 7, fontfamily = cpb_font_family())
   )

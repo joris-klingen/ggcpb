@@ -121,3 +121,25 @@ test_that("save_cpb keeps sec_y's own colour intact when a layer is inserted ahe
   sec_line_idx <- which(is_line)[[2]] # the first GeomLine is the inserted hline's sibling primary line
   expect_false(anyNA(b$data[[sec_line_idx]]$colour))
 })
+
+test_that("save_cpb draws sec_ylab flush with the right edge of the secondary axis", {
+  # cpb_add_sec_ylab_grob() (see save.R) used to centre the caption's
+  # last character over the tick text's own midpoint, which reads as
+  # stopping short of the axis rather than aligned with it; it is now
+  # anchored flush against the "axis-r" cell's own right edge instead,
+  # matching the published look.
+  d <- data.frame(x = 1:5, y = 1:5, z = c(10, 12, 11, 13, 12))
+  p <- cpb_line(d, x = x, y = y, sec_y = z, sec_ylab = "%")
+
+  path <- withr::local_tempfile(fileext = ".png")
+  save_cpb(path, p, page = "half")
+
+  sec_ylab <- cpb_take_sec_ylab(p)
+  g <- ggplot2::ggplotGrob(sec_ylab$plot)
+  g <- cpb_add_sec_ylab_grob(g, sec_ylab$label, 2.98, 2.98)
+  grob <- g$grobs[[which(g$layout$name == "sec-ylab")]]
+
+  expect_equal(as.numeric(grob$x), 1)
+  expect_equal(grid::unitType(grob$x), "npc")
+  expect_equal(grob$hjust, 1)
+})
