@@ -216,6 +216,38 @@ positions through the wrapper's `value_breaks` (as here) rather than
 adding a second `scale_y_continuous()`, which would replace the
 wrapper's scale.
 
+# The extended look
+
+`cpb_boxplot_extended()` wraps `cpb_box()` with a fixed set of visual
+choices baked in -- a light blue panel, white gridlines instead of
+black, a bold value axis on its own edge, and a title that adapts to
+whether the figure is faceted -- so a caller does not have to reach
+for a manual `theme()` call to get that look. It takes the same
+arguments as `cpb_box()` itself, with a handful of defaults already
+changed to match: `box_style = "modern"`, `orientation = "horizontal"`,
+`value_axis = "top"`, `width = 0.45`.
+
+```{r box-extended}
+cpb_boxplot_extended(kk, x = groep,
+  p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  title = "Koopkracht per inkomensgroep",
+  ylab  = "% koopkrachtmutatie")
+```
+
+With `facet`, the same call splits into one panel per level -- here,
+`kk2` from the fill-per-year example above, one panel per year -- and
+the title switches from centred over the single panel above to the
+ordinary full-width, left-aligned house title spanning all of them:
+
+```{r box-extended-facet, fig.width = 5.96, fig.height = 2.98, out.width = "700px"}
+cpb_boxplot_extended(kk2, x = groep,
+  p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  facet      = jaar,
+  facet_ncol = 2,
+  title = "Koopkracht per jaar",
+  ylab  = "% koopkrachtmutatie")
+```
+
 # Sources
 
 The quantile data above is **simulated**; the layouts follow real CPB
