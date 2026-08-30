@@ -77,6 +77,19 @@ test_that("cpb_box builds an errorbar-plus-boxplot combination", {
   expect_true(inherits(p$layers[[3]]$geom, "GeomBoxplot"))
 })
 
+test_that("cpb_key_errorbar draws a capped bar, not geom_errorbar's default bare line", {
+  key_data <- data.frame(colour = "black", linewidth = 0.4, linetype = 1, alpha = NA)
+
+  glyph_h <- cpb_key_errorbar("horizontal")
+  g_h <- glyph_h(key_data, list(), NULL)
+  expect_s3_class(g_h, "gTree")
+  expect_length(g_h$children, 3) # the bar itself plus a cap at each end
+
+  glyph_v <- cpb_key_errorbar("vertical")
+  g_v <- glyph_v(key_data, list(), NULL)
+  expect_length(g_v$children, 3)
+})
+
 test_that("all wrappers can be built into a gtable without error", {
   df <- data.frame(
     groep = c("a", "b"),

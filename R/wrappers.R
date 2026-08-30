@@ -105,6 +105,39 @@ cpb_add_legend_guide <- function(p, aesthetic, reverse = FALSE, ncol = NULL) {
   p + do.call(ggplot2::guides, args)
 }
 
+# geom_errorbar()'s default legend key is a bare line -- draw_key_path(),
+# with no whiskers -- so a capped interval in the plot shows an
+# uncapped line in the legend. Returns a key_glyph function that draws
+# a capped bar matching the geom's own orientation instead, for use
+# where an errorbar layer gets its own named legend key (box_style =
+# "dot" does; the plain box styles map fill on the box, not the
+# errorbar, so they are unaffected).
+cpb_key_errorbar <- function(orientation = c("horizontal", "vertical")) {
+  orientation <- match.arg(orientation)
+  function(data, params, size) {
+    colour <- if (!is.null(data$colour)) data$colour else "black"
+    alpha <- if (!is.null(data$alpha)) data$alpha else NA
+    colour <- scales::alpha(colour, alpha)
+    linewidth <- if (!is.null(data$linewidth)) data$linewidth else 0.5
+    linetype <- if (!is.null(data$linetype)) data$linetype else 1
+    gp <- grid::gpar(col = colour, lwd = linewidth * ggplot2::.pt,
+                     lty = linetype, lineend = "butt")
+    if (orientation == "horizontal") {
+      grid::grobTree(
+        grid::segmentsGrob(0.15, 0.5, 0.85, 0.5, gp = gp),
+        grid::segmentsGrob(0.15, 0.2, 0.15, 0.8, gp = gp),
+        grid::segmentsGrob(0.85, 0.2, 0.85, 0.8, gp = gp)
+      )
+    } else {
+      grid::grobTree(
+        grid::segmentsGrob(0.5, 0.15, 0.5, 0.85, gp = gp),
+        grid::segmentsGrob(0.2, 0.15, 0.8, 0.15, gp = gp),
+        grid::segmentsGrob(0.2, 0.85, 0.8, 0.85, gp = gp)
+      )
+    }
+  }
+}
+
 # a titled figure always reserves the subtitle line, so the gap between
 # title and panel is stable whether or not a subtitle is set
 cpb_reserve_subtitle <- function(title, subtitle) {
@@ -1651,7 +1684,8 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
       ) +
       ggplot2::geom_errorbar(
         ggplot2::aes(x = !!x, ymin = !!p25, ymax = !!p75, colour = lab$iqr),
-        width = width / 2, linewidth = 0.4
+        width = width / 2, linewidth = 0.4,
+        key_glyph = cpb_key_errorbar(orientation)
       ) +
       ggplot2::geom_point(
         ggplot2::aes(x = !!x, y = !!p50, colour = lab$p50), size = 1.6, ...
@@ -1762,13 +1796,14 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     }
   }
 
-  # the grouped layout draws its bold headings outside the panel, and
-  # the james/modern value labels are nudged past their box's own
-  # category slot (the median label above it, the modern quartile
-  # labels below) -- close enough to the first/last category that the
-  # default discrete-axis expansion can crop them, so clipping is
-  # turned off in both cases
-  clip <- if (has_group || isTRUE(box_labels)) "off" else "on"
+  # the grouped layout draws its bold headings outside the panel, the
+  # james/modern value labels are nudged past their box's own category
+  # slot (the median label above it, the modern quartile labels
+  # below), and the dot style's p5/p95 markers can legitimately land
+  # exactly on the flush value-axis boundary (e.g. a p5 of zero on a
+  # zero-flush axis) -- all three would otherwise get half-cropped by
+  # the panel edge, so clipping is turned off in all three cases
+  clip <- if (has_group || isTRUE(box_labels) || box_style == "dot") "off" else "on"
   if (orientation == "horizontal") {
     p <- p + if (!is.null(value_limits)) {
       ggplot2::coord_flip(ylim = value_limits, clip = clip)
@@ -1850,19 +1885,27 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
 
   p <- cpb_add_facet(p, facet, facet_ncol, facet_scales)
 
-  # CPB convention for vertical charts: the value-axis label doubles as
-  # the subtitle; horizontally the value axis is drawn at the bottom
-  # after coord_flip(), where a real axis title is appropriate. A
-  # titled figure always reserves the subtitle line for a stable gap.
+  # CPB house style has no rotated axis titles: whichever aesthetic
+  # coord_flip() leaves drawn vertically gets its label promoted to a
+  # caption above the panel instead, matching how the OTHER box
+  # examples in this vignette use `subtitle` to name the category axis
+  # -- ylab for the value axis when vertical, xlab for the category
+  # axis when horizontal. Either keeps a plain, un-rotated axis title
+  # when it lands on the horizontal axis instead. A titled figure
+  # always reserves the subtitle line for a stable gap.
+  lab_x <- xlab
   lab_y <- ylab
   if (orientation == "vertical" && is.null(subtitle) && !is.null(ylab)) {
     subtitle <- ylab
     lab_y <- NULL
+  } else if (orientation == "horizontal" && is.null(subtitle) && !is.null(xlab)) {
+    subtitle <- xlab
+    lab_x <- NULL
   }
   subtitle <- cpb_reserve_subtitle(title, subtitle)
 
   p +
-    ggplot2::labs(title = title, subtitle = subtitle, x = xlab, y = lab_y, fill = filllab) +
+    ggplot2::labs(title = title, subtitle = subtitle, x = lab_x, y = lab_y, fill = filllab) +
     cpb_wrapper_theme()
 }
 
