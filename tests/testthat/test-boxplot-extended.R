@@ -8,6 +8,32 @@ local_boxplot_extended_data <- function() {
   )
 }
 
+test_that("cpb_boxplot_extended forwards every cpb_box() parameter it doesn't explicitly opt out of", {
+  # cpb_boxplot_extended() hand-mirrors cpb_box()'s own signature
+  # (a manual {{ }} forward, not automatic ... passthrough for every
+  # named argument -- cpb_box() has no ... of its own to fall back
+  # on), so nothing keeps the two in sync automatically: a new
+  # cpb_box() parameter can silently become unreachable through the
+  # extended wrapper unless someone remembers to add it there too.
+  # Guards that by name -- every cpb_box() parameter must appear in
+  # cpb_boxplot_extended()'s own formals, except the ones explicitly
+  # excluded below (zeroline: cpb_boxplot_extended() always turns
+  # cpb_box()'s own zeroline off, replacing it with zero_indicator --
+  # see its own @param docs for why).
+  excluded <- c("zeroline")
+  box_args <- names(formals(cpb_box))
+  ext_args <- names(formals(cpb_boxplot_extended))
+  missing <- setdiff(box_args, c(ext_args, excluded))
+  expect_equal(
+    missing, character(0),
+    info = paste0(
+      "cpb_box() gained ", paste(missing, collapse = ", "),
+      "; forward it through cpb_boxplot_extended() too, or add it to ",
+      "`excluded` above with a comment explaining why not"
+    )
+  )
+})
+
 test_that("cpb_boxplot_extended draws the same data as cpb_box with box_style = modern", {
   d <- local_boxplot_extended_data()
   p <- cpb_boxplot_extended(d, x = cat, p5 = p5, p25 = p25, p50 = p50,
