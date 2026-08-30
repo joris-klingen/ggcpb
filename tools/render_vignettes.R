@@ -9,6 +9,9 @@
 #
 # and commit the updated doc/ output. doc/ is .Rbuildignore'd, so the
 # built package still ships only the real (html_vignette) vignettes.
+#
+# tools/check_docs_fresh.R checks whether this needs re-running at all
+# -- run that first if unsure.
 
 pkg_root <- normalizePath(file.path(dirname(sub(
   "^--file=", "",
