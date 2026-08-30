@@ -1336,9 +1336,6 @@ cpb_col <- function(data, x, y, fill = NULL,
 #'   flush behaviour when this is `TRUE`.
 #' @param reverse_legend If `TRUE` (default), reverse the fill legend
 #'   order via `guide_legend(reverse = TRUE)`.
-#' @param legend_ncol Number of columns to lay the legend keys out in,
-#'   passed to `guide_legend(ncol = ...)`. `NULL` (default) keeps
-#'   ggplot2's own single-row/column layout.
 #' @param forecast_x Optional x value where the forecast window
 #'   starts; overlaid and labelled as in [cpb_line()].
 #' @param forecast_label Label for the forecast window; defaults to
@@ -1574,26 +1571,6 @@ cpb_area <- function(data, x, y, fill,
 #'   supplied.
 #' @param linewidth Line width; defaults to `0.55`, matching the
 #'   published CPB figures.
-#' @param sec_y Optional column (tidy eval) holding a series to draw
-#'   against a **secondary value axis** on the right, the house
-#'   dual-axis line chart (e.g. two rates in % on the left and an index
-#'   on the right). One value per `x`. Unlike [cpb_col()], where the
-#'   columns key on `fill` and the secondary line on `colour`, here the
-#'   primary series already key on `colour`: the secondary line joins
-#'   that same scale and takes the next palette position, so all series
-#'   share one legend block. House style names the axis in each label,
-#'   e.g. `"inflatie (linkeras)"` and `"reeel loon (rechteras)"`.
-#' @param sec_limits Length-2 numeric vector giving the range the
-#'   secondary axis spans. `NULL` (default) uses the range of `sec_y`.
-#'   The line is placed by mapping this range linearly onto the primary
-#'   range, so the two axes always start together.
-#' @param sec_label Legend label for the secondary line. `NULL`
-#'   (default) uses the `sec_y` column name.
-#' @param sec_ylab Unit caption for the secondary axis, drawn
-#'   right-aligned above the panel to mirror the left-hand unit that
-#'   `ylab` puts in the subtitle. `NULL` (default) draws none.
-#' @param sec_linewidth Line width for `sec_y`; `NULL` (default) uses
-#'   `linewidth`, so the secondary line matches the primary ones.
 #' @param points If `TRUE`, draw a point marker at every observation on
 #'   top of the line, the house variant used when the x axis holds a
 #'   handful of discrete categories (age brackets, quintiles) rather
@@ -1694,9 +1671,6 @@ cpb_area <- function(data, x, y, fill,
 #' @param reverse_legend If `TRUE`, reverse the colour legend order
 #'   via `guide_legend(reverse = TRUE)`. Defaults to `FALSE`: unlike
 #'   the stacked wrappers, line order carries no stacking convention.
-#' @param legend_ncol Number of columns to lay the legend keys out in,
-#'   passed to `guide_legend(ncol = ...)`. `NULL` (default) keeps
-#'   ggplot2's own single-row/column layout.
 #' @param ymin,ymax Optional columns (tidy eval) bounding an
 #'   uncertainty band, drawn as a translucent ribbon underneath the
 #'   line(s). With a `colour` mapping each series gets a band in its
