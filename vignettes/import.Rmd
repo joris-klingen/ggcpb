@@ -1,8 +1,8 @@
 ---
-title: "Usage in R: Loading data from CSV"
+title: "Building figures from CSV files"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Usage in R: Loading data from CSV}
+  %\VignetteIndexEntry{Building figures from CSV files}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -28,125 +28,92 @@ knitr::opts_chunk$set(
 library(ggcpb)
 ```
 
-Most figures in this package are built by calling one of its
-functions directly in R code. This document describes a different
-way to build a figure. Two plain files hold everything that is
-needed. One file holds the data. The other file lists the settings
-for each figure. A single function reads both files and produces the
-finished figures automatically. Very little knowledge of R is needed
-to follow the steps below.
+# Introduction
 
-A separate option exists for building figures without opening R at
-all. It is described briefly at the end of this document.
+Most figures in this package are built by calling one of its
+functions directly in R code. This vignette describes an alternative
+based on two CSV files, a data file and a parameter file.
+
+The data file contains the data used in the figures. The parameter
+file specifies which figures to create and how they should be
+configured. The `import_csv()` function reads both files and creates
+the figures.
+
+This approach is useful when figure specifications need to be kept
+separate from R code, for example when the data and figure settings
+are maintained outside an R script.
 
 # The data file
 
-Data that ships together with the package for demonstration purposes
-is stored in a folder named `extdata`. This folder is part of the
-package itself. The data file used in this document is named
+The data file can be any CSV file containing the variables needed by
+the figures. For this example, the package includes
 `import_example_data.csv`.
 
-The following code finds the exact location of that file on the
-current computer, and stores it under the name `data_csv`. The exact
-location is not shown here, since it depends on where the package
-happens to be installed. Only the file name stays the same
-everywhere.
-
 ```{r data-path}
-data_csv <- system.file("extdata", "import_example_data.csv", package = "ggcpb")
+data_csv <- system.file(
+  "extdata",
+  "import_example_data.csv",
+  package = "ggcpb"
+)
 ```
 
-The content of the file is shown below. This is exactly what would be
-seen when opening the file directly, for example in a spreadsheet
-program.
-
-```{r data-raw, echo = FALSE, comment = ""}
-cat(readLines(data_csv), sep = "\n")
-```
-
-Reading a CSV file into R turns it into a table. In R this kind of
-table is called a data frame. Every row is one observation. Every
-column is one variable.
+The file can be read in the usual way:
 
 ```{r data-frame}
 read.csv(data_csv)
 ```
 
-The file has four columns. The column named `jaar` holds the year.
-The column named `groep` holds the household group. The column named
-`koopkracht` is the main value for each year and group. It stands for
-the percentage change in purchasing power. The column named
-`werkloosheid` is a second value. It stands for the unemployment
-rate. This value repeats for every group within the same year,
-because it is a single number for the whole year, not one number per
-group. A repeated value like this is normal in a table of this
-shape.
+The important point for the import method is that the parameter file
+refers to variables by their column names. For example, if a
+parameter contains `jaar`, `import_csv()` looks for a column named
+`jaar` in the data file.
 
-# The parameters file
+# The parameter file
 
-A second file lists which figures to build, and how each one should
-look. This file is called the parameters file. In this document it
-is named `import_example_params.csv`.
+The parameter file determines which figures are created. Each figure
+has a `plot_type` and an `id`, together with the settings required
+for that plot type.
+
+The example parameter file is `import_example_params.csv`.
 
 ```{r params-path}
-params_csv <- system.file("extdata", "import_example_params.csv",
-  package = "ggcpb")
+params_csv <- system.file(
+  "extdata",
+  "import_example_params.csv",
+  package = "ggcpb"
+)
 ```
+
+This example uses the horizontal layout:
 
 ```{r params-raw, echo = FALSE, comment = ""}
 cat(readLines(params_csv), sep = "\n")
 ```
 
-A parameters file can be written in one of two layouts. This example
-uses the horizontal layout. Every row describes one figure. Every
-column is one setting. The other layout is shown later in this
-document.
+Each row describes one figure. The column names are parameter names.
 
-Some settings refer to a column name from the data file. Examples are
-`x`, `y`, `fill` and `sec_y`. Other settings are plain values, not
-column names. Examples are `title`, `ylab` and `position`.
+Some parameters refer to columns in the data file. For example:
 
-Two figures are described in this file.
+* `x`, `y`, `fill` and `sec_y` are column references.
+* `title`, `ylab` and `position` are literal values.
 
-The figure named `koopkracht` is a column chart. It shows
-`koopkracht` by year. Bars for each group are placed side by side
-rather than stacked on top of each other. Placing bars side by side
-is called dodging. Without this setting the bars would be stacked.
-Stacking would add the percentages of the three groups together. That
-total does not have a clear meaning on its own. The `werkloosheid`
-values are added to the same figure as a line, drawn against a second
-axis on the right side.
+The distinction is important. `y,koopkracht` means that the `y`
+variable should be taken from the `koopkracht` column, while
+`ylab,% mutatie` supplies the text `% mutatie` directly.
 
-The figure named `werkloosheid` is a plain line chart. It shows only
-the `werkloosheid` values over time.
+# Creating the figures
 
-Every `plot_type` has its own list of settings. The full list,
-together with which setting is a column reference and which is a
-plain value, is stored in a reference file named
-`parameter_settings.csv`, also inside the `extdata` folder. The same
-information is available through the help page for the main
-function, opened in R with a question mark followed by the function
-name. The full table is also shown near the end of this document, in
-the section named Parameter reference.
-
-# Building the figures
-
-One function call reads both files, and builds every figure listed in
-the parameters file. Each resulting figure is stored under the name
-given by its `id`.
+Once the two files are available, pass them to `import_csv()`:
 
 ```{r build, results = "hide"}
-# The parameters file used here is part of the installed package and
-# cannot be written to. A short log file is normally written next to
-# the parameters file after every run, so a writable copy is made
-# first, in a temporary folder. In everyday use the parameters file
-# usually sits in an ordinary folder, so this extra step is normally
-# not needed.
 tmp_params <- tempfile(fileext = ".csv")
 file.copy(params_csv, tmp_params, overwrite = TRUE)
 
 figs <- import_csv(data_csv, tmp_params)
 ```
+
+When the parameter file contains multiple figures, `import_csv()`
+returns a named list. The names come from the `id` parameter.
 
 ```{r fig-koopkracht, fig.width = 5.96, out.width = "700px"}
 figs$koopkracht
@@ -156,37 +123,25 @@ figs$koopkracht
 figs$werkloosheid
 ```
 
-Every call to the main function writes a plain text log file next to
-the parameters file. The log lists what happened for each figure. It
-states whether a figure was built or skipped, and gives the reason
-for a skip. If a figure was built but one of its settings was not
-recognised, that is listed as well. This record is useful when the
-function runs as part of an automated process, where the console
-output itself may not be seen by anyone.
+In normal use, the data and parameter files can be stored in an
+ordinary writable folder. The temporary copy above is only needed
+here because the example parameter file is part of the installed
+package.
 
-The log for the two figures built above looks like this. The exact
-file locations have been shortened to plain file names below, since
-the full locations are specific to the computer this document was
-built on:
+# One figure per parameter file
 
-```{r log, echo = FALSE, comment = ""}
-log_path <- paste0(tools::file_path_sans_ext(tmp_params), "_log.txt")
-log_text <- readLines(log_path)
-log_text <- gsub(data_csv, "import_example_data.csv", log_text, fixed = TRUE)
-log_text <- gsub(tmp_params, "import_example_params.csv", log_text,
-  fixed = TRUE)
-cat(log_text, sep = "\n")
-```
+There is a second parameter file layout for cases where one parameter
+file describes a single figure.
 
-# The vertical layout
+In the horizontal layout, each row is a figure and each column is a
+parameter. In the vertical layout, each row is a parameter and the
+two columns contain the parameter name and its value.
 
-Parameters can also be written in a second layout, called the
-vertical layout. This layout suits a single figure with many settings
-well. The first column lists the setting names, one per row. The
-second column lists the values for that one figure.
+For example, the following describes a line chart:
 
 ```{r vertical}
 params_vertical <- tempfile(fileext = ".csv")
+
 writeLines(c(
   "plot_type,line",
   "title,Werkloosheid",
@@ -194,65 +149,116 @@ writeLines(c(
   "y,werkloosheid",
   "ylab,%"
 ), params_vertical)
+
 cat(readLines(params_vertical), sep = "\n")
 ```
 
-When a parameters file describes only one figure, the main function
-returns that figure directly, instead of a named list of figures.
+The first column contains the parameter names:
+
+```text
+plot_type
+title
+x
+y
+ylab
+```
+
+The second column contains their values:
+
+```text
+line
+Werkloosheid
+jaar
+werkloosheid
+%
+```
+
+This layout can be convenient when a figure has many parameters,
+because each setting has its own row.
+
+When the parameter file describes one figure, `import_csv()` returns
+that figure directly rather than a named list.
 
 ```{r vertical-build}
 import_csv(data_csv, params_vertical)
 ```
 
-# When something goes wrong
+# Handling problems
 
-A blank cell in the parameters file is simply skipped. The default
-value for that setting is used instead. The same happens for a
-setting name that does not belong to the chosen `plot_type`. In both
-cases a warning is shown, and the same information is recorded in the
-log file.
+A parameter can be left blank. In that case, the default value is
+used.
 
-A figure that cannot be built at all is skipped in the same way, for
-example when a setting refers to a column name that does not exist in
-the data file. The reason is recorded in the log file. Other figures
-in the same parameters file are still built normally. A problem in
-one figure does not stop the rest from being produced.
+If a parameter is not valid for the selected `plot_type`, it is
+ignored and the default is used. These cases produce a warning.
+
+If a figure cannot be created, for example because a column
+referenced by a parameter does not exist in the data file, that
+figure is skipped. Other figures in the same parameter file are still
+created.
+
+Each call to `import_csv()` also writes a log file next to the
+parameter file. The log records figures that were created or skipped
+and any parameter problems.
+
+# Run the import without opening R
+
+The same CSV based method can also be used without opening R.
+
+The `cpb_import_kit()` function creates a ready to use folder
+containing:
+
+* a data file
+* a parameter file
+* a script for Windows
+* a script for a Mac
+
+After editing the data and parameter files, run the appropriate
+script. It reads both files and saves the resulting figures as
+images.
+
+Running the script again after changing either CSV file produces
+updated figures.
+
+R and `ggcpb` must still be installed on the computer running the
+script.
 
 # Parameter reference
 
-The table below lists every setting for every `plot_type`, together
-with its kind, its default, and an example value. A setting of kind
-`column (from data_csv)` takes a column name from the data file. Its
-example is a plausible column name, not a real one, since the actual
-name always depends on the data file at hand. A setting of kind
-`literal` takes a plain value instead. Its example is a value that
-could be typed into the parameters file directly. A default shown as
-several words separated by a forward slash lists every valid choice
-for that setting, with the one used automatically named afterward.
-An empty default means the setting is left out entirely unless it is
-given a value.
-
-The same table is stored as a plain CSV file, so it can also be
-opened directly, for example in a spreadsheet program:
+The available parameters depend on the `plot_type`. The complete list
+is stored in `parameter_settings.csv`.
 
 ```{r params-ref-path}
-ref_csv <- system.file("extdata", "parameter_settings.csv", package = "ggcpb")
+ref_csv <- system.file(
+  "extdata",
+  "parameter_settings.csv",
+  package = "ggcpb"
+)
 ```
+
+The file gives the available parameters, their kind, default values
+and examples.
 
 ```{r params-ref-table, echo = FALSE}
-ref <- read.csv(ref_csv, stringsAsFactors = FALSE)
-knitr::kable(ref, col.names = c("plot_type", "setting", "kind", "default", "example"))
+ref <- read.csv(
+  ref_csv,
+  stringsAsFactors = FALSE
+)
+
+knitr::kable(
+  ref,
+  col.names = c(
+    "plot_type",
+    "setting",
+    "kind",
+    "default",
+    "example"
+  )
+)
 ```
 
-# Building figures without opening R
+A parameter of kind `column` takes a column name from the data file.
+A parameter of kind `literal` takes a value directly from the
+parameter file.
 
-A second option exists for the steps described above, meant for a
-situation where R is not opened directly. The function
-`cpb_import_kit()` copies a small, ready to use folder to a chosen
-location. That folder contains an example data file and an example
-parameters file, together with a script for Windows and a script for
-a Mac. Opening the matching script with a double click reads both
-files, and saves each figure as an image, without any further steps
-in R. Editing the data file and the parameters file, then running the
-script again, produces updated figures. R itself, and this package,
-still need to be installed on the computer running the script.
+The `parameter_settings.csv` file can also be opened directly in a
+spreadsheet program.
