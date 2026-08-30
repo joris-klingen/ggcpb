@@ -305,6 +305,26 @@ save_cpb <- function(filename,
                       bg = cpb_bg,
                       panel_size = NULL,
                       ...) {
+  # cpb_fix_panel_size()/cpb_add_sec_ylab_grob()/the cpb_map() aspect
+  # fit below all measure an already-built grob's own widths/heights in
+  # real units (grid::convertWidth()/convertHeight()), which -- even
+  # between two absolute units, "in" to "in" -- still resolves through
+  # whatever graphics device is current. Call one of these with no
+  # device open at all (a plain Rscript run, not RStudio) and R quietly
+  # opens its default one to answer the query: on most systems a real
+  # "pdf" device, which leaves a blank Rplots.pdf sitting in the
+  # working directory once the R session ends. A throwaway device
+  # opened and closed here, the same way cpb_resolve_gtable_units()
+  # already opens one of its own, covers every such call in this
+  # function's own call graph at once -- ragg specifically, not
+  # grDevices::pdf(NULL), since the base pdf device does not know the
+  # bundled RijksoverheidSansText font and warns about it on every text
+  # measurement, exactly the kind of noise this is meant to avoid.
+  tmp_measure <- tempfile(fileext = ".png")
+  on.exit(unlink(tmp_measure), add = TRUE)
+  ragg::agg_png(tmp_measure, width = 1, height = 1, units = "in", res = 72)
+  on.exit(grDevices::dev.off(), add = TRUE)
+
   page <- match.arg(page)
   preset <- match.arg(preset)
 
