@@ -209,3 +209,40 @@ test_that("cpb_import_kit creates the destination folder if needed", {
 
   expect_true(file.exists(file.path(dest, "run_import.R")))
 })
+
+test_that("import_csv errors clearly when data_csv has no header row", {
+  data_csv <- local_params_csv(c("2020,A,2.0", "2021,B,3.0"))
+  params_csv <- local_params_csv(c("plot_type,line", "x,jaar", "y,koopkracht"))
+
+  expect_error(import_csv(data_csv, params_csv), "does not look like column names")
+})
+
+test_that("import_csv errors clearly on a stray line above data_csv's header", {
+  data_csv <- local_params_csv(c(
+    "Dit is een titel regel", "jaar,groep,koopkracht", "2020,A,2.0", "2021,B,3.0"
+  ))
+  params_csv <- local_params_csv(c("plot_type,line", "x,jaar", "y,koopkracht"))
+
+  expect_error(import_csv(data_csv, params_csv), "no title, no blank line")
+})
+
+test_that("import_csv errors clearly when data_csv uses tabs but sep is a comma", {
+  data_csv <- local_params_csv(c("jaar\tgroep\tkoopkracht", "2020\tA\t2.0", "2021\tB\t3.0"))
+  params_csv <- local_params_csv(c("plot_type,line", "x,jaar", "y,koopkracht"))
+
+  expect_error(import_csv(data_csv, params_csv), "might use a tab instead")
+})
+
+test_that("import_csv errors clearly when params_csv uses tabs but sep is a comma", {
+  data_csv <- local_data_csv()
+  params_csv <- local_params_csv(c("plot_type\tline", "x\tjaar", "y\tmld"))
+
+  expect_error(import_csv(data_csv, params_csv), "might use a tab instead")
+})
+
+test_that("import_csv reads both files fine when sep matches a tab-separated pair", {
+  data_csv <- local_params_csv(c("jaar\tgroep\tkoopkracht", "2020\tA\t2.0", "2021\tB\t3.0"))
+  params_csv <- local_params_csv(c("plot_type\tline", "x\tjaar", "y\tkoopkracht"))
+
+  expect_no_error(import_csv(data_csv, params_csv, sep = "\t"))
+})

@@ -51,6 +51,81 @@ cpb_import_coerce <- function(value) {
   cpb_import_coerce_scalar(value)
 }
 
+# A one-line hint appended to an error when a CSV reads as suspiciously
+# few columns for `sep`: peeks the file's own first non-blank line and
+# checks whether one of the *other* common separators would have split
+# it into more pieces than `sep` did. Pasting tab-separated data (e.g.
+# straight out of Excel) into a file still named/expected to be
+# comma-separated is the recurring real case this catches -- read.csv()
+# itself does not error on it at all, it just silently reads the whole
+# line as one glued-together column. Returns "" (nothing to add) when
+# no other candidate does better, so the caller's own error stands on
+# its own.
+cpb_import_sep_hint <- function(path, sep, actual_cols) {
+  first_line <- tryCatch(readLines(path, n = 1, warn = FALSE), error = function(e) "")
+  if (!length(first_line) || !nzchar(first_line)) {
+    return("")
+  }
+  candidates <- c("tab" = "\t", "comma" = ",", "semicolon" = ";")
+  candidates <- candidates[candidates != sep]
+  counts <- vapply(candidates, function(s) {
+    lengths(regmatches(first_line, gregexpr(s, first_line, fixed = TRUE)))
+  }, integer(1))
+  best <- names(candidates)[which.max(counts)]
+  if (length(best) && counts[[best]] >= actual_cols) {
+    paste0(
+      " Only ", actual_cols, " column(s) were found using ",
+      "`sep = \"", sep, "\"`, but the first line looks like it might use a ",
+      best, " instead. Pass the matching `sep` to `import_csv()`, or ",
+      "resave the file using \"", sep, "\" throughout."
+    )
+  } else {
+    ""
+  }
+}
+
+# A minimal, easy to miss mistake -- no header row at all, or an extra
+# line (a title, a blank line) sitting above the real one -- either
+# silently eats the first data row as if it were the header (no header
+# row: read.csv() does not warn, it just treats whichever row it reads
+# first as the column names) or crashes with a plain base R error that
+# does not say why ("more columns than column names", for an extra
+# line above the header). Both are caught here and re-raised with a
+# message that names the actual, likely cause instead.
+cpb_import_read_data <- function(data_csv, sep) {
+  data_df <- tryCatch(
+    utils::read.csv(data_csv, check.names = FALSE, stringsAsFactors = FALSE, sep = sep),
+    error = function(e) {
+      stop("Could not read `data_csv` (", conditionMessage(e), "). Check that ",
+        "every row has the same number of fields, and that the very first ",
+        "row is the header row naming each column, with nothing (no title, ",
+        "no blank line) above it.",
+        call. = FALSE
+      )
+    }
+  )
+
+  looks_numeric <- grepl("^-?[0-9]+(\\.[0-9]+)?$", trimws(names(data_df)))
+  if (any(looks_numeric)) {
+    stop("The first row of `data_csv` does not look like column names ",
+      "(found ", paste0("\"", names(data_df)[looks_numeric], "\"", collapse = ", "),
+      "). `import_csv()` always reads the first row as the header; check ",
+      "that a real header row is there, and that no other line comes ",
+      "before it.", cpb_import_sep_hint(data_csv, sep, ncol(data_df)),
+      call. = FALSE
+    )
+  }
+
+  if (ncol(data_df) == 1) {
+    hint <- cpb_import_sep_hint(data_csv, sep, ncol(data_df))
+    if (nzchar(hint)) {
+      stop("`data_csv` was read as a single column.", hint, call. = FALSE)
+    }
+  }
+
+  data_df
+}
+
 # Reads params.csv in either of its two layouts and returns one named list
 # of (still all-character) parameters per figure, in file order. Blank
 # cells are dropped entirely, so a missing value never shadows the
@@ -70,13 +145,25 @@ cpb_import_coerce <- function(value) {
 cpb_import_read_params <- function(params_csv, sep) {
   known <- cpb_import_known_names()
 
-  raw_h <- utils::read.csv(params_csv,
-    header = TRUE, check.names = FALSE,
-    stringsAsFactors = FALSE, sep = sep
+  read_error <- function(e) {
+    stop("Could not read `params_csv` (", conditionMessage(e), "). Check ",
+      "that every row has the same number of fields.",
+      call. = FALSE
+    )
+  }
+  raw_h <- tryCatch(
+    utils::read.csv(params_csv,
+      header = TRUE, check.names = FALSE,
+      stringsAsFactors = FALSE, sep = sep
+    ),
+    error = read_error
   )
-  raw_v <- utils::read.csv(params_csv,
-    header = FALSE, check.names = FALSE,
-    stringsAsFactors = FALSE, sep = sep
+  raw_v <- tryCatch(
+    utils::read.csv(params_csv,
+      header = FALSE, check.names = FALSE,
+      stringsAsFactors = FALSE, sep = sep
+    ),
+    error = read_error
   )
 
   score_h <- mean(tolower(trimws(names(raw_h))) %in% known)
@@ -86,6 +173,7 @@ cpb_import_read_params <- function(params_csv, sep) {
     stop("Could not tell whether `params_csv` is in the vertical or ",
       "horizontal layout -- make sure it has a `plot_type` field, either ",
       "as a column header, or as a value in the first column.",
+      cpb_import_sep_hint(params_csv, sep, ncol(raw_h)),
       call. = FALSE
     )
   }
@@ -284,10 +372,7 @@ import_csv <- function(data_csv, params_csv, sep = ",", ...) {
   if (!file.exists(params_csv)) {
     stop("Parameters CSV file not found: ", params_csv, call. = FALSE)
   }
-  data_df <- utils::read.csv(data_csv,
-    check.names = FALSE,
-    stringsAsFactors = FALSE, sep = sep
-  )
+  data_df <- cpb_import_read_data(data_csv, sep)
   extra_params <- list(...)
 
   figs <- cpb_import_read_params(params_csv, sep)
