@@ -155,6 +155,14 @@ cpb_take_sec_ylab <- function(plot) {
 # axis, whether or not they hold anything yet (ggplot2 always reserves
 # a "subtitle" row; it is just a zeroGrob when empty).
 #
+# "Same height" means top-anchored, not centred, in that row: the row
+# is sized to the subtitle text's own height plus a bottom-only margin
+# (theme_cpb()'s plot.subtitle is vjust = 1, margin = margin(b = 5.5)),
+# so the text itself sits flush against the top of the row, with the
+# margin as empty space below it. Centring this label in the same row
+# instead (vjust = 0.5) draws it visibly lower than the subtitle, by
+# roughly half that margin.
+#
 # Flush against the cell, not centred on the tick text's own width: an
 # earlier version centred the label's last character over the tick
 # text's midpoint instead, which reads as stopping noticeably short of
@@ -182,8 +190,8 @@ cpb_add_sec_ylab_grob <- function(g, label, page_width, page_height) {
   g <- cpb_resolve_gtable_units(g, page_width, page_height)
 
   grob <- grid::textGrob(
-    label, x = grid::unit(1, "npc"), y = grid::unit(0.5, "npc"),
-    hjust = 1, vjust = 0.5,
+    label, x = grid::unit(1, "npc"), y = grid::unit(1, "npc"),
+    hjust = 1, vjust = 1,
     gp = grid::gpar(fontface = "italic", fontsize = 7, fontfamily = cpb_font_family())
   )
   gtable::gtable_add_grob(g, grob, t = row, l = col, clip = "off", name = "sec-ylab")

@@ -122,12 +122,18 @@ test_that("save_cpb keeps sec_y's own colour intact when a layer is inserted ahe
   expect_false(anyNA(b$data[[sec_line_idx]]$colour))
 })
 
-test_that("save_cpb draws sec_ylab flush with the right edge of the secondary axis", {
+test_that("save_cpb draws sec_ylab flush with the right edge of the secondary axis, and top-anchored like the subtitle", {
   # cpb_add_sec_ylab_grob() (see save.R) used to centre the caption's
   # last character over the tick text's own midpoint, which reads as
   # stopping short of the axis rather than aligned with it; it is now
   # anchored flush against the "axis-r" cell's own right edge instead,
   # matching the published look.
+  #
+  # It also used to centre the caption vertically in the shared
+  # subtitle row (vjust = 0.5), while theme_cpb()'s own plot.subtitle
+  # is top-anchored there instead (vjust = 1, a bottom-only margin),
+  # so a centred caption drew visibly lower than ylab()'s own subtitle
+  # on the left. Top-anchored here too now, to match.
   d <- data.frame(x = 1:5, y = 1:5, z = c(10, 12, 11, 13, 12))
   p <- cpb_line(d, x = x, y = y, sec_y = z, sec_ylab = "%")
 
@@ -142,4 +148,7 @@ test_that("save_cpb draws sec_ylab flush with the right edge of the secondary ax
   expect_equal(as.numeric(grob$x), 1)
   expect_equal(grid::unitType(grob$x), "npc")
   expect_equal(grob$hjust, 1)
+  expect_equal(as.numeric(grob$y), 1)
+  expect_equal(grid::unitType(grob$y), "npc")
+  expect_equal(grob$vjust, 1)
 })
