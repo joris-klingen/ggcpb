@@ -126,7 +126,8 @@ plain value, is stored in a reference file named
 `parameter_settings.csv`, also inside the `extdata` folder. The same
 information is available through the help page for the main
 function, opened in R with a question mark followed by the function
-name.
+name. The full table is also shown near the end of this document, in
+the section named Parameter reference.
 
 # Building the figures
 
@@ -216,6 +217,32 @@ example when a setting refers to a column name that does not exist in
 the data file. The reason is recorded in the log file. Other figures
 in the same parameters file are still built normally. A problem in
 one figure does not stop the rest from being produced.
+
+# Parameter reference
+
+The table below lists every setting for every `plot_type`, together
+with its kind, its default, and an example value. A setting of kind
+`column (from data_csv)` takes a column name from the data file. Its
+example is a plausible column name, not a real one, since the actual
+name always depends on the data file at hand. A setting of kind
+`literal` takes a plain value instead. Its example is a value that
+could be typed into the parameters file directly. A default shown as
+several words separated by a forward slash lists every valid choice
+for that setting, with the one used automatically named afterward.
+An empty default means the setting is left out entirely unless it is
+given a value.
+
+The same table is stored as a plain CSV file, so it can also be
+opened directly, for example in a spreadsheet program:
+
+```{r params-ref-path}
+ref_csv <- system.file("extdata", "parameter_settings.csv", package = "ggcpb")
+```
+
+```{r params-ref-table, echo = FALSE}
+ref <- read.csv(ref_csv, stringsAsFactors = FALSE)
+knitr::kable(ref, col.names = c("plot_type", "setting", "kind", "default", "example"))
+```
 
 # Building figures without opening R
 
