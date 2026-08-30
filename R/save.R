@@ -197,6 +197,123 @@ cpb_add_sec_ylab_grob <- function(g, label, page_width, page_height) {
   gtable::gtable_add_grob(g, grob, t = row, l = col, clip = "off", name = "sec-ylab")
 }
 
+# Depth-first search through a grob's `children` (a gTree) and/or
+# `grobs` (a gtable) for the first descendant inheriting from class
+# `what` -- used below to reach into the axis title and axis tick
+# label grobs without hardcoding a fixed nesting depth or field name,
+# either of which could shift with a ggplot2 version.
+# @noRd
+cpb_find_grob <- function(x, what) {
+  if (is.null(x)) return(NULL)
+  if (inherits(x, what)) return(x)
+  kids <- list()
+  if (!is.null(x$children)) kids <- c(kids, as.list(x$children))
+  if (!is.null(x$grobs)) kids <- c(kids, x$grobs)
+  for (k in kids) {
+    found <- cpb_find_grob(k, what)
+    if (!is.null(found)) return(found)
+  }
+  NULL
+}
+
+# The value-axis title -- ggplot2's own "xlab-t"/"xlab-b" cells, which
+# is where the wrappers' `xlab`/`ylab` convention (see the "CPB house
+# style has no rotated axis titles" comment in wrappers.R) lands the
+# value-axis label for a horizontal-orientation figure -- is anchored
+# by theme_cpb()'s axis.title (hjust = 1, i.e. flush with the *panel*
+# edge), not with the actual rendered extent of the axis's own
+# outermost tick label. Every wrapper's value axis is flush (see
+# cpb_flush_scale_args() in wrappers.R: the highest/lowest break sits
+# exactly on the panel edge, no expansion), and axis text is centred
+# on its own break by default, so that outermost tick label's text
+# overhangs the panel edge by half its own width -- a title anchored
+# to the bare panel edge lands short of the label by exactly that
+# much, worse the longer the label (an extra "%" sign, more digits).
+#
+# Nudges the title's anchor out by that half-width, measured from the
+# actual rendered tick label (same text, same font) rather than
+# assumed, so this keeps working under a longer/shorter title, a
+# taller/shorter panel, a different axis_text_size, or a different
+# number of tick digits. Best-effort: silently a no-op if the expected
+# cells or grob shapes are not found (a vertical-orientation figure
+# with no value-axis title, an unstyled plot, hjust other than 0/1, a
+# future ggplot2 internal change, ...) rather than erroring save_cpb()
+# over a cosmetic alignment detail.
+# @return The (possibly unchanged) gtable.
+# @noRd
+cpb_align_value_axis_title <- function(g) {
+  for (side in c("t", "b")) {
+    title_idx <- which(g$layout$name == paste0("xlab-", side))
+    axis_idx <- which(g$layout$name == paste0("axis-", side))
+    if (length(title_idx) != 1 || length(axis_idx) != 1) next
+
+    title_grob <- g$grobs[[title_idx]]
+    if (inherits(title_grob, "zeroGrob")) next
+    title_text <- cpb_find_grob(title_grob, "text")
+    if (is.null(title_text) || length(title_text$hjust) != 1) next
+    if (!isTRUE(title_text$hjust %in% c(0, 1))) next
+
+    tick_text <- cpb_find_grob(g$grobs[[axis_idx]], "text")
+    if (is.null(tick_text) || is.null(tick_text$label) || is.null(tick_text$x)) next
+    xs <- suppressWarnings(as.numeric(tick_text$x))
+    if (!length(xs) || anyNA(xs)) next
+
+    pick <- if (title_text$hjust == 1) which.max(xs) else which.min(xs)
+    label <- tick_text$label[[pick]]
+    if (is.null(label) || !nzchar(label)) next
+
+    label_width_in <- tryCatch(
+      grid::convertWidth(
+        grid::grobWidth(grid::textGrob(label, gp = tick_text$gp)),
+        "in", valueOnly = TRUE
+      ),
+      error = function(e) NA_real_
+    )
+    if (!length(label_width_in) || is.na(label_width_in) || label_width_in <= 0) next
+
+    shift <- grid::unit(label_width_in / 2, "in")
+    new_x <- if (title_text$hjust == 1) {
+      grid::unit(1, "npc") + shift
+    } else {
+      grid::unit(0, "npc") - shift
+    }
+
+    new_title <- grid::editGrob(title_text, x = new_x)
+    title_grob <- cpb_replace_grob(title_grob, title_text, new_title)
+    if (!is.null(title_grob)) g$grobs[[title_idx]] <- title_grob
+  }
+  g
+}
+
+# Rebuilds `parent` with its descendant `old` (found and matched by
+# identity, mirroring cpb_take_sec_ylab()'s own layer lookup) replaced
+# by `new`, searched through the same `children`/`grobs` shape
+# cpb_find_grob() reads. Returns NULL, changing nothing, if `old` is
+# not actually reachable from `parent`.
+# @noRd
+cpb_replace_grob <- function(parent, old, new) {
+  if (identical(parent, old)) return(new)
+  if (!is.null(parent$children) && length(parent$children)) {
+    for (i in seq_along(parent$children)) {
+      replaced <- cpb_replace_grob(parent$children[[i]], old, new)
+      if (!is.null(replaced)) {
+        parent$children[[i]] <- replaced
+        return(parent)
+      }
+    }
+  }
+  if (!is.null(parent$grobs) && length(parent$grobs)) {
+    for (i in seq_along(parent$grobs)) {
+      replaced <- cpb_replace_grob(parent$grobs[[i]], old, new)
+      if (!is.null(replaced)) {
+        parent$grobs[[i]] <- replaced
+        return(parent)
+      }
+    }
+  }
+  NULL
+}
+
 # Draws a gtable straight to a graphics device, since ggplot2::ggsave()
 # only accepts a ggplot object for `plot`, not an already-built grob.
 #
@@ -380,7 +497,26 @@ save_cpb <- function(filename,
   sec_ylab <- cpb_take_sec_ylab(plot)
   plot <- sec_ylab$plot
 
-  if (is.null(panel_size) && is.null(sec_ylab$label)) {
+  # cpb_align_value_axis_title() is best-effort and a no-op for most
+  # figures (a vertical orientation, no value-axis xlab/ylab, ...), but
+  # whether it applies can only be told by actually building the grob
+  # and looking -- see its own comment for why. That means the common
+  # case (no panel_size, no sec_ylab, and this ends up a no-op) builds
+  # the grob twice, once here to check and once more inside
+  # ggplot2::ggsave() below; accepted as the price of not guessing
+  # eligibility from plot$labels/plot$coordinates instead, which would
+  # be a wrapper-shaped assumption liable to drift out of sync with
+  # wrappers.R.
+  grob <- if (is.null(panel_size)) {
+    ggplot2::ggplotGrob(plot)
+  } else {
+    cpb_fix_panel_size(plot, panel_size, width, height)
+  }
+  grob_aligned <- cpb_align_value_axis_title(grob)
+  title_aligned <- !identical(grob_aligned, grob)
+  grob <- grob_aligned
+
+  if (is.null(panel_size) && is.null(sec_ylab$label) && !title_aligned) {
     ggplot2::ggsave(
       filename = filename,
       plot     = plot,
@@ -393,11 +529,6 @@ save_cpb <- function(filename,
       ...
     )
   } else {
-    grob <- if (is.null(panel_size)) {
-      ggplot2::ggplotGrob(plot)
-    } else {
-      cpb_fix_panel_size(plot, panel_size, width, height)
-    }
     if (!is.null(sec_ylab$label)) {
       grob <- cpb_add_sec_ylab_grob(grob, sec_ylab$label, width, height)
     }

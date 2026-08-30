@@ -152,3 +152,71 @@ test_that("save_cpb draws sec_ylab flush with the right edge of the secondary ax
   expect_equal(grid::unitType(grob$y), "npc")
   expect_equal(grob$vjust, 1)
 })
+
+test_that("cpb_align_value_axis_title nudges a flush-right value-axis title to match the outermost tick label", {
+  # theme_cpb()'s axis.title is anchored flush with the *panel* edge
+  # (hjust = 1), but every wrapper's value axis is flush too (the
+  # highest break sits exactly on the panel edge, no expansion) and
+  # axis text is centred on its own break -- so the outermost tick
+  # label's own text overhangs the panel edge by half its width, and a
+  # title anchored to the bare edge lands short of it by that much.
+  d <- data.frame(
+    groep = factor(c("a", "b", "c", "d"), levels = c("a", "b", "c", "d")),
+    val = c(10, 25, 47, 63)
+  )
+  p <- cpb_col(d, x = groep, y = val, orientation = "horizontal",
+               xlab = "aandeel binnen inkomensgroep (%)", pct_axis = TRUE)
+  g <- ggplot2::ggplotGrob(p)
+
+  title_idx <- which(g$layout$name == "xlab-b")
+  axis_idx <- which(g$layout$name == "axis-b")
+  before <- cpb_find_grob(g$grobs[[title_idx]], "text")
+  tick_text <- cpb_find_grob(g$grobs[[axis_idx]], "text")
+
+  g2 <- cpb_align_value_axis_title(g)
+  after <- cpb_find_grob(g2$grobs[[title_idx]], "text")
+
+  # unchanged: y position, hjust, label text
+  expect_equal(as.numeric(after$y), as.numeric(before$y))
+  expect_equal(after$hjust, before$hjust)
+  expect_equal(after$label, before$label)
+  # x anchor moved out past the panel edge (1npc) by exactly half the
+  # rightmost tick label's own rendered width
+  expect_equal(grid::unitType(after$x), "sum")
+  last_label <- tick_text$label[[which.max(as.numeric(tick_text$x))]]
+  expected_shift <- grid::convertWidth(
+    grid::grobWidth(grid::textGrob(last_label, gp = tick_text$gp)),
+    "in", valueOnly = TRUE
+  ) / 2
+  actual_shift <- grid::convertWidth(after$x, "in", valueOnly = TRUE) -
+    grid::convertWidth(grid::unit(1, "npc"), "in", valueOnly = TRUE)
+  expect_equal(actual_shift, expected_shift, tolerance = 1e-6)
+})
+
+test_that("cpb_align_value_axis_title is a no-op when there is no value-axis title to align", {
+  d <- data.frame(
+    groep = factor(c("a", "b", "c", "d"), levels = c("a", "b", "c", "d")),
+    val = c(10, 25, 47, 63)
+  )
+  # vertical orientation: xlab/ylab convention puts the value-axis
+  # label in the subtitle, not a "xlab-t"/"xlab-b" cell
+  p <- cpb_col(d, x = groep, y = val, orientation = "vertical", ylab = "%")
+  g <- ggplot2::ggplotGrob(p)
+  g2 <- cpb_align_value_axis_title(g)
+  expect_identical(g2, g)
+})
+
+test_that("save_cpb aligns the value-axis title without a panel_size or sec_y set", {
+  # exercises the branch in save_cpb() that has to build the grob to
+  # check whether cpb_align_value_axis_title() applies, with neither
+  # panel_size nor sec_y actually requesting the grob path
+  d <- data.frame(
+    groep = factor(c("a", "b", "c", "d"), levels = c("a", "b", "c", "d")),
+    val = c(10, 25, 47, 63)
+  )
+  p <- cpb_col(d, x = groep, y = val, orientation = "horizontal",
+               xlab = "aandeel binnen inkomensgroep (%)", pct_axis = TRUE)
+  path <- withr::local_tempfile(fileext = ".png")
+  expect_no_error(save_cpb(path, p, page = "full"))
+  expect_true(file.exists(path))
+})
