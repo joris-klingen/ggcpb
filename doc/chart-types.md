@@ -494,11 +494,9 @@ bottom in the order of the factor levels. `group` collects the rows
 under bold headings, exactly as in `cpb_box()`:
 
 ``` r
-termen <- c("Belasting ontmoedigt werken en sparen",
-            "Ongelijkheid is oneerlijk", "Succes door hard werken",
-            "Vertrouwen in de politiek", "Leeftijdscategorie",
-            "Geslacht (vrouw t.o.v. man)", "Heeft kinderen",
-            "Vermogenskwintiel")
+termen <- c("Werken ontmoedigd", "Ongelijkheid", "Hard werken loont",
+            "Politiek", "Leeftijdscategorie", "Geslacht (v/m)",
+            "Heeft kinderen", "Vermogenskwintiel")
 schatting <- tibble(
   term = factor(termen, levels = termen),
   blok = factor(rep(c("Percepties", "Achtergrond"), each = 4),
