@@ -221,13 +221,13 @@ parameter problems.
 
 The same CSV based method can also be used without opening R.
 
-The `cpb_import_kit()` function creates a ready to use folder
+The `autogenerate_plots()` function creates a ready to use folder
 containing:
 
 - a data file
 - a parameter file
-- a script for Windows
-- a script for a Mac
+- a script for Windows (a `.bat` file)
+- a script for a Mac (a `.command` file)
 
 After editing the data and parameter files, run the appropriate script.
 It reads both files and saves the resulting figures as images.
