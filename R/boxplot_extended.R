@@ -68,6 +68,16 @@
 #'   exposed here at all (always off): it draws a black line, which
 #'   reads poorly against `panel_fill`'s light background, and the two
 #'   would otherwise draw one on top of the other.
+#' @param ylab_position Where the title (and, tied to it, the `ylab`
+#'   caption -- ggplot2 has no way to place them separately, since both
+#'   read off the same `plot.title.position` anchor) are placed:
+#'   `"left"`, flush with the full figure width, matching the plain
+#'   [cpb_box()]/[cpb_col()] house convention, or `"middle"`, centred
+#'   over just the panel, matching the boxed-in look `panel_fill`
+#'   gives this style. `NULL` (default) picks `"left"` when `facet` is
+#'   set and `"middle"` otherwise, matching every reference figure this
+#'   look has been checked against; pass one explicitly to override
+#'   that for a single figure.
 #' @param ... Further arguments passed to both [ggplot2::geom_errorbar()]
 #'   and [ggplot2::geom_boxplot()], as in [cpb_box()].
 #' @return A `ggplot` object.
@@ -136,6 +146,7 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
                                   value_axis_linewidth = 0.7,
                                   zero_indicator = TRUE,
                                   zero_indicator_linewidth = 2,
+                                  ylab_position = NULL,
                                   ...) {
   box_style <- match.arg(box_style)
   orientation <- match.arg(orientation)
@@ -145,6 +156,14 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
     value_axis <- if (has_sec) "bottom" else "top"
   } else {
     value_axis <- match.arg(value_axis, c("top", "bottom"))
+  }
+  if (is.null(ylab_position)) {
+    # matches the look every current reference figure was checked
+    # against: a faceted figure keeps the flush-left full-width title,
+    # a single-panel one gets the centred-over-panel title
+    ylab_position <- if (has_facet) "left" else "middle"
+  } else {
+    ylab_position <- match.arg(ylab_position, c("left", "middle"))
   }
 
   p <- cpb_box(data,
@@ -214,13 +233,17 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
     strip.placement       = "outside"
   ) + theme_extra
 
-  # a faceted figure keeps the house full-width, left-aligned title
-  # (theme_cpb()'s own default -- kept explicit here rather than
-  # relied on, so this look does not silently change if that default
-  # ever does); a single-panel figure instead centres the title over
-  # just the panel, which reads better once the panel is visually
-  # boxed in by panel_fill
-  p <- p + if (has_facet) {
+  # ggplot2 has no separate `plot.subtitle.position`: title, subtitle
+  # and caption always share the one `plot.title.position` anchor
+  # (`"plot"`, flush with the full figure width, or `"panel"`, flush
+  # with just the panel) -- so `ylab_position` moves the title and the
+  # `ylab` caption together, not `ylab` alone. `"left"` keeps the house
+  # full-width, left-aligned title (theme_cpb()'s own default -- kept
+  # explicit here rather than relied on, so this look does not silently
+  # change if that default ever does); `"middle"` centres the title
+  # over just the panel, which reads better once the panel is visually
+  # boxed in by panel_fill.
+  p <- p + if (ylab_position == "left") {
     ggplot2::theme(
       plot.title.position = "plot",
       plot.title          = ggplot2::element_text(hjust = 0)

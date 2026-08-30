@@ -69,6 +69,27 @@ test_that("cpb_boxplot_extended keeps the full-width left-aligned title when fac
   expect_equal(p$facet$params$strip.position, "top")
 })
 
+test_that("cpb_boxplot_extended's ylab_position overrides the facet-based default", {
+  d <- local_boxplot_extended_data()
+  # no facet, forced to "left" (the faceted default) instead of the
+  # single-panel default "middle"
+  p_left <- cpb_boxplot_extended(d, x = cat, p5 = p5, p25 = p25, p50 = p50,
+                                  p75 = p75, p95 = p95, title = "Titel",
+                                  ylab_position = "left")
+  expect_equal(p_left$theme$plot.title.position, "plot")
+  expect_equal(p_left$theme$plot.title$hjust, 0)
+
+  d2 <- rbind(d, d)
+  d2$jaar <- rep(c(2025, 2026), each = 3)
+  # faceted, forced to "middle" (the single-panel default) instead of
+  # the faceted default "left"
+  p_middle <- cpb_boxplot_extended(d2, x = cat, p5 = p5, p25 = p25, p50 = p50,
+                                    p75 = p75, p95 = p95, title = "Titel",
+                                    facet = jaar, ylab_position = "middle")
+  expect_equal(p_middle$theme$plot.title.position, "panel")
+  expect_equal(p_middle$theme$plot.title$hjust, 0.5)
+})
+
 test_that("cpb_boxplot_extended's panel_fill and grid_colour are overridable", {
   d <- local_boxplot_extended_data()
   p <- cpb_boxplot_extended(d, x = cat, p5 = p5, p25 = p25, p50 = p50,

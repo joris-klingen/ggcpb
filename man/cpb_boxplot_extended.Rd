@@ -67,6 +67,7 @@ cpb_boxplot_extended(
   value_axis_linewidth = 0.7,
   zero_indicator = TRUE,
   zero_indicator_linewidth = 2,
+  ylab_position = NULL,
   ...
 )
 }
@@ -318,6 +319,17 @@ line; defaults to \code{2}. \code{\link[=cpb_box]{cpb_box()}}'s own \code{zeroli
 exposed here at all (always off): it draws a black line, which
 reads poorly against \code{panel_fill}'s light background, and the two
 would otherwise draw one on top of the other.}
+
+\item{ylab_position}{Where the title (and, tied to it, the \code{ylab}
+caption -- ggplot2 has no way to place them separately, since both
+read off the same \code{plot.title.position} anchor) are placed:
+\code{"left"}, flush with the full figure width, matching the plain
+\code{\link[=cpb_box]{cpb_box()}}/\code{\link[=cpb_col]{cpb_col()}} house convention, or \code{"middle"}, centred
+over just the panel, matching the boxed-in look \code{panel_fill}
+gives this style. \code{NULL} (default) picks \code{"left"} when \code{facet} is
+set and \code{"middle"} otherwise, matching every reference figure this
+look has been checked against; pass one explicitly to override
+that for a single figure.}
 
 \item{...}{Further arguments passed to both \code{\link[ggplot2:geom_errorbar]{ggplot2::geom_errorbar()}}
 and \code{\link[ggplot2:geom_boxplot]{ggplot2::geom_boxplot()}}, as in \code{\link[=cpb_box]{cpb_box()}}.}
