@@ -123,11 +123,10 @@ against. So, rather than printing it directly, it is written out through
 
 ``` r
 path <- tempfile(fileext = ".png")
-invisible(utils::capture.output(save_cpb(path, figs$koopkracht, page = "full")))
-knitr::include_graphics(path)
+save_cpb(path, figs$koopkracht, page = "full")
 ```
 
-<img src="../../../../../../private/var/folders/93/zq1v1syn35b6x4hkyfpjvt8d4gyw7c/T/RtmpPuZZvr/file98d12a28b1bb.png" alt="" width="700px" />
+<img src="import_files/figure-gfm/fig-koopkracht-show-1.png" alt="" width="700px" />
 
 `werkloosheid` has no second axis, so it can be shown directly:
 
@@ -198,11 +197,10 @@ When the parameter file describes one figure, `import_csv()` returns
 that figure directly rather than a named list.
 
 ``` r
-invisible(utils::capture.output(fig_vertical <- import_csv(data_csv, params_vertical)))
-fig_vertical
+fig_vertical <- import_csv(data_csv, params_vertical)
 ```
 
-<img src="import_files/figure-gfm/vertical-build-1.png" alt="" width="350px" />
+<img src="import_files/figure-gfm/vertical-build-show-1.png" alt="" width="350px" />
 
 # Handling problems
 

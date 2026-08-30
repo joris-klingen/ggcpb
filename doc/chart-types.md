@@ -277,21 +277,12 @@ so both axes start together and the line cannot drift out of step with
 its own labels.
 
 `sec_ylab`’s caption on the right is placed to line up exactly with
-`ylab`’s own caption on the left, the same way `cpb_donut()`’s ring
-above keeps a fixed size – only `save_cpb()` lines it up exactly;
-knitr’s own plotting device shows an approximate placement instead
-(close, not exact, since at print time the plot has not actually been
-rendered yet to measure against). So, the same as every donut above,
-every `sec_y` figure below is written out through `save_cpb()` first and
-displayed from that file:
-
-``` r
-show_cpb <- function(plot, ...) {
-  f <- tempfile(fileext = ".png")
-  invisible(utils::capture.output(save_cpb(f, plot, ...)))
-  knitr::include_graphics(f)
-}
-```
+`ylab`’s own caption on the left, but only `save_cpb()` lines it up
+exactly; knitr’s own plotting device shows an approximate placement
+instead (close, not exact, since at print time the plot has not actually
+been rendered yet to measure against). So, like every figure with a
+`sec_y` below, this one is written to a file with `save_cpb()` and shown
+from that file rather than printed directly:
 
 ``` r
 nalatenschap <- expand_grid(
@@ -310,7 +301,7 @@ erfbelasting <- tibble(
               1.6, 1.7, 1.8, 1.8, 1.8, 2.3, 2.4, 2.5)
 )
 
-nalatenschap |>
+p <- nalatenschap |>
   left_join(erfbelasting, by = "jaar") |>
   cpb_col(x = jaar, y = mld, fill = soort,
     sec_y      = heffing,
@@ -318,11 +309,13 @@ nalatenschap |>
     sec_label  = "erfbelasting",
     sec_ylab   = "mld euro",
     title = "Belasting over erfenissen, prijzen 2022",
-    ylab  = "mld euro") |>
-  show_cpb(page = "full")
+    ylab  = "mld euro")
+
+path <- tempfile(fileext = ".png")
+save_cpb(path, p, page = "full")
 ```
 
-<img src="../../../../../../private/var/folders/93/zq1v1syn35b6x4hkyfpjvt8d4gyw7c/T/RtmpPuZZvr/file98d172d44618.png" alt="" width="700px" />
+<img src="chart-types_files/figure-gfm/col-secaxis-show-1.png" alt="" width="700px" />
 
 `sec_ylab` mirrors on the right what `ylab` puts above the panel on the
 left, and `sec_label` names the line in the legend – house style says
@@ -360,10 +353,12 @@ p <- lonen |>
   scale_x_continuous(breaks = seq(2020, 2026, 2))
 #> Scale for x is already present.
 #> Adding another scale for x, which will replace the existing scale.
-show_cpb(p, page = "half")
+
+path <- tempfile(fileext = ".png")
+save_cpb(path, p, page = "half")
 ```
 
-<img src="../../../../../../private/var/folders/93/zq1v1syn35b6x4hkyfpjvt8d4gyw7c/T/RtmpPuZZvr/file98d115ac1f50.png" alt="" width="350px" />
+<img src="chart-types_files/figure-gfm/line-secondary-show-1.png" alt="" width="350px" />
 
 The one difference from `cpb_col()`: there the columns key on `fill` and
 the secondary line on `colour`, so they form two legend blocks. Here the
@@ -407,17 +402,9 @@ all – a full pie).
 `cpb_donut()`’s ring keeps a fixed physical size regardless of title or
 legend length (see `panel_size`), which knitr’s own plotting device does
 not apply on its own – only `save_cpb()` does. So instead of printing
-the plot directly, every donut here is written out through `save_cpb()`
-first and displayed from that file, exactly as it would look saved for a
-report:
-
-``` r
-show_donut <- function(...) {
-  f <- tempfile(fileext = ".png")
-  invisible(utils::capture.output(save_cpb(f, cpb_donut(...), page = "half")))
-  knitr::include_graphics(f)
-}
-```
+the plot directly, every donut here is written to a file with
+`save_cpb()` and shown from that file, exactly as it would look saved
+for a report:
 
 ``` r
 energie <- tibble(
@@ -425,12 +412,13 @@ energie <- tibble(
   share = c(45, 30, 15, 10)
 )
 
-show_donut(energie, fill = bron, y = share,
+path <- tempfile(fileext = ".png")
+save_cpb(path, cpb_donut(energie, fill = bron, y = share,
   index = c(6, 5, 2, 4),
-  title = "Energiemix van huishoudens")
+  title = "Energiemix van huishoudens"), page = "half")
 ```
 
-<img src="../../../../../../private/var/folders/93/zq1v1syn35b6x4hkyfpjvt8d4gyw7c/T/RtmpPuZZvr/file98d16d74b3bd.png" alt="" width="350px" />
+<img src="chart-types_files/figure-gfm/donut-show-1.png" alt="" width="350px" />
 
 With more wedges, printing the value on the wedge itself gets cramped
 for the thin slices. `label_style = "leader"` moves every value outside
@@ -449,13 +437,14 @@ energie2 <- tibble(
   share = c(40, 35, 13, 3, 2, 7)
 )
 
-show_donut(energie2, fill = bron, y = share,
+path <- tempfile(fileext = ".png")
+save_cpb(path, cpb_donut(energie2, fill = bron, y = share,
   label_style = "leader",
   index = c(6, 4, 5, 1, 3, 2),
-  title = "Energiemix, met lijnlabels")
+  title = "Energiemix, met lijnlabels"), page = "half")
 ```
 
-<img src="../../../../../../private/var/folders/93/zq1v1syn35b6x4hkyfpjvt8d4gyw7c/T/RtmpPuZZvr/file98d1573ce40f.png" alt="" width="350px" />
+<img src="chart-types_files/figure-gfm/donut-leader-show-1.png" alt="" width="350px" />
 
 # Quantile boxplots
 
