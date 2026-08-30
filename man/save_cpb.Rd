@@ -78,7 +78,13 @@ loudly rather than silently producing an off-spec figure.
 Height defaults to 2.98 in (the \code{"report"} preset). Pass
 \code{preset = "presentation"} for the 2.5 in presentation height, or set
 \code{height} explicitly for anything else (e.g. a tall stacked-facet
-export) -- an explicit \code{height} always wins over \code{preset}.
+export) -- an explicit \code{height} always wins over \code{preset}. A
+\code{cpb_map()} plot is the one exception: left at its default (no
+explicit \code{height}), its panel is instead auto-sized to the
+boundaries' true geographic aspect ratio, so the map fills the
+figure exactly rather than sitting letterboxed inside a
+fixed-height page (pass \code{height} explicitly to opt back into a
+fixed height, e.g. to match a neighbouring figure).
 }
 \examples{
 \dontrun{
