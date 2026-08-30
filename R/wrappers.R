@@ -279,10 +279,25 @@ cpb_forecast_label <- function(forecast_x, xvals, label) {
 #'   `sec_y` line.
 #' @param value_limits Optional length-2 numeric vector giving the
 #'   value-axis range (the `y` axis, or the flipped axis when
-#'   `orientation = "horizontal"`). Applied as a coordinate-system zoom
-#'   ([ggplot2::coord_cartesian()] / [ggplot2::coord_flip()] `ylim`), so
-#'   bars are clipped for display but not dropped. `NULL` (default) lets
-#'   ggplot2 pick the range.
+#'   `orientation = "horizontal"`). Applied as the wrapper-built value
+#'   scale's own `limits` (not a coordinate-system zoom), so this is
+#'   the hard bound the axis is drawn flush to; a bar/segment that
+#'   falls outside it is genuinely dropped, with a warning, the same
+#'   as setting `limits` on any ggplot2 scale. `NULL` (default) flushes
+#'   to the full data range instead (see `x_lim`/`x_lim_follow_data`
+#'   for the category axis's equivalent).
+#' @param x_lim Optional length-2 vector zooming the category (`x`)
+#'   axis to a range, without dropping data -- applied as a
+#'   coordinate-system zoom ([ggplot2::coord_cartesian()] /
+#'   [ggplot2::coord_flip()] `xlim`), so a bar just outside the window
+#'   still contributes to breaks/totals but is only clipped for
+#'   display. `NULL` (default) shows the full range.
+#' @param x_lim_follow_data If `TRUE`, remove the default margin on
+#'   either side of the category axis so it sits flush to the data's
+#'   actual range, at the cost of ggplot2 picking its own breaks
+#'   within that (possibly non-round) range instead of the usual
+#'   padded, evenly spaced ones. Matches nicerplot's parameter of the
+#'   same name. Defaults to `FALSE`. Ignored when `x_lim` is set.
 #' @param palette CPB palette to use for `fill`; one of
 #'   `"qualitative"` (default), `"discr"`, `"sequential"`
 #'   (pink ramp), or `"blues"` (blue ramp).
@@ -387,6 +402,8 @@ cpb_col <- function(data, x, y, fill = NULL,
                      value_breaks = NULL,
                      value_limits = NULL,
                      value_labels = FALSE,
+                     x_lim = NULL,
+                     x_lim_follow_data = FALSE,
                      forecast_x = NULL,
                      forecast_label = "raming",
                      reverse_legend = TRUE,
@@ -606,19 +623,32 @@ cpb_col <- function(data, x, y, fill = NULL,
         vjust = 5.1, fontface = "bold", size = 7 / ggplot2::.pt,
         family = cpb_font_family()
       ) +
-      ggplot2::coord_cartesian(ylim = value_limits, clip = "off")
+      ggplot2::coord_cartesian(xlim = x_lim, ylim = value_limits, clip = "off")
   } else if (orientation == "horizontal") {
-    p <- p + if (!is.null(value_limits)) {
-      ggplot2::coord_flip(ylim = value_limits)
+    p <- p + if (!is.null(value_limits) || !is.null(x_lim)) {
+      ggplot2::coord_flip(xlim = x_lim, ylim = value_limits)
     } else {
       ggplot2::coord_flip()
     }
   } else if (has_sec && !is.null(sec_ylab)) {
     # the secondary unit caption is drawn above the panel, so it needs
     # to survive clipping
-    p <- p + ggplot2::coord_cartesian(ylim = value_limits, clip = "off")
-  } else if (!is.null(value_limits)) {
-    p <- p + ggplot2::coord_cartesian(ylim = value_limits)
+    p <- p + ggplot2::coord_cartesian(xlim = x_lim, ylim = value_limits, clip = "off")
+  } else if (!is.null(value_limits) || !is.null(x_lim)) {
+    p <- p + ggplot2::coord_cartesian(xlim = x_lim, ylim = value_limits)
+  }
+  # x_lim_follow_data strips the category axis's default margin so it
+  # sits flush to the data's own range -- a scale-level expand (not a
+  # coord one, which would also strip the value axis's own expansion);
+  # ignored for the grouped layout, which needs its own fixed margin
+  # for the heading rows, and superseded by an explicit x_lim
+  if (isTRUE(x_lim_follow_data) && is.null(x_lim) && !has_group) {
+    xvals_type <- rlang::eval_tidy(x, data)
+    p <- p + if (is.numeric(xvals_type)) {
+      ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = 0))
+    } else {
+      ggplot2::scale_x_discrete(expand = ggplot2::expansion(mult = 0))
+    }
   }
 
   if (has_sec && !is.null(sec_ylab)) {
@@ -758,6 +788,16 @@ cpb_col <- function(data, x, y, fill = NULL,
 #' @param value_limits Optional length-2 limits for the value axis,
 #'   applied through the coordinate system (zoom) so no data is
 #'   dropped.
+#' @param x_lim Optional length-2 vector zooming the `x` axis to a
+#'   range, without dropping data -- applied as a coordinate-system
+#'   zoom ([ggplot2::coord_cartesian()] `xlim`). `NULL` (default) shows
+#'   the full range.
+#' @param x_lim_follow_data If `TRUE`, remove the default margin on
+#'   either side of the `x` axis so it sits flush to the data's actual
+#'   range, at the cost of ggplot2 picking its own breaks within that
+#'   (possibly non-round) range instead of the usual padded, evenly
+#'   spaced ones. Matches nicerplot's parameter of the same name.
+#'   Defaults to `FALSE`. Ignored when `x_lim` is set.
 #' @param reverse_legend If `TRUE` (default), reverse the fill legend
 #'   order via `guide_legend(reverse = TRUE)`.
 #' @param legend_ncol Number of columns to lay the legend keys out in,
@@ -813,6 +853,8 @@ cpb_area <- function(data, x, y, fill,
                       pct_axis = FALSE,
                       value_breaks = NULL,
                       value_limits = NULL,
+                      x_lim = NULL,
+                      x_lim_follow_data = FALSE,
                       forecast_x = NULL,
                       forecast_label = "raming",
                       reverse_legend = TRUE,
@@ -880,8 +922,16 @@ cpb_area <- function(data, x, y, fill,
   if (length(scale_args)) {
     p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
   }
-  if (!is.null(value_limits)) {
-    p <- p + ggplot2::coord_cartesian(ylim = value_limits)
+  if (!is.null(value_limits) || !is.null(x_lim)) {
+    p <- p + ggplot2::coord_cartesian(xlim = x_lim, ylim = value_limits)
+  }
+  if (isTRUE(x_lim_follow_data) && is.null(x_lim)) {
+    xvals_type <- rlang::eval_tidy(x, data)
+    p <- p + if (is.numeric(xvals_type)) {
+      ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = 0))
+    } else {
+      ggplot2::scale_x_discrete(expand = ggplot2::expansion(mult = 0))
+    }
   }
 
   p <- p + if (!is.null(index)) {
@@ -980,9 +1030,22 @@ cpb_area <- function(data, x, y, fill,
 #'   the wrapper-built [ggplot2::scale_y_continuous()]). Use this
 #'   instead of adding a second y scale, which would discard the
 #'   wrapper's axis formatting and expansion.
-#' @param value_limits Optional length-2 limits for the value axis,
-#'   applied through the coordinate system (zoom) so no data is
-#'   dropped.
+#' @param value_limits Optional length-2 numeric vector giving the
+#'   value-axis range, applied as the wrapper-built value scale's own
+#'   `limits` (not a coordinate-system zoom) -- the hard bound the axis
+#'   is drawn flush to; a point outside it is genuinely dropped, with a
+#'   warning, the same as setting `limits` on any ggplot2 scale. `NULL`
+#'   (default) flushes to the full data range instead.
+#' @param x_lim Optional length-2 vector zooming the `x` axis to a
+#'   range, without dropping data -- applied as a coordinate-system
+#'   zoom ([ggplot2::coord_cartesian()] `xlim`). `NULL` (default) shows
+#'   the full range.
+#' @param x_lim_follow_data If `TRUE`, remove the default margin on
+#'   either side of the `x` axis so it sits flush to the data's actual
+#'   range, at the cost of ggplot2 picking its own breaks within that
+#'   (possibly non-round) range instead of the usual padded, evenly
+#'   spaced ones. Matches nicerplot's parameter of the same name.
+#'   Defaults to `FALSE`. Ignored when `x_lim` is set.
 #' @param reverse_legend If `TRUE`, reverse the colour legend order
 #'   via `guide_legend(reverse = TRUE)`. Defaults to `FALSE`: unlike
 #'   the stacked wrappers, line order carries no stacking convention.
@@ -1058,6 +1121,8 @@ cpb_line <- function(data, x, y, colour = NULL,
                       pct_axis = FALSE,
                       value_breaks = NULL,
                       value_limits = NULL,
+                      x_lim = NULL,
+                      x_lim_follow_data = FALSE,
                       ymin = NULL,
                       ymax = NULL,
                       forecast_x = NULL,
@@ -1313,6 +1378,20 @@ cpb_line <- function(data, x, y, colour = NULL,
     p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
   }
 
+  if (!is.null(x_lim)) {
+    p <- p + ggplot2::coord_cartesian(xlim = x_lim)
+  } else if (isTRUE(x_lim_follow_data)) {
+    # scale-level, not coord's own expand = FALSE, which is blanket
+    # across both axes and would strip the value axis's own flush
+    # expansion too (see the discrete-x clipping fix above)
+    xvals_type <- rlang::eval_tidy(x, data)
+    p <- p + if (is.numeric(xvals_type)) {
+      ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = 0))
+    } else {
+      ggplot2::scale_x_discrete(expand = ggplot2::expansion(mult = 0))
+    }
+  }
+
   if (has_colour || has_sec) {
     p <- p + if (!is.null(index)) {
       scale_colour_cpb_manual(index = index, palette = palette)
@@ -1442,14 +1521,31 @@ cpb_line <- function(data, x, y, colour = NULL,
 #'   the wrapper-built [ggplot2::scale_y_continuous()]). Use this
 #'   instead of adding a second y scale, which would discard the
 #'   wrapper's axis formatting and expansion.
-#' @param value_limits Optional length-2 limits for the value axis,
-#'   applied through the coordinate system (zoom) so no data is
-#'   dropped.
+#' @param value_limits Optional length-2 numeric vector giving the
+#'   value-axis range, applied as the wrapper-built value scale's own
+#'   `limits` (not a coordinate-system zoom) -- the hard bound the axis
+#'   is drawn flush to; a box/whisker outside it is genuinely dropped,
+#'   with a warning, the same as setting `limits` on any ggplot2 scale.
+#'   `NULL` (default) flushes to the full p5-p95 (and `mean`) range
+#'   instead.
 #' @param value_axis Where the value axis is drawn: `"bottom"`
 #'   (default) or `"top"`. `"top"` places the numeric scale along the
 #'   top of the panel, the convention of the CPB koopkracht figures;
 #'   it applies to horizontal boxes (the value axis is the flipped
 #'   axis).
+#' @param x_lim Optional length-2 vector zooming the category (`x`)
+#'   axis to a range, without dropping data -- applied as a
+#'   coordinate-system zoom ([ggplot2::coord_cartesian()] /
+#'   [ggplot2::coord_flip()] `xlim`). `NULL` (default) shows the full
+#'   range.
+#' @param x_lim_follow_data If `TRUE`, remove the default margin on
+#'   either side of the category axis so it sits flush to the data's
+#'   actual range, at the cost of ggplot2 picking its own breaks within
+#'   that (possibly non-round) range instead of the usual padded,
+#'   evenly spaced ones. Matches nicerplot's parameter of the same
+#'   name. Defaults to `FALSE`. Ignored when `x_lim` is set, and when
+#'   `group` is mapped (the grouped layout needs its own fixed margin
+#'   for the heading rows).
 #' @param orientation `"vertical"` (default) or `"horizontal"` (adds
 #'   [ggplot2::coord_flip()] and is forwarded to [theme_cpb()]).
 #' @param reverse_legend If `TRUE`, reverse the fill legend order via
@@ -1520,6 +1616,8 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                      value_breaks = NULL,
                      value_limits = NULL,
                      value_axis = c("bottom", "top"),
+                     x_lim = NULL,
+                     x_lim_follow_data = FALSE,
                      orientation = c("vertical", "horizontal"),
                      facet = NULL,
                      facet_ncol = NULL,
@@ -1805,15 +1903,23 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   # the panel edge, so clipping is turned off in all three cases
   clip <- if (has_group || isTRUE(box_labels) || box_style == "dot") "off" else "on"
   if (orientation == "horizontal") {
-    p <- p + if (!is.null(value_limits)) {
-      ggplot2::coord_flip(ylim = value_limits, clip = clip)
+    p <- p + if (!is.null(value_limits) || !is.null(x_lim)) {
+      ggplot2::coord_flip(xlim = x_lim, ylim = value_limits, clip = clip)
     } else {
       ggplot2::coord_flip(clip = clip)
     }
-  } else if (!is.null(value_limits)) {
-    p <- p + ggplot2::coord_cartesian(ylim = value_limits, clip = clip)
+  } else if (!is.null(value_limits) || !is.null(x_lim)) {
+    p <- p + ggplot2::coord_cartesian(xlim = x_lim, ylim = value_limits, clip = clip)
   } else if (has_group) {
     p <- p + ggplot2::coord_cartesian(clip = "off")
+  }
+  if (isTRUE(x_lim_follow_data) && is.null(x_lim) && !has_group) {
+    xvals_type <- rlang::eval_tidy(x, data)
+    p <- p + if (is.numeric(xvals_type)) {
+      ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = 0))
+    } else {
+      ggplot2::scale_x_discrete(expand = ggplot2::expansion(mult = 0))
+    }
   }
 
   # boxes do not grow from the axis (no forced zero baseline, unlike
@@ -1942,6 +2048,15 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
 #'   when `colour_index` is given.
 #' @param index Deprecated. Former name of
 #'   `colour_index`. Still accepted, with a warning.
+#' @param x_lim Optional length-2 vector zooming the `x` axis to a
+#'   range, without dropping data. Also recomputes the flush breaks
+#'   for that window, rather than the full data's (which would mostly
+#'   fall outside it). `NULL` (default) shows the full range.
+#' @param x_lim_follow_data If `TRUE`, flush the `x` axis exactly to
+#'   the data's own range, at the cost of ggplot2 picking its own
+#'   breaks within that (possibly non-round) range instead of the
+#'   usual `pretty()` ones. Matches nicerplot's parameter of the same
+#'   name. Defaults to `FALSE`. Ignored when `x_lim` is set.
 #' @param forecast_x Optional x value where the forecast window
 #'   starts; overlaid and labelled as in [cpb_line()].
 #' @param forecast_label Label for the forecast window; defaults to
@@ -1995,6 +2110,8 @@ cpb_scatter <- function(data, x, y, colour = NULL,
                          colour_index = NULL,
                          color_index = NULL,
                          index = NULL,
+                         x_lim = NULL,
+                         x_lim_follow_data = FALSE,
                          forecast_x = NULL,
                          forecast_label = "raming",
                          reverse_legend = FALSE,
@@ -2087,13 +2204,26 @@ cpb_scatter <- function(data, x, y, colour = NULL,
   # silently replace and discard the flush; coord survives that. Both
   # axes are always continuous here, so a blanket coord expand = FALSE
   # carries none of the discrete-axis-clipping risk it has elsewhere.
-  x_breaks <- pretty(range(rlang::eval_tidy(x, data), na.rm = TRUE))
+  x_data_range <- range(rlang::eval_tidy(x, data), na.rm = TRUE)
+  if (!is.null(x_lim)) {
+    # a manual zoom gets its own breaks computed for that window,
+    # rather than the full data's (which would mostly fall outside it)
+    x_breaks <- pretty(x_lim)
+    flush_xlim <- x_lim
+  } else if (isTRUE(x_lim_follow_data)) {
+    # no rounding: flush exactly to the data, ggplot2 picks its own
+    # breaks within that (possibly non-round) range
+    x_breaks <- NULL
+    flush_xlim <- x_data_range
+  } else {
+    x_breaks <- pretty(x_data_range)
+    flush_xlim <- range(x_breaks)
+  }
   y_breaks <- pretty(range(rlang::eval_tidy(y, data), na.rm = TRUE))
-  p <- p + ggplot2::coord_cartesian(
-    xlim = range(x_breaks), ylim = range(y_breaks),
-    expand = FALSE
-  )
-  p <- p + ggplot2::scale_x_continuous(breaks = x_breaks) +
+  p <- p + ggplot2::coord_cartesian(xlim = flush_xlim, ylim = range(y_breaks),
+                                    expand = FALSE)
+  x_scale_args <- if (!is.null(x_breaks)) list(breaks = x_breaks) else list()
+  p <- p + do.call(ggplot2::scale_x_continuous, x_scale_args) +
     ggplot2::scale_y_continuous(breaks = y_breaks)
 
   p <- cpb_add_facet(p, facet, facet_ncol, facet_scales)
@@ -2149,6 +2279,16 @@ cpb_scatter <- function(data, x, y, colour = NULL,
 #'   conflict and raise an error, since both set the same thing.
 #' @param index Deprecated. Former name of
 #'   `fill_index`. Still accepted, with a warning.
+#' @param x_lim Optional length-2 vector zooming the `x` axis to a
+#'   range, without dropping data. Bins are computed from the full
+#'   data first, so this only ever changes what is visible, never the
+#'   binning itself. `NULL` (default) shows the full range.
+#' @param x_lim_follow_data If `TRUE`, remove the default margin on
+#'   either side of the `x` axis so it sits flush to the data's actual
+#'   range, at the cost of ggplot2 picking its own breaks within that
+#'   (possibly non-round) range instead of the usual padded, evenly
+#'   spaced ones. Matches nicerplot's parameter of the same name.
+#'   Defaults to `FALSE`. Ignored when `x_lim` is set.
 #' @param reverse_legend If `TRUE` (default), reverse the fill legend
 #'   order via `guide_legend(reverse = TRUE)`.
 #' @param legend_ncol Number of columns to lay the legend keys out in,
@@ -2196,6 +2336,8 @@ cpb_hist <- function(data, x, fill = NULL,
                       palette = "qualitative",
                       fill_index = NULL,
                       index = NULL,
+                      x_lim = NULL,
+                      x_lim_follow_data = FALSE,
                       reverse_legend = TRUE,
                       legend_ncol = NULL,
                       facet = NULL,
@@ -2248,6 +2390,19 @@ cpb_hist <- function(data, x, fill = NULL,
     p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black", linewidth = 0.25)
   }
   p <- p + ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0, 0.05)))
+
+  # bins are computed from the full data before any x zoom applies, so
+  # x_lim only ever changes what is visible, never the binning itself
+  if (!is.null(x_lim)) {
+    p <- p + ggplot2::coord_cartesian(xlim = x_lim)
+  } else if (isTRUE(x_lim_follow_data)) {
+    xvals_type <- rlang::eval_tidy(x, data)
+    p <- p + if (is.numeric(xvals_type)) {
+      ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = 0))
+    } else {
+      ggplot2::scale_x_discrete(expand = ggplot2::expansion(mult = 0))
+    }
+  }
 
   if (has_fill) {
     p <- p + if (!is.null(index)) {
@@ -2334,7 +2489,25 @@ cpb_hist <- function(data, x, fill = NULL,
 #' @param value_breaks Optional breaks for the value axis (passed to
 #'   [ggplot2::scale_y_continuous()]).
 #' @param value_limits Optional length-2 numeric vector giving the
-#'   value-axis range, applied as a coordinate-system zoom.
+#'   value-axis range, applied as the wrapper-built value scale's own
+#'   `limits` (not a coordinate-system zoom) -- the hard bound the axis
+#'   is drawn flush to; an estimate outside it is genuinely dropped,
+#'   with a warning, the same as setting `limits` on any ggplot2 scale.
+#'   `NULL` (default) flushes to the full lower-upper (and point) range
+#'   instead.
+#' @param x_lim Optional length-2 vector zooming the category (`x`)
+#'   axis to a range, without dropping data -- applied as a
+#'   coordinate-system zoom ([ggplot2::coord_cartesian()] /
+#'   [ggplot2::coord_flip()] `xlim`). `NULL` (default) shows the full
+#'   range.
+#' @param x_lim_follow_data If `TRUE`, remove the default margin on
+#'   either side of the category axis so it sits flush to the data's
+#'   actual range, at the cost of ggplot2 picking its own breaks within
+#'   that (possibly non-round) range instead of the usual padded,
+#'   evenly spaced ones. Matches nicerplot's parameter of the same
+#'   name. Defaults to `FALSE`. Ignored when `x_lim` is set, and when
+#'   `group` is mapped (the grouped layout needs its own fixed margin
+#'   for the heading rows).
 #' @param zeroline If `TRUE` (default), draw a solid black reference
 #'   line at zero on the value axis -- the line the intervals are read
 #'   against.
@@ -2388,6 +2561,8 @@ cpb_dot <- function(data, x, y, lower, upper,
                      pct_axis = FALSE,
                      value_breaks = NULL,
                      value_limits = NULL,
+                     x_lim = NULL,
+                     x_lim_follow_data = FALSE,
                      zeroline = TRUE,
                      reverse_legend = FALSE,
                      legend_ncol = NULL,
@@ -2476,15 +2651,23 @@ cpb_dot <- function(data, x, y, lower, upper,
   # the grouped layout draws its bold headings outside the panel
   clip <- if (has_group) "off" else "on"
   if (orientation == "horizontal") {
-    p <- p + if (!is.null(value_limits)) {
-      ggplot2::coord_flip(ylim = value_limits, clip = clip)
+    p <- p + if (!is.null(value_limits) || !is.null(x_lim)) {
+      ggplot2::coord_flip(xlim = x_lim, ylim = value_limits, clip = clip)
     } else {
       ggplot2::coord_flip(clip = clip)
     }
-  } else if (!is.null(value_limits)) {
-    p <- p + ggplot2::coord_cartesian(ylim = value_limits, clip = clip)
+  } else if (!is.null(value_limits) || !is.null(x_lim)) {
+    p <- p + ggplot2::coord_cartesian(xlim = x_lim, ylim = value_limits, clip = clip)
   } else if (has_group) {
     p <- p + ggplot2::coord_cartesian(clip = "off")
+  }
+  if (isTRUE(x_lim_follow_data) && is.null(x_lim) && !has_group) {
+    xvals_type <- rlang::eval_tidy(x, data)
+    p <- p + if (is.numeric(xvals_type)) {
+      ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = 0))
+    } else {
+      ggplot2::scale_x_discrete(expand = ggplot2::expansion(mult = 0))
+    }
   }
 
   # estimates do not grow from the axis (no forced zero baseline), but

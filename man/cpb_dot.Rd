@@ -25,6 +25,8 @@ cpb_dot(
   pct_axis = FALSE,
   value_breaks = NULL,
   value_limits = NULL,
+  x_lim = NULL,
+  x_lim_follow_data = FALSE,
   zeroline = TRUE,
   reverse_legend = FALSE,
   legend_ncol = NULL,
@@ -111,7 +113,27 @@ when \code{colour_index} is given.}
 \code{\link[ggplot2:scale_continuous]{ggplot2::scale_y_continuous()}}).}
 
 \item{value_limits}{Optional length-2 numeric vector giving the
-value-axis range, applied as a coordinate-system zoom.}
+value-axis range, applied as the wrapper-built value scale's own
+\code{limits} (not a coordinate-system zoom) -- the hard bound the axis
+is drawn flush to; an estimate outside it is genuinely dropped,
+with a warning, the same as setting \code{limits} on any ggplot2 scale.
+\code{NULL} (default) flushes to the full lower-upper (and point) range
+instead.}
+
+\item{x_lim}{Optional length-2 vector zooming the category (\code{x})
+axis to a range, without dropping data -- applied as a
+coordinate-system zoom (\code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} /
+\code{\link[ggplot2:coord_flip]{ggplot2::coord_flip()}} \code{xlim}). \code{NULL} (default) shows the full
+range.}
+
+\item{x_lim_follow_data}{If \code{TRUE}, remove the default margin on
+either side of the category axis so it sits flush to the data's
+actual range, at the cost of ggplot2 picking its own breaks within
+that (possibly non-round) range instead of the usual padded,
+evenly spaced ones. Matches nicerplot's parameter of the same
+name. Defaults to \code{FALSE}. Ignored when \code{x_lim} is set, and when
+\code{group} is mapped (the grouped layout needs its own fixed margin
+for the heading rows).}
 
 \item{zeroline}{If \code{TRUE} (default), draw a solid black reference
 line at zero on the value axis -- the line the intervals are read

@@ -30,6 +30,8 @@ cpb_box(
   value_breaks = NULL,
   value_limits = NULL,
   value_axis = c("bottom", "top"),
+  x_lim = NULL,
+  x_lim_follow_data = FALSE,
   orientation = c("vertical", "horizontal"),
   facet = NULL,
   facet_ncol = NULL,
@@ -166,15 +168,34 @@ the wrapper-built \code{\link[ggplot2:scale_continuous]{ggplot2::scale_y_continu
 instead of adding a second y scale, which would discard the
 wrapper's axis formatting and expansion.}
 
-\item{value_limits}{Optional length-2 limits for the value axis,
-applied through the coordinate system (zoom) so no data is
-dropped.}
+\item{value_limits}{Optional length-2 numeric vector giving the
+value-axis range, applied as the wrapper-built value scale's own
+\code{limits} (not a coordinate-system zoom) -- the hard bound the axis
+is drawn flush to; a box/whisker outside it is genuinely dropped,
+with a warning, the same as setting \code{limits} on any ggplot2 scale.
+\code{NULL} (default) flushes to the full p5-p95 (and \code{mean}) range
+instead.}
 
 \item{value_axis}{Where the value axis is drawn: \code{"bottom"}
 (default) or \code{"top"}. \code{"top"} places the numeric scale along the
 top of the panel, the convention of the CPB koopkracht figures;
 it applies to horizontal boxes (the value axis is the flipped
 axis).}
+
+\item{x_lim}{Optional length-2 vector zooming the category (\code{x})
+axis to a range, without dropping data -- applied as a
+coordinate-system zoom (\code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} /
+\code{\link[ggplot2:coord_flip]{ggplot2::coord_flip()}} \code{xlim}). \code{NULL} (default) shows the full
+range.}
+
+\item{x_lim_follow_data}{If \code{TRUE}, remove the default margin on
+either side of the category axis so it sits flush to the data's
+actual range, at the cost of ggplot2 picking its own breaks within
+that (possibly non-round) range instead of the usual padded,
+evenly spaced ones. Matches nicerplot's parameter of the same
+name. Defaults to \code{FALSE}. Ignored when \code{x_lim} is set, and when
+\code{group} is mapped (the grouped layout needs its own fixed margin
+for the heading rows).}
 
 \item{orientation}{\code{"vertical"} (default) or \code{"horizontal"} (adds
 \code{\link[ggplot2:coord_flip]{ggplot2::coord_flip()}} and is forwarded to \code{\link[=theme_cpb]{theme_cpb()}}).}

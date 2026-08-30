@@ -16,6 +16,8 @@ cpb_hist(
   palette = "qualitative",
   fill_index = NULL,
   index = NULL,
+  x_lim = NULL,
+  x_lim_follow_data = FALSE,
   reverse_legend = TRUE,
   legend_ncol = NULL,
   facet = NULL,
@@ -76,6 +78,18 @@ conflict and raise an error, since both set the same thing.}
 
 \item{index}{Deprecated. Former name of
 \code{fill_index}. Still accepted, with a warning.}
+
+\item{x_lim}{Optional length-2 vector zooming the \code{x} axis to a
+range, without dropping data. Bins are computed from the full
+data first, so this only ever changes what is visible, never the
+binning itself. \code{NULL} (default) shows the full range.}
+
+\item{x_lim_follow_data}{If \code{TRUE}, remove the default margin on
+either side of the \code{x} axis so it sits flush to the data's actual
+range, at the cost of ggplot2 picking its own breaks within that
+(possibly non-round) range instead of the usual padded, evenly
+spaced ones. Matches nicerplot's parameter of the same name.
+Defaults to \code{FALSE}. Ignored when \code{x_lim} is set.}
 
 \item{reverse_legend}{If \code{TRUE} (default), reverse the fill legend
 order via \code{guide_legend(reverse = TRUE)}.}

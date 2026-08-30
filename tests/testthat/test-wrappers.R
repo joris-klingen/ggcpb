@@ -469,6 +469,63 @@ test_that("reverse_legend reverses the colour guide in line and scatter", {
   expect_null(p$guides$guides$colour)
 })
 
+test_that("x_lim zooms without dropping data, across all wrappers", {
+  yr_df   <- data.frame(x = 2015:2020, y = 1:6)
+  box_df  <- data.frame(x = 2015:2020, p5 = 1:6, p25 = 2:7, p50 = 3:8, p75 = 4:9, p95 = 5:10)
+  dot_df  <- data.frame(x = 2015:2020, y = 1:6, lower = 0:5, upper = 2:7)
+  hist_df <- data.frame(x = 1:100)
+
+  p <- cpb_col(yr_df, x = x, y = y, x_lim = c(2017, 2019))
+  b <- ggplot2::ggplot_build(p)
+  expect_equal(nrow(b$data[[1]]), 6)
+  expect_true(b$layout$panel_params[[1]]$x.range[1] > 2015)
+
+  p <- cpb_line(yr_df, x = x, y = y, x_lim = c(2017, 2019))
+  b <- ggplot2::ggplot_build(p)
+  expect_equal(nrow(b$data[[1]]), 6)
+
+  p <- cpb_area(yr_df, x = x, y = y, fill = factor("a"), x_lim = c(2017, 2019))
+  b <- ggplot2::ggplot_build(p)
+  expect_equal(nrow(b$data[[1]]), 6)
+
+  p <- cpb_box(box_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+               x_lim = c(2017, 2019))
+  b <- ggplot2::ggplot_build(p)
+  expect_equal(nrow(b$data[[2]]), 6)
+
+  p <- cpb_dot(dot_df, x = x, y = y, lower = lower, upper = upper, x_lim = c(2017, 2019))
+  b <- ggplot2::ggplot_build(p)
+  expect_equal(nrow(b$data[[2]]), 6)
+
+  p <- cpb_scatter(yr_df, x = x, y = y, x_lim = c(2017, 2019))
+  b <- ggplot2::ggplot_build(p)
+  expect_equal(nrow(b$data[[1]]), 6)
+  expect_equal(b$layout$panel_params[[1]]$x.range, c(2017, 2019))
+
+  p <- cpb_hist(hist_df, x = x, binwidth = 10, x_lim = c(30, 60))
+  b <- ggplot2::ggplot_build(p)
+  expect_equal(sum(b$data[[1]]$count), 100)
+})
+
+test_that("x_lim_follow_data flushes the x axis to the data range, no rounding required", {
+  yr_df <- data.frame(x = c(2015, 2016, 2019), y = c(1, 2, 3))
+
+  p <- cpb_line(yr_df, x = x, y = y, x_lim_follow_data = TRUE)
+  b <- ggplot2::ggplot_build(p)
+  expect_equal(b$layout$panel_params[[1]]$x.range, c(2015, 2019))
+
+  p <- cpb_scatter(yr_df, x = x, y = y, x_lim_follow_data = TRUE)
+  b <- ggplot2::ggplot_build(p)
+  expect_equal(b$layout$panel_params[[1]]$x.range, c(2015, 2019))
+
+  # x_lim (manual) takes priority over x_lim_follow_data when both are set:
+  # the panel reflects the c(2010, 2020) zoom, not a flush to 2015-2019
+  p <- cpb_line(yr_df, x = x, y = y, x_lim = c(2010, 2020), x_lim_follow_data = TRUE)
+  b <- ggplot2::ggplot_build(p)
+  expect_true(b$layout$panel_params[[1]]$x.range[1] < 2015)
+  expect_true(b$layout$panel_params[[1]]$x.range[2] > 2019)
+})
+
 test_that("legend_ncol lays the legend out in the requested number of columns", {
   num <- data.frame(x = rep(2015:2017, 2), g = rep(c("s1", "s2"), each = 3),
                     y = c(1:3, 2:4))

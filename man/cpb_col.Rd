@@ -28,6 +28,8 @@ cpb_col(
   value_breaks = NULL,
   value_limits = NULL,
   value_labels = FALSE,
+  x_lim = NULL,
+  x_lim_follow_data = FALSE,
   forecast_x = NULL,
   forecast_label = "raming",
   reverse_legend = TRUE,
@@ -138,13 +140,30 @@ wrapper's axis formatting and expansion.}
 
 \item{value_limits}{Optional length-2 numeric vector giving the
 value-axis range (the \code{y} axis, or the flipped axis when
-\code{orientation = "horizontal"}). Applied as a coordinate-system zoom
-(\code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} / \code{\link[ggplot2:coord_flip]{ggplot2::coord_flip()}} \code{ylim}), so
-bars are clipped for display but not dropped. \code{NULL} (default) lets
-ggplot2 pick the range.}
+\code{orientation = "horizontal"}). Applied as the wrapper-built value
+scale's own \code{limits} (not a coordinate-system zoom), so this is
+the hard bound the axis is drawn flush to; a bar/segment that
+falls outside it is genuinely dropped, with a warning, the same
+as setting \code{limits} on any ggplot2 scale. \code{NULL} (default) flushes
+to the full data range instead (see \code{x_lim}/\code{x_lim_follow_data}
+for the category axis's equivalent).}
 
 \item{value_labels}{If \code{TRUE}, add \code{\link[ggplot2:geom_text]{ggplot2::geom_text()}} value
 labels using \code{y}, positioned to match \code{position}.}
+
+\item{x_lim}{Optional length-2 vector zooming the category (\code{x})
+axis to a range, without dropping data -- applied as a
+coordinate-system zoom (\code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} /
+\code{\link[ggplot2:coord_flip]{ggplot2::coord_flip()}} \code{xlim}), so a bar just outside the window
+still contributes to breaks/totals but is only clipped for
+display. \code{NULL} (default) shows the full range.}
+
+\item{x_lim_follow_data}{If \code{TRUE}, remove the default margin on
+either side of the category axis so it sits flush to the data's
+actual range, at the cost of ggplot2 picking its own breaks
+within that (possibly non-round) range instead of the usual
+padded, evenly spaced ones. Matches nicerplot's parameter of the
+same name. Defaults to \code{FALSE}. Ignored when \code{x_lim} is set.}
 
 \item{forecast_x}{Optional x value where the forecast window starts
 (vertical charts with a numeric/time x axis). Everything to its

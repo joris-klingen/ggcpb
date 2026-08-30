@@ -15,6 +15,8 @@ cpb_area(
   pct_axis = FALSE,
   value_breaks = NULL,
   value_limits = NULL,
+  x_lim = NULL,
+  x_lim_follow_data = FALSE,
   forecast_x = NULL,
   forecast_label = "raming",
   reverse_legend = TRUE,
@@ -75,6 +77,18 @@ wrapper's axis formatting and expansion.}
 \item{value_limits}{Optional length-2 limits for the value axis,
 applied through the coordinate system (zoom) so no data is
 dropped.}
+
+\item{x_lim}{Optional length-2 vector zooming the \code{x} axis to a
+range, without dropping data -- applied as a coordinate-system
+zoom (\code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} \code{xlim}). \code{NULL} (default) shows
+the full range.}
+
+\item{x_lim_follow_data}{If \code{TRUE}, remove the default margin on
+either side of the \code{x} axis so it sits flush to the data's actual
+range, at the cost of ggplot2 picking its own breaks within that
+(possibly non-round) range instead of the usual padded, evenly
+spaced ones. Matches nicerplot's parameter of the same name.
+Defaults to \code{FALSE}. Ignored when \code{x_lim} is set.}
 
 \item{forecast_x}{Optional x value where the forecast window
 starts; overlaid and labelled as in \code{\link[=cpb_line]{cpb_line()}}.}
