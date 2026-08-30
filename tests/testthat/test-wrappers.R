@@ -497,6 +497,31 @@ test_that("sec_type controls how sec_y is drawn, sharing one legend key", {
   expect_equal(n_colour_scales, 1)
 })
 
+test_that("sec_y always gets a legend, even without a fill mapping", {
+  df <- data.frame(jaar = 2018:2020, mld = c(10, 12, 9), heffing = c(1.2, 1.4, 1.1))
+
+  # no fill, no sec_y: a single-series bar chart needs no legend at all
+  p <- cpb_col(df, x = jaar, y = mld)
+  n_fill_scales <- sum(vapply(p$scales$scales, function(s) "fill" %in% s$aesthetics, logical(1)))
+  expect_equal(n_fill_scales, 0)
+
+  # no fill, but sec_y present: the primary bars get a one-level dummy
+  # fill scale (named after the y column) so both series show up.
+  # Scales must be trained (via ggplot_build()) before get_breaks()
+  # reflects the data -- p$scales itself is never mutated in place.
+  p <- cpb_col(df, x = jaar, y = mld, sec_y = heffing)
+  fill_scale <- ggplot2::ggplot_build(p)$plot$scales$get_scales("fill")
+  expect_false(is.null(fill_scale))
+  expect_equal(fill_scale$get_labels(fill_scale$get_breaks()), "mld")
+
+  # a real fill mapping still works exactly as before, unaffected
+  df2 <- data.frame(jaar = rep(2018:2019, each = 2), soort = rep(c("a", "b"), 2),
+                    mld = c(4, 6, 5, 7), heffing = rep(c(1.2, 1.4), each = 2))
+  p2 <- cpb_col(df2, x = jaar, y = mld, fill = soort, sec_y = heffing)
+  fill_scale2 <- ggplot2::ggplot_build(p2)$plot$scales$get_scales("fill")
+  expect_setequal(fill_scale2$get_labels(fill_scale2$get_breaks()), c("a", "b"))
+})
+
 test_that("x_lim zooms without dropping data, across all wrappers", {
   yr_df   <- data.frame(x = 2015:2020, y = 1:6)
   box_df  <- data.frame(x = 2015:2020, p5 = 1:6, p25 = 2:7, p50 = 3:8, p75 = 4:9, p95 = 5:10)

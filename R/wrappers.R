@@ -317,7 +317,10 @@ cpb_forecast_label <- function(forecast_x, xvals, label) {
 #' @param data A data.frame or data.table with one row per bar segment.
 #' @param x,y Columns mapped to the x and y aesthetics (tidy eval).
 #' @param fill Optional column mapped to the fill aesthetic (tidy
-#'   eval); if omitted, bars are drawn in a single colour (`fill_colour`).
+#'   eval); if omitted, bars are drawn in a single colour (`fill_colour`)
+#'   with no legend of its own -- unless `sec_y` is also set, in which
+#'   case the bars still get a one-level legend key (named after `y`)
+#'   so both series are always represented, not just `sec_y`.
 #' @param fill_colour Constant bar fill used when no `fill` column is
 #'   mapped. Defaults to `NULL`, which resolves to the CPB primary blue
 #'   (`cpb_cols(6)`, `"#005faf"`). Ignored when `fill` is supplied.
@@ -595,8 +598,18 @@ cpb_col <- function(data, x, y, fill = NULL,
     x <- rlang::quo(.data[["cpb__x"]])
   }
 
+  # a secondary axis means two series share the panel: the primary bars
+  # need their own legend key too, not just the secondary one, so
+  # without a real fill mapping they get a one-level dummy fill (a
+  # constant label, the same trick sec_y's own colour legend already
+  # uses) instead of an unmapped constant that has no legend at all
+  single_fill <- cpb_single_colour(fill_colour, 6)
+  primary_lab <- rlang::as_label(y)
+
   if (has_fill) {
     mapping <- ggplot2::aes(x = !!x, y = !!y, fill = !!fill)
+  } else if (has_sec) {
+    mapping <- ggplot2::aes(x = !!x, y = !!y, fill = primary_lab)
   } else {
     mapping <- ggplot2::aes(x = !!x, y = !!y)
   }
@@ -608,12 +621,17 @@ cpb_col <- function(data, x, y, fill = NULL,
       cpb_forecast_pos(forecast_x, rlang::eval_tidy(x, data)))
   }
 
-  p <- p + if (has_fill) {
+  p <- p + if (has_fill || has_sec) {
+    # fill is aes-mapped in both cases (a real column, or the dummy
+    # constant label above), so no literal fill= parameter here.
+    # show.legend = TRUE forces a key even for a drop = FALSE level
+    # with zero rows in this layer's data, which ggplot2 otherwise
+    # blanks by default.
     ggplot2::geom_col(position = position, show.legend = TRUE, ...)
   } else {
-    # No fill mapping: draw one flat house-style colour (CPB primary blue
-    # by default) rather than ggplot2's grey.
-    single_fill <- cpb_single_colour(fill_colour, 6)
+    # No fill mapping and no secondary axis: draw one flat house-style
+    # colour (CPB primary blue by default) rather than ggplot2's grey,
+    # with no legend -- a single-series bar chart needs none.
     ggplot2::geom_col(position = position, fill = single_fill, ...)
   }
 
@@ -798,6 +816,11 @@ cpb_col <- function(data, x, y, fill = NULL,
 
   if (has_fill) {
     p <- p + cpb_discrete_scale("fill", index, palette)
+    p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol)
+  } else if (has_sec) {
+    p <- p + ggplot2::scale_fill_manual(
+      values = stats::setNames(single_fill, primary_lab), name = NULL
+    )
     p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol)
   }
 

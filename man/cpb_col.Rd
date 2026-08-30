@@ -61,7 +61,10 @@ cpb_col(
 \item{x, y}{Columns mapped to the x and y aesthetics (tidy eval).}
 
 \item{fill}{Optional column mapped to the fill aesthetic (tidy
-eval); if omitted, bars are drawn in a single colour (\code{fill_colour}).}
+eval); if omitted, bars are drawn in a single colour (\code{fill_colour})
+with no legend of its own -- unless \code{sec_y} is also set, in which
+case the bars still get a one-level legend key (named after \code{y})
+so both series are always represented, not just \code{sec_y}.}
 
 \item{fill_colour}{Constant bar fill used when no \code{fill} column is
 mapped. Defaults to \code{NULL}, which resolves to the CPB primary blue
