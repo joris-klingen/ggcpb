@@ -506,20 +506,30 @@ test_that("sec_y always gets a legend, even without a fill mapping", {
   expect_equal(n_fill_scales, 0)
 
   # no fill, but sec_y present: the primary bars get a one-level dummy
-  # fill scale (named after the y column) so both series show up.
-  # Scales must be trained (via ggplot_build()) before get_breaks()
-  # reflects the data -- p$scales itself is never mutated in place.
+  # fill scale (named after the y column) so both series show up, and
+  # -- since two axes now share the legend -- suffixed "(linkeras)" to
+  # tell it apart from sec_y's own "(rechteras)" key. Scales must be
+  # trained (via ggplot_build()) before get_breaks() reflects the
+  # data -- p$scales itself is never mutated in place.
   p <- cpb_col(df, x = jaar, y = mld, sec_y = heffing)
   fill_scale <- ggplot2::ggplot_build(p)$plot$scales$get_scales("fill")
   expect_false(is.null(fill_scale))
-  expect_equal(fill_scale$get_labels(fill_scale$get_breaks()), "mld")
+  expect_equal(fill_scale$get_labels(fill_scale$get_breaks()), "mld (linkeras)")
+  colour_scale <- ggplot2::ggplot_build(p)$plot$scales$get_scales("colour")
+  expect_match(colour_scale$get_labels(colour_scale$get_breaks()), "\\(rechteras\\)$")
 
-  # a real fill mapping still works exactly as before, unaffected
+  # a real fill mapping still works, every level suffixed the same way
   df2 <- data.frame(jaar = rep(2018:2019, each = 2), soort = rep(c("a", "b"), 2),
                     mld = c(4, 6, 5, 7), heffing = rep(c(1.2, 1.4), each = 2))
   p2 <- cpb_col(df2, x = jaar, y = mld, fill = soort, sec_y = heffing)
   fill_scale2 <- ggplot2::ggplot_build(p2)$plot$scales$get_scales("fill")
-  expect_setequal(fill_scale2$get_labels(fill_scale2$get_breaks()), c("a", "b"))
+  expect_setequal(fill_scale2$get_labels(fill_scale2$get_breaks()),
+                  c("a (linkeras)", "b (linkeras)"))
+
+  # without sec_y, labels are never suffixed
+  p3 <- cpb_col(df2, x = jaar, y = mld, fill = soort)
+  fill_scale3 <- ggplot2::ggplot_build(p3)$plot$scales$get_scales("fill")
+  expect_setequal(fill_scale3$get_labels(fill_scale3$get_breaks()), c("a", "b"))
 })
 
 test_that("x_lim zooms without dropping data, across all wrappers", {

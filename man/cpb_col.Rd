@@ -64,7 +64,12 @@ cpb_col(
 eval); if omitted, bars are drawn in a single colour (\code{fill_colour})
 with no legend of its own -- unless \code{sec_y} is also set, in which
 case the bars still get a one-level legend key (named after \code{y})
-so both series are always represented, not just \code{sec_y}.}
+so both series are always represented, not just \code{sec_y}. Whenever
+\code{sec_y} is set, every fill legend label (real or the one-level
+fallback) is suffixed \code{"(linkeras)"} (left axis) to tell it apart
+from \code{sec_y}'s own \code{"(rechteras)"} (right axis) key -- house
+convention, applied automatically; do not add it to \code{fill}'s own
+factor levels yourself.}
 
 \item{fill_colour}{Constant bar fill used when no \code{fill} column is
 mapped. Defaults to \code{NULL}, which resolves to the CPB primary blue
@@ -105,8 +110,8 @@ secondary axis spans. \code{NULL} (default) uses zero to the maximum of
 the primary range, so the two axes always start together.}
 
 \item{sec_label}{Legend label for \code{sec_y}. \code{NULL} (default) uses
-the \code{sec_y} column name. House style names the axis in the label,
-e.g. \code{"erfbelasting (rechteras)"}.}
+the \code{sec_y} column name. Automatically suffixed \code{"(rechteras)"}
+(right axis) -- don't add it yourself, e.g. \code{sec_label = "erfbelasting"} shows as \code{"erfbelasting (rechteras)"}.}
 
 \item{sec_ylab}{Unit caption for the secondary axis, drawn
 right-aligned above the panel to mirror the left-hand unit that

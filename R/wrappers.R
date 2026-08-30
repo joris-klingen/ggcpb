@@ -150,19 +150,19 @@ cpb_reserve_subtitle <- function(title, subtitle) {
 # so it can't drift apart between the fill wrappers and the colour
 # ones.
 cpb_discrete_scale <- function(aesthetic = c("fill", "colour"), index = NULL,
-                               palette = "qualitative") {
+                               palette = "qualitative", labels = ggplot2::waiver()) {
   aesthetic <- match.arg(aesthetic)
   if (aesthetic == "fill") {
     if (!is.null(index)) {
-      scale_fill_cpb_manual(index = index, palette = palette)
+      scale_fill_cpb_manual(index = index, palette = palette, labels = labels)
     } else {
-      scale_fill_cpb_d(palette = palette)
+      scale_fill_cpb_d(palette = palette, labels = labels)
     }
   } else {
     if (!is.null(index)) {
-      scale_colour_cpb_manual(index = index, palette = palette)
+      scale_colour_cpb_manual(index = index, palette = palette, labels = labels)
     } else {
-      scale_colour_cpb_d(palette = palette)
+      scale_colour_cpb_d(palette = palette, labels = labels)
     }
   }
 }
@@ -320,7 +320,12 @@ cpb_forecast_label <- function(forecast_x, xvals, label) {
 #'   eval); if omitted, bars are drawn in a single colour (`fill_colour`)
 #'   with no legend of its own -- unless `sec_y` is also set, in which
 #'   case the bars still get a one-level legend key (named after `y`)
-#'   so both series are always represented, not just `sec_y`.
+#'   so both series are always represented, not just `sec_y`. Whenever
+#'   `sec_y` is set, every fill legend label (real or the one-level
+#'   fallback) is suffixed `"(linkeras)"` (left axis) to tell it apart
+#'   from `sec_y`'s own `"(rechteras)"` (right axis) key -- house
+#'   convention, applied automatically; do not add it to `fill`'s own
+#'   factor levels yourself.
 #' @param fill_colour Constant bar fill used when no `fill` column is
 #'   mapped. Defaults to `NULL`, which resolves to the CPB primary blue
 #'   (`cpb_cols(6)`, `"#005faf"`). Ignored when `fill` is supplied.
@@ -352,8 +357,9 @@ cpb_forecast_label <- function(forecast_x, xvals, label) {
 #'   `sec_y`. `sec_y` is placed by mapping this range linearly onto
 #'   the primary range, so the two axes always start together.
 #' @param sec_label Legend label for `sec_y`. `NULL` (default) uses
-#'   the `sec_y` column name. House style names the axis in the label,
-#'   e.g. `"erfbelasting (rechteras)"`.
+#'   the `sec_y` column name. Automatically suffixed `"(rechteras)"`
+#'   (right axis) -- don't add it yourself, e.g. `sec_label =
+#'   "erfbelasting"` shows as `"erfbelasting (rechteras)"`.
 #' @param sec_ylab Unit caption for the secondary axis, drawn
 #'   right-aligned above the panel to mirror the left-hand unit that
 #'   `ylab` puts in the subtitle. `NULL` (default) draws none.
@@ -715,7 +721,14 @@ cpb_col <- function(data, x, y, fill = NULL,
     }
     sec_values <- sec_col
     names(sec_values) <- sec_lab
-    p <- p + ggplot2::scale_colour_manual(values = sec_values, name = NULL)
+    # a second axis means the two series need to be told apart --
+    # "(rechteras)"/"(linkeras)" (right/left axis) is the house
+    # convention, applied here and to the primary fill/dummy legend
+    # below regardless of whether sec_label already spells this out
+    p <- p + ggplot2::scale_colour_manual(
+      values = sec_values, name = NULL,
+      labels = function(b) paste0(b, " (rechteras)")
+    )
   }
 
   # The zero line sits on the value axis (the y aesthetic even under
@@ -815,11 +828,20 @@ cpb_col <- function(data, x, y, fill = NULL,
   }
 
   if (has_fill) {
-    p <- p + cpb_discrete_scale("fill", index, palette)
+    # a second axis means every fill level needs telling apart from
+    # sec_y too, not just from each other -- "(linkeras)" (left axis)
+    # is the house convention, mirroring "(rechteras)" on sec_y above
+    fill_labels <- if (has_sec) {
+      function(b) paste0(b, " (linkeras)")
+    } else {
+      ggplot2::waiver()
+    }
+    p <- p + cpb_discrete_scale("fill", index, palette, labels = fill_labels)
     p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol)
   } else if (has_sec) {
     p <- p + ggplot2::scale_fill_manual(
-      values = stats::setNames(single_fill, primary_lab), name = NULL
+      values = stats::setNames(single_fill, primary_lab), name = NULL,
+      labels = function(b) paste0(b, " (linkeras)")
     )
     p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol)
   }
