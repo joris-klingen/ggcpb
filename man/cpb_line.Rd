@@ -18,11 +18,20 @@ cpb_line(
   sec_linewidth = NULL,
   points = FALSE,
   point_size = 1.1,
+  sec_y = NULL,
+  sec_type = c("line", "point", "col"),
+  sec_limits = NULL,
+  sec_label = NULL,
+  sec_ylab = NULL,
+  sec_colour = NULL,
+  sec_linewidth = 0.55,
+  sec_points = FALSE,
   palette = "qualitative",
   colour_index = NULL,
   color_index = NULL,
   index = NULL,
   pct_axis = FALSE,
+  value_accuracy = NULL,
   value_breaks = NULL,
   value_limits = NULL,
   x_lim = NULL,
@@ -60,7 +69,10 @@ combination.}
 \item{x, y}{Columns mapped to the x and y aesthetics (tidy eval).}
 
 \item{colour}{Optional column mapped to the colour aesthetic (tidy
-eval); if omitted, a single line is drawn in \code{line_colour}.}
+eval); if omitted, a single line is drawn in \code{line_colour}.
+Cannot be combined with \code{sec_y}: both would need the colour
+aesthetic and its one legend, so \code{sec_y} is only for an otherwise
+single, unmapped line.}
 
 \item{line_colour}{Constant line colour used when no \code{colour} column
 is mapped. Defaults to \code{NULL}, which resolves to the CPB primary
@@ -110,6 +122,38 @@ gridlines.}
 \code{1.1}, which reads as the published dot against the default
 \code{linewidth}.}
 
+\item{sec_y}{Optional column (tidy eval) holding a series to draw
+against a \strong{secondary value axis} on the right, alongside the
+line. One value per \code{x}. Requires \code{colour} to be unset (see
+above); the primary line stays a plain, unlabelled line in
+\code{line_colour}, and only \code{sec_y} gets a legend key.}
+
+\item{sec_type}{How \code{sec_y} is drawn: \code{"line"} (default), \code{"point"}
+(markers only, no connecting line), or \code{"col"} (thin bars).}
+
+\item{sec_limits}{Length-2 numeric vector giving the range the
+secondary axis spans. \code{NULL} (default) uses zero to the maximum of
+\code{sec_y}. \code{sec_y} is placed by mapping this range linearly onto
+the primary range, so the two axes always start together.}
+
+\item{sec_label}{Legend label for \code{sec_y}. \code{NULL} (default) uses
+the \code{sec_y} column name. Automatically suffixed \code{"(rechteras)"}
+(right axis) -- don't add it yourself, e.g. \code{sec_label = "erfbelasting"} shows as \code{"erfbelasting (rechteras)"}.}
+
+\item{sec_ylab}{Unit caption for the secondary axis, drawn
+right-aligned above the panel to mirror the left-hand unit that
+\code{ylab} puts in the subtitle. \code{NULL} (default) draws none.}
+
+\item{sec_colour}{Colour for \code{sec_y}; defaults to \code{NULL}, which
+resolves to the CPB pink (\code{cpb_cols(2)}, \code{"#e6006e"}).}
+
+\item{sec_linewidth}{Line width; only used when \code{sec_type = "line"}.
+Defaults to \code{0.55}.}
+
+\item{sec_points}{If \code{TRUE}, add a marker at every point of the
+\code{sec_y} line. Only used when \code{sec_type = "line"} -- for markers
+without a connecting line, use \code{sec_type = "point"} instead.}
+
 \item{palette}{CPB palette to use for \code{colour}; one of
 \code{"qualitative"} (default), \code{"discr"}, \code{"sequential"}
 (pink ramp), or \code{"blues"} (blue ramp).}
@@ -130,6 +174,13 @@ when \code{colour_index} is given.}
 \code{colour_index}. Still accepted, with a warning.}
 
 \item{pct_axis}{If \code{TRUE}, format the y axis with \code{\link[=label_pct_nl]{label_pct_nl()}}.}
+
+\item{value_accuracy}{Rounding accuracy for the value axis labels,
+passed to \code{\link[=label_number_nl]{label_number_nl()}} (e.g. \code{0.1} for one decimal place).
+\code{NULL} (default) lets \code{scales} pick a sensible accuracy from the
+breaks. Cannot be combined with \code{pct_axis}. Use this instead of
+adding a second \code{scale_y_continuous()}, which would discard the
+wrapper's flush axis (see \code{value_breaks}).}
 
 \item{value_breaks}{Optional breaks for the value axis (passed to
 the wrapper-built \code{\link[ggplot2:scale_continuous]{ggplot2::scale_y_continuous()}}). Use this

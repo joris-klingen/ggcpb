@@ -251,7 +251,7 @@ nalatenschap |>
   cpb_col(x = jaar, y = mld, fill = soort,
     sec_y      = heffing,
     sec_limits = c(0, 3),
-    sec_label  = "erfbelasting (rechteras)",
+    sec_label  = "erfbelasting",
     sec_ylab   = "mld euro",
     title = "Belasting over erfenissen, prijzen 2022",
     ylab  = "mld euro")

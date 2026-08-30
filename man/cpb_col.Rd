@@ -26,6 +26,7 @@ cpb_col(
   fill_index = NULL,
   index = NULL,
   pct_axis = FALSE,
+  value_accuracy = NULL,
   value_breaks = NULL,
   value_limits = NULL,
   value_labels = FALSE,
@@ -148,6 +149,13 @@ conflict and raise an error, since both set the same thing.}
 \code{\link[=label_pct_nl]{label_pct_nl()}}. Uses \code{scale = 100} automatically when
 \code{position = "fill"} (proportions), and \code{scale = 1} otherwise
 (values already in percentage points).}
+
+\item{value_accuracy}{Rounding accuracy for the value axis labels,
+passed to \code{\link[=label_number_nl]{label_number_nl()}} (e.g. \code{0.1} for one decimal place).
+\code{NULL} (default) lets \code{scales} pick a sensible accuracy from the
+breaks. Cannot be combined with \code{pct_axis}. Use this instead of
+adding a second \code{scale_y_continuous()}, which would discard the
+wrapper's flush axis (see \code{value_breaks}).}
 
 \item{value_breaks}{Optional breaks for the value axis (passed to
 the wrapper-built \code{\link[ggplot2:scale_continuous]{ggplot2::scale_y_continuous()}}). Use this

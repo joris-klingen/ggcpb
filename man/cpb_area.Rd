@@ -9,10 +9,19 @@ cpb_area(
   x,
   y,
   fill,
+  sec_y = NULL,
+  sec_type = c("line", "point", "col"),
+  sec_limits = NULL,
+  sec_label = NULL,
+  sec_ylab = NULL,
+  sec_colour = NULL,
+  sec_linewidth = 0.55,
+  sec_points = FALSE,
   palette = "qualitative",
   fill_index = NULL,
   index = NULL,
   pct_axis = FALSE,
+  value_accuracy = NULL,
   value_breaks = NULL,
   value_limits = NULL,
   x_lim = NULL,
@@ -49,7 +58,44 @@ combination.}
 typically a time variable and a value or share.}
 
 \item{fill}{Column mapped to the fill aesthetic (tidy eval), i.e.
-the grouping variable being stacked.}
+the grouping variable being stacked. Whenever \code{sec_y} is set,
+every fill legend label is suffixed \code{"(linkeras)"} (left axis) to
+tell it apart from \code{sec_y}'s own \code{"(rechteras)"} (right axis) key
+-- house convention, applied automatically; do not add it to
+\code{fill}'s own factor levels yourself.}
+
+\item{sec_y}{Optional column (tidy eval) holding a series to draw
+against a \strong{secondary value axis} on the right, alongside the
+stacked areas. One value per \code{x}.}
+
+\item{sec_type}{How \code{sec_y} is drawn: \code{"line"} (default), \code{"point"}
+(markers only, no connecting line), or \code{"col"} (thin bars). All
+three read off the same secondary axis and share one legend key
+with the primary fill.}
+
+\item{sec_limits}{Length-2 numeric vector giving the range the
+secondary axis spans. \code{NULL} (default) uses zero to the maximum of
+\code{sec_y}. \code{sec_y} is placed by mapping this range linearly onto
+the primary range, so the two axes always start together.}
+
+\item{sec_label}{Legend label for \code{sec_y}. \code{NULL} (default) uses
+the \code{sec_y} column name. Automatically suffixed \code{"(rechteras)"}
+(right axis) -- don't add it yourself, e.g. \code{sec_label = "erfbelasting"} shows as \code{"erfbelasting (rechteras)"}.}
+
+\item{sec_ylab}{Unit caption for the secondary axis, drawn
+right-aligned above the panel to mirror the left-hand unit that
+\code{ylab} puts in the subtitle. \code{NULL} (default) draws none.}
+
+\item{sec_colour}{Colour for \code{sec_y}; defaults to \code{NULL}, which
+resolves to the CPB pink (\code{cpb_cols(2)}, \code{"#e6006e"}) that sets it
+apart from the blue-led area fills.}
+
+\item{sec_linewidth}{Line width; only used when \code{sec_type = "line"}.
+Defaults to \code{0.55}, as in \code{\link[=cpb_line]{cpb_line()}}.}
+
+\item{sec_points}{If \code{TRUE}, add a marker at every point of the
+\code{sec_y} line. Only used when \code{sec_type = "line"} -- for markers
+without a connecting line, use \code{sec_type = "point"} instead.}
 
 \item{palette}{CPB palette to use for \code{fill}; one of
 \code{"qualitative"} (default), \code{"discr"}, \code{"sequential"}
@@ -68,6 +114,13 @@ conflict and raise an error, since both set the same thing.}
 \code{fill_index}. Still accepted, with a warning.}
 
 \item{pct_axis}{If \code{TRUE}, format the y axis with \code{\link[=label_pct_nl]{label_pct_nl()}}.}
+
+\item{value_accuracy}{Rounding accuracy for the value axis labels,
+passed to \code{\link[=label_number_nl]{label_number_nl()}} (e.g. \code{0.1} for one decimal place).
+\code{NULL} (default) lets \code{scales} pick a sensible accuracy from the
+breaks. Cannot be combined with \code{pct_axis}. Use this instead of
+adding a second \code{scale_y_continuous()}, which would discard the
+wrapper's flush axis (see \code{value_breaks}).}
 
 \item{value_breaks}{Optional breaks for the value axis (passed to
 the wrapper-built \code{\link[ggplot2:scale_continuous]{ggplot2::scale_y_continuous()}}). Use this

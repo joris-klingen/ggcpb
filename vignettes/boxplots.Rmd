@@ -96,13 +96,13 @@ quartile values printed below the box ends.
 ```{r box-modern}
 cpb_box(kk, x = groep,
   p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-  box_style   = "modern",
-  orientation = "horizontal",
-  width       = 0.35,
+  box_style      = "modern",
+  orientation    = "horizontal",
+  width          = 0.35,
+  value_accuracy = 0.1,
   title    = "Koopkracht per inkomensgroep",
   subtitle = "inkomensgroep",
-  ylab     = "% koopkrachtmutatie") +
-  scale_y_continuous(labels = label_number_nl(accuracy = 0.1))
+  ylab     = "% koopkrachtmutatie")
 ```
 
 `"james"` and `"modern"` print value labels by default
@@ -158,8 +158,7 @@ cpb_box(kk2, x = groep,
   position = position_dodge(width = 0.6),
   fill_index = c(6, 2),
   title    = "Koopkracht per jaar, 2026 en 2027",
-  ylab     = "% koopkrachtmutatie") +
-  scale_y_continuous(labels = label_number_nl())
+  ylab     = "% koopkrachtmutatie")
 ```
 
 # Grouped, with a fill per year
