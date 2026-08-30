@@ -134,7 +134,16 @@ cpb_take_sec_ylab <- function(plot) {
   if (is.null(info)) {
     return(list(plot = plot, label = NULL))
   }
-  plot$layers[[info$layer]] <- NULL
+  # found by identity, not by the position it was added at -- a
+  # caller who reordered plot$layers after the wrapper returned (e.g.
+  # to draw something underneath everything else) would otherwise
+  # leave a stale position pointing at the wrong layer, silently
+  # deleting the wrong one instead of this caption's own approximate
+  # placeholder (see cpb_add_sec_ylab() in wrappers.R)
+  idx <- which(vapply(plot$layers, identical, logical(1), y = info$layer_obj))
+  if (length(idx) == 1) {
+    plot$layers[[idx]] <- NULL
+  }
   list(plot = plot, label = info$label)
 }
 

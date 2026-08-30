@@ -563,7 +563,15 @@ cpb_add_sec_ylab <- function(p, has_sec, sec_ylab) {
     hjust = 1, vjust = -0.9, fontface = "italic",
     size = 7 / ggplot2::.pt, family = cpb_font_family()
   )
-  attr(p, "cpb_sec_ylab") <- list(label = sec_ylab, layer = length(p$layers))
+  # the layer *object* is recorded, not its position: `+` always
+  # appends, so a plain `p + ...` never invalidates this, but a caller
+  # doing anything less ordinary -- reordering, or inserting a layer
+  # ahead of this one via `p$layers <- c(new, p$layers)`, e.g. to draw
+  # something underneath everything else -- would silently shift a
+  # stored position out from under it. cpb_take_sec_ylab() (see
+  # save.R) looks this object back up by identity instead, which
+  # survives that.
+  attr(p, "cpb_sec_ylab") <- list(label = sec_ylab, layer_obj = p$layers[[length(p$layers)]])
   p
 }
 

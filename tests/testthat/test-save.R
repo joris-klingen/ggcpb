@@ -89,3 +89,35 @@ test_that("save_cpb warns on a title too long for the page, not when wrapped", {
   # no title, no warning
   expect_no_warning(save_cpb(path, cpb_col(df, x = x, y = y), page = "half"))
 })
+
+test_that("save_cpb keeps sec_y's own colour intact when a layer is inserted ahead of it", {
+  # cpb_take_sec_ylab() (removing the wrapper's approximate sec_ylab
+  # placeholder layer, so save_cpb()'s own exact one replaces it, see
+  # cpb_add_sec_ylab_grob()) used to look that layer up by the
+  # position it was added at. A caller inserting a layer ahead of it
+  # afterward -- p$layers <- c(new, p$layers), the documented way to
+  # draw something underneath everything else -- shifted every later
+  # position by one without updating the stored one, so the wrong
+  # layer got deleted: often the sec_y line itself, silently dropping
+  # it (and its own colour scale then had no data left to train
+  # against, warning "No shared levels found ...").
+  d <- data.frame(x = 1:3, y = 1:3, z = c(5, 6, 7))
+  p <- cpb_line(d, x = x, y = y, sec_y = z, sec_ylab = "n")
+  p$layers <- c(list(ggplot2::geom_hline(yintercept = 0, colour = "white")), p$layers)
+
+  path <- withr::local_tempfile(fileext = ".png")
+  warnings <- character(0)
+  withCallingHandlers(
+    save_cpb(path, p, page = "half"),
+    warning = function(w) {
+      warnings <<- c(warnings, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_false(any(grepl("shared levels", warnings, fixed = TRUE)))
+
+  b <- ggplot2::ggplot_build(p)
+  is_line <- vapply(p$layers, function(l) inherits(l$geom, "GeomLine"), logical(1))
+  sec_line_idx <- which(is_line)[[2]] # the first GeomLine is the inserted hline's sibling primary line
+  expect_false(anyNA(b$data[[sec_line_idx]]$colour))
+})
