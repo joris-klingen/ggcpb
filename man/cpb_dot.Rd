@@ -265,16 +265,12 @@ read top to bottom.
 }
 \examples{
 df <- data.frame(
-  term = c(
-    "Vertrouwen in de politiek", "Succes door hard werken",
-    "Heeft kinderen", "Vermogenskwintiel"
-  ),
-  coef = c(2.9, -2.0, -1.4, -2.5),
-  lo = c(1.9, -3.0, -3.3, -3.2),
-  hi = c(3.9, -1.1, 0.6, -1.8)
+  term  = c("Vertrouwen in de politiek", "Succes door hard werken",
+            "Heeft kinderen", "Vermogenskwintiel"),
+  coef  = c(2.9, -2.0, -1.4, -2.5),
+  lo    = c(1.9, -3.0, -3.3, -3.2),
+  hi    = c(3.9, -1.1, 0.6, -1.8)
 )
-cpb_dot(df,
-  x = term, y = coef, lower = lo, upper = hi,
-  xlab = "\%-punt verandering"
-)
+cpb_dot(df, x = term, y = coef, lower = lo, upper = hi,
+        xlab = "\%-punt verandering")
 }

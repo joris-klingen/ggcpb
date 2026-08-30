@@ -99,9 +99,7 @@ cpb_add_facet <- function(p, facet, facet_ncol = NULL, facet_scales = "fixed") {
 # must not silently drop the other (which a bare guides() call appended
 # after the wrapper would do).
 cpb_add_legend_guide <- function(p, aesthetic, reverse = FALSE, ncol = NULL) {
-  if (!isTRUE(reverse) && is.null(ncol)) {
-    return(p)
-  }
+  if (!isTRUE(reverse) && is.null(ncol)) return(p)
   args <- list(ggplot2::guide_legend(reverse = isTRUE(reverse), ncol = ncol))
   names(args) <- aesthetic
   p + do.call(ggplot2::guides, args)
@@ -1238,24 +1236,20 @@ cpb_col <- function(data, x, y, fill = NULL,
   # left-aligned block instead of letting them sit side by side, with
   # the columns named before the line, as in the published figures
   if (has_sec) {
+    # override.aes: without this, ggplot2 sometimes carries the
+    # sec_y point/line layer's own colour and point shape into the
+    # fill guide's key background (a stray dot rendered on top of
+    # a fill square) when the two guides are stacked like this --
+    # telling the fill guide explicitly to ignore those aesthetics
+    # is the documented ggplot2 fix for that
     p <- p +
       ggplot2::guides(
-        # override.aes: without this, ggplot2 sometimes carries the
-        # sec_y point/line layer's own colour and point shape into the
-        # fill guide's key background (a stray dot rendered on top of
-        # a fill square) when the two guides are stacked like this --
-        # telling the fill guide explicitly to ignore those aesthetics
-        # is the documented ggplot2 fix for that
-        fill = ggplot2::guide_legend(
-          order = 1, reverse = isTRUE(reverse_legend),
-          ncol = legend_ncol, override.aes = list(colour = NA, shape = NA)
-        ),
+        fill = ggplot2::guide_legend(order = 1, reverse = isTRUE(reverse_legend),
+                                     ncol = legend_ncol,
+                                     override.aes = list(colour = NA, shape = NA)),
         colour = ggplot2::guide_legend(order = 2)
       ) +
-      ggplot2::theme(
-        legend.box = "vertical",
-        legend.box.just = "left"
-      )
+      ggplot2::theme(legend.box = "vertical", legend.box.just = "left")
   }
   p
 }
@@ -2596,16 +2590,16 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     # weights and which value labels are printed.
     sty <- switch(box_style,
       james = list(
-        box_col = cpb_single_colour(fill_colour, 6),
-        whisk_lw = 0.4,
-        med_col = "black", med_lw = 0.4, med_ext = 0.15,
+        box_col   = cpb_single_colour(fill_colour, 6),
+        whisk_lw  = 0.4,
+        med_col   = "black", med_lw = 0.4, med_ext = 0.15,
         med_lab_col = "black", med_lab_face = "plain", med_lab_size = 2.2,
         q_labels  = FALSE
       ),
       modern = list(
-        box_col = cpb_single_colour(fill_colour, 5),
-        whisk_lw = 0.55,
-        med_col = unname(cpb_cols(6)), med_lw = 1.3, med_ext = 0.2,
+        box_col   = cpb_single_colour(fill_colour, 5),
+        whisk_lw  = 0.55,
+        med_col   = unname(cpb_cols(6)), med_lw = 1.3, med_ext = 0.2,
         med_lab_col = unname(cpb_cols(6)), med_lab_face = "bold", med_lab_size = 2.6,
         q_labels  = TRUE, q_lab_col = "#00a5ff", q_lab_size = 2.2
       )
@@ -3398,13 +3392,11 @@ cpb_hist <- function(data, x, fill = NULL,
 #' @return A `ggplot` object.
 #' @examples
 #' df <- data.frame(
-#'   term = c(
-#'     "Vertrouwen in de politiek", "Succes door hard werken",
-#'     "Heeft kinderen", "Vermogenskwintiel"
-#'   ),
-#'   coef = c(2.9, -2.0, -1.4, -2.5),
-#'   lo = c(1.9, -3.0, -3.3, -3.2),
-#'   hi = c(3.9, -1.1, 0.6, -1.8)
+#'   term  = c("Vertrouwen in de politiek", "Succes door hard werken",
+#'             "Heeft kinderen", "Vermogenskwintiel"),
+#'   coef  = c(2.9, -2.0, -1.4, -2.5),
+#'   lo    = c(1.9, -3.0, -3.3, -3.2),
+#'   hi    = c(3.9, -1.1, 0.6, -1.8)
 #' )
 #' cpb_dot(df, x = term, y = coef, lower = lo, upper = hi,
 #'         xlab = "%-punt verandering")
