@@ -4,29 +4,21 @@
 # (half or full page); height defaults to the CPB report height but has
 # a "presentation" preset and can always be overridden explicitly.
 
-# ggplot2's own layout gives the panel whatever room is left over once
-# the title and legend have taken what they need -- normally the right
-# behaviour, but it means the same plot's data area visibly grows or
-# shrinks depending on how long the title or legend happens to be. A
-# few wrappers (cpb_donut() so far) instead want the data area itself
-# pinned to a constant physical size no matter what surrounds it, with
-# any chrome that does not fit simply overflowing/being clipped rather
-# than eating into it.
+# ggplot2 sizes the panel from whatever room is left after title and
+# legend take what they need -- usually right, but it makes the data
+# area grow or shrink with title/legend length. cpb_donut() instead
+# wants its ring pinned to a fixed size regardless, with chrome that
+# doesn't fit overflowing rather than shrinking it.
 #
-# The panel is the gtable's only "null" (elastic) cell; every other
-# cell -- title, legend, the fixed plot.margin -- is already sized in
-# absolute units by theme_cpb(). But a "null" unit only means anything
-# relative to a specific grid.layout(), and only actually resolves to
-# a real number once something establishes that layout at a specific
-# size and asks -- a bare convertWidth() on an unplaced "1null" silently
-# reads as zero. So this pushes exactly the viewport theme_cpb()'s own
-# layout would use, sized to what save_cpb() would otherwise have
-# rendered at, and reads each column/row back through it one at a time
-# (querying a whole gtable's worth of null units in one convertWidth()
-# call resolves them all against each other rather than the viewport,
-# which is not what's wanted here) -- freezing title/legend exactly
-# where they would normally land, before the panel cell gets
-# overridden.
+# The panel is the only "null" (elastic) cell in the plot's gtable --
+# the grid of rows/columns ggplot2 lays a plot out into; every other
+# cell is already an absolute size via theme_cpb(). A "null" unit only
+# resolves to a real number against a specific grid.layout() at a given
+# size -- read alone it's just zero. So this pushes the same viewport
+# save_cpb() would render into, then reads each column/row back one at
+# a time (all at once would resolve them against each other, not the
+# viewport), freezing title/legend at their normal size before the
+# panel cell gets overridden.
 #
 # @param plot A ggplot object.
 # @param size Panel size in inches: a single number for a square panel
@@ -83,18 +75,14 @@ cpb_fix_panel_size <- function(plot, size, page_width, page_height) {
   g$widths[panel_col] <- grid::unit(size[[1]], "in")
   g$heights[panel_row] <- grid::unit(size[[2]], "in")
 
-  # title, subtitle and a top/bottom legend all span the plot's full
-  # width (theme_cpb() sets plot.title.position = "plot"), so shrinking
-  # the panel's own column/row directly would narrow their span along
-  # with it, throwing off exactly the alignment cpb_col() and friends
-  # share. Instead, half the size difference goes to each of the
-  # (normally near-empty) axis gutter cells flanking the panel -- still
-  # present, if blank, since a donut always turns its axes off -- which
-  # keeps every other cell's span the same width/height it would have
-  # had anyway and centres the fixed-size panel within it. If the
-  # panel needed to grow rather than shrink, and there is no gutter
-  # left to take space back from, cpb_ggsave_grob() reports the extra
-  # room the figure ends up needing.
+  # Title/subtitle/legend span the plot's full width (theme_cpb() sets
+  # plot.title.position = "plot"), so resizing the panel's own
+  # column/row directly would narrow them too. Instead the size
+  # difference is split between the axis gutter cells flanking the
+  # panel (normally near-empty, since a donut turns its axes off) --
+  # this centres the fixed-size panel without touching anyone else's
+  # span. If the panel needs to grow and there's no gutter left to take
+  # from, cpb_ggsave_grob() reports the extra room needed.
   cpb_grow_flank <- function(units, idx, delta, convert) {
     if (length(idx) != 1) return(units)
     cur <- convert(units[idx], "in", valueOnly = TRUE)
@@ -120,12 +108,12 @@ cpb_fix_panel_size <- function(plot, size, page_width, page_height) {
   g
 }
 
-# The wrappers' sec_ylab (see cpb_add_sec_ylab() in wrappers.R) is drawn
-# twice over: once approximately, as an ordinary annotate() layer, so a
-# bare print()/knitr display still shows *something*; save_cpb() lifts
-# that layer back out here and draws an exact replacement instead (see
-# cpb_add_sec_ylab_grob()), positioned against the plot's own rendered
-# gtable rather than guessed at build time.
+# sec_ylab (see cpb_add_sec_ylab() in wrappers.R) is drawn twice: once
+# approximately, as an annotate() layer, so a bare print()/knitr
+# display still shows *something*; here save_cpb() lifts that
+# placeholder back out and draws an exact replacement
+# (cpb_add_sec_ylab_grob()) against the plot's actual rendered gtable
+# instead of a build-time guess.
 # @return A list with the (possibly unchanged) `plot` and the `label`
 #   to re-draw exactly, or `label = NULL` when there was nothing to do.
 # @noRd
@@ -134,12 +122,10 @@ cpb_take_sec_ylab <- function(plot) {
   if (is.null(info)) {
     return(list(plot = plot, label = NULL))
   }
-  # found by identity, not by the position it was added at -- a
-  # caller who reordered plot$layers after the wrapper returned (e.g.
-  # to draw something underneath everything else) would otherwise
-  # leave a stale position pointing at the wrong layer, silently
-  # deleting the wrong one instead of this caption's own approximate
-  # placeholder (see cpb_add_sec_ylab() in wrappers.R)
+  # matched by identity, not stored position -- a caller who reorders
+  # plot$layers afterward (e.g. to draw something underneath
+  # everything) would otherwise delete the wrong layer instead of this
+  # caption's own placeholder (see cpb_add_sec_ylab() in wrappers.R)
   idx <- which(vapply(plot$layers, identical, logical(1), y = info$layer_obj))
   if (length(idx) == 1) {
     plot$layers[[idx]] <- NULL
@@ -147,33 +133,23 @@ cpb_take_sec_ylab <- function(plot) {
   list(plot = plot, label = info$label)
 }
 
-# Places `label` in gtable `g` on the same row as the plot's subtitle
-# (so it lands at the same height as the left-hand unit ylab() puts
-# there) and flush with the right edge of the secondary axis's own
-# tick values, i.e. right-aligned against the "axis-r" cell itself --
-# both cells always exist once a wrapper's sec_y has produced a right
-# axis, whether or not they hold anything yet (ggplot2 always reserves
-# a "subtitle" row; it is just a zeroGrob when empty).
+# Places `label` in gtable `g` on the subtitle row (same height as
+# ylab()'s own left-hand caption) and flush right against the "axis-r"
+# cell (both always exist once a wrapper's sec_y has produced a right
+# axis, even empty -- ggplot2 always reserves a "subtitle" row).
 #
-# "Same height" means top-anchored, not centred, in that row: the row
-# is sized to the subtitle text's own height plus a bottom-only margin
-# (theme_cpb()'s plot.subtitle is vjust = 1, margin = margin(b = 5.5)),
-# so the text itself sits flush against the top of the row, with the
-# margin as empty space below it. Centring this label in the same row
-# instead (vjust = 0.5) draws it visibly lower than the subtitle, by
-# roughly half that margin.
+# Top-anchored (vjust = 1), not centred: theme_cpb()'s plot.subtitle is
+# itself vjust = 1 with a bottom-only margin, so centring here would
+# sit visibly lower than it.
 #
 # Flush against the cell, not centred on the tick text's own width: an
-# earlier version centred the label's last character over the tick
-# text's midpoint instead, which reads as stopping noticeably short of
-# the axis, not aligned with it -- flush right is both simpler and the
-# published look this is meant to match.
+# earlier version did the latter and read as stopping short of the
+# axis rather than aligned with it; flush is simpler and matches the
+# published look.
 #
-# `page_width`/`page_height` resolve the gtable's elastic "null"
-# widths to what they really come out to at that size (see
-# cpb_resolve_gtable_units()), the same way cpb_fix_panel_size()
-# already has to; the row/column placement below still needs it even
-# though the anchor itself no longer does.
+# `page_width`/`page_height` resolve the gtable's elastic "null" units
+# (see cpb_resolve_gtable_units()) for the row/column lookup below,
+# even though the anchor itself no longer needs them.
 # @noRd
 cpb_add_sec_ylab_grob <- function(g, label, page_width, page_height) {
   row <- g$layout$t[g$layout$name == "subtitle"]
@@ -197,11 +173,10 @@ cpb_add_sec_ylab_grob <- function(g, label, page_width, page_height) {
   gtable::gtable_add_grob(g, grob, t = row, l = col, clip = "off", name = "sec-ylab")
 }
 
-# Depth-first search through a grob's `children` (a gTree) and/or
-# `grobs` (a gtable) for the first descendant inheriting from class
-# `what` -- used below to reach into the axis title and axis tick
-# label grobs without hardcoding a fixed nesting depth or field name,
-# either of which could shift with a ggplot2 version.
+# Depth-first search through a grob's `children` (gTree) and/or
+# `grobs` (gtable) for the first descendant of class `what` -- reaches
+# into axis title/tick-label grobs without hardcoding a nesting depth
+# or field name that could shift with a ggplot2 version.
 # @noRd
 cpb_find_grob <- function(x, what) {
   if (is.null(x)) return(NULL)
@@ -216,29 +191,22 @@ cpb_find_grob <- function(x, what) {
   NULL
 }
 
-# The value-axis title -- ggplot2's own "xlab-t"/"xlab-b" cells, which
-# is where the wrappers' `xlab`/`ylab` convention (see the "CPB house
-# style has no rotated axis titles" comment in wrappers.R) lands the
-# value-axis label for a horizontal-orientation figure -- is anchored
-# by theme_cpb()'s axis.title (hjust = 1, i.e. flush with the *panel*
-# edge), not with the actual rendered extent of the axis's own
-# outermost tick label. Every wrapper's value axis is flush (see
-# cpb_flush_scale_args() in wrappers.R: the highest/lowest break sits
-# exactly on the panel edge, no expansion), and axis text is centred
-# on its own break by default, so that outermost tick label's text
-# overhangs the panel edge by half its own width -- a title anchored
-# to the bare panel edge lands short of the label by exactly that
-# much, worse the longer the label (an extra "%" sign, more digits).
+# ggplot2's "xlab-t"/"xlab-b" cells hold the value-axis title (the
+# wrappers' xlab/ylab convention lands it there for a horizontal
+# figure, see wrappers.R). theme_cpb()'s axis.title anchors it flush
+# with the *panel* edge (hjust = 1), not the axis's own outermost tick
+# label. Since every value axis is flush (cpb_flush_scale_args() in
+# wrappers.R: highest/lowest break exactly on the panel edge, no
+# expansion) and tick text is centred on its own break, that label
+# overhangs the panel edge by half its width -- the title lands short
+# by exactly that much, worse for a longer label (an extra "%", more
+# digits).
 #
-# Nudges the title's anchor out by that half-width, measured from the
-# actual rendered tick label (same text, same font) rather than
-# assumed, so this keeps working under a longer/shorter title, a
-# taller/shorter panel, a different axis_text_size, or a different
-# number of tick digits. Best-effort: silently a no-op if the expected
-# cells or grob shapes are not found (a vertical-orientation figure
-# with no value-axis title, an unstyled plot, hjust other than 0/1, a
-# future ggplot2 internal change, ...) rather than erroring save_cpb()
-# over a cosmetic alignment detail.
+# Nudges the title out by that measured half-width (same text, same
+# font, not assumed), so it keeps working under any title/panel/label
+# length. Best-effort: a no-op if the expected cells/grobs aren't found
+# (vertical orientation, no title, unstyled plot, a future ggplot2
+# change, ...) rather than erroring over a cosmetic detail.
 # @return The (possibly unchanged) gtable.
 # @noRd
 cpb_align_value_axis_title <- function(g) {
@@ -285,11 +253,10 @@ cpb_align_value_axis_title <- function(g) {
   g
 }
 
-# Rebuilds `parent` with its descendant `old` (found and matched by
-# identity, mirroring cpb_take_sec_ylab()'s own layer lookup) replaced
-# by `new`, searched through the same `children`/`grobs` shape
-# cpb_find_grob() reads. Returns NULL, changing nothing, if `old` is
-# not actually reachable from `parent`.
+# Rebuilds `parent` with `old` (matched by identity, like
+# cpb_take_sec_ylab()'s layer lookup) replaced by `new`, searched
+# through the same children/grobs shape cpb_find_grob() reads. Returns
+# NULL if `old` is not reachable from `parent`.
 # @noRd
 cpb_replace_grob <- function(parent, old, new) {
   if (identical(parent, old)) return(new)
@@ -314,19 +281,15 @@ cpb_replace_grob <- function(parent, old, new) {
   NULL
 }
 
-# Draws a gtable straight to a graphics device, since ggplot2::ggsave()
-# only accepts a ggplot object for `plot`, not an already-built grob.
+# Draws a gtable straight to a device, since ggplot2::ggsave() only
+# accepts a ggplot object, not an already-built grob.
 #
-# `width`/`height` are only an escape hatch for a grob whose panel cell
-# is still a "null" unit (sec_ylab-only, no panel_size -- see
-# save_cpb()): a null unit only resolves once drawn against a viewport
-# of a real size, so it must be told what that size is. Left NULL (the
-# cpb_fix_panel_size() case), every cell in `grob` is already an
-# absolute unit, so the device is instead opened at the gtable's own
-# natural total size: fixing the panel can only ever make the whole
-# figure need a little more or less room than the dynamic layout
-# would have, and forcing it back into the original size is exactly
-# the "shrink the panel to fit" behaviour this exists to avoid.
+# `width`/`height` are an escape hatch for a grob whose panel cell is
+# still a "null" unit (sec_ylab-only, no panel_size): it only resolves
+# once drawn at a real size. Left NULL (the cpb_fix_panel_size() case,
+# every cell already absolute), the device opens at the gtable's own
+# natural size instead -- forcing it back to the original page size
+# would just be the "shrink the panel to fit" behaviour this avoids.
 # @noRd
 cpb_ggsave_grob <- function(filename, grob, dpi, device, bg, width = NULL, height = NULL, ...) {
   if (is.null(width)) {
@@ -420,21 +383,14 @@ save_cpb <- function(filename,
                       bg = cpb_bg,
                       panel_size = NULL,
                       ...) {
-  # cpb_fix_panel_size()/cpb_add_sec_ylab_grob()/the cpb_map() aspect
-  # fit below all measure an already-built grob's own widths/heights in
-  # real units (grid::convertWidth()/convertHeight()), which -- even
-  # between two absolute units, "in" to "in" -- still resolves through
-  # whatever graphics device is current. Call one of these with no
-  # device open at all (a plain Rscript run, not RStudio) and R quietly
-  # opens its default one to answer the query: on most systems a real
-  # "pdf" device, which leaves a blank Rplots.pdf sitting in the
-  # working directory once the R session ends. A throwaway device
-  # opened and closed here, the same way cpb_resolve_gtable_units()
-  # already opens one of its own, covers every such call in this
-  # function's own call graph at once -- ragg specifically, not
-  # grDevices::pdf(NULL), since the base pdf device does not know the
-  # bundled RijksoverheidSansText font and warns about it on every text
-  # measurement, exactly the kind of noise this is meant to avoid.
+  # cpb_fix_panel_size()/cpb_add_sec_ylab_grob()/the map aspect fit
+  # below all measure a grob's width/height via grid::convertWidth() --
+  # even "in" to "in", this resolves through whatever device is
+  # current. With none open (a plain Rscript run), R silently opens its
+  # default -- usually "pdf" -- leaving a blank Rplots.pdf behind. A
+  # throwaway device here covers every such call at once; ragg
+  # specifically, since grDevices::pdf(NULL) doesn't know the bundled
+  # font and warns on every text measurement.
   tmp_measure <- tempfile(fileext = ".png")
   on.exit(unlink(tmp_measure), add = TRUE)
   ragg::agg_png(tmp_measure, width = 1, height = 1, units = "in", res = 72)
@@ -458,9 +414,9 @@ save_cpb <- function(filename,
     )
   }
 
-  # NULL means the caller left height to us; used below to decide
-  # whether cpb_map()'s own aspect ratio gets to auto-size the panel,
-  # or an explicit height (like an explicit panel_size) wins outright
+  # NULL means height was left to us; decides below whether cpb_map()'s
+  # aspect ratio gets to auto-size the panel, or an explicit height
+  # wins outright, like an explicit panel_size does
   height_auto <- is.null(height)
   if (is.null(height)) {
     height <- if (preset == "presentation") 2.5 else 2.98
@@ -475,12 +431,11 @@ save_cpb <- function(filename,
   }
 
   # failing that, cpb_map() tags its plot with the boundaries' true
-  # (metres) aspect ratio: measure the panel width the plot would get
-  # at this page width regardless (title/legend chrome span the full
-  # width, so it does not depend on height) and pin the panel to that
-  # width at the matching height, so the map fills its panel exactly
-  # instead of sitting letterboxed inside a too-tall/too-short one. An
-  # explicit height opts out, the same way an explicit panel_size does.
+  # aspect ratio: measure the panel width at this page width (doesn't
+  # depend on height, since title/legend span the full width) and pin
+  # the panel to that width at the matching height, so the map fills it
+  # exactly instead of sitting letterboxed. An explicit height opts
+  # out, like an explicit panel_size does.
   if (is.null(panel_size) && height_auto) {
     map_aspect <- attr(plot, "cpb_map_aspect")
     if (!is.null(map_aspect)) {
@@ -497,16 +452,12 @@ save_cpb <- function(filename,
   sec_ylab <- cpb_take_sec_ylab(plot)
   plot <- sec_ylab$plot
 
-  # cpb_align_value_axis_title() is best-effort and a no-op for most
-  # figures (a vertical orientation, no value-axis xlab/ylab, ...), but
-  # whether it applies can only be told by actually building the grob
-  # and looking -- see its own comment for why. That means the common
-  # case (no panel_size, no sec_ylab, and this ends up a no-op) builds
-  # the grob twice, once here to check and once more inside
-  # ggplot2::ggsave() below; accepted as the price of not guessing
-  # eligibility from plot$labels/plot$coordinates instead, which would
-  # be a wrapper-shaped assumption liable to drift out of sync with
-  # wrappers.R.
+  # cpb_align_value_axis_title() is a no-op for most figures, but
+  # whether it applies can only be told by building the grob and
+  # looking (see its own comment). So the common no-op case builds the
+  # grob twice -- here to check, again inside ggplot2::ggsave() below
+  # -- accepted over guessing eligibility from plot$labels/coordinates,
+  # which would drift out of sync with wrappers.R.
   grob <- if (is.null(panel_size)) {
     ggplot2::ggplotGrob(plot)
   } else {
@@ -533,10 +484,9 @@ save_cpb <- function(filename,
       grob <- cpb_add_sec_ylab_grob(grob, sec_ylab$label, width, height)
     }
     if (!is.null(panel_size)) {
-      # fixing the panel can leave the figure needing a little more or
-      # less room than the page's usual width/height -- see
-      # cpb_ggsave_grob() -- so what actually gets written here is
-      # reported below rather than the originally requested width/height
+      # fixing the panel can need a bit more or less room than the
+      # page's usual width/height (see cpb_ggsave_grob()), so what's
+      # actually written is reported below, not the requested size
       width <- sum(grid::convertWidth(grob$widths, "in", valueOnly = TRUE))
       height <- sum(grid::convertHeight(grob$heights, "in", valueOnly = TRUE))
       cpb_ggsave_grob(

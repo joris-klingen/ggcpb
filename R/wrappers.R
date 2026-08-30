@@ -176,29 +176,21 @@ cpb_discrete_scale <- function(aesthetic = c("fill", "colour"), index = NULL,
 }
 
 # A whole-number x axis (almost always a year) must never get a
-# fractional break -- left to its own default break algorithm,
-# ggplot2 can choose fractional ones for some ranges (2010-2022 ->
-# ..., 2012.5, ..., confirmed empirically), and base pretty() itself
-# does the same for short enough ones (2020-2021 -> 2020, 2020.2, ...,
-# 2021). So this generates pretty()'s usual candidates but keeps only
-# the whole-number ones, the same "trust pretty(), just guard its edge
-# case" approach the value axis's own flush breaks already use (see
-# cpb_flush_scale_args()) -- applied unconditionally, independent of
-# `flush`.
+# fractional break: both ggplot2's default algorithm and pretty()
+# itself can pick one for some ranges (confirmed empirically, e.g.
+# 2020-2021 -> 2020, 2020.2, ..., 2021). So this takes pretty()'s
+# candidates and keeps only the whole-number ones, unconditionally,
+# independent of `flush`.
 #
-# `flush` itself (x_lim_follow_data's own job: no padding on either
-# side) is scale-based here *only* for a discrete x -- a numeric x's
-# flush is handled by the caller instead, as the coord's own xlim (see
-# cpb_x_flush_xlim() below), which -- unlike a scale's expand -- is
-# not silently discarded if the caller adds their own
-# scale_x_continuous() afterward (e.g. for minor ticks; ggplot2 keeps
-# only one scale per aesthetic, but coord and scale are separate plot
-# components). A discrete x cannot use that same trick: a blanket
-# coord-level expand = FALSE also strips its own default padding
-# (expansion(add = 0.6)), clipping markers/labels at the first/last
-# category -- a real bug found and fixed on cpb_col()/cpb_line()
-# previously, so discrete x keeps the more limited, collision-prone
-# scale-based flush instead.
+# `flush` (x_lim_follow_data's own job) is handled here, via the
+# scale, only for a discrete x. A numeric x's flush goes through the
+# coord's own xlim instead (cpb_x_flush_xlim() below), since unlike a
+# scale's expand it survives a caller adding their own
+# scale_x_continuous() afterward (e.g. for minor ticks). A discrete x
+# can't use that trick: a blanket coord-level expand = FALSE also
+# strips its default padding, clipping markers/labels at the first/last
+# category (a real bug, previously found and fixed) -- so it keeps the
+# more limited, collision-prone scale-based flush instead.
 cpb_x_scale <- function(p, x, data, flush) {
   xvals <- rlang::eval_tidy(x, data)
   if (is.numeric(xvals)) {
@@ -367,25 +359,21 @@ cpb_zeroline_auto <- function(lo, hi) {
 
 # ---- sec_y helpers ----
 #
-# These five functions are the shared machinery behind `sec_y`: a
-# second series drawn on its own right-hand axis, in wrappers like
-# cpb_col(). Every wrapper that supports sec_y calls all five in the
-# same order, so they are kept here as one shared implementation
+# Shared machinery behind `sec_y`: a second series drawn on its own
+# right-hand axis, in wrappers like cpb_col(). Every wrapper that
+# supports sec_y calls all five of these, in the same order.
 #
 # The core idea: the secondary series has its own value range (say,
-# 0-3), but it has to be drawn on the SAME panel as the primary bars,
-# whose value range is different (say, 0-20). So every secondary value
-# gets converted to a "primary axis position" before it is drawn --
-# and the right-hand axis then shows the reverse conversion, so its
-# labels read in the secondary series' own units again.
+# 0-3), but is drawn on the same panel as the primary bars, whose range
+# differs (say, 0-20). So every secondary value is converted to a
+# "primary axis position" before drawing, and the right-hand axis shows
+# the reverse conversion, so its labels read in the secondary series'
+# own units again.
 
-# Step 1: work out that conversion. Takes the secondary column's own
-# values (to guess a sensible default range if the user didn't set
-# `sec_limits`), plus the primary axis's own flush min/max (the exact
-# range the panel is already being drawn to), and returns a small list
-# describing the conversion. Also checks for the two ways this can go
-# wrong: a non-numeric sec_y column, or a primary/secondary range with
-# no actual width to map onto.
+# Step 1: work out that conversion, from the secondary column's own
+# values (a default range, when `sec_limits` isn't set) and the primary
+# axis's flush min/max. Also checks the two ways this can go wrong: a
+# non-numeric sec_y column, or a range with no actual width to map onto.
 cpb_sec_map <- function(sec_vals, sec_limits, prim_min, prim_max) {
   if (!is.numeric(sec_vals)) {
     stop("`sec_y` must be a numeric column.", call. = FALSE)
@@ -407,15 +395,11 @@ cpb_sec_map <- function(sec_vals, sec_limits, prim_min, prim_max) {
       call. = FALSE
     )
   }
-  # all.equal() rather than == : a primary axis of exactly 0 to 0 is
-  # the obvious case, but the two can also merely be *representable*
-  # as unequal floating-point doubles while being the same value in
-  # every way that matters (e.g. a breaks/limits computation landing
-  # on 0.06 one way and 0.06000000000000001 the other) -- == would let
-  # that slip through into a division by a not-quite-zero range next,
-  # which is exactly the kind of near-zero denominator that produces
-  # wildly unstable, meaningless secondary-axis positions rather than
-  # a clean error.
+  # all.equal(), not ==: two floating-point doubles can be the same
+  # value in every way that matters (e.g. 0.06 vs
+  # 0.06000000000000001) while still comparing unequal -- == would let
+  # that through into a division by a near-zero range next, producing
+  # wildly unstable positions instead of a clean error.
   if (isTRUE(all.equal(prim_min, prim_max))) {
     stop("the primary value axis has no range for `sec_y` to map onto.",
       call. = FALSE
@@ -435,31 +419,22 @@ cpb_sec_to_primary <- function(v, sec_map) {
     (sec_map$prim_max - sec_map$prim_min) + sec_map$prim_min
 }
 
-# Step 3: the right-hand axis itself. It needs to undo step 2's
-# conversion, so that even though the secondary series is physically
-# drawn using primary-axis positions, the axis labels next to it show
-# the secondary series' real values -- plain Dutch numbers by default,
-# regardless of whether the primary axis is a percentage, since sec_y
-# is usually a different kind of quantity from the primary series
-# (e.g. a price alongside a percentage share) and must not silently
-# inherit the primary axis's own pct_axis formatting. `accuracy` (see
-# each wrapper's `sec_accuracy`) still works the same as it does for
-# the primary axis's own `value_accuracy`, for whenever the default
-# rounding is not the right one for this particular secondary series.
+# Step 3: the right-hand axis, undoing step 2's conversion so its
+# labels show the secondary series' real values -- plain Dutch numbers
+# by default, never inheriting the primary axis's own pct_axis
+# formatting, since sec_y is usually a different kind of quantity
+# (e.g. a price alongside a percentage share). `accuracy` (see each
+# wrapper's `sec_accuracy`) works like the primary axis's own
+# `value_accuracy`.
 #
-# Left to compute its own breaks, ggplot2's sec_axis() would pick
-# "nice" numbers independently in the secondary series' own units --
-# which almost never line up with the primary axis's horizontal
-# gridlines (and can even leave the top gridline without a right-hand
-# label at all, if its own nicest break falls just short of the data
-# max). Every CPB figure with two axes shares one set of gridlines, so
-# the two axes' ticks must land at the same heights. The fix is to
-# tell sec_axis() to use these exact `primary_breaks` -- but its
-# `breaks` argument is read in the SECONDARY axis's own units, not the
-# primary ones (it inverse-transforms whatever it's given back onto
-# the panel to decide where to draw it), so each primary break first
-# has to be run through this same `transform` to get the matching
-# secondary-space number to hand it.
+# Left to itself, ggplot2's sec_axis() would pick "nice" breaks
+# independently in the secondary series' own units, which almost never
+# line up with the primary axis's gridlines (and can leave the top one
+# without a right-hand label). So it's told to use these exact
+# `primary_breaks` instead -- but its `breaks` argument reads in the
+# SECONDARY axis's own units, so each primary break is first run
+# through the same `transform` to get the matching secondary-space
+# number.
 cpb_sec_axis <- function(sec_map, primary_breaks, accuracy = NULL) {
   to_sec <- function(v) {
     (v - sec_map$prim_min) / (sec_map$prim_max - sec_map$prim_min) *
@@ -472,18 +447,14 @@ cpb_sec_axis <- function(sec_map, primary_breaks, accuracy = NULL) {
   )
 }
 
-# Step 4: actually draw the secondary series (as a line, points, or
-# thin bars -- see `sec_type`) at the positions from step 2, and give
-# it its own legend key. The key's label always gets " (rechteras)"
-# ("right axis" in Dutch) appended, which is the CPB house convention
-# for showing the reader which axis a legend entry belongs to.
+# Step 4: draw the secondary series (line, points, or thin bars -- see
+# `sec_type`) at the positions from step 2, with its own legend key.
+# The key's label always gets " (rechteras)" ("right axis") appended --
+# the CPB convention for showing which axis a legend entry belongs to.
 #
-# sec_point_size/sec_col_width are exposed (not hardcoded) so that,
-# say, sec_type = "point" on cpb_dot() can be sized to match that
-# wrapper's own primary `size` if the two are meant to read as the
-# same kind of mark -- each wrapper's own call site decides its
-# default, cpb_dot()'s defaulting to `size` itself, everyone else's to
-# a plain standalone default.
+# sec_point_size/sec_col_width are exposed, not hardcoded, so e.g.
+# sec_type = "point" on cpb_dot() can be sized to match that wrapper's
+# own primary `size`; each wrapper's call site picks its own default.
 cpb_sec_layer <- function(p, data, x, sec_vals, sec_map, sec_type,
                           sec_col, sec_lab, sec_linewidth, sec_points,
                           sec_point_size, sec_col_width) {
@@ -530,28 +501,23 @@ cpb_sec_layer <- function(p, data, x, sec_vals, sec_map, sec_type,
   )
 }
 
-# Step 5: the primary series needs the mirror-image treatment -- once
-# there's a second axis on the chart, its own legend label(s) get
-# " (linkeras)" ("left axis") appended too, so every entry in the
-# legend says which axis it belongs to, not just sec_y's. When there
-# is no secondary axis at all, this is a no-op (ggplot2::waiver()
-# tells the scale "just use your normal default labels").
+# Step 5: the primary series gets the mirror-image treatment -- once
+# there's a second axis, its own legend label(s) get " (linkeras)"
+# ("left axis") appended too, so every entry says which axis it
+# belongs to. No secondary axis at all: a no-op (ggplot2::waiver()
+# keeps the scale's normal default labels).
 cpb_linkeras_labels <- function(has_sec) {
   if (isTRUE(has_sec)) function(b) paste0(b, " (linkeras)") else ggplot2::waiver()
 }
 
 # Draws sec_ylab as an approximate placement -- right-aligned, italic,
-# nudged just above the panel -- so a bare print()/knitr display still
-# shows it without going through save_cpb(). That approximation only
-# ever lands close, not exactly, on the primary title's own subtitle
-# row or the secondary axis's tick label column, since at this point
-# the plot has not been rendered yet and neither position is known.
-# save_cpb() replaces it with an exact one (see cpb_take_sec_ylab() and
-# cpb_add_sec_ylab_grob() in save.R) read directly off the rendered
-# gtable, which is why this layer's position is recorded as an
-# attribute here: `+` always appends layers, never reorders them, so
-# this index still points at the same layer however many more get
-# added afterwards.
+# nudged above the panel -- so a bare print()/knitr display still shows
+# something without going through save_cpb(). It only lands close, not
+# exact, since neither the subtitle row nor the tick label column is
+# known before the plot is actually rendered. save_cpb() replaces it
+# with an exact one (cpb_take_sec_ylab()/cpb_add_sec_ylab_grob() in
+# save.R), which is why this layer is recorded as an attribute here
+# rather than by position.
 cpb_add_sec_ylab <- function(p, has_sec, sec_ylab) {
   if (!has_sec || is.null(sec_ylab)) {
     return(p)
@@ -561,14 +527,11 @@ cpb_add_sec_ylab <- function(p, has_sec, sec_ylab) {
     hjust = 1, vjust = -0.9, fontface = "italic",
     size = 7 / ggplot2::.pt, family = cpb_font_family()
   )
-  # the layer *object* is recorded, not its position: `+` always
-  # appends, so a plain `p + ...` never invalidates this, but a caller
-  # doing anything less ordinary -- reordering, or inserting a layer
-  # ahead of this one via `p$layers <- c(new, p$layers)`, e.g. to draw
-  # something underneath everything else -- would silently shift a
-  # stored position out from under it. cpb_take_sec_ylab() (see
-  # save.R) looks this object back up by identity instead, which
-  # survives that.
+  # recorded by object, not position: a caller reordering plot$layers
+  # afterward (e.g. p$layers <- c(new, p$layers), to draw something
+  # underneath everything) would shift a stored position out from
+  # under it. cpb_take_sec_ylab() (save.R) looks this up by identity
+  # instead, which survives that.
   attr(p, "cpb_sec_ylab") <- list(label = sec_ylab, layer_obj = p$layers[[length(p$layers)]])
   p
 }
@@ -605,13 +568,11 @@ cpb_flush_scale_args <- function(axis_values, pct_axis = FALSE, pct_scale = 1,
   breaks_final <- if (!is.null(value_breaks)) {
     value_breaks
   } else if (!is.null(value_limits)) {
-    # the forced limits are what the visible breaks must span, not the
-    # raw data: pretty()'ing the full (possibly wider, possibly
-    # narrower) data range can pick breaks that miss one or both of
-    # the forced limits entirely -- e.g. a caller-supplied c(0, 40)
-    # with data running 8-41 would otherwise get pretty(8, 41)'s own
-    # breaks (5, 10, ..., 45), which never include the 0 the caller
-    # explicitly asked the axis to start at
+    # forced limits, not the raw data, are what the breaks must span:
+    # pretty()'ing the full data range can miss a forced limit entirely
+    # -- e.g. limits = c(0, 40) with data running 8-41 would get
+    # pretty(8, 41)'s breaks (5, 10, ..., 45), never including the 0
+    # the caller asked for
     pretty(value_limits)
   } else {
     pretty(range(axis_values, na.rm = TRUE))
