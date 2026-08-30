@@ -31,6 +31,20 @@ knitr::opts_chunk$set(
 library(ggcpb)
 ```
 
+```{r show-saved-helper, include = FALSE}
+# Displays a file save_cpb() already wrote to a temporary path, at a
+# stable location knitr manages itself -- so the rendered copy of this
+# page (e.g. on GitHub) keeps a working image link rather than one
+# pointing at a temp file that no longer exists. Purely a display
+# detail for this page, not part of the save_cpb() example above it.
+.show_saved <- function(path) {
+  stable <- knitr::fig_path(".png")
+  dir.create(dirname(stable), recursive = TRUE, showWarnings = FALSE)
+  file.copy(path, stable, overwrite = TRUE)
+  knitr::include_graphics(stable)
+}
+```
+
 # Introduction
 
 Most figures in this package are built by calling one of its
@@ -131,10 +145,13 @@ exact, since at that point the figure has not actually been saved yet
 to measure against. So, rather than printing it directly, it is
 written out through `save_cpb()` first and shown from that file:
 
-```{r fig-koopkracht, out.width = "700px"}
+```{r fig-koopkracht, results = "hide"}
 path <- tempfile(fileext = ".png")
-invisible(utils::capture.output(save_cpb(path, figs$koopkracht, page = "full")))
-knitr::include_graphics(path)
+save_cpb(path, figs$koopkracht, page = "full")
+```
+
+```{r fig-koopkracht-show, echo = FALSE, out.width = "700px"}
+.show_saved(path)
 ```
 
 `werkloosheid` has no second axis, so it can be shown directly:
@@ -199,8 +216,11 @@ because each setting has its own row.
 When the parameter file describes one figure, `import_csv()` returns
 that figure directly rather than a named list.
 
-```{r vertical-build}
-invisible(utils::capture.output(fig_vertical <- import_csv(data_csv, params_vertical)))
+```{r vertical-build, results = "hide"}
+fig_vertical <- import_csv(data_csv, params_vertical)
+```
+
+```{r vertical-build-show, echo = FALSE}
 fig_vertical
 ```
 

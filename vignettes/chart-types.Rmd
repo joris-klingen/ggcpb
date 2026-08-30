@@ -32,6 +32,20 @@ library(tidyr)
 set.seed(42)
 ```
 
+```{r show-saved-helper, include = FALSE}
+# Displays a file save_cpb() already wrote to a temporary path, at a
+# stable location knitr manages itself -- so the rendered copy of this
+# page (e.g. on GitHub) keeps a working image link rather than one
+# pointing at a temp file that no longer exists. Purely a display
+# detail for this page, not part of any save_cpb() example above it.
+.show_saved <- function(path) {
+  stable <- knitr::fig_path(".png")
+  dir.create(dirname(stable), recursive = TRUE, showWarnings = FALSE)
+  file.copy(path, stable, overwrite = TRUE)
+  knitr::include_graphics(stable)
+}
+```
+
 One section per CPB chart type, each in its *default* house style:
 the simulated data it needs and the wrapper call that draws it,
 nothing more. All wrappers return a plain `ggplot` object, so
@@ -277,23 +291,14 @@ the primary range, so both axes start together and the line cannot
 drift out of step with its own labels.
 
 `sec_ylab`'s caption on the right is placed to line up exactly with
-`ylab`'s own caption on the left, the same way `cpb_donut()`'s ring
-above keeps a fixed size -- only `save_cpb()` lines it up exactly;
-knitr's own plotting device shows an approximate placement instead
-(close, not exact, since at print time the plot has not actually been
-rendered yet to measure against). So, the same as every donut above,
-every `sec_y` figure below is written out through `save_cpb()` first
-and displayed from that file:
+`ylab`'s own caption on the left, but only `save_cpb()` lines it up
+exactly; knitr's own plotting device shows an approximate placement
+instead (close, not exact, since at print time the plot has not
+actually been rendered yet to measure against). So, like every figure
+with a `sec_y` below, this one is written to a file with `save_cpb()`
+and shown from that file rather than printed directly:
 
-```{r show_cpb}
-show_cpb <- function(plot, ...) {
-  f <- tempfile(fileext = ".png")
-  invisible(utils::capture.output(save_cpb(f, plot, ...)))
-  knitr::include_graphics(f)
-}
-```
-
-```{r col-secaxis, out.width = "700px"}
+```{r col-secaxis, results = "hide", out.width = "700px"}
 nalatenschap <- expand_grid(
   soort = factor(c("waarover aangifte", "waarover geen aangifte"),
                  levels = c("waarover geen aangifte", "waarover aangifte")),
@@ -310,7 +315,7 @@ erfbelasting <- tibble(
               1.6, 1.7, 1.8, 1.8, 1.8, 2.3, 2.4, 2.5)
 )
 
-nalatenschap |>
+p <- nalatenschap |>
   left_join(erfbelasting, by = "jaar") |>
   cpb_col(x = jaar, y = mld, fill = soort,
     sec_y      = heffing,
@@ -318,8 +323,14 @@ nalatenschap |>
     sec_label  = "erfbelasting",
     sec_ylab   = "mld euro",
     title = "Belasting over erfenissen, prijzen 2022",
-    ylab  = "mld euro") |>
-  show_cpb(page = "full")
+    ylab  = "mld euro")
+
+path <- tempfile(fileext = ".png")
+save_cpb(path, p, page = "full")
+```
+
+```{r col-secaxis-show, echo = FALSE, out.width = "700px"}
+.show_saved(path)
 ```
 
 `sec_ylab` mirrors on the right what `ylab` puts above the panel on
@@ -331,7 +342,7 @@ cannot be read: horizontal bars, grouped categories, and
 `cpb_line()` takes the same arguments, for the figure that puts two
 rates on the left axis and an index on the right:
 
-```{r line-secondary, out.width = "350px"}
+```{r line-secondary, results = "hide", out.width = "350px"}
 lonen <- tibble(
   jaar  = 2020:2027,
   cao   = c(3.0, 2.2, 3.2, 5.8, 6.7, 5.1, 4.2, 3.8),
@@ -356,7 +367,13 @@ p <- lonen |>
     title = "Cao-loon bedrijven en inflatie (cpi)",
     ylab  = "mutatie in %") +
   scale_x_continuous(breaks = seq(2020, 2026, 2))
-show_cpb(p, page = "half")
+
+path <- tempfile(fileext = ".png")
+save_cpb(path, p, page = "half")
+```
+
+```{r line-secondary-show, echo = FALSE, out.width = "350px"}
+.show_saved(path)
 ```
 
 The one difference from `cpb_col()`: there the columns key on `fill`
@@ -397,27 +414,24 @@ up to `2` (no hole at all -- a full pie).
 `cpb_donut()`'s ring keeps a fixed physical size regardless of title
 or legend length (see `panel_size`), which knitr's own plotting device
 does not apply on its own -- only `save_cpb()` does. So instead of
-printing the plot directly, every donut here is written out through
-`save_cpb()` first and displayed from that file, exactly as it would
-look saved for a report:
+printing the plot directly, every donut here is written to a file with
+`save_cpb()` and shown from that file, exactly as it would look saved
+for a report:
 
-```{r show_donut}
-show_donut <- function(...) {
-  f <- tempfile(fileext = ".png")
-  invisible(utils::capture.output(save_cpb(f, cpb_donut(...), page = "half")))
-  knitr::include_graphics(f)
-}
-```
-
-```{r donut}
+```{r donut, results = "hide"}
 energie <- tibble(
   bron  = factor(bronnen, levels = bronnen),
   share = c(45, 30, 15, 10)
 )
 
-show_donut(energie, fill = bron, y = share,
+path <- tempfile(fileext = ".png")
+save_cpb(path, cpb_donut(energie, fill = bron, y = share,
   index = c(6, 5, 2, 4),
-  title = "Energiemix van huishoudens")
+  title = "Energiemix van huishoudens"), page = "half")
+```
+
+```{r donut-show, echo = FALSE}
+.show_saved(path)
 ```
 
 With more wedges, printing the value on the wedge itself gets cramped
@@ -428,7 +442,7 @@ way out -- and automatically spaces out any wedges whose values would
 otherwise land on top of each other, like the two thinnest slices
 here:
 
-```{r donut-leader}
+```{r donut-leader, results = "hide"}
 niveaus <- c("aardgas", "overig", "windenergie op land", "zonne-energie",
              "kernenergie", "windenergie op zee")
 energie2 <- tibble(
@@ -438,10 +452,15 @@ energie2 <- tibble(
   share = c(40, 35, 13, 3, 2, 7)
 )
 
-show_donut(energie2, fill = bron, y = share,
+path <- tempfile(fileext = ".png")
+save_cpb(path, cpb_donut(energie2, fill = bron, y = share,
   label_style = "leader",
   index = c(6, 4, 5, 1, 3, 2),
-  title = "Energiemix, met lijnlabels")
+  title = "Energiemix, met lijnlabels"), page = "half")
+```
+
+```{r donut-leader-show, echo = FALSE}
+.show_saved(path)
 ```
 
 # Quantile boxplots
