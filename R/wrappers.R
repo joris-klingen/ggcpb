@@ -144,8 +144,14 @@ cpb_key_errorbar <- function(orientation = c("horizontal", "vertical")) {
 
 # a titled figure always reserves the subtitle line, so the gap between
 # title and panel is stable whether or not a subtitle is set
-cpb_reserve_subtitle <- function(title, subtitle) {
-  if (!is.null(title) && is.null(subtitle)) " " else subtitle
+cpb_reserve_subtitle <- function(title, subtitle, force = FALSE) {
+  # force: a plot with a right-hand sec_ylab caption needs the
+  # subtitle row reserved too, whether or not there is a title -- the
+  # caption is placed on that row (see cpb_add_sec_ylab_grob() in
+  # save.R), and with nothing else giving that row real height,
+  # save_cpb() ends up squeezing the caption into the tick-label row
+  # below it instead, overlapping the axis's own top value.
+  if (is.null(subtitle) && (!is.null(title) || isTRUE(force))) " " else subtitle
 }
 
 # The discrete fill/colour scale every wrapper falls back to: an
@@ -1016,15 +1022,24 @@ cpb_col <- function(data, x, y, fill = NULL,
   p <- p + if (has_fill || has_sec) {
     # fill is aes-mapped in both cases (a real column, or the dummy
     # constant label above), so no literal fill= parameter here.
-    # show.legend = TRUE forces a key even for a drop = FALSE level
-    # with zero rows in this layer's data, which ggplot2 otherwise
-    # blanks by default. key_glyph = "rect" is what geom_col() already
-    # looks like by default (a plain colour square) -- it needs to be
-    # set explicitly here because its *default* polygon key glyph is
-    # what lets sec_y's point/line/col legend key bleed into the fill
-    # legend's own square when the two guides are stacked (see the
-    # "sec_y helpers" block near the top of this file)
-    ggplot2::geom_col(position = position, show.legend = TRUE,
+    # show.legend = c(fill = TRUE, ...) forces a key even for a
+    # drop = FALSE level with zero rows in this layer's data, which
+    # ggplot2 otherwise blanks by default. key_glyph = "rect" is what
+    # geom_col() already looks like by default (a plain colour
+    # square), set explicitly so it stays that way regardless of
+    # geom_col()'s own future default.
+    #
+    # colour = FALSE matters more than it looks: a bare
+    # show.legend = TRUE does not just force this layer's own key into
+    # the fill guide, it also draws this layer's key glyph into every
+    # *other* active guide in the plot, including one this layer maps
+    # nothing to at all -- with has_sec, sec_y's own colour guide
+    # would otherwise get a stray grey fill square drawn in behind its
+    # line/point/col key (see the "sec_y helpers" block near the top
+    # of this file). Naming fill = TRUE, colour = FALSE keeps the key
+    # in the one guide it actually belongs to.
+    ggplot2::geom_col(position = position,
+                      show.legend = c(fill = TRUE, colour = FALSE),
                       key_glyph = "rect", ...)
   } else {
     # No fill mapping and no secondary axis: draw one flat house-style
@@ -1205,7 +1220,7 @@ cpb_col <- function(data, x, y, fill = NULL,
     # label falls back to a rotated axis title, as in the other wrappers
     lab_y <- ylab
   }
-  subtitle <- cpb_reserve_subtitle(title, subtitle)
+  subtitle <- cpb_reserve_subtitle(title, subtitle, force = has_sec && !is.null(sec_ylab))
 
   p <- p +
     ggplot2::labs(title = title, subtitle = subtitle, x = lab_x, y = lab_y, fill = filllab) +
@@ -1447,13 +1462,16 @@ cpb_area <- function(data, x, y, fill,
       cpb_forecast_pos(forecast_x, rlang::eval_tidy(x, data)))
   }
 
-  # key_glyph = "rect": a plain colour square, CPB house style (and
-  # geom_area()'s own default polygon key glyph is what lets sec_y's
-  # point/line/col legend key bleed into the fill legend's own square
-  # when the two guides are stacked -- see the "sec_y helpers" block
-  # near the top of this file). show.legend = TRUE forces a key even
-  # for a drop = FALSE level with zero rows in this layer's data.
-  p <- p + ggplot2::geom_area(show.legend = TRUE, key_glyph = "rect", ...)
+  # key_glyph = "rect": a plain colour square, CPB house style.
+  # show.legend = c(fill = TRUE, ...) forces a key even for a
+  # drop = FALSE level with zero rows in this layer's data; colour is
+  # named FALSE alongside it so this layer's own key glyph does not
+  # also get drawn into sec_y's colour guide, which it otherwise would
+  # (a bare show.legend = TRUE draws a layer's key into every active
+  # guide, not just ones it maps something to -- see the "sec_y
+  # helpers" block near the top of this file).
+  p <- p + ggplot2::geom_area(
+    show.legend = c(fill = TRUE, colour = FALSE), key_glyph = "rect", ...)
 
   # on top of the areas
   if (isTRUE(zeroline)) {
@@ -1544,7 +1562,7 @@ cpb_area <- function(data, x, y, fill,
     subtitle <- ylab
     lab_y <- NULL
   }
-  subtitle <- cpb_reserve_subtitle(title, subtitle)
+  subtitle <- cpb_reserve_subtitle(title, subtitle, force = has_sec && !is.null(sec_ylab))
 
   p <- p +
     ggplot2::labs(title = title, subtitle = subtitle, x = xlab, y = lab_y, fill = filllab) +
@@ -2057,7 +2075,7 @@ cpb_line <- function(data, x, y, colour = NULL,
     subtitle <- ylab
     lab_y <- NULL
   }
-  subtitle <- cpb_reserve_subtitle(title, subtitle)
+  subtitle <- cpb_reserve_subtitle(title, subtitle, force = has_sec && !is.null(sec_ylab))
 
   p +
     ggplot2::labs(title = title, subtitle = subtitle, x = xlab, y = lab_y, colour = colourlab) +
@@ -2543,9 +2561,14 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     # key_glyph = "rect": CPB legends show plain colour squares, not
     # miniature boxplots. Without a fill mapping the boxes are drawn in
     # one flat house-style colour (CPB primary blue by default).
+    # colour = FALSE alongside fill = TRUE keeps this layer's key out
+    # of sec_y's own colour guide -- a bare show.legend = TRUE draws a
+    # layer's key glyph into every active guide, not just ones it maps
+    # something to (see the "sec_y helpers" block near the top of this
+    # file).
     box_args <- list(mapping = mapping_box, stat = "identity", width = width,
                      linewidth = linewidth, key_glyph = "rect",
-                     show.legend = TRUE, ...)
+                     show.legend = c(fill = TRUE, colour = FALSE), ...)
     style_fill_col <- cpb_single_colour(fill_colour, 6)
     if (!has_fill && !has_sec) {
       # fill is a literal constant here; with has_sec it is aes-mapped
@@ -2771,7 +2794,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     # label falls back to a rotated axis title, as in the other wrappers
     lab_y <- ylab
   }
-  subtitle <- cpb_reserve_subtitle(title, subtitle)
+  subtitle <- cpb_reserve_subtitle(title, subtitle, force = has_sec && !is.null(sec_ylab))
 
   p <- p +
     ggplot2::labs(title = title, subtitle = subtitle, x = lab_x, y = lab_y, fill = filllab) +
@@ -3508,8 +3531,17 @@ cpb_dot <- function(data, x, y, lower, upper,
 
   interval_args <- list(mapping = mapping_interval, width = cap_width,
                         linewidth = linewidth)
+  # show.legend = TRUE only when colour is actually mapped: colour and
+  # sec_y are mutually exclusive here, so with has_sec this layer maps
+  # neither colour nor fill and needs no key of its own -- an
+  # unconditional TRUE would still draw one anyway, and not an empty
+  # one either: a bare show.legend = TRUE draws a layer's own key
+  # glyph (points-on-an-errorbar-cap, here) into every active guide in
+  # the plot, not just ones it maps something to, which would leak
+  # straight into sec_y's own colour guide otherwise (see the "sec_y
+  # helpers" block near the top of this file).
   point_args <- list(mapping = mapping_point, size = size,
-                     show.legend = TRUE, ...)
+                     show.legend = has_colour, ...)
   if (!has_colour) {
     interval_args$colour <- single_colour
     point_args$colour <- single_colour
@@ -3606,7 +3638,7 @@ cpb_dot <- function(data, x, y, lower, upper,
     # label falls back to a rotated axis title, as in the other wrappers
     lab_y <- ylab
   }
-  subtitle <- cpb_reserve_subtitle(title, subtitle)
+  subtitle <- cpb_reserve_subtitle(title, subtitle, force = has_sec && !is.null(sec_ylab))
 
   p +
     ggplot2::labs(title = title, subtitle = subtitle, x = lab_x, y = lab_y,
