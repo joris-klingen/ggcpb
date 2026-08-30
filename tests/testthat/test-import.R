@@ -171,11 +171,11 @@ test_that("import_csv applies ... overrides on top of params.csv", {
   expect_equal(p$theme$legend.position, "right")
 })
 
-test_that("cpb_import_kit copies every kit file into a new folder", {
+test_that("autogenerate_plots copies every kit file into a new folder", {
   dest <- withr::local_tempdir()
-  cpb_import_kit(dest)
+  autogenerate_plots(dest)
 
-  kit_dir <- system.file("import_kit", package = "ggcpb")
+  kit_dir <- system.file("autogenerate_plots", package = "ggcpb")
   expect_true(dir.exists(kit_dir))
   expect_setequal(list.files(dest), list.files(kit_dir))
 
@@ -184,28 +184,28 @@ test_that("cpb_import_kit copies every kit file into a new folder", {
   expect_type(p, "list")
 })
 
-test_that("cpb_import_kit keeps run_import.command executable", {
+test_that("autogenerate_plots keeps run_import.command executable", {
   dest <- withr::local_tempdir()
-  cpb_import_kit(dest)
+  autogenerate_plots(dest)
 
   command_file <- file.path(dest, "run_import.command")
   expect_true(file.exists(command_file))
   expect_equal(as.character(file.info(command_file)$mode), "755")
 })
 
-test_that("cpb_import_kit refuses to overwrite without being asked to", {
+test_that("autogenerate_plots refuses to overwrite without being asked to", {
   dest <- withr::local_tempdir()
-  cpb_import_kit(dest)
+  autogenerate_plots(dest)
 
-  expect_error(cpb_import_kit(dest), "already exist")
-  expect_no_error(cpb_import_kit(dest, overwrite = TRUE))
+  expect_error(autogenerate_plots(dest), "already exist")
+  expect_no_error(autogenerate_plots(dest, overwrite = TRUE))
 })
 
-test_that("cpb_import_kit creates the destination folder if needed", {
+test_that("autogenerate_plots creates the destination folder if needed", {
   dest <- file.path(withr::local_tempdir(), "nieuwe_map")
   expect_false(dir.exists(dest))
 
-  cpb_import_kit(dest)
+  autogenerate_plots(dest)
 
   expect_true(file.exists(file.path(dest, "run_import.R")))
 })

@@ -455,7 +455,7 @@ import_csv <- function(data_csv, params_csv, sep = ",", ...) {
   if (length(plots) == 1) plots[[1]] else plots
 }
 
-#' Copy a ready-to-run import kit to a folder
+#' Copy a ready-to-run figure-generating kit to a folder
 #'
 #' `import_csv()` itself still needs R to be started by hand. This copies
 #' a small kit to `dest`: an example `data.csv` and `params.csv`, a
@@ -482,13 +482,14 @@ import_csv <- function(data_csv, params_csv, sep = ",", ...) {
 #' @return Invisibly, `dest`.
 #' @examples
 #' \dontrun{
-#' cpb_import_kit("~/Desktop/mijn_figuren")
+#' autogenerate_plots("~/Desktop/mijn_figuren")
 #' }
 #' @export
-cpb_import_kit <- function(dest, overwrite = FALSE) {
-  kit_dir <- system.file("import_kit", package = "ggcpb")
+autogenerate_plots <- function(dest, overwrite = FALSE) {
+  kit_dir <- system.file("autogenerate_plots", package = "ggcpb")
   if (!nzchar(kit_dir)) {
-    stop("The import kit was not found in the installed ggcpb package.",
+    stop("The figure-generating kit was not found in the installed ggcpb ",
+      "package.",
       call. = FALSE
     )
   }
@@ -517,6 +518,6 @@ cpb_import_kit <- function(dest, overwrite = FALSE) {
     Sys.chmod(command_file, mode = "0755")
   }
 
-  tcat("ggcpb: copied the import kit to ", normalizePath(dest))
+  tcat("ggcpb: copied the figure-generating kit to ", normalizePath(dest))
   invisible(dest)
 }

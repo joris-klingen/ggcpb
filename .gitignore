@@ -6,8 +6,8 @@ inst/doc
 reports/
 Rplots.pdf
 inst/examples/output
-inst/import_kit/generated
-inst/import_kit/params_log.txt
+inst/autogenerate_plots/generated
+inst/autogenerate_plots/params_log.txt
 # reference material: the internal originals stay untracked; only the
 # anonymised plot snippets and the (already published) reference PNGs are
 # committed. reference_code.txt and the nicerplot/ clone remain ignored.
