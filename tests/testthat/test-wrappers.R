@@ -469,6 +469,34 @@ test_that("reverse_legend reverses the colour guide in line and scatter", {
   expect_null(p$guides$guides$colour)
 })
 
+test_that("sec_type controls how sec_y is drawn, sharing one legend key", {
+  df <- data.frame(jaar = 2018:2020, mld = c(10, 12, 9), heffing = c(1.2, 1.4, 1.1))
+
+  p <- cpb_col(df, x = jaar, y = mld, sec_y = heffing)
+  classes <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  expect_true("GeomLine" %in% classes)
+
+  p <- cpb_col(df, x = jaar, y = mld, sec_y = heffing, sec_type = "point")
+  classes <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  expect_true("GeomPoint" %in% classes)
+  expect_false("GeomLine" %in% classes)
+
+  p <- cpb_col(df, x = jaar, y = mld, sec_y = heffing, sec_type = "col")
+  classes <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  expect_equal(sum(classes == "GeomCol"), 2) # the primary bars plus the secondary ones
+  expect_false("GeomLine" %in% classes)
+
+  # sec_points only takes effect for sec_type = "line"
+  p <- cpb_col(df, x = jaar, y = mld, sec_y = heffing, sec_type = "col", sec_points = TRUE)
+  classes <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  expect_false("GeomPoint" %in% classes)
+
+  # all three share one legend key (one colour scale), not one per geom
+  p <- cpb_col(df, x = jaar, y = mld, sec_y = heffing, sec_type = "col")
+  n_colour_scales <- sum(vapply(p$scales$scales, function(s) "colour" %in% s$aesthetics, logical(1)))
+  expect_equal(n_colour_scales, 1)
+})
+
 test_that("x_lim zooms without dropping data, across all wrappers", {
   yr_df   <- data.frame(x = 2015:2020, y = 1:6)
   box_df  <- data.frame(x = 2015:2020, p5 = 1:6, p25 = 2:7, p50 = 3:8, p75 = 4:9, p95 = 5:10)

@@ -15,6 +15,7 @@ cpb_col(
   position = c("stack", "dodge", "fill"),
   orientation = c("vertical", "horizontal"),
   sec_y = NULL,
+  sec_type = c("line", "point", "col"),
   sec_limits = NULL,
   sec_label = NULL,
   sec_ylab = NULL,
@@ -83,18 +84,24 @@ defaults to \code{0.8}.}
 \item{orientation}{\code{"vertical"} (default) or \code{"horizontal"} (adds
 \code{\link[ggplot2:coord_flip]{ggplot2::coord_flip()}} and is forwarded to \code{\link[=theme_cpb]{theme_cpb()}}).}
 
-\item{sec_y}{Optional column (tidy eval) holding a series to draw as
-a line against a \strong{secondary value axis} on the right, the house
+\item{sec_y}{Optional column (tidy eval) holding a series to draw
+against a \strong{secondary value axis} on the right, the house
 combination chart (e.g. a stacked wealth total in billions with
 the tax raised on it, an order of magnitude smaller, alongside).
 One value per \code{x}. Only supported for vertical, ungrouped columns.}
 
+\item{sec_type}{How \code{sec_y} is drawn: \code{"line"} (default), \code{"point"}
+(markers only, no connecting line), or \code{"col"} (thin bars,
+narrower than the primary columns so the two stay visually
+distinct). All three read off the same secondary axis and share
+one legend key with the primary fill.}
+
 \item{sec_limits}{Length-2 numeric vector giving the range the
 secondary axis spans. \code{NULL} (default) uses zero to the maximum of
-\code{sec_y}. The line is placed by mapping this range linearly onto
+\code{sec_y}. \code{sec_y} is placed by mapping this range linearly onto
 the primary range, so the two axes always start together.}
 
-\item{sec_label}{Legend label for the line. \code{NULL} (default) uses
+\item{sec_label}{Legend label for \code{sec_y}. \code{NULL} (default) uses
 the \code{sec_y} column name. House style names the axis in the label,
 e.g. \code{"erfbelasting (rechteras)"}.}
 
@@ -102,15 +109,16 @@ e.g. \code{"erfbelasting (rechteras)"}.}
 right-aligned above the panel to mirror the left-hand unit that
 \code{ylab} puts in the subtitle. \code{NULL} (default) draws none.}
 
-\item{sec_colour}{Line colour; defaults to \code{NULL}, which resolves to
-the CPB pink (\code{cpb_cols(2)}, \code{"#e6006e"}) that sets the line apart
-from the blue-led column fills.}
+\item{sec_colour}{Colour for \code{sec_y}; defaults to \code{NULL}, which
+resolves to the CPB pink (\code{cpb_cols(2)}, \code{"#e6006e"}) that sets it
+apart from the blue-led column fills.}
 
-\item{sec_linewidth}{Line width for \code{sec_y}; defaults to \code{0.55}, as
-in \code{\link[=cpb_line]{cpb_line()}}.}
+\item{sec_linewidth}{Line width; only used when \code{sec_type = "line"}.
+Defaults to \code{0.55}, as in \code{\link[=cpb_line]{cpb_line()}}.}
 
 \item{sec_points}{If \code{TRUE}, add a marker at every point of the
-\code{sec_y} line.}
+\code{sec_y} line. Only used when \code{sec_type = "line"} -- for markers
+without a connecting line, use \code{sec_type = "point"} instead.}
 
 \item{palette}{CPB palette to use for \code{fill}; one of
 \code{"qualitative"} (default), \code{"discr"}, \code{"sequential"}

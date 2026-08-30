@@ -334,28 +334,34 @@ cpb_forecast_label <- function(forecast_x, xvals, label) {
 #' @param position One of `"stack"` (default), `"dodge"`, or `"fill"`.
 #' @param orientation `"vertical"` (default) or `"horizontal"` (adds
 #'   [ggplot2::coord_flip()] and is forwarded to [theme_cpb()]).
-#' @param sec_y Optional column (tidy eval) holding a series to draw as
-#'   a line against a **secondary value axis** on the right, the house
+#' @param sec_y Optional column (tidy eval) holding a series to draw
+#'   against a **secondary value axis** on the right, the house
 #'   combination chart (e.g. a stacked wealth total in billions with
 #'   the tax raised on it, an order of magnitude smaller, alongside).
 #'   One value per `x`. Only supported for vertical, ungrouped columns.
+#' @param sec_type How `sec_y` is drawn: `"line"` (default), `"point"`
+#'   (markers only, no connecting line), or `"col"` (thin bars,
+#'   narrower than the primary columns so the two stay visually
+#'   distinct). All three read off the same secondary axis and share
+#'   one legend key with the primary fill.
 #' @param sec_limits Length-2 numeric vector giving the range the
 #'   secondary axis spans. `NULL` (default) uses zero to the maximum of
-#'   `sec_y`. The line is placed by mapping this range linearly onto
+#'   `sec_y`. `sec_y` is placed by mapping this range linearly onto
 #'   the primary range, so the two axes always start together.
-#' @param sec_label Legend label for the line. `NULL` (default) uses
+#' @param sec_label Legend label for `sec_y`. `NULL` (default) uses
 #'   the `sec_y` column name. House style names the axis in the label,
 #'   e.g. `"erfbelasting (rechteras)"`.
 #' @param sec_ylab Unit caption for the secondary axis, drawn
 #'   right-aligned above the panel to mirror the left-hand unit that
 #'   `ylab` puts in the subtitle. `NULL` (default) draws none.
-#' @param sec_colour Line colour; defaults to `NULL`, which resolves to
-#'   the CPB pink (`cpb_cols(2)`, `"#e6006e"`) that sets the line apart
-#'   from the blue-led column fills.
-#' @param sec_linewidth Line width for `sec_y`; defaults to `0.55`, as
-#'   in [cpb_line()].
+#' @param sec_colour Colour for `sec_y`; defaults to `NULL`, which
+#'   resolves to the CPB pink (`cpb_cols(2)`, `"#e6006e"`) that sets it
+#'   apart from the blue-led column fills.
+#' @param sec_linewidth Line width; only used when `sec_type = "line"`.
+#'   Defaults to `0.55`, as in [cpb_line()].
 #' @param sec_points If `TRUE`, add a marker at every point of the
-#'   `sec_y` line.
+#'   `sec_y` line. Only used when `sec_type = "line"` -- for markers
+#'   without a connecting line, use `sec_type = "point"` instead.
 #' @param value_limits Optional length-2 numeric vector giving the
 #'   value-axis range (the `y` axis, or the flipped axis when
 #'   `orientation = "horizontal"`). Applied as the wrapper-built value
@@ -468,6 +474,7 @@ cpb_col <- function(data, x, y, fill = NULL,
                      position = c("stack", "dodge", "fill"),
                      orientation = c("vertical", "horizontal"),
                      sec_y = NULL,
+                     sec_type = c("line", "point", "col"),
                      sec_limits = NULL,
                      sec_label = NULL,
                      sec_ylab = NULL,
@@ -510,6 +517,7 @@ cpb_col <- function(data, x, y, fill = NULL,
   palette <- .cpb_idx$palette
   position <- match.arg(position)
   orientation <- match.arg(orientation)
+  sec_type <- match.arg(sec_type)
 
   x <- rlang::enquo(x)
   y <- rlang::enquo(y)
@@ -655,21 +663,37 @@ cpb_col <- function(data, x, y, fill = NULL,
     sec_lab <- if (is.null(sec_label)) rlang::as_label(sec_y) else sec_label
     sec_col <- cpb_single_colour(sec_colour, 2)
 
-    # the line carries its own one-level colour scale, so it gets a
-    # legend key of its own next to the fill keys
-    p <- p +
-      ggplot2::geom_line(
+    # sec_y carries its own one-level colour scale, so it gets a legend
+    # key of its own next to the fill keys, whichever geom draws it
+    if (sec_type == "col") {
+      # narrower than the primary columns (default width ~0.9), so the
+      # two stay visually distinct rather than fully overlapping
+      p <- p + ggplot2::geom_col(
         data = sec_df,
-        ggplot2::aes(x = !!x, y = .data[["cpb__sec"]], colour = sec_lab,
-                     group = 1),
-        linewidth = sec_linewidth
+        ggplot2::aes(x = !!x, y = .data[["cpb__sec"]], colour = sec_lab),
+        fill = sec_col, width = 0.3
       )
-    if (isTRUE(sec_points)) {
+    } else if (sec_type == "point") {
       p <- p + ggplot2::geom_point(
         data = sec_df,
         ggplot2::aes(x = !!x, y = .data[["cpb__sec"]], colour = sec_lab),
-        size = 1.1
+        size = 1.6
       )
+    } else {
+      p <- p +
+        ggplot2::geom_line(
+          data = sec_df,
+          ggplot2::aes(x = !!x, y = .data[["cpb__sec"]], colour = sec_lab,
+                       group = 1),
+          linewidth = sec_linewidth
+        )
+      if (isTRUE(sec_points)) {
+        p <- p + ggplot2::geom_point(
+          data = sec_df,
+          ggplot2::aes(x = !!x, y = .data[["cpb__sec"]], colour = sec_lab),
+          size = 1.1
+        )
+      }
     }
     sec_values <- sec_col
     names(sec_values) <- sec_lab
