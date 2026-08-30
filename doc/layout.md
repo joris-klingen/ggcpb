@@ -41,7 +41,7 @@ cpb_col(regios, x = jaar, y = waarde, fill = groep,
   ylab  = "mld euro")
 ```
 
-<img src="layout_files/figure-gfm/facets-1.png" width="700px" />
+<img src="layout_files/figure-gfm/facets-1.png" alt="" width="700px" />
 
 A faceted figure usually needs a taller canvas: pass an explicit
 `height` to `save_cpb()` (here the figure is drawn 4.5 in tall on the
@@ -70,7 +70,7 @@ cpb_col(zakkans, x = cat, y = pct, fill = serie, group = grp,
   title = "VWO", ylab = "zakkans (%)")
 ```
 
-<img src="layout_files/figure-gfm/col-grouped-1.png" width="350px" />
+<img src="layout_files/figure-gfm/col-grouped-1.png" alt="" width="350px" />
 
 Each category must belong to exactly one group; tune the gap with
 `group_gap`. The group labels occupy the line an `xlab` would use, so
@@ -111,7 +111,7 @@ cpb_box(ink, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
   ylab  = "verandering in 2025 (%)")
 ```
 
-<img src="layout_files/figure-gfm/box-grouped-1.png" width="350px" />
+<img src="layout_files/figure-gfm/box-grouped-1.png" alt="" width="350px" />
 
 The category rows keep the house ticks; the bold group headings carry
 none and are outdented. A vertically grouped figure needs a taller

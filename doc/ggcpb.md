@@ -18,8 +18,9 @@ type, [`vignette("layout")`](layout.md) for facets and grouped axes,
 [`vignette("annotation")`](annotation.md) for reference lines and
 forecast windows, [`vignette("boxplots")`](boxplots.md) for the
 box-plot styles, [`vignette("colours")`](colours.md) for how series
-get their colours, and [`vignette("maps")`](maps.md) for choropleths
-of the Netherlands.
+get their colours, [`vignette("maps")`](maps.md) for choropleths of
+the Netherlands, and [`vignette("import")`](import.md) for building
+figures straight from a CSV, no R code beyond one function call.
 
 ``` r
 library(ggcpb)
@@ -51,7 +52,7 @@ p <- cpb_col(kk, x = groep, y = koopkracht,
 p
 ```
 
-<img src="ggcpb_files/figure-gfm/data-1.png" width="350px" />
+<img src="ggcpb_files/figure-gfm/data-1.png" alt="" width="350px" />
 
 One call, one finished figure: bold title, italic caption line, black
 hairline gridlines on the value axis, ticks on the category axis, the
@@ -74,7 +75,7 @@ p +
            family = cpb_font_family(), fontface = "italic")
 ```
 
-<img src="ggcpb_files/figure-gfm/layer-1.png" width="350px" />
+<img src="ggcpb_files/figure-gfm/layer-1.png" alt="" width="350px" />
 
 (Under `coord_flip()` the value axis is still the `y` aesthetic, so the
 reference line is a `geom_hline()`. More annotation patterns in
@@ -123,7 +124,7 @@ ggplot(raster, aes(jaar, groep,
   theme_cpb(grid = "none", ticks = FALSE)
 ```
 
-<img src="ggcpb_files/figure-gfm/heatmap-1.png" width="700px" />
+<img src="ggcpb_files/figure-gfm/heatmap-1.png" alt="" width="700px" />
 
 `theme_cpb()` takes the same layout arguments as the wrappers
 (`?theme_cpb`), and `cpb_tokens()` exposes the raw design tokens
