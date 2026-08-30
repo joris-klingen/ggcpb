@@ -1047,3 +1047,113 @@ test_that("cpb_col(sec_y) rescales a line onto a secondary axis", {
     "position = \"fill\""
   )
 })
+
+test_that("cpb_donut returns a ring built from GeomCol + coord_polar with a fill scale", {
+  df <- data.frame(bron = c("gas", "elektriciteit", "warmte"), share = c(50, 30, 20))
+  p <- cpb_donut(df, fill = bron, y = share)
+
+  expect_s3_class(p, "ggplot")
+  expect_true(inherits(p$layers[[1]]$geom, "GeomCol"))
+  expect_s3_class(p$coordinates, "CoordPolar")
+  has_fill_scale <- any(vapply(p$scales$scales, function(s) "fill" %in% s$aesthetics, logical(1)))
+  expect_true(has_fill_scale)
+  # every wedge stacks onto the same constant x position
+  expect_equal(rlang::eval_tidy(p$mapping$x), 1)
+})
+
+test_that("cpb_donut draws no axis text, ticks or gridlines", {
+  df <- data.frame(bron = c("gas", "elektriciteit"), share = c(60, 40))
+  p <- cpb_donut(df, fill = bron, y = share)
+  th <- p$theme
+
+  expect_s3_class(th$axis.text, "element_blank")
+  expect_s3_class(th$axis.ticks, "element_blank")
+  expect_s3_class(th$axis.title, "element_blank")
+  expect_s3_class(th$panel.grid, "element_blank")
+})
+
+test_that("cpb_donut's ring_width controls the hole via xlim, up to a full pie at 2", {
+  df <- data.frame(bron = c("gas", "elektriciteit"), share = c(60, 40))
+
+  p_ring <- cpb_donut(df, fill = bron, y = share, ring_width = 0.6)
+  rng <- p_ring$scales$get_scales("x")$get_limits()
+  expect_equal(rng[[1]], 0)
+  expect_equal(rng[[2]], 1 + 0.6 / 2 + 0.05)
+
+  # a ring_width of 2 closes the hole completely (inner edge at 0)
+  expect_no_error(cpb_donut(df, fill = bron, y = share, ring_width = 2))
+  expect_error(cpb_donut(df, fill = bron, y = share, ring_width = 0), "ring_width")
+  expect_error(cpb_donut(df, fill = bron, y = share, ring_width = 2.5), "ring_width")
+})
+
+test_that("cpb_donut rejects negative values", {
+  df <- data.frame(bron = c("gas", "elektriciteit"), share = c(60, -10))
+  expect_error(cpb_donut(df, fill = bron, y = share), "non-negative")
+})
+
+test_that("cpb_donut prints a percentage wedge label by default, computed from y", {
+  df <- data.frame(bron = c("gas", "elektriciteit"), share = c(75, 25))
+  p <- cpb_donut(df, fill = bron, y = share)
+
+  txt <- Filter(function(l) inherits(l$geom, "GeomText"), p$layers)
+  expect_length(txt, 1L)
+  expect_equal(p$data[["cpb__wedge_label"]], c("75%", "25%"))
+})
+
+test_that("cpb_donut's label column prefixes the auto-computed percentage", {
+  df <- data.frame(bron = c("gas", "elektriciteit"),
+                    share = c(75, 25), mld = c("7,5 mld", "2,5 mld"))
+  p <- cpb_donut(df, fill = bron, y = share, label = mld)
+  expect_equal(p$data[["cpb__wedge_label"]], c("7,5 mld (75%)", "2,5 mld (25%)"))
+})
+
+test_that("cpb_donut's wedge_labels = FALSE omits the text layer", {
+  df <- data.frame(bron = c("gas", "elektriciteit"), share = c(75, 25))
+  p <- cpb_donut(df, fill = bron, y = share, wedge_labels = FALSE)
+  expect_false(any(vapply(p$layers, function(l) inherits(l$geom, "GeomText"), logical(1))))
+})
+
+test_that("cpb_donut's legend_pct suffixes the fill legend with each share", {
+  df <- data.frame(bron = c("gas", "elektriciteit"), share = c(75, 25))
+  p <- cpb_donut(df, fill = bron, y = share, wedge_labels = FALSE, legend_pct = TRUE)
+
+  sc <- p$scales$get_scales("fill")
+  expect_equal(sc$labels(c("gas", "elektriciteit")), c("gas (75%)", "elektriciteit (25%)"))
+})
+
+test_that("cpb_donut's label_style = \"leader\" draws two segments + text outside the ring instead", {
+  df <- data.frame(bron = c("gas", "elektriciteit"), share = c(75, 25))
+  p <- cpb_donut(df, fill = bron, y = share, label_style = "leader", leader_length = 0.2)
+
+  segs <- Filter(function(l) inherits(l$geom, "GeomSegment"), p$layers)
+  expect_length(segs, 2L) # a radial tick, then the fan-out to the label
+  txt <- Filter(function(l) inherits(l$geom, "GeomText"), p$layers)
+  expect_length(txt, 1L)
+  expect_equal(txt[[1]]$data[["wedge_label"]], c("75%", "25%"))
+  # the tick starts exactly at the ring's own outer edge and ends
+  # leader_length further out, regardless of which wedge
+  outer_edge <- 1 + 0.6 / 2
+  expect_equal(unique(segs[[1]]$data$x_wedge), outer_edge)
+  expect_equal(unique(segs[[1]]$data$x_bend), outer_edge + 0.2)
+})
+
+test_that("cpb_donut's label_style = \"wedge\" (default) draws no leader line", {
+  df <- data.frame(bron = c("gas", "elektriciteit"), share = c(75, 25))
+  p <- cpb_donut(df, fill = bron, y = share)
+  expect_false(any(vapply(p$layers, function(l) inherits(l$geom, "GeomSegment"), logical(1))))
+})
+
+test_that("cpb_donut's label_style = \"leader\" separates labels whose wedges are close together", {
+  # two wedges tiny and adjacent enough that their labels would land
+  # at (near) the same height without the collision-avoidance nudge
+  df <- data.frame(bron = c("groot", "klein1", "klein2"), share = c(98, 1, 1))
+  p <- cpb_donut(df, fill = bron, y = share, label_style = "leader")
+
+  txt <- Filter(function(l) inherits(l$geom, "GeomText"), p$layers)[[1]]
+  # both tiny wedges' labels are on the same side (both near the top);
+  # their final y_text values must differ by at least the minimum row
+  # gap the function enforces
+  small <- txt$data[txt$data$wedge_label == "1%", ]
+  expect_equal(nrow(small), 2L)
+  expect_false(isTRUE(all.equal(small$y_text[1], small$y_text[2])))
+})

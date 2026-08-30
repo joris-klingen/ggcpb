@@ -698,6 +698,19 @@ render(25, "classed choropleth (cpb_cut + blues)",
     filllab  = "aandeel"),
   "25_map_classed.png", page = "half", height = 5.2)
 
+# donut: single "share of total" breakdown
+energie_dt <- data.table(
+  bron  = factor(c("gas", "elektriciteit", "warmte", "overig"),
+                levels = c("gas", "elektriciteit", "warmte", "overig")),
+  share = c(45, 30, 15, 10)
+)
+render(26, "donut: energiemix",
+  cpb_donut(energie_dt, fill = bron, y = share,
+    index = c(6, 2, 5, 1),
+    title = "Energiemix",
+    filllab = "bron"),
+  "26_donut.png", page = "half")
+
 # Summary ----
 
 summary_dt <- rbindlist(results)

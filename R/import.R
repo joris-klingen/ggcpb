@@ -13,7 +13,8 @@ cpb_import_col_args <- list(
   box     = c("x", "p5", "p25", "p50", "p75", "p95", "mean", "fill", "group", "facet", "sec_y"),
   dot     = c("x", "y", "lower", "upper", "colour", "group", "facet", "sec_y"),
   scatter = c("x", "y", "colour", "facet"),
-  hist    = c("x", "fill", "facet")
+  hist    = c("x", "fill", "facet"),
+  donut   = c("fill", "y", "label")
 )
 
 # The full set of recognised parameter names (plot_type, create, id, every

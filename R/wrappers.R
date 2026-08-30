@@ -3407,3 +3407,312 @@ cpb_dot <- function(data, x, y, lower, upper,
     ) +
     cpb_wrapper_theme()
 }
+
+# donut ----
+
+#' A CPB-styled donut chart
+#'
+#' Thin wrapper around [ggplot2::geom_col()] and [ggplot2::coord_polar()]
+#' with CPB theming and colour scale applied, for a single "share of
+#' total" breakdown: one ring, one wedge per category. Draws no value
+#' axis -- there is nothing on it to label -- so read wedge sizes off
+#' the legend or the data itself.
+#'
+#' @param data A data.frame or data.table with one row per category.
+#' @param fill Column mapped to the fill aesthetic (tidy eval), i.e.
+#'   the category each wedge represents.
+#' @param y Column holding each wedge's value (tidy eval). Must be
+#'   non-negative -- a wedge with a negative angle has no sensible
+#'   meaning. Also drives the percentage shown by `wedge_labels` and
+#'   `legend_pct`: always computed as this row's share of the sum of
+#'   `y`, regardless of what unit `y` itself is in.
+#' @param label Optional column (tidy eval) holding a ready-formatted
+#'   value string per wedge, e.g. `"5,1 miljoen"` -- printed as-is, not
+#'   derived from `y`. `NULL` (default): the wedge label is just its
+#'   percentage share; supplying `label` prints `"<label> (<share>%)"`
+#'   instead.
+#' @param wedge_labels If `TRUE` (default), print a value/percentage
+#'   label for every wedge (see `label`). Either style always sits at
+#'   its wedge's own angular midpoint, using the same stacking order
+#'   as the wedges themselves, so it can't drift out of sync. Very
+#'   thin or many similarly-sized wedges are not treated specially --
+#'   `"wedge"` labels can overlap their neighbours, and `"leader"`
+#'   labels can overlap each other outside the ring.
+#' @param label_style Where the label sits: `"wedge"` (default,
+#'   printed on the wedge itself) or `"leader"` (printed just outside
+#'   the ring, connected to the wedge by a line). `"leader"`'s line
+#'   has two parts: a short tick straight out from the wedge's own
+#'   outer edge, then a second part that approximates a horizontal run
+#'   out to the label, with every same-side label lined up at a shared
+#'   distance. Wedges whose ticks would otherwise land close enough to
+#'   overlap (several thin wedges bunched together) get nudged apart
+#'   into their own row instead, so `"leader"` stays legible with
+#'   many, or very unevenly sized, wedges where `"wedge"` would not.
+#' @param label_colour Colour of the printed wedge/leader labels.
+#'   Defaults to `"black"`; pass `"white"` (or another colour) if your
+#'   own `palette`/`index` choice comes out darker/more saturated (for
+#'   `"wedge"` labels only -- `"leader"` labels sit outside the ring,
+#'   against the plot background, so contrast doesn't depend on the
+#'   wedge colours).
+#' @param leader_length How far the `"leader"`-style line's first,
+#'   radial part extends beyond the ring's outer edge before bending
+#'   towards the label, in the same units as `ring_width`. Defaults to
+#'   `0.15`. Ignored when `label_style = "wedge"`.
+#' @param legend_pct If `TRUE`, suffix every legend entry with its
+#'   percentage share too, e.g. `"gas (45%)"`. Independent of
+#'   `wedge_labels` -- either, both, or neither can be on. Defaults to
+#'   `FALSE`.
+#' @param label_accuracy Rounding accuracy for every percentage this
+#'   function prints (`wedge_labels` and `legend_pct` alike), passed
+#'   to [label_pct_nl()]. Defaults to `1` (whole percentage points).
+#' @param ring_width Width of the ring, from just over `0` (a thin
+#'   ring around a large hole) to `2` (no hole at all -- a full pie).
+#'   Defaults to `0.6`.
+#' @param palette CPB palette to use for `fill`; one of
+#'   `"qualitative"` (default), `"discr"`, `"sequential"`
+#'   (pink ramp), or `"blues"` (blue ramp).
+#' @param index Optional integer vector of palette positions, forwarded
+#'   to [scale_fill_cpb_manual()] instead of the default
+#'   [scale_fill_cpb_d()] when supplied.
+#' @param reverse_legend If `TRUE`, reverse the fill legend order via
+#'   `guide_legend(reverse = TRUE)`. Defaults to `FALSE`.
+#' @param legend_ncol Number of columns to lay the legend keys out in,
+#'   passed to `guide_legend(ncol = ...)`. `NULL` (default) keeps
+#'   ggplot2's own single-row/column layout.
+#' @param legend Legend position, forwarded to [theme_cpb()].
+#' @param flush_legend,legend_key_size Forwarded to [theme_cpb()] for
+#'   per-figure deviations from the house defaults. Unlike the other
+#'   wrappers, `minor`, `ticks`, `axis_text_size`, `grid_colour` and
+#'   `grid_linewidth` are not exposed here: a donut draws no axis or
+#'   gridlines for them to affect.
+#' @param title,subtitle Plot title/subtitle.
+#' @param filllab Legend title override; defaults to `NULL` (no
+#'   title), matching CPB house style.
+#' @param ... Further arguments passed to [ggplot2::geom_col()].
+#' @return A `ggplot` object.
+#' @examples
+#' df <- data.frame(
+#'   bron  = c("gas", "elektriciteit", "warmte", "overig"),
+#'   share = c(45, 30, 15, 10),
+#'   mld   = c("4,5 mld", "3,0 mld", "1,5 mld", "1,0 mld")
+#' )
+#' cpb_donut(df, fill = bron, y = share, label = mld,
+#'   title = "Energiemix",
+#'   index = c(6, 2, 5, 1)
+#' )
+#' @export
+cpb_donut <- function(data, fill, y,
+                      label = NULL,
+                      wedge_labels = TRUE,
+                      label_style = c("wedge", "leader"),
+                      label_colour = "black",
+                      leader_length = 0.15,
+                      legend_pct = FALSE,
+                      label_accuracy = 1,
+                      ring_width = 0.6,
+                      palette = "qualitative",
+                      index = NULL,
+                      reverse_legend = FALSE,
+                      legend_ncol = NULL,
+                      legend = "bottom",
+                      flush_legend = TRUE,
+                      legend_key_size = NULL,
+                      title = NULL,
+                      subtitle = NULL,
+                      filllab = NULL,
+                      ...) {
+  fill <- rlang::enquo(fill)
+  y <- rlang::enquo(y)
+  label <- rlang::enquo(label)
+  has_label <- !rlang::quo_is_null(label)
+  label_style <- match.arg(label_style)
+
+  if (ring_width <= 0 || ring_width > 2) {
+    stop("`ring_width` must be greater than 0 and at most 2 (2 draws a ",
+      "full pie, with no hole).",
+      call. = FALSE
+    )
+  }
+  yvals <- rlang::eval_tidy(y, data)
+  if (any(yvals < 0, na.rm = TRUE)) {
+    stop("`y` must be non-negative: a wedge cannot have a negative angle.",
+      call. = FALSE
+    )
+  }
+
+  fmt_pct <- label_pct_nl(accuracy = label_accuracy)
+  pct <- yvals / sum(yvals, na.rm = TRUE) * 100
+
+  # a single constant x stacks every fill level into one bar; wrapping
+  # that one stacked bar in coord_polar() turns it into a ring. The
+  # hole is the gap between xlim()'s lower bound (0) and the bar's own
+  # inner edge (x_pos - ring_width / 2) -- a wider ring_width shrinks
+  # that gap, until ring_width = 2 closes it entirely (a full pie).
+  x_pos <- 1
+  data <- as.data.frame(data)
+  data[["cpb__wedge_label"]] <- if (has_label) {
+    paste0(rlang::eval_tidy(label, data), " (", fmt_pct(pct), ")")
+  } else {
+    fmt_pct(pct)
+  }
+
+  outer_edge <- x_pos + ring_width / 2
+
+  # the base layer, without a coord/scale yet -- "leader" needs to work
+  # out how much radial room its labels actually need before the x
+  # scale can be sized correctly (see below), and a plain geom_col()
+  # layer's own computed ymin/ymax (needed for that) do not depend on
+  # which coord or scale limits eventually get attached to the plot
+  p <- ggplot2::ggplot(data, ggplot2::aes(x = x_pos, y = !!y, fill = !!fill)) +
+    ggplot2::geom_col(width = ring_width, key_glyph = "rect", ...)
+
+  leader_data <- NULL
+  if (isTRUE(wedge_labels) && label_style == "leader") {
+    # Read back geom_col()'s own computed ymin/ymax (rather than
+    # recomputing the stacking order by hand) so the leader lines can
+    # never disagree with where the wedges actually ended up -- same
+    # one-source-of-truth reasoning as position_stack() uses for
+    # "wedge" below, just needed as real numbers here instead of left
+    # to ggplot2 to draw.
+    wedge_data <- ggplot2::ggplot_build(p)$data[[1]]
+    ymid <- (wedge_data$ymin + wedge_data$ymax) / 2
+    total <- sum(yvals, na.rm = TRUE)
+    theta <- ymid / total * 2 * pi
+    on_right <- theta >= 0 & theta <= pi
+
+    # The line has two parts: a short radial tick from the wedge's own
+    # outer edge (always at the wedge's own true angle, so it always
+    # points at exactly the right wedge), then a second part that
+    # approximates a horizontal run out to the label.
+    #
+    # coord_polar()'s own data space is fundamentally angular -- there
+    # is no way to ask it for "a horizontal line" directly the way
+    # coord_cartesian() would let you. So that second part is built
+    # the other way around: first decide the real Cartesian point the
+    # label needs to sit at (same height as the tick, out at a shared
+    # distance per side -- and nudged apart, see below), then invert
+    # coord_polar()'s own transform to find which (x, y) *in its data
+    # space* renders at exactly that Cartesian point. Feed that back
+    # in as an ordinary aes(x =, y =) position and coord_polar() draws
+    # a straight line to it, same as any other segment -- which, by
+    # construction, comes out horizontal-ish in the final image.
+    r_bend <- outer_edge + leader_length
+    bend_x <- r_bend * sin(theta)
+    bend_y <- r_bend * cos(theta)
+
+    # Thin wedges bunched close together would otherwise get their
+    # labels stacked at (near) the same height. Working top to bottom,
+    # separately for each side (a left-side and a right-side label at
+    # a similar height aren't competing for the same space), push any
+    # label whose tick is too close to the previous one further down.
+    min_row_gap <- 0.16
+    label_y <- bend_y
+    for (side in list(which(on_right), which(!on_right))) {
+      if (length(side) < 2) next
+      side <- side[order(label_y[side], decreasing = TRUE)]
+      for (i in seq_along(side)[-1]) {
+        cur <- side[i]
+        prev <- side[i - 1]
+        if (label_y[prev] - label_y[cur] < min_row_gap) {
+          label_y[cur] <- label_y[prev] - min_row_gap
+        }
+      }
+    }
+    # every same-side label lines up at one shared horizontal distance
+    # (plus a little extra for the text itself, so the line doesn't
+    # run straight into the first character)
+    horiz_reach <- r_bend + 0.35
+    line_x <- ifelse(on_right, horiz_reach, -horiz_reach)
+    text_x <- ifelse(on_right, horiz_reach + 0.06, -horiz_reach - 0.06)
+
+    # invert the transform: given the Cartesian point a point needs to
+    # end up at, find the (r, y) pair that renders there
+    to_polar_data <- function(x_cart, y_cart) {
+      r <- sqrt(x_cart^2 + y_cart^2)
+      th <- atan2(x_cart, y_cart) %% (2 * pi)
+      list(r = r, y = th / (2 * pi) * total)
+    }
+    line_pos <- to_polar_data(line_x, label_y)
+    text_pos <- to_polar_data(text_x, label_y)
+
+    leader_data <- data.frame(
+      x_wedge = outer_edge, x_bend = r_bend,
+      x_line  = line_pos$r, x_text = text_pos$r,
+      y_wedge = ymid, y_line = line_pos$y, y_text = text_pos$y,
+      hjust   = ifelse(on_right, 0, 1),
+      wedge_label = data[["cpb__wedge_label"]]
+    )
+  }
+
+  # the panel needs enough radial room for whatever "leader" actually
+  # computed above (the ring itself only ever needs a little margin
+  # past its own outer edge); xlim()'s limits genuinely drop any point
+  # outside them rather than just visually cropping it, so this has to
+  # cover the real maximum, not just approximate it
+  xlim_max <- if (!is.null(leader_data)) {
+    max(c(outer_edge + 0.05, leader_data$x_line, leader_data$x_text)) + 0.05
+  } else {
+    outer_edge + 0.05
+  }
+  p <- p +
+    ggplot2::coord_polar(theta = "y", clip = if (label_style == "leader") "off" else "on") +
+    ggplot2::xlim(0, xlim_max)
+
+  if (isTRUE(wedge_labels) && label_style == "wedge") {
+    # position_stack(vjust = 0.5) centres the label on its own wedge's
+    # angular span, using the exact same stacking logic as geom_col()
+    # itself (same fill aesthetic, same data), so the two can never
+    # drift out of sync with each other
+    p <- p + ggplot2::geom_text(
+      ggplot2::aes(x = x_pos, y = !!y, label = .data[["cpb__wedge_label"]]),
+      position = ggplot2::position_stack(vjust = 0.5),
+      colour = label_colour, size = 7 / ggplot2::.pt,
+      family = cpb_font_family()
+    )
+  } else if (!is.null(leader_data)) {
+    p <- p +
+      ggplot2::geom_segment(
+        data = leader_data,
+        ggplot2::aes(x = x_wedge, xend = x_bend, y = y_wedge, yend = y_wedge),
+        inherit.aes = FALSE, colour = "grey30", linewidth = 0.3
+      ) +
+      ggplot2::geom_segment(
+        data = leader_data,
+        ggplot2::aes(x = x_bend, xend = x_line, y = y_wedge, yend = y_line),
+        inherit.aes = FALSE, colour = "grey30", linewidth = 0.3
+      ) +
+      ggplot2::geom_text(
+        data = leader_data,
+        ggplot2::aes(x = x_text, y = y_text, label = wedge_label, hjust = hjust),
+        inherit.aes = FALSE, colour = label_colour, size = 7 / ggplot2::.pt,
+        family = cpb_font_family()
+      )
+  }
+
+  fill_labels <- ggplot2::waiver()
+  if (isTRUE(legend_pct)) {
+    fill_chr <- as.character(rlang::eval_tidy(fill, data))
+    pct_by_level <- tapply(pct, fill_chr, sum)
+    fill_labels <- function(breaks) {
+      paste0(breaks, " (", fmt_pct(pct_by_level[breaks]), ")")
+    }
+  }
+  p <- p + cpb_discrete_scale("fill", index, palette, labels = fill_labels)
+  p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol)
+
+  subtitle <- cpb_reserve_subtitle(title, subtitle)
+
+  p +
+    ggplot2::labs(title = title, subtitle = subtitle, fill = filllab) +
+    theme_cpb(
+      legend = legend, flush_legend = flush_legend,
+      legend_key_size = legend_key_size, grid = "none", ticks = FALSE
+    ) +
+    ggplot2::theme(
+      axis.text  = ggplot2::element_blank(),
+      axis.title = ggplot2::element_blank(),
+      axis.ticks = ggplot2::element_blank(),
+      axis.line  = ggplot2::element_blank(),
+      panel.grid = ggplot2::element_blank()
+    )
+}

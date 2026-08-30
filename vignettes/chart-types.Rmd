@@ -319,6 +319,26 @@ cpb_area(mix, x = jaar, y = aandeel, fill = bron,
                      guide = guide_axis(minor.ticks = TRUE))
 ```
 
+# Donut charts
+
+`cpb_donut()` draws a single share-of-total breakdown as a ring
+instead of a stacked area over time -- one wedge per category, sized
+by `y`. There is no value axis to read (nothing to label), so wedge
+sizes are read off the legend or the data itself. `ring_width`
+controls how thick the ring is, from a thin ring around a large hole
+up to `2` (no hole at all -- a full pie):
+
+```{r donut}
+energie <- tibble(
+  bron  = factor(bronnen, levels = bronnen),
+  share = c(45, 30, 15, 10)
+)
+
+cpb_donut(energie, fill = bron, y = share,
+  index = c(6, 5, 2, 4),
+  title = "Energiemix van huishoudens")
+```
+
 # Quantile boxplots
 
 `cpb_box()` draws the CPB distributional figure: a box over the
