@@ -221,6 +221,52 @@ wrapper, not through a second `scale_y_continuous()`, which would
 silently replace the wrapper's percentage labels and zero-flush
 expansion.
 
+## Automatic vs. manual value-axis limits
+
+Left on its own, the value axis is always flush to the data: its
+limits come from `pretty()`'ing whatever range `y` (or `p5`/`p95`,
+`lower`/`upper`, ...) actually spans, so the panel starts exactly
+where the data does, on both ends. `value_limits` overrides that with
+an explicit `c(min, max)` instead -- not a coordinate-system zoom, but
+the value axis's own hard limits, drawn flush the same way. Useful to
+line several figures up on one shared scale, to leave room for a
+reference value the data itself does not reach, or simply to round
+the axis to tidier numbers than the data's own extremes happen to
+produce:
+
+```{r col-auto-limits}
+kk <- tibble(
+  groep      = factor(groepen, levels = rev(groepen)),
+  koopkracht = c(-0.9, -0.3, 0.2, 0.5, 0.8, 1.1)
+)
+
+cpb_col(kk, x = groep, y = koopkracht,
+  orientation = "horizontal",
+  title = "Koopkracht naar inkomensgroep",
+  ylab  = "inkomensgroep",
+  xlab  = "% koopkrachtmutatie")
+```
+
+The data itself only spans -0.9 to 1.1, so that is exactly where the
+automatic axis starts and ends. Passing `value_limits` widens it to a
+chosen range instead -- here, room for a "-1.5% tot 2%" scale used
+elsewhere in the same publication:
+
+```{r col-manual-limits}
+cpb_col(kk, x = groep, y = koopkracht,
+  orientation  = "horizontal",
+  value_limits = c(-1.5, 2),
+  title = "Koopkracht naar inkomensgroep",
+  ylab  = "inkomensgroep",
+  xlab  = "% koopkrachtmutatie")
+```
+
+Nothing about the bars themselves changes; only the axis they are
+read against does. An estimate that fell *outside* an explicit
+`value_limits` would be dropped, with a warning, the same as setting
+`limits` on any ggplot2 scale -- here every value already falls well
+within the wider range, so nothing is cropped.
+
 ## A secondary axis
 
 Two series belong in one figure when they are about the same thing
