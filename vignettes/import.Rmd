@@ -1,6 +1,9 @@
 ---
 title: "Building figures from CSV files"
-output: rmarkdown::html_vignette
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
 vignette: >
   %\VignetteIndexEntry{Building figures from CSV files}
   %\VignetteEngine{knitr::rmarkdown}
@@ -88,6 +91,12 @@ This example uses the horizontal layout:
 
 ```{r params-raw, echo = FALSE, comment = ""}
 cat(readLines(params_csv), sep = "\n")
+```
+
+The same content, split on the comma and shown as a table:
+
+```{r params-table, echo = FALSE}
+knitr::kable(read.csv(params_csv, stringsAsFactors = FALSE))
 ```
 
 Each row describes one figure. The column names are parameter names.
@@ -222,7 +231,7 @@ updated figures.
 R and `ggcpb` must still be installed on the computer running the
 script.
 
-# Parameter reference
+# Appendix: Parameter values {-}
 
 The available parameters depend on the `plot_type`. The complete list
 is stored in `parameter_settings.csv`.
