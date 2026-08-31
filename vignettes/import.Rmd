@@ -263,10 +263,11 @@ updated figures.
 R and `ggcpb` must still be installed on the computer running the
 script.
 
-# Appendix: Parameter values {-}
+# Appendix A: Parameter values {-}
 
 The available parameters depend on the `plot_type`. The complete list
-is stored in `parameter_settings.csv`.
+is stored in `parameter_settings.csv`, and gives the available
+parameters, their kind, default values and examples.
 
 ```{r params-ref-path}
 ref_csv <- system.file(
@@ -276,25 +277,53 @@ ref_csv <- system.file(
 )
 ```
 
-The file gives the available parameters, their kind, default values
-and examples.
+Many parameters are the same across every `plot_type`. To avoid
+repeating those in every table, Table A1 lists the parameters shared,
+with the same meaning and default, by all plot types. Table A2 onward
+each cover one `plot_type`, listing only what is not already in Table
+A1. A parameter is only listed for the plot types it actually applies
+to, so a table for one `plot_type` does not necessarily match another.
 
-```{r params-ref-table, echo = FALSE}
+```{r params-ref-table, echo = FALSE, results = "asis"}
 ref <- read.csv(
   ref_csv,
   stringsAsFactors = FALSE
 )
 
-knitr::kable(
-  ref,
-  col.names = c(
-    "plot_type",
-    "setting",
-    "kind",
-    "default",
-    "example"
-  )
-)
+types <- unique(ref$plot_type)
+
+# a parameter belongs in the shared table only when every plot_type
+# has it, with the same kind and default -- present everywhere but
+# with a different default per type (e.g. reverse_legend) still needs
+# its own row in each type's own table, since a single shared default
+# would be wrong for the types that do not use it
+by_param <- split(ref, ref$param)
+is_shared <- vapply(by_param, function(rows) {
+  setequal(unique(rows$plot_type), types) &&
+    nrow(unique(rows[c("kind", "default")])) == 1
+}, logical(1))
+shared_params <- sort(names(by_param)[is_shared])
+
+show_params <- function(rows) {
+  rows <- rows[order(rows$param), c("param", "kind", "default", "example")]
+  print(knitr::kable(
+    rows,
+    row.names = FALSE,
+    col.names = c("setting", "kind", "default", "example")
+  ))
+}
+
+cat("\n\n**Table A1. Shared parameters across all plot types**\n\n")
+show_params(ref[ref$param %in% shared_params & !duplicated(ref$param), ])
+
+table_n <- 2
+for (t in types) {
+  rows <- ref[ref$plot_type == t & !ref$param %in% shared_params, ]
+  if (!nrow(rows)) next
+  cat("\n\n**Table A", table_n, ". Parameters specific to `", t, "`**\n\n", sep = "")
+  show_params(rows)
+  table_n <- table_n + 1
+}
 ```
 
 A parameter of kind `column` takes a column name from the data file.
