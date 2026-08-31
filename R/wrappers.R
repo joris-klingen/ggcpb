@@ -3928,17 +3928,23 @@ cpb_donut <- function(data, fill, y,
     p <- p +
       ggplot2::geom_segment(
         data = leader_data,
-        ggplot2::aes(x = x_wedge, xend = x_tick, y = y_wedge, yend = y_wedge),
+        ggplot2::aes(
+          x = .data[["x_wedge"]], xend = .data[["x_tick"]],
+          y = .data[["y_wedge"]], yend = .data[["y_wedge"]]
+        ),
         inherit.aes = FALSE, colour = "grey30", linewidth = 0.3
       ) +
       ggplot2::geom_path(
         data = path_data,
-        ggplot2::aes(x = x, y = y, group = grp),
+        ggplot2::aes(x = .data[["x"]], y = .data[["y"]], group = .data[["grp"]]),
         inherit.aes = FALSE, colour = "grey30", linewidth = 0.3
       ) +
       ggplot2::geom_text(
         data = leader_data,
-        ggplot2::aes(x = x_text, y = y_text, label = wedge_label, hjust = hjust),
+        ggplot2::aes(
+          x = .data[["x_text"]], y = .data[["y_text"]],
+          label = .data[["wedge_label"]], hjust = .data[["hjust"]]
+        ),
         inherit.aes = FALSE, colour = label_colour, size = 7 / ggplot2::.pt,
         family = cpb_font_family()
       )

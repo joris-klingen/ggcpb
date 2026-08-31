@@ -283,6 +283,15 @@ single flush-left column of the house style; \code{2} and up suit a
 legend with many short keys, such as binned classes from
 \code{\link[=cpb_cut]{cpb_cut()}}, which would otherwise run past the panel.}
 
+\item{minor, ticks, flush_legend, axis_text_size, legend_key_size, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}} for per-figure deviations from the
+house defaults -- documented here rather than left to
+\verb{@inheritParams cpb_box} above, since that tag shares a single
+combined \verb{@param} entry with \code{grid_colour} in \code{\link[=cpb_box]{cpb_box()}}'s own
+docs, and \code{grid_colour} is documented separately just above with
+a different default; inheriting only part of a combined entry
+isn't something roxygen2 does, so the rest of that entry needs
+repeating here instead of silently going undocumented.}
+
 \item{grid_colour}{Major gridline colour; defaults to \code{"white"}
 here (CPB legends show plain colour squares, not miniature
 boxplots) to read against \code{panel_fill}'s light background instead

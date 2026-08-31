@@ -51,6 +51,15 @@
 #'   here (CPB legends show plain colour squares, not miniature
 #'   boxplots) to read against `panel_fill`'s light background instead
 #'   of the usual white one.
+#' @param minor,ticks,flush_legend,axis_text_size,legend_key_size,grid_linewidth
+#'   Forwarded to [theme_cpb()] for per-figure deviations from the
+#'   house defaults -- documented here rather than left to
+#'   `@inheritParams cpb_box` above, since that tag shares a single
+#'   combined `@param` entry with `grid_colour` in [cpb_box()]'s own
+#'   docs, and `grid_colour` is documented separately just above with
+#'   a different default; inheriting only part of a combined entry
+#'   isn't something roxygen2 does, so the rest of that entry needs
+#'   repeating here instead of silently going undocumented.
 #' @param panel_fill Panel background colour. Defaults to `"#eef8ff"`,
 #'   the light blue this look is built around.
 #' @param value_axis_linewidth Line width of the bold value-axis edge
