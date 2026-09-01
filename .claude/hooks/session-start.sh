@@ -86,16 +86,34 @@ Rscript -e '
     if (!requireNamespace(pkg, quietly = TRUE)) return(TRUE)
     !is.null(min_version) && utils::packageVersion(pkg) < min_version
   }
+  # roxygen2 must match what man/ was generated with, or devtools
+  # regenerates every .Rd and tools/check_docs_fresh.R reports drift.
+  # Read it from DESCRIPTION rather than pinning a literal here, so
+  # this cannot silently fall behind the package again.
+  desc_path <- file.path(Sys.getenv("CLAUDE_PROJECT_DIR", "."), "DESCRIPTION")
+  rox <- tryCatch({
+    d <- read.dcf(desc_path)
+    fld <- intersect(c("Config/roxygen2/version", "RoxygenNote"), colnames(d))
+    if (length(fld)) unname(d[1, fld[[1]]]) else NULL
+  }, error = function(e) NULL)
+
   wanted <- list(
     ggplot2  = "3.5.0",   # the floor ggcpb declares in DESCRIPTION
     sysfonts = NULL,      # no Ubuntu build exists for these two
-    showtext = NULL,
-    roxygen2 = "7.3.3"    # matches RoxygenNote, so docs regenerate clean
+    showtext = NULL
   )
   missing <- names(wanted)[vapply(names(wanted),
                                   function(p) needed(p, wanted[[p]]),
                                   logical(1))]
   if (length(missing)) install.packages(missing)
+
+  # roxygen2 is pinned to the *exact* recorded version, not a floor: it
+  # stamps its own version into DESCRIPTION and rewrites every .Rd, so a
+  # newer one turns `devtools::document()` into a whole-tree diff.
+  if (!is.null(rox) && !identical(as.character(utils::packageVersion("roxygen2")), rox)) {
+    if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes")
+    remotes::install_version("roxygen2", version = rox, upgrade = "never")
+  }
 '
 
 # Fail loudly if a hard dependency did not make it in.
@@ -114,5 +132,6 @@ Rscript -e '
          "figures would be drawn as missing glyphs.")
   }
   cat("R deps ready:", R.version.string, "with ggplot2", format(gg),
+      "| roxygen2", format(utils::packageVersion("roxygen2")),
       "| LC_CTYPE", ctype, "\n")
 '
