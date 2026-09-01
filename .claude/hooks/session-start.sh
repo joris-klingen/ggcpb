@@ -9,6 +9,10 @@
 # (R/scales.R uses the post-3.5 discrete_scale() signature, and
 # theme.R/map.R use theme elements that 3.4 does not have).
 #
+# The session also gets a UTF-8 locale pinned below: CPB figure labels
+# are Dutch and carry accented characters, which a C locale silently
+# mangles into missing glyphs.
+#
 # CRAN, not Posit Package Manager: P3M serves its index from
 # packagemanager.posit.co but redirects the actual downloads to
 # rspm-sync.rstudio.com, which the environment's network policy does
@@ -24,7 +28,7 @@ export DEBIAN_FRONTEND=noninteractive
 
 APT_PKGS=(
   r-base-core r-base-dev r-recommended
-  pandoc
+  pandoc qpdf
   libcurl4-openssl-dev libssl-dev libxml2-dev
   libpng-dev libtiff5-dev libjpeg-dev
   libfreetype6-dev libharfbuzz-dev libfribidi-dev libfontconfig1-dev
@@ -42,6 +46,27 @@ APT_PKGS=(
 # errors are not fatal for the Ubuntu archive packages we need.
 sudo apt-get update -qq || true
 sudo apt-get install -y --no-install-recommends "${APT_PKGS[@]}"
+
+# Pin a UTF-8 locale. The image comes up in the C locale, where R reads
+# each accented character ("reele", "geindexeerd" with their diaereses)
+# as two undefined bytes and every graphics device draws them as
+# missing glyphs -- with no warning, so the figure looks finished and
+# reads as mojibake. tools/render_vignettes.R refuses to run without
+# this; plots drawn by hand would silently come out wrong.
+for loc in C.UTF-8 en_US.UTF-8; do
+  if locale -a 2>/dev/null | tr -d '-' | grep -qix "$(echo "$loc" | tr -d '-')"; then
+    export LANG="$loc" LC_ALL="$loc"
+    break
+  fi
+done
+if [ -z "${LC_ALL:-}" ]; then
+  sudo locale-gen C.UTF-8 >/dev/null 2>&1 || true
+  export LANG=C.UTF-8 LC_ALL=C.UTF-8
+fi
+if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
+  echo "export LANG=\"$LANG\"" >> "$CLAUDE_ENV_FILE"
+  echo "export LC_ALL=\"$LC_ALL\"" >> "$CLAUDE_ENV_FILE"
+fi
 
 # User library for anything installed from source, kept out of the
 # system tree so it does not need root.
@@ -83,5 +108,11 @@ Rscript -e '
     stop("ggplot2 ", gg, " is installed but ggcpb needs >= 3.5.0; ",
          "check that cloud.r-project.org is reachable from this environment.")
   }
-  cat("R deps ready:", R.version.string, "with ggplot2", format(gg), "\n")
+  ctype <- Sys.getlocale("LC_CTYPE")
+  if (!grepl("UTF-?8", ctype, ignore.case = TRUE)) {
+    stop("LC_CTYPE is \"", ctype, "\", not UTF-8: accented characters in ",
+         "figures would be drawn as missing glyphs.")
+  }
+  cat("R deps ready:", R.version.string, "with ggplot2", format(gg),
+      "| LC_CTYPE", ctype, "\n")
 '
