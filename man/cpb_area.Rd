@@ -9,12 +9,26 @@ cpb_area(
   x,
   y,
   fill,
+  sec_y = NULL,
+  sec_type = c("line", "point", "col"),
+  sec_limits = NULL,
+  sec_label = NULL,
+  sec_ylab = NULL,
+  sec_colour = NULL,
+  sec_linewidth = 0.55,
+  sec_points = FALSE,
+  sec_point_size = 1.6,
+  sec_col_width = 0.3,
+  sec_accuracy = NULL,
   palette = "qualitative",
   fill_index = NULL,
   index = NULL,
   pct_axis = FALSE,
+  value_accuracy = NULL,
   value_breaks = NULL,
   value_limits = NULL,
+  x_lim = NULL,
+  x_lim_follow_data = FALSE,
   forecast_x = NULL,
   forecast_label = "raming",
   reverse_legend = TRUE,
@@ -47,7 +61,59 @@ combination.}
 typically a time variable and a value or share.}
 
 \item{fill}{Column mapped to the fill aesthetic (tidy eval), i.e.
-the grouping variable being stacked.}
+the grouping variable being stacked. Whenever \code{sec_y} is set,
+every fill legend label is suffixed \code{"(linkeras)"} (left axis) to
+tell it apart from \code{sec_y}'s own \code{"(rechteras)"} (right axis) key
+-- house convention, applied automatically; do not add it to
+\code{fill}'s own factor levels yourself.}
+
+\item{sec_y}{Optional column (tidy eval) holding a series to draw
+against a \strong{secondary value axis} on the right, alongside the
+stacked areas. One value per \code{x}.}
+
+\item{sec_type}{How \code{sec_y} is drawn: \code{"line"} (default), \code{"point"}
+(markers only, no connecting line), or \code{"col"} (thin bars). All
+three read off the same secondary axis and share one legend key
+with the primary fill.}
+
+\item{sec_limits}{Length-2 numeric vector giving the range the
+secondary axis spans. \code{NULL} (default) uses zero to the maximum of
+\code{sec_y}. \code{sec_y} is placed by mapping this range linearly onto
+the primary range, so the two axes always start together.}
+
+\item{sec_label}{Legend label for \code{sec_y}. \code{NULL} (default) uses
+the \code{sec_y} column name. Automatically suffixed \code{"(rechteras)"}
+(right axis) -- don't add it yourself, e.g. \code{sec_label = "erfbelasting"} shows as \code{"erfbelasting (rechteras)"}.}
+
+\item{sec_ylab}{Unit caption for the secondary axis, drawn
+right-aligned above the panel to mirror the left-hand unit that
+\code{ylab} puts in the subtitle. \code{NULL} (default) draws none.}
+
+\item{sec_colour}{Colour for \code{sec_y}; defaults to \code{NULL}, which
+resolves to the CPB pink (\code{cpb_cols(2)}, \code{"#e6006e"}) that sets it
+apart from the blue-led area fills.}
+
+\item{sec_linewidth}{Line width; only used when \code{sec_type = "line"}.
+Defaults to \code{0.55}, as in \code{\link[=cpb_line]{cpb_line()}}.}
+
+\item{sec_points}{If \code{TRUE}, add a marker at every point of the
+\code{sec_y} line. Only used when \code{sec_type = "line"} -- for markers
+without a connecting line, use \code{sec_type = "point"} instead.}
+
+\item{sec_point_size}{Point size; only used when \code{sec_type = "point"}
+(the main marker) or \code{sec_type = "line"} with \code{sec_points = TRUE}
+(a smaller marker decorating the line, at 0.7x this). Defaults
+to \code{1.6}.}
+
+\item{sec_col_width}{Column width; only used when \code{sec_type = "col"},
+drawn narrower than the primary bars' own default width (about
+\code{0.9}) so the two do not simply overlap. Defaults to \code{0.3}.}
+
+\item{sec_accuracy}{Rounding accuracy for the right-hand axis's own
+labels, passed to \code{\link[=label_number_nl]{label_number_nl()}}. \code{NULL} (default) uses that
+function's own automatic rounding -- set this when \code{sec_y} needs
+a different precision than its default (e.g. whole numbers for a
+count alongside a one-decimal percentage share).}
 
 \item{palette}{CPB palette to use for \code{fill}; one of
 \code{"qualitative"} (default), \code{"discr"}, \code{"sequential"}
@@ -67,14 +133,40 @@ conflict and raise an error, since both set the same thing.}
 
 \item{pct_axis}{If \code{TRUE}, format the y axis with \code{\link[=label_pct_nl]{label_pct_nl()}}.}
 
+\item{value_accuracy}{Rounding accuracy for the value axis labels,
+passed to \code{\link[=label_number_nl]{label_number_nl()}} (e.g. \code{0.1} for one decimal place).
+\code{NULL} (default) lets \code{scales} pick a sensible accuracy from the
+breaks. Cannot be combined with \code{pct_axis}. Use this instead of
+adding a second \code{scale_y_continuous()}, which would discard the
+wrapper's flush axis (see \code{value_breaks}).}
+
 \item{value_breaks}{Optional breaks for the value axis (passed to
-the wrapper-built \code{\link[ggplot2:scale_continuous]{ggplot2::scale_y_continuous()}}). Use this
+the wrapper-built \code{\link[ggplot2:scale_y_continuous]{ggplot2::scale_y_continuous()}}). Use this
 instead of adding a second y scale, which would discard the
 wrapper's axis formatting and expansion.}
 
 \item{value_limits}{Optional length-2 limits for the value axis,
 applied through the coordinate system (zoom) so no data is
 dropped.}
+
+\item{x_lim}{Optional length-2 vector zooming the \code{x} axis to a
+range, without dropping data -- applied as a coordinate-system
+zoom (\code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} \code{xlim}). \code{NULL} (default) shows
+the full range.}
+
+\item{x_lim_follow_data}{If \code{TRUE}, the \code{x} axis sits flush to the
+data's own range, with no padding on either side. A whole-number
+\code{x} (almost always a year) still only ever gets whole-number
+breaks, never a fractional one. Defaults to \code{FALSE}: unlike a
+thin line, an area's solid fill runs edge-to-edge, so a flush
+axis leaves no visual cue for where the data actually starts and
+ends -- ggplot2's usual padded, evenly spaced margin (the default
+here) keeps that visible. Matches nicerplot's parameter of the
+same name. Ignored when \code{x_lim} is set. Adding your own
+\code{scale_x_continuous()}/\code{scale_x_discrete()} afterward replaces
+this one entirely (ggplot2 keeps only one scale per aesthetic) --
+add \code{expand = ggplot2::expansion(mult = 0)} to it to keep the
+flush behaviour when this is \code{TRUE}.}
 
 \item{forecast_x}{Optional x value where the forecast window
 starts; overlaid and labelled as in \code{\link[=cpb_line]{cpb_line()}}.}
@@ -122,13 +214,13 @@ it is rendered as the plot \emph{subtitle} -- a left-aligned italic
 caption above the panel -- unless an explicit \code{subtitle} is also
 given, in which case it falls back to a rotated y-axis title.}
 
-\item{...}{Further arguments passed to \code{\link[ggplot2:geom_ribbon]{ggplot2::geom_area()}}.}
+\item{...}{Further arguments passed to \code{\link[ggplot2:geom_area]{ggplot2::geom_area()}}.}
 }
 \value{
 A \code{ggplot} object.
 }
 \description{
-Thin wrapper around \code{\link[ggplot2:geom_ribbon]{ggplot2::geom_area()}} with CPB theming and
+Thin wrapper around \code{\link[ggplot2:geom_area]{ggplot2::geom_area()}} with CPB theming and
 colour scale applied, for the recurring "share of total over time"
 chart.
 }

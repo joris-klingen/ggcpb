@@ -354,7 +354,12 @@ render(6, "box: split by year (2026/2027)",
     fill_index = c(6, 2),
     title    = "Koopkracht per jaar, 2026 en 2027",
     ylab     = "% koopkrachtmutatie") +
-    ggplot2::scale_y_continuous(labels = label_number_nl()),
+    # breaks/limits repeat cpb_box()'s own flush computation for this
+    # data (verified via cpb_flush_scale_args()) so the custom label
+    # formatter doesn't discard the flush -- adding a second y scale
+    # replaces the first entirely, expand included
+    ggplot2::scale_y_continuous(labels = label_number_nl(), breaks = seq(-6, 6, 2),
+                                limits = c(-6, 6), expand = ggplot2::expansion(mult = c(0, 0))),
   "06_box_by_year.png", page = "full")
 
 # recreation of reference figure p11_img11 (horizontal single-colour bar
@@ -397,7 +402,11 @@ render(9, "line: two series",
     colour_index = c(6, 2),
     title = "Productiviteitsgroei",
     ylab  = "%") +
-    ggplot2::scale_y_continuous(breaks = seq(-4, 6, 2), limits = c(-4, 6)) +
+    # expand = 0 keeps the panel flush at both ends -- without it,
+    # replacing the wrapper's own scale reverts to the ggplot2 default
+    # padding even though limits already match the breaks exactly
+    ggplot2::scale_y_continuous(breaks = seq(-4, 6, 2), limits = c(-4, 6),
+                                expand = ggplot2::expansion(mult = c(0, 0))) +
     ggplot2::scale_x_continuous(
       breaks       = c(seq(2000, 2020, 5), 2024),
       minor_breaks = 2000:2024,
@@ -426,7 +435,11 @@ render(10, "col: stacked +/- with line overlay",
       fill   = ggplot2::guide_legend(reverse = TRUE, order = 1),
       colour = ggplot2::guide_legend(order = 2)
     ) +
-    ggplot2::scale_y_continuous(breaks = seq(-4, 6, 2), limits = c(-4, 6)) +
+    # expand = 0 keeps the panel flush at both ends -- without it,
+    # replacing the wrapper's own scale reverts to the ggplot2 default
+    # padding even though limits already match the breaks exactly
+    ggplot2::scale_y_continuous(breaks = seq(-4, 6, 2), limits = c(-4, 6),
+                                expand = ggplot2::expansion(mult = c(0, 0))) +
     ggplot2::scale_x_continuous(
       breaks       = c(seq(2000, 2020, 5), 2024),
       minor_breaks = 2000:2024,
@@ -466,11 +479,14 @@ render(12, "box: horizontal, dodged by year",
     orientation = "horizontal",
     fill_index = c(2, 6),
     reverse_legend = TRUE,
+    # routed through the wrapper's own pct_axis/value_breaks (instead of
+    # a raw scale_y_continuous() bypass) so the flush limits/expand from
+    # cpb_flush_scale_args() are kept, not silently replaced
+    pct_axis     = TRUE,
+    value_breaks = seq(0, 100, 25),
     title = "Opbouw inkomenseffect: marktverwachtingen",
     subtitle = "inkomensgroepen",
-    ylab  = "aandeel energie in inkomenseffect") +
-    ggplot2::scale_y_continuous(labels = label_pct_nl(scale = 1),
-                                breaks = seq(0, 100, 25)),
+    ylab  = "aandeel energie in inkomenseffect"),
   "12_box_horizontal_dodged.png", page = "half")
 
 # recreation of reference figure p06_img01 (energy publication): gas
@@ -482,8 +498,12 @@ render(13, "line: scenarios with forecast window",
     forecast_label = "scenario's",
     title = "Gasprijzen per scenario",
     ylab  = "euro/kuub") +
+    # expand = 0 keeps the panel flush at both ends -- without it,
+    # replacing cpb_line()'s own scale reverts to the ggplot2 default
+    # padding even though limits already match the breaks exactly
     ggplot2::scale_y_continuous(breaks = seq(0.5, 2, 0.5), limits = c(0.5, 2),
-                                labels = label_number_nl(accuracy = 0.1)) +
+                                labels = label_number_nl(accuracy = 0.1),
+                                expand = ggplot2::expansion(mult = c(0, 0))) +
     ggplot2::scale_x_continuous(
       breaks = seq(2025.5, 2028, 0.5) - 1 / 12,
       labels = function(b) paste0(ifelse(b %% 1 < 0.5, "6", "12"), "-", floor(b)),
@@ -500,7 +520,11 @@ render(14, "scatter: continuous colour",
     ylab  = "energierekening (euro per maand)",
     xlab  = "besteedbaar inkomen (euro per maand)",
     colourlab = "koopkracht (%)") +
-    ggplot2::scale_x_continuous(labels = label_euro_nl()),
+    # breaks repeat cpb_scatter()'s own pretty()-computed flush breaks
+    # for this data -- the panel stays flush via coord regardless, but
+    # without matching breaks here the replaced scale would pick its own
+    # (possibly not landing on the coord's exact edge)
+    ggplot2::scale_x_continuous(labels = label_euro_nl(), breaks = seq(0, 7000, 1000)),
   "14_scatter.png", page = "full")
 
 render(15, "histogram",
@@ -527,7 +551,11 @@ render(17, "box: james style",
     title    = "Effect per inkomensgroep",
     subtitle = "inkomensgroep",
     ylab     = "effect (%-punt)") +
-    ggplot2::scale_y_continuous(labels = label_number_nl(accuracy = 0.1)),
+    # breaks/limits repeat cpb_box()'s own flush computation for this
+    # data so the custom label formatter doesn't discard the flush
+    ggplot2::scale_y_continuous(labels = label_number_nl(accuracy = 0.1),
+                                breaks = seq(0, 1.4, 0.2), limits = c(0, 1.4),
+                                expand = ggplot2::expansion(mult = c(0, 0))),
   "17_box_james.png", page = "half")
 
 # designer variant (see the design handed in as reference): light-blue
@@ -542,7 +570,11 @@ render(18, "box: modern style",
     title    = "Effect per inkomensgroep",
     subtitle = "inkomensgroep",
     ylab     = "effect (%-punt)") +
-    ggplot2::scale_y_continuous(labels = label_number_nl(accuracy = 0.1)),
+    # breaks/limits repeat cpb_box()'s own flush computation for this
+    # data so the custom label formatter doesn't discard the flush
+    ggplot2::scale_y_continuous(labels = label_number_nl(accuracy = 0.1),
+                                breaks = seq(0, 1.4, 0.2), limits = c(0, 1.4),
+                                expand = ggplot2::expansion(mult = c(0, 0))),
   "18_box_modern.png", page = "half")
 
 # faceted dodged columns: facet titles below the panels (nicerplot
@@ -665,6 +697,19 @@ render(25, "classed choropleth (cpb_cut + blues)",
     title    = "Aandeel huishoudens met zonnepanelen",
     filllab  = "aandeel"),
   "25_map_classed.png", page = "half", height = 5.2)
+
+# donut: single "share of total" breakdown
+energie_dt <- data.table(
+  bron  = factor(c("gas", "elektriciteit", "warmte", "overig"),
+                levels = c("gas", "elektriciteit", "warmte", "overig")),
+  share = c(45, 30, 15, 10)
+)
+render(26, "donut: energiemix",
+  cpb_donut(energie_dt, fill = bron, y = share,
+    index = c(6, 2, 5, 1),
+    title = "Energiemix",
+    filllab = "bron"),
+  "26_donut.png", page = "half")
 
 # Summary ----
 

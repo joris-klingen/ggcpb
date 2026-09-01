@@ -15,6 +15,8 @@ cpb_scatter(
   colour_index = NULL,
   color_index = NULL,
   index = NULL,
+  x_lim = NULL,
+  x_lim_follow_data = FALSE,
   forecast_x = NULL,
   forecast_label = "raming",
   reverse_legend = FALSE,
@@ -73,6 +75,17 @@ when \code{colour_index} is given.}
 
 \item{index}{Deprecated. Former name of
 \code{colour_index}. Still accepted, with a warning.}
+
+\item{x_lim}{Optional length-2 vector zooming the \code{x} axis to a
+range, without dropping data. Also recomputes the flush breaks
+for that window, rather than the full data's (which would mostly
+fall outside it). \code{NULL} (default) shows the full range.}
+
+\item{x_lim_follow_data}{If \code{TRUE}, flush the \code{x} axis exactly to
+the data's own range, at the cost of ggplot2 picking its own
+breaks within that (possibly non-round) range instead of the
+usual \code{pretty()} ones. Matches nicerplot's parameter of the same
+name. Defaults to \code{FALSE}. Ignored when \code{x_lim} is set.}
 
 \item{forecast_x}{Optional x value where the forecast window
 starts; overlaid and labelled as in \code{\link[=cpb_line]{cpb_line()}}.}

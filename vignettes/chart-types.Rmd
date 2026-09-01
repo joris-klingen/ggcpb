@@ -32,6 +32,20 @@ library(tidyr)
 set.seed(42)
 ```
 
+```{r show-saved-helper, include = FALSE}
+# Displays a file save_cpb() already wrote to a temporary path, at a
+# stable location knitr manages itself -- so the rendered copy of this
+# page (e.g. on GitHub) keeps a working image link rather than one
+# pointing at a temp file that no longer exists. Purely a display
+# detail for this page, not part of any save_cpb() example above it.
+.show_saved <- function(path) {
+  stable <- knitr::fig_path(".png")
+  dir.create(dirname(stable), recursive = TRUE, showWarnings = FALSE)
+  file.copy(path, stable, overwrite = TRUE)
+  knitr::include_graphics(stable)
+}
+```
+
 One section per CPB chart type, each in its *default* house style:
 the simulated data it needs and the wrapper call that draws it,
 nothing more. All wrappers return a plain `ggplot` object, so
@@ -43,8 +57,10 @@ axes, [`vignette("boxplots")`](boxplots.html) for the box-plot styles
 and combinations, [`vignette("annotation")`](annotation.html) for
 reference lines and forecast windows,
 [`vignette("maps")`](maps.html) for choropleths,
-[`vignette("colours")`](colours.html) for picking series colours, and
-[`vignette("ggcpb")`](ggcpb.html) for the basic setup and export.
+[`vignette("colours")`](colours.html) for picking series colours,
+[`vignette("import")`](import.html) for building figures straight
+from a CSV, and [`vignette("ggcpb")`](ggcpb.html) for the basic setup
+and export.
 
 Two house conventions to know up front:
 
@@ -219,6 +235,51 @@ wrapper, not through a second `scale_y_continuous()`, which would
 silently replace the wrapper's percentage labels and zero-flush
 expansion.
 
+## Automatic vs. manual value-axis limits
+
+Left on its own, the value axis is always flush to the data: its
+limits come from `pretty()`'ing whatever range `y` (or `p5`/`p95`,
+`lower`/`upper`, ...) actually spans, so the panel starts exactly
+where the data does, on both ends. `value_limits` overrides that with
+an explicit `c(min, max)` instead -- not a coordinate-system zoom, but
+the value axis's own hard limits, drawn flush the same way. Useful to
+line several figures up on one shared scale, to leave room for a
+reference value the data itself does not reach, or simply to round
+the axis to tidier numbers than the data's own extremes happen to
+produce. Automatic, on the same `auto` data as above:
+
+```{r col-auto-limits}
+cpb_col(auto, x = inkomensgroep, y = share,
+  orientation = "horizontal",
+  pct_axis    = TRUE,
+  width       = 0.6,
+  title = "Aandeel huishoudens zonder auto naar inkomen",
+  ylab  = "inkomensgroep",
+  xlab  = "huishoudens zonder auto")
+```
+
+The data itself only spans 13 to 62, so `pretty()` flushes the axis to
+0-70 -- already close to the full 0-100% a share is naturally read
+against, but not quite it. `value_limits` fixes that instead:
+
+```{r col-manual-limits}
+cpb_col(auto, x = inkomensgroep, y = share,
+  orientation  = "horizontal",
+  pct_axis     = TRUE,
+  value_limits = c(0, 100),
+  width        = 0.6,
+  title = "Aandeel huishoudens zonder auto naar inkomen",
+  ylab  = "inkomensgroep",
+  xlab  = "huishoudens zonder auto")
+```
+
+Nothing about the bars themselves changes; only the axis they are
+read against does -- the same bars read as noticeably smaller shares
+once the full 0-100% range is behind them. An estimate that fell
+*outside* an explicit `value_limits` would be dropped, with a warning,
+the same as setting `limits` on any ggplot2 scale -- here every value
+already falls well within the wider range, so nothing is cropped.
+
 ## A secondary axis
 
 Two series belong in one figure when they are about the same thing
@@ -227,9 +288,17 @@ the tax raised on it. `sec_y` draws the second series as a line
 against a right-hand axis, with `sec_limits` fixing the range that
 axis spans. The line is placed by mapping `sec_limits` linearly onto
 the primary range, so both axes start together and the line cannot
-drift out of step with its own labels:
+drift out of step with its own labels.
 
-```{r col-secaxis, fig.width = 5.96, fig.height = 2.98, out.width = "700px"}
+`sec_ylab`'s caption on the right is placed to line up exactly with
+`ylab`'s own caption on the left, but only `save_cpb()` lines it up
+exactly; knitr's own plotting device shows an approximate placement
+instead (close, not exact, since at print time the plot has not
+actually been rendered yet to measure against). So, like every figure
+with a `sec_y` below, this one is written to a file with `save_cpb()`
+and shown from that file rather than printed directly:
+
+```{r col-secaxis, results = "hide", out.width = "700px"}
 nalatenschap <- expand_grid(
   soort = factor(c("waarover aangifte", "waarover geen aangifte"),
                  levels = c("waarover geen aangifte", "waarover aangifte")),
@@ -246,15 +315,22 @@ erfbelasting <- tibble(
               1.6, 1.7, 1.8, 1.8, 1.8, 2.3, 2.4, 2.5)
 )
 
-nalatenschap |>
+p <- nalatenschap |>
   left_join(erfbelasting, by = "jaar") |>
   cpb_col(x = jaar, y = mld, fill = soort,
     sec_y      = heffing,
     sec_limits = c(0, 3),
-    sec_label  = "erfbelasting (rechteras)",
+    sec_label  = "erfbelasting",
     sec_ylab   = "mld euro",
     title = "Belasting over erfenissen, prijzen 2022",
     ylab  = "mld euro")
+
+path <- tempfile(fileext = ".png")
+save_cpb(path, p, page = "full")
+```
+
+```{r col-secaxis-show, echo = FALSE, out.width = "700px"}
+.show_saved(path)
 ```
 
 `sec_ylab` mirrors on the right what `ylab` puts above the panel on
@@ -266,7 +342,7 @@ cannot be read: horizontal bars, grouped categories, and
 `cpb_line()` takes the same arguments, for the figure that puts two
 rates on the left axis and an index on the right:
 
-```{r line-secondary, fig.width = 2.98, fig.height = 3.0}
+```{r line-secondary, results = "hide", out.width = "350px"}
 lonen <- tibble(
   jaar  = 2020:2027,
   cao   = c(3.0, 2.2, 3.2, 5.8, 6.7, 5.1, 4.2, 3.8),
@@ -274,7 +350,7 @@ lonen <- tibble(
   reeel = c(100.5, 100.0, 96.8, 98.5, 99.2, 100.4, 101.6, 102.5)
 )
 
-lonen |>
+p <- lonen |>
   pivot_longer(c(cao, cpi), names_to = "reeks", values_to = "waarde") |>
   mutate(reeks = recode(reeks,
     cao = "cao-loon bedrijven (linkeras)",
@@ -291,6 +367,13 @@ lonen |>
     title = "Cao-loon bedrijven en inflatie (cpi)",
     ylab  = "mutatie in %") +
   scale_x_continuous(breaks = seq(2020, 2026, 2))
+
+path <- tempfile(fileext = ".png")
+save_cpb(path, p, page = "half")
+```
+
+```{r line-secondary-show, echo = FALSE, out.width = "350px"}
+.show_saved(path)
 ```
 
 The one difference from `cpb_col()`: there the columns key on `fill`
@@ -317,6 +400,67 @@ cpb_area(mix, x = jaar, y = aandeel, fill = bron,
   ylab     = "aandeel") +
   scale_x_continuous(breaks = seq(2018, 2027, 3), minor_breaks = 2018:2027,
                      guide = guide_axis(minor.ticks = TRUE))
+```
+
+# Donut charts
+
+`cpb_donut()` draws a single share-of-total breakdown as a ring
+instead of a stacked area over time -- one wedge per category, sized
+by `y`. There is no value axis to read (nothing to label), so wedge
+sizes are read off the legend or the data itself. `ring_width`
+controls how thick the ring is, from a thin ring around a large hole
+up to `2` (no hole at all -- a full pie).
+
+`cpb_donut()`'s ring keeps a fixed physical size regardless of title
+or legend length (see `panel_size`), which knitr's own plotting device
+does not apply on its own -- only `save_cpb()` does. So instead of
+printing the plot directly, every donut here is written to a file with
+`save_cpb()` and shown from that file, exactly as it would look saved
+for a report:
+
+```{r donut, results = "hide"}
+energie <- tibble(
+  bron  = factor(bronnen, levels = bronnen),
+  share = c(45, 30, 15, 10)
+)
+
+path <- tempfile(fileext = ".png")
+save_cpb(path, cpb_donut(energie, fill = bron, y = share,
+  index = c(6, 5, 2, 4),
+  title = "Energiemix van huishoudens"), page = "half")
+```
+
+```{r donut-show, echo = FALSE}
+.show_saved(path)
+```
+
+With more wedges, printing the value on the wedge itself gets cramped
+for the thin slices. `label_style = "leader"` moves every value
+outside the ring instead, connected back to its own wedge by a line
+that stays perpendicular to the wedge and straight the rest of the
+way out -- and automatically spaces out any wedges whose values would
+otherwise land on top of each other, like the two thinnest slices
+here:
+
+```{r donut-leader, results = "hide"}
+niveaus <- c("aardgas", "overig", "windenergie op land", "zonne-energie",
+             "kernenergie", "windenergie op zee")
+energie2 <- tibble(
+  bron  = factor(c("aardgas", "windenergie op land", "overig",
+                    "kernenergie", "windenergie op zee", "zonne-energie"),
+                 levels = niveaus),
+  share = c(40, 35, 13, 3, 2, 7)
+)
+
+path <- tempfile(fileext = ".png")
+save_cpb(path, cpb_donut(energie2, fill = bron, y = share,
+  label_style = "leader",
+  index = c(6, 4, 5, 1, 3, 2),
+  title = "Energiemix, met lijnlabels"), page = "half")
+```
+
+```{r donut-leader-show, echo = FALSE}
+.show_saved(path)
 ```
 
 # Quantile boxplots
@@ -366,11 +510,9 @@ rows read top to bottom in the order of the factor levels. `group`
 collects the rows under bold headings, exactly as in `cpb_box()`:
 
 ```{r dot, fig.width = 5.96, fig.height = 2.98, out.width = "700px"}
-termen <- c("Belasting ontmoedigt werken en sparen",
-            "Ongelijkheid is oneerlijk", "Succes door hard werken",
-            "Vertrouwen in de politiek", "Leeftijdscategorie",
-            "Geslacht (vrouw t.o.v. man)", "Heeft kinderen",
-            "Vermogenskwintiel")
+termen <- c("Werken ontmoedigd", "Ongelijkheid", "Hard werken loont",
+            "Politiek", "Leeftijdscategorie", "Geslacht (v/m)",
+            "Heeft kinderen", "Vermogenskwintiel")
 schatting <- tibble(
   term = factor(termen, levels = termen),
   blok = factor(rep(c("Percepties", "Achtergrond"), each = 4),

@@ -27,10 +27,24 @@ cpb_box(
   fill_index = NULL,
   index = NULL,
   pct_axis = FALSE,
+  value_accuracy = NULL,
   value_breaks = NULL,
   value_limits = NULL,
   value_axis = c("bottom", "top"),
+  x_lim = NULL,
+  x_lim_follow_data = TRUE,
   orientation = c("vertical", "horizontal"),
+  sec_y = NULL,
+  sec_type = c("line", "point", "col"),
+  sec_limits = NULL,
+  sec_label = NULL,
+  sec_ylab = NULL,
+  sec_colour = NULL,
+  sec_linewidth = 0.55,
+  sec_points = FALSE,
+  sec_point_size = 1.6,
+  sec_col_width = 0.3,
+  sec_accuracy = NULL,
   facet = NULL,
   facet_ncol = NULL,
   facet_scales = "fixed",
@@ -161,14 +175,25 @@ conflict and raise an error, since both set the same thing.}
 \item{pct_axis}{If \code{TRUE}, format the value axis with
 \code{\link[=label_pct_nl]{label_pct_nl()}}.}
 
+\item{value_accuracy}{Rounding accuracy for the value axis labels,
+passed to \code{\link[=label_number_nl]{label_number_nl()}} (e.g. \code{0.1} for one decimal place).
+\code{NULL} (default) lets \code{scales} pick a sensible accuracy from the
+breaks. Cannot be combined with \code{pct_axis}. Use this instead of
+adding a second \code{scale_y_continuous()}, which would discard the
+wrapper's flush axis (see \code{value_breaks}).}
+
 \item{value_breaks}{Optional breaks for the value axis (passed to
-the wrapper-built \code{\link[ggplot2:scale_continuous]{ggplot2::scale_y_continuous()}}). Use this
+the wrapper-built \code{\link[ggplot2:scale_y_continuous]{ggplot2::scale_y_continuous()}}). Use this
 instead of adding a second y scale, which would discard the
 wrapper's axis formatting and expansion.}
 
-\item{value_limits}{Optional length-2 limits for the value axis,
-applied through the coordinate system (zoom) so no data is
-dropped.}
+\item{value_limits}{Optional length-2 numeric vector giving the
+value-axis range, applied as the wrapper-built value scale's own
+\code{limits} (not a coordinate-system zoom) -- the hard bound the axis
+is drawn flush to; a box/whisker outside it is genuinely dropped,
+with a warning, the same as setting \code{limits} on any ggplot2 scale.
+\code{NULL} (default) flushes to the full p5-p95 (and \code{mean}) range
+instead.}
 
 \item{value_axis}{Where the value axis is drawn: \code{"bottom"}
 (default) or \code{"top"}. \code{"top"} places the numeric scale along the
@@ -176,8 +201,78 @@ top of the panel, the convention of the CPB koopkracht figures;
 it applies to horizontal boxes (the value axis is the flipped
 axis).}
 
+\item{x_lim}{Optional length-2 vector zooming the category (\code{x})
+axis to a range, without dropping data -- applied as a
+coordinate-system zoom (\code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} /
+\code{\link[ggplot2:coord_flip]{ggplot2::coord_flip()}} \code{xlim}). \code{NULL} (default) shows the full
+range.}
+
+\item{x_lim_follow_data}{If \code{TRUE} (default), the category axis
+sits flush to the data's own range, with no padding on either
+side. A whole-number \code{x} (almost always a year) still only ever
+gets whole-number breaks, never a fractional one. Set to \code{FALSE}
+to restore ggplot2's usual padded, evenly spaced margin instead.
+Matches nicerplot's parameter of the same name. Ignored when
+\code{x_lim} is set, and when \code{group} is mapped (the grouped layout
+needs its own fixed margin for the heading rows).
+Adding your own \code{scale_x_continuous()}/\code{scale_x_discrete()}
+afterward replaces this one entirely (ggplot2 keeps only one
+scale per aesthetic) -- add \code{expand = ggplot2::expansion(mult = 0)}
+to it to keep the flush behaviour.}
+
 \item{orientation}{\code{"vertical"} (default) or \code{"horizontal"} (adds
 \code{\link[ggplot2:coord_flip]{ggplot2::coord_flip()}} and is forwarded to \code{\link[=theme_cpb]{theme_cpb()}}).}
+
+\item{sec_y}{Optional column (tidy eval) holding a series to draw
+against a \strong{secondary value axis} on the right, alongside the
+boxes. One value per \code{x}. Only supported for vertical boxes with
+no \code{group} mapping, \code{box_style} other than \code{"dot"}, and
+\code{value_axis = "bottom"} -- each of those already claims the space
+\code{sec_y} needs (the right/top edge of the panel, or the colour
+aesthetic). With no \code{fill} mapping the boxes get their own legend
+key too (a plain square in \code{fill_colour}), so both series are
+always named in the legend.}
+
+\item{sec_type}{How \code{sec_y} is drawn: \code{"line"} (default), \code{"point"}
+(markers only, no connecting line), or \code{"col"} (thin bars).}
+
+\item{sec_limits}{Length-2 numeric vector giving the range the
+secondary axis spans. \code{NULL} (default) uses zero to the maximum of
+\code{sec_y}. \code{sec_y} is placed by mapping this range linearly onto
+the primary (p5-p95) range, so the two axes always start together.}
+
+\item{sec_label}{Legend label for \code{sec_y}. \code{NULL} (default) uses
+the \code{sec_y} column name. Automatically suffixed \code{"(rechteras)"}
+(right axis) -- don't add it yourself, e.g. \code{sec_label = "erfbelasting"} shows as \code{"erfbelasting (rechteras)"}.}
+
+\item{sec_ylab}{Unit caption for the secondary axis, drawn
+right-aligned above the panel to mirror the left-hand unit that
+\code{ylab} puts in the subtitle. \code{NULL} (default) draws none.}
+
+\item{sec_colour}{Colour for \code{sec_y}; defaults to \code{NULL}, which
+resolves to the CPB pink (\code{cpb_cols(2)}, \code{"#e6006e"}).}
+
+\item{sec_linewidth}{Line width; only used when \code{sec_type = "line"}.
+Defaults to \code{0.55}.}
+
+\item{sec_points}{If \code{TRUE}, add a marker at every point of the
+\code{sec_y} line. Only used when \code{sec_type = "line"} -- for markers
+without a connecting line, use \code{sec_type = "point"} instead.}
+
+\item{sec_point_size}{Point size; only used when \code{sec_type = "point"}
+(the main marker) or \code{sec_type = "line"} with \code{sec_points = TRUE}
+(a smaller marker decorating the line, at 0.7x this). Defaults
+to \code{1.6}.}
+
+\item{sec_col_width}{Column width; only used when \code{sec_type = "col"},
+drawn narrower than the primary bars' own default width (about
+\code{0.9}) so the two do not simply overlap. Defaults to \code{0.3}.}
+
+\item{sec_accuracy}{Rounding accuracy for the right-hand axis's own
+labels, passed to \code{\link[=label_number_nl]{label_number_nl()}}. \code{NULL} (default) uses that
+function's own automatic rounding -- set this when \code{sec_y} needs
+a different precision than its default (e.g. whole numbers for a
+count alongside a one-decimal percentage share).}
 
 \item{facet}{Optional column (tidy eval) to facet by. Facets follow
 the house (legacy nicerplot) convention: the facet title is a bold
@@ -223,7 +318,7 @@ to \code{NULL} (no axis title), matching CPB house style.}
 it as the plot \emph{subtitle} -- unless an explicit \code{subtitle} is also
 given, in which case it falls back to a rotated y-axis title.}
 
-\item{...}{Further arguments passed to both \code{\link[ggplot2:geom_linerange]{ggplot2::geom_errorbar()}}
+\item{...}{Further arguments passed to both \code{\link[ggplot2:geom_errorbar]{ggplot2::geom_errorbar()}}
 and \code{\link[ggplot2:geom_boxplot]{ggplot2::geom_boxplot()}}.}
 }
 \value{

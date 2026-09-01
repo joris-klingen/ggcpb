@@ -18,13 +18,27 @@ cpb_dot(
   linewidth = 0.4,
   cap_width = 0.25,
   orientation = c("horizontal", "vertical"),
+  sec_y = NULL,
+  sec_type = c("line", "point", "col"),
+  sec_limits = NULL,
+  sec_label = NULL,
+  sec_ylab = NULL,
+  sec_colour = NULL,
+  sec_linewidth = 0.55,
+  sec_points = FALSE,
+  sec_point_size = size,
+  sec_col_width = 0.3,
+  sec_accuracy = NULL,
   palette = "qualitative",
   colour_index = NULL,
   color_index = NULL,
   index = NULL,
   pct_axis = FALSE,
+  value_accuracy = NULL,
   value_breaks = NULL,
   value_limits = NULL,
+  x_lim = NULL,
+  x_lim_follow_data = TRUE,
   zeroline = TRUE,
   reverse_legend = FALSE,
   legend_ncol = NULL,
@@ -85,6 +99,57 @@ defaults to \code{0.25}. Use \code{0} for plain capless intervals.}
 \item{orientation}{\code{"horizontal"} (default, the published form,
 adding \code{\link[ggplot2:coord_flip]{ggplot2::coord_flip()}}) or \code{"vertical"}.}
 
+\item{sec_y}{Optional column (tidy eval) holding a series to draw
+against a \strong{secondary value axis} on the right, alongside the
+points. One value per \code{x}. Requires \code{orientation = "vertical"}
+(the secondary axis is drawn on the right of the value axis), no
+\code{group} mapping (the bold group headings claim the same space),
+and \code{colour} to be unset (both need the colour aesthetic and its
+one legend); the primary points stay plain and unlabelled in
+\code{point_colour}, and only \code{sec_y} gets a legend key.}
+
+\item{sec_type}{How \code{sec_y} is drawn: \code{"line"} (default), \code{"point"}
+(markers only, no connecting line), or \code{"col"} (thin bars).}
+
+\item{sec_limits}{Length-2 numeric vector giving the range the
+secondary axis spans. \code{NULL} (default) uses zero to the maximum of
+\code{sec_y}. \code{sec_y} is placed by mapping this range linearly onto
+the primary (lower-upper) range, so the two axes always start
+together.}
+
+\item{sec_label}{Legend label for \code{sec_y}. \code{NULL} (default) uses
+the \code{sec_y} column name. Automatically suffixed \code{"(rechteras)"}
+(right axis) -- don't add it yourself, e.g. \code{sec_label = "erfbelasting"} shows as \code{"erfbelasting (rechteras)"}.}
+
+\item{sec_ylab}{Unit caption for the secondary axis, drawn
+right-aligned above the panel to mirror the left-hand unit that
+\code{ylab} puts in the subtitle. \code{NULL} (default) draws none.}
+
+\item{sec_colour}{Colour for \code{sec_y}; defaults to \code{NULL}, which
+resolves to the CPB pink (\code{cpb_cols(2)}, \code{"#e6006e"}).}
+
+\item{sec_linewidth}{Line width; only used when \code{sec_type = "line"}.
+Defaults to \code{0.55}.}
+
+\item{sec_points}{If \code{TRUE}, add a marker at every point of the
+\code{sec_y} line. Only used when \code{sec_type = "line"} -- for markers
+without a connecting line, use \code{sec_type = "point"} instead.}
+
+\item{sec_point_size}{Point size; only used when \code{sec_type = "point"}
+(the main marker) or \code{sec_type = "line"} with \code{sec_points = TRUE}
+(a smaller marker decorating the line, at 0.7x this). Defaults to
+\code{size}, matching the primary points.}
+
+\item{sec_col_width}{Column width; only used when \code{sec_type = "col"},
+drawn narrow enough not to visually compete with the point/interval
+marks. Defaults to \code{0.3}.}
+
+\item{sec_accuracy}{Rounding accuracy for the right-hand axis's own
+labels, passed to \code{\link[=label_number_nl]{label_number_nl()}}. \code{NULL} (default) uses that
+function's own automatic rounding -- set this when \code{sec_y} needs
+a different precision than its default (e.g. whole numbers for a
+count alongside a one-decimal percentage share).}
+
 \item{palette}{CPB palette to use for \code{colour}; one of
 \code{"qualitative"} (default), \code{"discr"}, \code{"sequential"}
 (pink ramp), or \code{"blues"} (blue ramp).}
@@ -107,11 +172,42 @@ when \code{colour_index} is given.}
 \item{pct_axis}{If \code{TRUE}, format the value axis with
 \code{\link[=label_pct_nl]{label_pct_nl()}}.}
 
+\item{value_accuracy}{Rounding accuracy for the value axis labels,
+passed to \code{\link[=label_number_nl]{label_number_nl()}} (e.g. \code{0.1} for one decimal place).
+\code{NULL} (default) lets \code{scales} pick a sensible accuracy from the
+breaks. Cannot be combined with \code{pct_axis}. Use this instead of
+adding a second \code{scale_y_continuous()}, which would discard the
+wrapper's flush axis (see \code{value_breaks}).}
+
 \item{value_breaks}{Optional breaks for the value axis (passed to
-\code{\link[ggplot2:scale_continuous]{ggplot2::scale_y_continuous()}}).}
+\code{\link[ggplot2:scale_y_continuous]{ggplot2::scale_y_continuous()}}).}
 
 \item{value_limits}{Optional length-2 numeric vector giving the
-value-axis range, applied as a coordinate-system zoom.}
+value-axis range, applied as the wrapper-built value scale's own
+\code{limits} (not a coordinate-system zoom) -- the hard bound the axis
+is drawn flush to; an estimate outside it is genuinely dropped,
+with a warning, the same as setting \code{limits} on any ggplot2 scale.
+\code{NULL} (default) flushes to the full lower-upper (and point) range
+instead.}
+
+\item{x_lim}{Optional length-2 vector zooming the category (\code{x})
+axis to a range, without dropping data -- applied as a
+coordinate-system zoom (\code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} /
+\code{\link[ggplot2:coord_flip]{ggplot2::coord_flip()}} \code{xlim}). \code{NULL} (default) shows the full
+range.}
+
+\item{x_lim_follow_data}{If \code{TRUE} (default), the category axis
+sits flush to the data's own range, with no padding on either
+side. A whole-number \code{x} (almost always a year) still only ever
+gets whole-number breaks, never a fractional one. Set to \code{FALSE}
+to restore ggplot2's usual padded, evenly spaced margin instead.
+Matches nicerplot's parameter of the same name. Ignored when
+\code{x_lim} is set, and when \code{group} is mapped (the grouped layout
+needs its own fixed margin for the heading rows).
+Adding your own \code{scale_x_continuous()}/\code{scale_x_discrete()}
+afterward replaces this one entirely (ggplot2 keeps only one
+scale per aesthetic) -- add \code{expand = ggplot2::expansion(mult = 0)}
+to it to keep the flush behaviour.}
 
 \item{zeroline}{If \code{TRUE} (default), draw a solid black reference
 line at zero on the value axis -- the line the intervals are read

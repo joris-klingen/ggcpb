@@ -45,7 +45,7 @@ cpb_line(groei, x = jaar, y = waarde, colour = reeks,
   ylab  = "%")
 ```
 
-<img src="colours_files/figure-gfm/default-line-1.png" width="350px" />
+<img src="colours_files/figure-gfm/default-line-1.png" alt="" width="350px" />
 
 The same order drives fills, so a line chart and a column chart of the
 same series agree:
@@ -56,7 +56,7 @@ cpb_col(tw, x = jaar, y = waarde, fill = sector,
   ylab  = "mld euro")
 ```
 
-<img src="colours_files/figure-gfm/default-col-1.png" width="350px" />
+<img src="colours_files/figure-gfm/default-col-1.png" alt="" width="350px" />
 
 A single series is not part of that cycle: it is drawn in the CPB
 primary blue, which is why one-line and one-column figures look the same
@@ -68,7 +68,7 @@ cpb_line(filter(groei, reeks == "tfp"), x = jaar, y = waarde,
   ylab  = "%")
 ```
 
-<img src="colours_files/figure-gfm/single-1.png" width="350px" />
+<img src="colours_files/figure-gfm/single-1.png" alt="" width="350px" />
 
 # Choosing swatches by position
 
@@ -94,7 +94,7 @@ cpb_line(groei, x = jaar, y = waarde, colour = reeks,
   ylab  = "%")
 ```
 
-<img src="colours_files/figure-gfm/positions-line-1.png" width="350px" />
+<img src="colours_files/figure-gfm/positions-line-1.png" alt="" width="350px" />
 
 ``` r
 cpb_col(tw, x = jaar, y = waarde, fill = sector,
@@ -103,7 +103,7 @@ cpb_col(tw, x = jaar, y = waarde, fill = sector,
   ylab  = "mld euro")
 ```
 
-<img src="colours_files/figure-gfm/positions-col-1.png" width="350px" />
+<img src="colours_files/figure-gfm/positions-col-1.png" alt="" width="350px" />
 
 Position numbers stay stable regardless of the default order, so
 `cpb_cols(6)` is the primary blue whatever else changes.
@@ -141,7 +141,7 @@ cpb_col(intensiteit, x = jaar, y = n, fill = klasse,
   ylab  = "aantal personen, x 1000")
 ```
 
-<img src="colours_files/figure-gfm/continuous-col-1.png" width="350px" />
+<img src="colours_files/figure-gfm/continuous-col-1.png" alt="" width="350px" />
 
 `"discrete"` names the default explicitly, which is worth doing when a
 chart sits next to a `"continuous"` one and you want the contrast to be
@@ -154,7 +154,7 @@ cpb_col(tw, x = jaar, y = waarde, fill = sector,
   ylab  = "mld euro")
 ```
 
-<img src="colours_files/figure-gfm/discrete-keyword-1.png" width="350px" />
+<img src="colours_files/figure-gfm/discrete-keyword-1.png" alt="" width="350px" />
 
 The keywords `"qualitative"`, `"sequential"`, `"discr"` and `"blues"`
 name the underlying palettes directly, for the two ramps that have no
@@ -170,7 +170,8 @@ still work, so pick one per call: a keyword that contradicts an explicit
 cpb_col(tw, x = jaar, y = waarde, fill = sector,
   fill_index = "continuous",
   palette    = "qualitative")
-#> Error: `fill_index = "continuous"` and `palette = "qualitative"` both set the palette, and they disagree. Pass one of them.
+#> Error:
+#> ! `fill_index = "continuous"` and `palette = "qualitative"` both set the palette, and they disagree. Pass one of them.
 ```
 
 `palette` is also the way to reach a palette while still picking
@@ -185,7 +186,7 @@ cpb_col(intensiteit, x = jaar, y = n, fill = klasse,
   ylab  = "aantal personen, x 1000")
 ```
 
-<img src="colours_files/figure-gfm/palette-plus-positions-1.png" width="350px" />
+<img src="colours_files/figure-gfm/palette-plus-positions-1.png" alt="" width="350px" />
 
 # Colours outside the palette
 
@@ -201,7 +202,7 @@ cpb_line(groei, x = jaar, y = waarde, colour = reeks,
 #> Adding another scale for colour, which will replace the existing scale.
 ```
 
-<img src="colours_files/figure-gfm/manual-scale-1.png" width="350px" />
+<img src="colours_files/figure-gfm/manual-scale-1.png" alt="" width="350px" />
 
 For a single series, `line_colour` (and `fill_colour` on the column
 wrappers) sets the one colour directly, without involving a scale at
@@ -214,7 +215,7 @@ cpb_line(filter(groei, reeks == "tfp"), x = jaar, y = waarde,
   ylab  = "%")
 ```
 
-<img src="colours_files/figure-gfm/single-colour-1.png" width="350px" />
+<img src="colours_files/figure-gfm/single-colour-1.png" alt="" width="350px" />
 
 # Summary
 

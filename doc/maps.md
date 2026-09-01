@@ -8,11 +8,20 @@ library(dplyr)
 set.seed(42)
 ```
 
-`cpb_map()` draws a value per Dutch municipality, COROP region or
-province on bundled generalised CBS/Kadaster boundaries (2025, via
-cartomap), so no geo packages or downloads are needed. Regions are
-separated by thin background-colour seams, and the legend sits inside
-the panel at top-left – in the empty North Sea corner of the country.
+`cpb_map()` draws a value per Dutch municipality or province on bundled
+generalised CBS/Kadaster boundaries (2025, via cartomap), so no geo
+packages or downloads are needed. Regions are separated by thin
+background-colour seams, and the legend sits inside the panel at
+top-left – in the empty North Sea corner of the country.
+
+A map is taller relative to its width than a chart, so `save_cpb()`
+auto-fits the panel to the boundaries’ true aspect ratio, rather than
+letting it sit letterboxed inside a guessed `fig.height` (see “Styling
+and raw boundaries” below). Every map below is therefore written to a
+file with `save_cpb()` and shown from that file, exactly as it would
+look saved for a report – the code that builds and saves each map is the
+code shown; only the line that displays it back inline for this page is
+left out.
 
 # Classed maps
 
@@ -20,10 +29,10 @@ CPB choropleths are usually *classed*: the values are binned into a
 handful of ordered classes and filled with a light-to-dark ramp.
 `cpb_cut()` does the binning with tidy Dutch class labels (“lager dan
 20%”, “20% - 30%”, …, “60% en hoger”), and `palette = "blues"` gives the
-house blue ramp. Regions are joined by CBS code (`"GM0014"`, `"CR01"`,
-`"PV20"`) or by name, whichever matches the `region` column best;
-regions without a value get the CPB missing-value grey, and unmatched
-regions raise a warning:
+house blue ramp. Regions are joined by CBS code (`"GM0014"`, `"PV20"`)
+or by name, whichever matches the `region` column best; regions without
+a value get the CPB missing-value grey, and unmatched regions raise a
+warning:
 
 ``` r
 gemeenten <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
@@ -31,28 +40,21 @@ gemeenten <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
          klasse  = cpb_cut(aandeel, breaks = c(0, 20, 30, 40, 50, 60, Inf),
                            labeller = label_pct_nl()))
 
-cpb_map(gemeenten, region = code, value = klasse,
+path <- tempfile(fileext = ".png")
+save_cpb(path, cpb_map(gemeenten, region = code, value = klasse,
   palette = "blues",
   title   = "Aandeel huishoudens met zonnepanelen",
-  filllab = "aandeel")
+  filllab = "aandeel"), page = "half")
 ```
 
-<img src="maps_files/figure-gfm/map-classed-1.png" width="350px" />
-
-The map fills the half-page width (`page = "half"` in `save_cpb()`);
-because the Netherlands is taller than it is wide, a map figure needs a
-taller canvas than a chart – here `fig.height` is set so the map is not
-squeezed. A title that runs wider than the panel triggers a warning from
-`save_cpb()`, which suggests breaking it over two lines with `"\n"` (see
-the province example below).
+<img src="maps_files/figure-gfm/map-classed-show-1.png" alt="" width="350px" />
 
 `cpb_cut()` is a house-styled wrapper around `cut()`: give it the
 `breaks` (including the outer bounds, `Inf` for an open top class) and a
 formatter (`label_pct_nl()`, `label_euro_nl()`, `label_number_nl()`),
 and it returns an ordered factor whose levels read the way published
 figures label them. A single integer (`breaks = 5`) asks for that many
-equal-width bins. The `"blues"` palette works in every CPB scale, not
-just maps – use it for classed bars too.
+equal-width bins.
 
 # Continuous maps
 
@@ -65,18 +67,21 @@ value axis, so `ylab` does not apply here:
 gemeenten_ct <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
   mutate(index = rnorm(n(), 100, 15))
 
-cpb_map(gemeenten_ct, region = code, value = index,
+path <- tempfile(fileext = ".png")
+save_cpb(path, cpb_map(gemeenten_ct, region = code, value = index,
   title    = "Voorbeeldindex per gemeente",
-  subtitle = "index (Nederland = 100)")
+  subtitle = "index (Nederland = 100)"), page = "half")
 ```
 
-<img src="maps_files/figure-gfm/map-gemeente-1.png" width="350px" />
+<img src="maps_files/figure-gfm/map-gemeente-show-1.png" alt="" width="350px" />
 
-# Provinces and COROP regions
+# Provinces
 
-`level` selects the boundaries – `"provincie"` and `"corop"` for the
-coarser levels – and joining by *name* works too. A discrete `value`
-column gets the discrete CPB palettes (pick colours with `index`):
+`level = "provincie"` draws the coarser province boundaries instead;
+`"corop"` works the same way for COROP regions. A discrete `value` gets
+the discrete CPB palette (pick colours with `index`); a title that runs
+wider than the panel triggers a warning from `save_cpb()`, which
+suggests breaking it over two lines with `"\n"`, as here:
 
 ``` r
 provincies <- tibble(naam = unique(cpb_nl_geo("provincie")$name)) |>
@@ -85,12 +90,13 @@ provincies <- tibble(naam = unique(cpb_nl_geo("provincie")$name)) |>
     levels = c("onder gemiddeld", "boven gemiddeld")
   ))
 
-cpb_map(provincies, region = naam, value = klasse, level = "provincie",
+path <- tempfile(fileext = ".png")
+save_cpb(path, cpb_map(provincies, region = naam, value = klasse, level = "provincie",
   fill_index = c(2, 6),
-  title = "Groei ten opzichte van het\nlandelijk gemiddelde")
+  title = "Groei ten opzichte van het\nlandelijk gemiddelde"), page = "half")
 ```
 
-<img src="maps_files/figure-gfm/map-provincie-1.png" width="350px" />
+<img src="maps_files/figure-gfm/map-provincie-show-1.png" alt="" width="350px" />
 
 # Styling and raw boundaries
 

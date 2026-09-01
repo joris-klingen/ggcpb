@@ -1,0 +1,161 @@
+---
+title: "Axis range and sec_y stress test"
+output: html_document
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  fig.width = 2.98,
+  fig.height = 2.98,
+  dpi = 300,
+  out.width = "450px",
+  dev = if (requireNamespace("ragg", quietly = TRUE)) "ragg_png" else "png"
+)
+```
+
+```{r setup, message = FALSE}
+# knitr's working directory during a render is this file's own
+# directory (inst/examples/), not the package root -- unlike an
+# installed ggcpb, load_all() needs to be pointed at the root explicitly
+devtools::load_all("../..", quiet = TRUE)
+library(ggplot2)
+set.seed(1)
+```
+
+A companion to `text_length_stress_test.Rmd`, which varies title and
+label *length*. This one instead varies value-axis **range** (does the
+data cross zero, sit entirely above it, or entirely below it),
+**`sec_y`** (a second value axis or none), and **`orientation`**
+(vertical or horizontal), across `cpb_col()`, `cpb_line()`,
+`cpb_box()`, `cpb_dot()` and `cpb_donut()`. Nothing here edits the
+package; it only calls the existing functions with different inputs.
+
+```{r ranges}
+jaar <- 2018:2024
+
+# three value ranges: crossing zero, entirely positive, entirely
+# negative -- exercises the automatic zeroline (drawn only when the
+# range spans or touches zero) and the flush value-axis breaks
+mixed <- c(-3.2, -1.1, 0.4, 2.6, 1.8, -0.9, 3.1)
+pos   <- c(2.1, 3.4, 4.8, 3.9, 5.2, 4.4, 6.0)
+neg   <- c(-4.1, -2.8, -3.6, -1.9, -5.0, -3.3, -2.2)
+```
+
+# One value axis, no sec_y
+
+```{r one-axis-mixed}
+cpb_line(data.frame(jaar, y = mixed), x = jaar, y = y,
+  title = "Waarde loopt door nul", ylab = "%")
+```
+
+```{r one-axis-pos}
+cpb_line(data.frame(jaar, y = pos), x = jaar, y = y,
+  title = "Waarde volledig positief", ylab = "%")
+```
+
+```{r one-axis-neg}
+cpb_line(data.frame(jaar, y = neg), x = jaar, y = y,
+  title = "Waarde volledig negatief", ylab = "%")
+```
+
+# Two value axes (sec_y), every combination of range
+
+Nine combinations: the primary series is mixed/positive/negative, and
+so is the secondary series, independently. The zeroline (when drawn)
+always follows the *primary* axis; the two axes are aligned so that a
+zero on the left lines up with the secondary range's own zero-point
+equivalent, per `sec_limits`' documented behaviour.
+
+```{r two-axis-grid, fig.width = 5.96, out.width = "700px"}
+ranges <- list(mixed = mixed, pos = pos, neg = neg)
+for (p_name in names(ranges)) {
+  for (s_name in names(ranges)) {
+    d <- data.frame(jaar, y = ranges[[p_name]], z = ranges[[s_name]])
+    p <- cpb_col(d, x = jaar, y = y, sec_y = z, sec_type = "line",
+      title = paste0("primair: ", p_name, ", secundair: ", s_name),
+      ylab = "primair (%)", sec_ylab = "secundair (%)")
+    print(p)
+  }
+}
+```
+
+# Orientation, with and without sec_y
+
+`cpb_box()` and `cpb_dot()` both restrict `sec_y` to
+`orientation = "vertical"`: the secondary axis is drawn on the right
+of the value axis, which only exists as a distinct side in that
+orientation. Requesting `sec_y` together with `orientation =
+"horizontal"` is a documented error, not a silently ignored setting:
+
+```{r box-data}
+box_d <- data.frame(
+  cat = factor(c("kort", "middel", "lang"), levels = c("kort", "middel", "lang")),
+  p5 = c(-2, -1, 0), p25 = c(-1, 0, 1), p50 = c(0, 1, 2),
+  p75 = c(1, 2, 3), p95 = c(2, 3, 4),
+  z = c(8, 9, 11)
+)
+```
+
+```{r box-vertical-nosecy}
+cpb_box(box_d, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  orientation = "vertical", title = "box, vertical, geen sec_y", ylab = "%")
+```
+
+```{r box-vertical-secy}
+cpb_box(box_d, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  orientation = "vertical", sec_y = z, sec_type = "line",
+  title = "box, vertical, met sec_y", ylab = "%", sec_ylab = "n")
+```
+
+```{r box-horizontal-nosecy}
+cpb_box(box_d, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  orientation = "horizontal", title = "box, horizontal, geen sec_y", xlab = "%")
+```
+
+```{r box-horizontal-secy, error = TRUE}
+cpb_box(box_d, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  orientation = "horizontal", sec_y = z, sec_type = "line",
+  title = "box, horizontal, met sec_y", xlab = "%", sec_ylab = "n")
+```
+
+```{r dot-data}
+dot_d <- data.frame(
+  term = c("kort", "middel", "lang"),
+  coef = c(-1, 0.5, 1.5), lo = c(-2, -0.5, 0.5), hi = c(0, 1.5, 2.5),
+  z = c(8, 9, 11)
+)
+```
+
+```{r dot-vertical-secy}
+cpb_dot(dot_d, x = term, y = coef, lower = lo, upper = hi,
+  orientation = "vertical", sec_y = z, sec_type = "line",
+  title = "dot, vertical, met sec_y", ylab = "%", sec_ylab = "n")
+```
+
+```{r dot-horizontal-nosecy}
+cpb_dot(dot_d, x = term, y = coef, lower = lo, upper = hi,
+  orientation = "horizontal", title = "dot, horizontal (sec_y niet ondersteund)",
+  xlab = "%")
+```
+
+# Different plot types, one look each
+
+A last, quick pass across the remaining chart types not already
+covered above, each with a value range that crosses zero and a title
+long enough to wrap, to catch any interaction between the two.
+
+```{r area}
+cpb_area(data.frame(jaar, y = pmax(mixed, 0), g = "reeks"), x = jaar, y = y,
+  fill = g, title = "Oppervlaktediagram met een lange titel die waarschijnlijk over twee regels loopt",
+  ylab = "%")
+```
+
+```{r donut}
+cpb_donut(
+  data.frame(fill = c("werkenden", "gepensioneerden", "uitkeringsgerechtigden"),
+             y = c(55, 30, 15)),
+  fill = fill, y = y,
+  title = "Ring-diagram met een lange titel die waarschijnlijk over twee regels loopt"
+)
+```

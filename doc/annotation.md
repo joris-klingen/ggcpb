@@ -52,9 +52,11 @@ cpb_line(groeipad, x = jaar, y = groei, ymin = lo, ymax = hi,
   ylab  = "%") +
   scale_x_continuous(breaks = seq(2015, 2027, 3), minor_breaks = 2015:2027,
                      guide = guide_axis(minor.ticks = TRUE))
+#> Scale for x is already present.
+#> Adding another scale for x, which will replace the existing scale.
 ```
 
-<img src="annotation_files/figure-gfm/forecast-1.png" width="350px" />
+<img src="annotation_files/figure-gfm/forecast-1.png" alt="" width="350px" />
 
 The window is drawn *underneath* the data and the label is centred in it
 at the top of the panel; for bar charts pick a `forecast_x` between two
@@ -94,7 +96,7 @@ cpb_col(dec, x = jaar, y = bijdrage, fill = component,
   theme(legend.box = "horizontal", legend.box.just = "top")
 ```
 
-<img src="annotation_files/figure-gfm/overlay-1.png" width="350px" />
+<img src="annotation_files/figure-gfm/overlay-1.png" alt="" width="350px" />
 
 # Everything is a ggplot object
 
@@ -123,7 +125,7 @@ cpb_col(auto, x = inkomensgroep, y = share,
            family = cpb_font_family(), fontface = "italic")
 ```
 
-<img src="annotation_files/figure-gfm/layer-refline-1.png" width="350px" />
+<img src="annotation_files/figure-gfm/layer-refline-1.png" alt="" width="350px" />
 
 Note that under `coord_flip()` the value axis is still the `y`
 aesthetic, so a reference line on the value axis is a `geom_hline()`.
@@ -143,9 +145,11 @@ cpb_line(bbp, x = jaar, y = index,
   geom_vline(xintercept = 2024.5, linetype = "dashed", linewidth = 0.3) +
   scale_x_continuous(breaks = seq(2015, 2027, 3), minor_breaks = 2015:2027,
                      guide = guide_axis(minor.ticks = TRUE))
+#> Scale for x is already present.
+#> Adding another scale for x, which will replace the existing scale.
 ```
 
-<img src="annotation_files/figure-gfm/layer-raming-1.png" width="350px" />
+<img src="annotation_files/figure-gfm/layer-raming-1.png" alt="" width="350px" />
 
 Later `+ theme(...)` calls override individual elements of `theme_cpb()`
 the same way – see the per-figure margin and legend tweaks in

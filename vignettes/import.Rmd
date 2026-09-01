@@ -1,0 +1,334 @@
+---
+title: "Building figures from CSV files"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
+vignette: >
+  %\VignetteIndexEntry{Building figures from CSV files}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+# Figures are drawn on the REAL CPB canvas (page = "half" is 2.98 in,
+# "full" is 5.96 in; text sizes in theme_cpb() are absolute points, so
+# any other canvas distorts the text-to-figure proportion) and only
+# *displayed* smaller via out.width, at a consistent 2:1 scale:
+# half-page figures at 350px, full-page figures at 700px.
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 2.98,
+  fig.height = 2.98,
+  dpi = 300,
+  out.width = "350px",
+  dev = if (requireNamespace("ragg", quietly = TRUE)) "ragg_png" else "png"
+)
+```
+
+```{r setup, message = FALSE}
+library(ggcpb)
+```
+
+```{r show-saved-helper, include = FALSE}
+# Displays a file save_cpb() already wrote to a temporary path, at a
+# stable location knitr manages itself -- so the rendered copy of this
+# page (e.g. on GitHub) keeps a working image link rather than one
+# pointing at a temp file that no longer exists. Purely a display
+# detail for this page, not part of the save_cpb() example above it.
+.show_saved <- function(path) {
+  stable <- knitr::fig_path(".png")
+  dir.create(dirname(stable), recursive = TRUE, showWarnings = FALSE)
+  file.copy(path, stable, overwrite = TRUE)
+  knitr::include_graphics(stable)
+}
+```
+
+# Introduction
+
+Most figures in this package are built by calling one of its
+functions directly in R code. This vignette describes an alternative
+based on two CSV files, a data file and a parameter file.
+
+The data file contains the data used in the figures. The parameter
+file specifies which figures to create and how they should be
+configured. The `import_csv()` function reads both files and creates
+the figures.
+
+This approach is useful when figure specifications need to be kept
+separate from R code, for example when the data and figure settings
+are maintained outside an R script.
+
+# The data file
+
+The data file can be any CSV file containing the variables needed by
+the figures. For this example, the package includes
+`import_example_data.csv`.
+
+```{r data-path}
+data_csv <- system.file(
+  "extdata",
+  "import_example_data.csv",
+  package = "ggcpb"
+)
+```
+
+The file can be read in the usual way:
+
+```{r data-frame}
+read.csv(data_csv)
+```
+
+The important point for the import method is that the parameter file
+refers to variables by their column names. For example, if a
+parameter contains `jaar`, `import_csv()` looks for a column named
+`jaar` in the data file.
+
+# The parameter file
+
+The parameter file determines which figures are created. Each figure
+has a `plot_type` and an `id`, together with the settings required
+for that plot type.
+
+The example parameter file is `import_example_params.csv`.
+
+```{r params-path}
+params_csv <- system.file(
+  "extdata",
+  "import_example_params.csv",
+  package = "ggcpb"
+)
+```
+
+This example uses the horizontal layout:
+
+```{r params-raw, echo = FALSE, comment = ""}
+cat(readLines(params_csv), sep = "\n")
+```
+
+The same content, split on the comma and shown as a table:
+
+```{r params-table, echo = FALSE}
+knitr::kable(read.csv(params_csv, stringsAsFactors = FALSE))
+```
+
+Each row describes one figure. The column names are parameter names.
+
+Some parameters refer to columns in the data file. For example:
+
+* `x`, `y`, `fill` and `sec_y` are column references.
+* `title`, `ylab` and `position` are literal values.
+
+The distinction is important. `y,koopkracht` means that the `y`
+variable should be taken from the `koopkracht` column, while
+`ylab,% mutatie` supplies the text `% mutatie` directly.
+
+# Creating the figures
+
+Once the two files are available, pass them to `import_csv()`:
+
+```{r build, results = "hide"}
+tmp_params <- tempfile(fileext = ".csv")
+file.copy(params_csv, tmp_params, overwrite = TRUE)
+
+figs <- import_csv(data_csv, tmp_params)
+```
+
+When the parameter file contains multiple figures, `import_csv()`
+returns a named list. The names come from the `id` parameter.
+
+The `koopkracht` figure has a second value axis (`sec_y`), and its
+right side caption is only placed exactly by `save_cpb()`. Printed
+directly, an approximate placement is shown instead, close but not
+exact, since at that point the figure has not actually been saved yet
+to measure against. So, rather than printing it directly, it is
+written out through `save_cpb()` first and shown from that file:
+
+```{r fig-koopkracht, results = "hide"}
+path <- tempfile(fileext = ".png")
+save_cpb(path, figs$koopkracht, page = "full")
+```
+
+```{r fig-koopkracht-show, echo = FALSE, out.width = "700px"}
+.show_saved(path)
+```
+
+`werkloosheid` has no second axis, so it can be shown directly:
+
+```{r fig-werkloosheid}
+figs$werkloosheid
+```
+
+In normal use, the data and parameter files can be stored in an
+ordinary writable folder. The temporary copy above is only needed
+here because the example parameter file is part of the installed
+package.
+
+# One figure per parameter file
+
+There is a second parameter file layout for cases where one parameter
+file describes a single figure.
+
+In the horizontal layout, each row is a figure and each column is a
+parameter. In the vertical layout, each row is a parameter and the
+two columns contain the parameter name and its value.
+
+For example, the following describes a line chart:
+
+```{r vertical}
+params_vertical <- tempfile(fileext = ".csv")
+
+writeLines(c(
+  "plot_type,line",
+  "title,Werkloosheid",
+  "x,jaar",
+  "y,werkloosheid",
+  "ylab,%"
+), params_vertical)
+
+cat(readLines(params_vertical), sep = "\n")
+```
+
+The first column contains the parameter names:
+
+```text
+plot_type
+title
+x
+y
+ylab
+```
+
+The second column contains their values:
+
+```text
+line
+Werkloosheid
+jaar
+werkloosheid
+%
+```
+
+This layout can be convenient when a figure has many parameters,
+because each setting has its own row.
+
+When the parameter file describes one figure, `import_csv()` returns
+that figure directly rather than a named list.
+
+```{r vertical-build, results = "hide"}
+fig_vertical <- import_csv(data_csv, params_vertical)
+```
+
+```{r vertical-build-show, echo = FALSE}
+fig_vertical
+```
+
+# Handling problems
+
+A parameter can be left blank. In that case, the default value is
+used.
+
+If a parameter is not valid for the selected `plot_type`, it is
+ignored and the default is used. These cases produce a warning.
+
+If a figure cannot be created, for example because a column
+referenced by a parameter does not exist in the data file, that
+figure is skipped. Other figures in the same parameter file are still
+created.
+
+Each call to `import_csv()` also writes a log file next to the
+parameter file. The log records figures that were created or skipped
+and any parameter problems.
+
+# Run the import without opening R
+
+The same CSV based method can also be used without opening R.
+
+The `autogenerate_plots()` function creates a ready to use folder
+containing:
+
+* a data file
+* a parameter file
+* a script for Windows (a `.bat` file)
+* a script for a Mac (a `.command` file)
+
+After editing the data and parameter files, run the appropriate
+script. It reads both files and saves the resulting figures as
+images.
+
+Running the script again after changing either CSV file produces
+updated figures.
+
+R and `ggcpb` must still be installed on the computer running the
+script.
+
+# Appendix A: Parameter values {-}
+
+The available parameters depend on the `plot_type`. The complete list
+is stored in `parameter_settings.csv`, and gives the available
+parameters, their kind, default values and examples.
+
+```{r params-ref-path}
+ref_csv <- system.file(
+  "extdata",
+  "parameter_settings.csv",
+  package = "ggcpb"
+)
+```
+
+Many parameters are the same across every `plot_type`. To avoid
+repeating those in every table, Table A1 lists the parameters shared,
+with the same meaning and default, by all plot types. Table A2 onward
+each cover one `plot_type`, listing only what is not already in Table
+A1. A parameter is only listed for the plot types it actually applies
+to, so a table for one `plot_type` does not necessarily match another.
+
+```{r params-ref-table, echo = FALSE, results = "asis"}
+ref <- read.csv(
+  ref_csv,
+  stringsAsFactors = FALSE
+)
+
+types <- unique(ref$plot_type)
+
+# a parameter belongs in the shared table only when every plot_type
+# has it, with the same kind and default -- present everywhere but
+# with a different default per type (e.g. reverse_legend) still needs
+# its own row in each type's own table, since a single shared default
+# would be wrong for the types that do not use it
+by_param <- split(ref, ref$param)
+is_shared <- vapply(by_param, function(rows) {
+  setequal(unique(rows$plot_type), types) &&
+    nrow(unique(rows[c("kind", "default")])) == 1
+}, logical(1))
+shared_params <- sort(names(by_param)[is_shared])
+
+show_params <- function(rows) {
+  rows <- rows[order(rows$param), c("param", "kind", "default", "example")]
+  print(knitr::kable(
+    rows,
+    row.names = FALSE,
+    col.names = c("setting", "kind", "default", "example")
+  ))
+}
+
+cat("\n\n**Table A1. Shared parameters across all plot types**\n\n")
+show_params(ref[ref$param %in% shared_params & !duplicated(ref$param), ])
+
+table_n <- 2
+for (t in types) {
+  rows <- ref[ref$plot_type == t & !ref$param %in% shared_params, ]
+  if (!nrow(rows)) next
+  cat("\n\n**Table A", table_n, ". Parameters specific to `", t, "`**\n\n", sep = "")
+  show_params(rows)
+  table_n <- table_n + 1
+}
+```
+
+A parameter of kind `column` takes a column name from the data file.
+A parameter of kind `literal` takes a value directly from the
+parameter file.
+
+The `parameter_settings.csv` file can also be opened directly in a
+spreadsheet program.

@@ -1,0 +1,664 @@
+---
+title: "Text length stress test"
+output: html_document
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  fig.width = 2.98,
+  fig.height = 2.98,
+  dpi = 300,
+  out.width = "450px",
+  dev = if (requireNamespace("ragg", quietly = TRUE)) "ragg_png" else "png"
+)
+```
+
+```{r setup, message = FALSE}
+# knitr's working directory during a render is this file's own
+# directory (inst/examples/), not the package root -- unlike an
+# installed ggcpb, load_all() needs to be pointed at the root explicitly
+devtools::load_all("../..", quiet = TRUE)
+library(ggplot2)
+library(dplyr)
+library(tibble)
+set.seed(1)
+```
+
+Not a curated example gallery -- a stress test. For every `cpb_*`
+chart function, the same small dataset is drawn over and over with
+only one thing changed each time: a short vs. long **title**,
+**`ylab`**, **`xlab`**, or **tick label** (category names on the
+category axis, or the magnitude of the values on the value axis).
+`cpb_col()`, `cpb_box()` and `cpb_dot()` additionally get both
+`orientation` options. Nothing here edits the package; it only calls
+the existing functions with different inputs, so you can see where
+long text clips, overlaps, or overflows the panel.
+
+A title too long for the page is not wrapped automatically -- it just
+clips at the panel edge, the same as any other ggplot2 plot. A manual
+`"\n"` in `title` still works, since that is plain ggplot2 behaviour,
+not something this package adds.
+
+**The `ylab`/`xlab`/`subtitle` convention** (verified from the actual
+wrapper code, not guessed): `ylab` always describes whichever axis
+ends up drawn *vertically*, and -- left on its own, with no explicit
+`subtitle` -- it is promoted into the subtitle line (an italic caption
+above the panel) rather than a rotated axis title. `xlab` always
+describes whichever axis ends up drawn *horizontally*, as an ordinary,
+un-rotated axis title. Which one is "vertical" depends on
+`orientation`: for `cpb_col()`/`cpb_box()` that is the value axis when
+`orientation = "vertical"` and the category axis when `"horizontal"`;
+`cpb_dot()`'s default (`"horizontal"`) already has categories
+vertical. Passing an explicit `subtitle` *alongside* `ylab` is a
+separate, documented edge case (the axis label then falls back to a
+literal rotated title, or is dropped, depending on the function) --
+tested here as its own case per function, not blended into the normal
+usage.
+
+```{r text-snippets}
+title_short <- "Titel"
+title_long  <- "Dit is een uitzonderlijk lange titel die het paneel ver overschrijdt en eigenlijk over twee regels opgesplitst zou moeten worden"
+
+# ylab: normally promoted to the subtitle line
+ylab_short <- "eenheid"
+ylab_long  <- "Dit is een opvallend lange as-beschrijving die als onderschrift ver over de paneelbreedte heen loopt"
+
+# xlab: an ordinary, un-rotated axis title
+xlab_short <- "categorie"
+xlab_long  <- "Een buitengewoon lange as-titel die veel horizontale ruimte in beslag neemt"
+
+# a literal subtitle, for the "explicit subtitle + ylab together" edge case
+subtitle_literal <- "(a) voorlopige cijfers, nog niet definitief vastgesteld"
+
+cats_short <- c("Noord", "Oost", "Zuid", "West")
+cats_long  <- c(
+  "Een erg lange categorienaam die nooit helemaal past",
+  "Nog een categorienaam die veel te lang is voor de as",
+  "Deze categorienaam is ook onredelijk lang voor een tick label",
+  "En de vierde lange categorienaam om het patroon door te zetten"
+)
+# even longer: full sentences, well past the ~18-character wrap width,
+# to see how many lines a really extreme category name wraps onto
+cats_xlong <- c(
+  "Deze allereerste categorienaam is opzettelijk absurd lang gemaakt om te zien wat er gebeurt als een tick label vele regels beslaat",
+  "De tweede categorienaam is minstens even lang en test of het paneel stabiel blijft ongeacht hoeveel tekst er in de as-labels staat",
+  "Categorienaam nummer drie beschrijft in overdreven veel woorden een heel specifieke, gedetailleerde en langdradige beleidscategorie",
+  "En de laatste, vierde categorienaam ronde het patroon af met een even onredelijk lange zin die de as tot het uiterste test"
+)
+```
+
+# cpb_col()
+
+`orientation = "vertical"` (default): the value axis is vertical, so
+`ylab` names the value and lands on the subtitle line; `xlab` names
+the category axis (usually left `NULL` -- the tick labels already
+name the categories) as an ordinary bottom title.
+`orientation = "horizontal"`: roles swap -- `xlab` now names the value
+axis (drawn at the bottom, an ordinary title) and `ylab` names the
+category axis (drawn on the left, promoted to the subtitle line) --
+this is the real usage from the package's own examples.
+
+```{r col-data}
+col_short_dt <- tibble(cat = factor(cats_short, levels = cats_short),
+                       waarde = c(12.4, 34.1, 8.7, 21.9))
+col_long_dt  <- tibble(cat = factor(cats_long, levels = cats_long),
+                       waarde = c(12.4, 34.1, 8.7, 21.9))
+col_xlong_dt <- tibble(cat = factor(cats_xlong, levels = cats_xlong),
+                       waarde = c(12.4, 34.1, 8.7, 21.9))
+col_bignum_dt <- tibble(cat = factor(cats_short, levels = cats_short),
+                        waarde = c(1234567, 3456789, 876543, 2198765))
+```
+
+## title only (no ylab/xlab)
+
+```{r col-title-only}
+cpb_col(col_short_dt, x = cat, y = waarde, title = title_short)
+```
+
+## long title
+
+```{r col-long-title}
+cpb_col(col_short_dt, x = cat, y = waarde, title = title_long)
+```
+
+## ylab alone -> subtitle (vertical), short then long
+
+```{r col-ylab-subtitle-vertical}
+cpb_col(col_short_dt, x = cat, y = waarde, title = title_short, ylab = ylab_short)
+cpb_col(col_short_dt, x = cat, y = waarde, title = title_short, ylab = ylab_long)
+```
+
+## xlab alone -> ordinary title (vertical), short then long
+
+```{r col-xlab-title-vertical}
+cpb_col(col_short_dt, x = cat, y = waarde, title = title_short, xlab = xlab_short)
+cpb_col(col_short_dt, x = cat, y = waarde, title = title_short, xlab = xlab_long)
+```
+
+## ylab + xlab together (vertical), short then long
+
+```{r col-ylab-xlab-vertical}
+cpb_col(col_short_dt, x = cat, y = waarde, title = title_short,
+  ylab = ylab_short, xlab = xlab_short)
+cpb_col(col_short_dt, x = cat, y = waarde, title = title_short,
+  ylab = ylab_long, xlab = xlab_long)
+```
+
+## edge case: explicit subtitle + ylab together (vertical) -- documented fallback to a rotated axis title
+
+```{r col-subtitle-plus-ylab-vertical}
+cpb_col(col_short_dt, x = cat, y = waarde, title = title_short,
+  subtitle = subtitle_literal, ylab = ylab_short)
+```
+
+## orientation = "horizontal": ylab -> category subtitle, xlab -> value title (the real usage)
+
+```{r col-horizontal-real-usage}
+cpb_col(col_short_dt, x = cat, y = waarde, orientation = "horizontal",
+  title = title_short, ylab = xlab_short, xlab = ylab_short)
+cpb_col(col_short_dt, x = cat, y = waarde, orientation = "horizontal",
+  title = title_short, ylab = xlab_long, xlab = ylab_long)
+```
+
+## long x-axis tick labels (category names), vertical
+
+```{r col-long-xticks, fig.height = 3.6}
+cpb_col(col_long_dt, x = cat, y = waarde, title = title_short, ylab = ylab_short)
+```
+
+## long y-axis tick labels (large numbers), vertical
+
+```{r col-long-yticks}
+cpb_col(col_bignum_dt, x = cat, y = waarde, title = title_short, ylab = ylab_short)
+```
+
+## long category (tick) labels, horizontal
+
+```{r col-long-cats-horizontal, fig.height = 3.2}
+cpb_col(col_long_dt, x = cat, y = waarde, orientation = "horizontal",
+  title = title_short, ylab = xlab_short)
+```
+
+## even longer category (tick) labels, horizontal -- known limit
+
+Wrapping bounds the panel's *width* (each line is at most ~18
+characters), but not row *height*: ggplot2's discrete axis does not
+grow the spacing between categories to fit a taller, many-line wrapped
+label, so full-sentence category names like these -- 7-10 wrapped
+lines each -- collide into the row above/below instead. Realistic CPB
+category names run at most to a short phrase (a sentence, at the
+extreme), which is what wrapping targets; this is intentionally left
+unhandled as a known limit rather than adding more machinery (e.g.
+capping line count with an ellipsis) for text this far outside normal
+use.
+
+```{r col-xlong-cats-horizontal, fig.height = 3.2}
+cpb_col(col_xlong_dt, x = cat, y = waarde, orientation = "horizontal",
+  title = title_short, ylab = xlab_short)
+```
+
+# cpb_area()
+
+No `orientation`: `ylab` always names the (vertical) value axis ->
+subtitle; `xlab` is an ordinary bottom title for the x axis.
+
+```{r area-data}
+area_short_dt <- tibble(jaar = 2020:2024, waarde = c(10, 14, 9, 18, 22),
+                        groep = factor("A"))
+area_long_dt  <- tibble(jaar = 2020:2024, waarde = c(10, 14, 9, 18, 22),
+                        groep = factor("Een erg lange legenda-categorienaam"))
+```
+
+## title only
+
+```{r area-title-only}
+cpb_area(area_short_dt, x = jaar, y = waarde, fill = groep, title = title_short)
+```
+
+## long title
+
+```{r area-long-title}
+cpb_area(area_short_dt, x = jaar, y = waarde, fill = groep, title = title_long)
+```
+
+## ylab alone -> subtitle, short then long
+
+```{r area-ylab-subtitle}
+cpb_area(area_short_dt, x = jaar, y = waarde, fill = groep, title = title_short, ylab = ylab_short)
+cpb_area(area_short_dt, x = jaar, y = waarde, fill = groep, title = title_short, ylab = ylab_long)
+```
+
+## ylab + xlab together, long
+
+```{r area-ylab-xlab-long}
+cpb_area(area_short_dt, x = jaar, y = waarde, fill = groep, title = title_short,
+  ylab = ylab_long, xlab = xlab_long)
+```
+
+## edge case: explicit subtitle + ylab together -- fallback to a rotated axis title
+
+```{r area-subtitle-plus-ylab}
+cpb_area(area_short_dt, x = jaar, y = waarde, fill = groep, title = title_short,
+  subtitle = subtitle_literal, ylab = ylab_short)
+```
+
+## long y-axis tick labels (large numbers)
+
+```{r area-long-yticks}
+area_bignum_dt <- area_short_dt |> mutate(waarde = waarde * 1e6 + 123456)
+cpb_area(area_bignum_dt, x = jaar, y = waarde, fill = groep, title = title_short, ylab = ylab_short)
+```
+
+## long legend label (fill category)
+
+```{r area-long-legend}
+cpb_area(area_long_dt, x = jaar, y = waarde, fill = groep, title = title_short, ylab = ylab_short)
+```
+
+# cpb_line()
+
+Same convention as `cpb_area()` (no `orientation`).
+
+```{r line-data}
+line_short_dt <- tibble(jaar = 2015:2024,
+                        waarde = 100 + cumsum(rnorm(10, 1, 1.2)))
+```
+
+## title only
+
+```{r line-title-only}
+cpb_line(line_short_dt, x = jaar, y = waarde, title = title_short)
+```
+
+## long title
+
+```{r line-long-title}
+cpb_line(line_short_dt, x = jaar, y = waarde, title = title_long)
+```
+
+## ylab alone -> subtitle, short then long
+
+```{r line-ylab-subtitle}
+cpb_line(line_short_dt, x = jaar, y = waarde, title = title_short, ylab = ylab_short)
+cpb_line(line_short_dt, x = jaar, y = waarde, title = title_short, ylab = ylab_long)
+```
+
+## ylab + xlab together, long
+
+```{r line-ylab-xlab-long}
+cpb_line(line_short_dt, x = jaar, y = waarde, title = title_short,
+  ylab = ylab_long, xlab = xlab_long)
+```
+
+## edge case: explicit subtitle + ylab together -- fallback to a rotated axis title
+
+```{r line-subtitle-plus-ylab}
+cpb_line(line_short_dt, x = jaar, y = waarde, title = title_short,
+  subtitle = subtitle_literal, ylab = ylab_short)
+```
+
+## long y-axis tick labels (large numbers)
+
+```{r line-long-yticks}
+line_bignum_dt <- line_short_dt |> mutate(waarde = waarde * 1e5 + 123456)
+cpb_line(line_bignum_dt, x = jaar, y = waarde, title = title_short, ylab = ylab_short)
+```
+
+# cpb_box()
+
+Same `orientation`-dependent role swap as `cpb_col()`.
+
+```{r box-data}
+box_short_dt <- tibble(cat = factor(cats_short, levels = cats_short),
+                       p5 = c(-2, -1, -3, 0), p25 = c(0, 1, -1, 2),
+                       p50 = c(1, 2.5, 0, 3.5), p75 = c(2, 4, 1, 5),
+                       p95 = c(4, 6, 3, 7))
+box_long_dt <- tibble(cat = factor(cats_long, levels = cats_long),
+                      p5 = c(-2, -1, -3, 0), p25 = c(0, 1, -1, 2),
+                      p50 = c(1, 2.5, 0, 3.5), p75 = c(2, 4, 1, 5),
+                      p95 = c(4, 6, 3, 7))
+box_bignum_dt <- box_short_dt |> mutate(across(p5:p95, ~ .x * 1e5 + 123456))
+```
+
+## title only, vertical vs. horizontal
+
+```{r box-title-only}
+cpb_box(box_short_dt, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  orientation = "vertical", title = title_short)
+cpb_box(box_short_dt, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  orientation = "horizontal", title = title_short)
+```
+
+## long title, vertical vs. horizontal
+
+```{r box-long-title}
+cpb_box(box_short_dt, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  orientation = "vertical", title = title_long)
+cpb_box(box_short_dt, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  orientation = "horizontal", title = title_long)
+```
+
+## ylab -> value subtitle (vertical), short then long
+
+```{r box-ylab-subtitle-vertical}
+cpb_box(box_short_dt, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  orientation = "vertical", title = title_short, ylab = ylab_short)
+cpb_box(box_short_dt, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  orientation = "vertical", title = title_short, ylab = ylab_long)
+```
+
+## ylab -> category subtitle (horizontal), short then long
+
+```{r box-ylab-subtitle-horizontal}
+cpb_box(box_short_dt, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  orientation = "horizontal", title = title_short, ylab = xlab_short)
+cpb_box(box_short_dt, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  orientation = "horizontal", title = title_short, ylab = xlab_long)
+```
+
+## xlab -> value title (horizontal), short then long
+
+```{r box-xlab-title-horizontal}
+cpb_box(box_short_dt, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  orientation = "horizontal", title = title_short, xlab = ylab_short)
+cpb_box(box_short_dt, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  orientation = "horizontal", title = title_short, xlab = ylab_long)
+```
+
+## edge case: explicit subtitle + ylab together, vertical -- documented fallback
+
+```{r box-subtitle-plus-ylab-vertical}
+cpb_box(box_short_dt, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  orientation = "vertical", title = title_short,
+  subtitle = subtitle_literal, ylab = ylab_short)
+```
+
+## long category (tick) labels, vertical vs. horizontal
+
+```{r box-long-cats, fig.height = 3.8}
+cpb_box(box_long_dt, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  orientation = "vertical", title = title_short, ylab = ylab_short)
+```
+
+```{r box-long-cats-horizontal, fig.height = 3.2}
+cpb_box(box_long_dt, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  orientation = "horizontal", title = title_short, ylab = xlab_short)
+```
+
+## long value-axis tick labels (large numbers), vertical
+
+```{r box-long-yticks-vertical}
+cpb_box(box_bignum_dt, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  orientation = "vertical", title = title_short, ylab = ylab_short)
+```
+
+# cpb_scatter()
+
+No `orientation`: `ylab` -> subtitle, `xlab` -> ordinary bottom title
+(this one is `xlab`-relevant, unlike the category-driven wrappers,
+since x is a genuine numeric axis here).
+
+```{r scatter-data}
+scatter_dt <- tibble(x = rnorm(30, 10, 3), y = rnorm(30, 5, 2))
+```
+
+## title only
+
+```{r scatter-title-only}
+cpb_scatter(scatter_dt, x = x, y = y, title = title_short)
+```
+
+## long title
+
+```{r scatter-long-title}
+cpb_scatter(scatter_dt, x = x, y = y, title = title_long)
+```
+
+## ylab + xlab together, short then long
+
+```{r scatter-ylab-xlab}
+cpb_scatter(scatter_dt, x = x, y = y, title = title_short, ylab = ylab_short, xlab = xlab_short)
+cpb_scatter(scatter_dt, x = x, y = y, title = title_short, ylab = ylab_long, xlab = xlab_long)
+```
+
+## edge case: explicit subtitle + ylab together -- fallback to a rotated axis title
+
+```{r scatter-subtitle-plus-ylab}
+cpb_scatter(scatter_dt, x = x, y = y, title = title_short,
+  subtitle = subtitle_literal, ylab = ylab_short)
+```
+
+## long axis tick labels (large numbers, both axes)
+
+```{r scatter-long-ticks}
+scatter_bignum_dt <- scatter_dt |> mutate(x = x * 1e6 + 123456, y = y * 1e6 + 654321)
+cpb_scatter(scatter_bignum_dt, x = x, y = y, title = title_short, ylab = ylab_short, xlab = xlab_short)
+```
+
+# cpb_hist()
+
+Same convention as `cpb_scatter()`.
+
+```{r hist-data}
+hist_dt <- tibble(x = rnorm(300, 100, 15))
+hist_bignum_dt <- tibble(x = rnorm(300, 100, 15) * 1e5 + 123456)
+```
+
+## title only
+
+```{r hist-title-only}
+cpb_hist(hist_dt, x = x, title = title_short)
+```
+
+## long title
+
+```{r hist-long-title}
+cpb_hist(hist_dt, x = x, title = title_long)
+```
+
+## ylab + xlab together, short then long
+
+```{r hist-ylab-xlab}
+cpb_hist(hist_dt, x = x, title = title_short, ylab = ylab_short, xlab = xlab_short)
+cpb_hist(hist_dt, x = x, title = title_short, ylab = ylab_long, xlab = xlab_long)
+```
+
+## edge case: explicit subtitle + ylab together -- fallback to a rotated axis title
+
+```{r hist-subtitle-plus-ylab}
+cpb_hist(hist_dt, x = x, title = title_short,
+  subtitle = subtitle_literal, ylab = ylab_short)
+```
+
+## long x-axis tick labels (large numbers)
+
+```{r hist-long-xticks}
+cpb_hist(hist_bignum_dt, x = x, title = title_short, ylab = ylab_short, xlab = xlab_short)
+```
+
+# cpb_dot()
+
+Default `orientation = "horizontal"`: categories are already vertical
+(left), values already horizontal (bottom) -- `ylab` names the
+category axis (-> subtitle), `xlab` names the value axis (-> ordinary
+bottom title). `orientation = "vertical"` flips both roles.
+
+```{r dot-data}
+dot_short_dt <- tibble(cat = factor(cats_short, levels = cats_short),
+                       y = c(1, 2.5, 0, 3.5), lower = c(0, 1, -1, 2), upper = c(2, 4, 1, 5))
+dot_long_dt <- tibble(cat = factor(cats_long, levels = cats_long),
+                      y = c(1, 2.5, 0, 3.5), lower = c(0, 1, -1, 2), upper = c(2, 4, 1, 5))
+dot_bignum_dt <- dot_short_dt |> mutate(across(c(y, lower, upper), ~ .x * 1e5 + 123456))
+```
+
+## title only, horizontal vs. vertical
+
+```{r dot-title-only}
+cpb_dot(dot_short_dt, x = cat, y = y, lower = lower, upper = upper,
+  orientation = "horizontal", title = title_short)
+cpb_dot(dot_short_dt, x = cat, y = y, lower = lower, upper = upper,
+  orientation = "vertical", title = title_short)
+```
+
+## long title, horizontal vs. vertical
+
+```{r dot-long-title}
+cpb_dot(dot_short_dt, x = cat, y = y, lower = lower, upper = upper,
+  orientation = "horizontal", title = title_long)
+cpb_dot(dot_short_dt, x = cat, y = y, lower = lower, upper = upper,
+  orientation = "vertical", title = title_long)
+```
+
+## ylab -> category subtitle, xlab -> value title (horizontal), short then long
+
+```{r dot-ylab-xlab-horizontal}
+cpb_dot(dot_short_dt, x = cat, y = y, lower = lower, upper = upper,
+  orientation = "horizontal", title = title_short, ylab = xlab_short, xlab = ylab_short)
+cpb_dot(dot_short_dt, x = cat, y = y, lower = lower, upper = upper,
+  orientation = "horizontal", title = title_short, ylab = xlab_long, xlab = ylab_long)
+```
+
+## ylab -> value subtitle (vertical), short then long
+
+```{r dot-ylab-subtitle-vertical}
+cpb_dot(dot_short_dt, x = cat, y = y, lower = lower, upper = upper,
+  orientation = "vertical", title = title_short, xlab = ylab_short)
+cpb_dot(dot_short_dt, x = cat, y = y, lower = lower, upper = upper,
+  orientation = "vertical", title = title_short, xlab = ylab_long)
+```
+
+## long category (tick) labels, horizontal vs. vertical
+
+```{r dot-long-cats, fig.height = 3.2}
+cpb_dot(dot_long_dt, x = cat, y = y, lower = lower, upper = upper,
+  orientation = "horizontal", title = title_short, ylab = xlab_short)
+```
+
+```{r dot-long-cats-vertical, fig.height = 3.8}
+cpb_dot(dot_long_dt, x = cat, y = y, lower = lower, upper = upper,
+  orientation = "vertical", title = title_short, xlab = ylab_short)
+```
+
+## manual "\n" in the category values themselves (not auto-wrap)
+
+A category label can also be split by hand -- a literal `"\n"` typed
+into the data (`"Noord\nregio"`), not the automatic ~18-character
+wrap above -- and that manual break is kept exactly as given, the same
+way a manual `"\n"` in a title is (see "Title wrapping"): only an
+individual line that is itself still too wide for the axis gets
+wrapped further, on its own.
+
+```{r dot-manual-cats, fig.height = 3.2}
+dot_manual_dt <- dot_short_dt |>
+  mutate(cat = factor(paste0(as.character(cat), "\nregio"),
+                      levels = paste0(as.character(cat), "\nregio")))
+cpb_dot(dot_manual_dt, x = cat, y = y, lower = lower, upper = upper,
+  orientation = "horizontal", title = title_short, ylab = xlab_short)
+```
+
+## long value-axis tick labels (large numbers), horizontal
+
+```{r dot-long-yticks-horizontal}
+cpb_dot(dot_bignum_dt, x = cat, y = y, lower = lower, upper = upper,
+  orientation = "horizontal", title = title_short, xlab = ylab_short)
+```
+
+# cpb_donut()
+
+No `ylab`/`xlab` here -- there is no axis to label. Printed directly
+(not through `save_cpb()`): `cpb_donut()`'s `panel_size` (a fixed
+physical ring size regardless of chrome) does not apply outside
+`save_cpb()`, so the ring itself still reflows with the surrounding
+chrome here, same as any other wrapper's panel.
+
+```{r donut-data}
+donut_short_dt <- tibble(cat = factor(cats_short, levels = cats_short),
+                         waarde = c(35, 30, 20, 15))
+donut_long_dt <- tibble(cat = factor(cats_long, levels = cats_long),
+                        waarde = c(35, 30, 20, 15))
+```
+
+## baseline (everything short)
+
+```{r donut-baseline}
+cpb_donut(donut_short_dt, fill = cat, y = waarde,
+  title = title_short, subtitle = ylab_short)
+```
+
+## long title + subtitle
+
+```{r donut-long-title}
+cpb_donut(donut_short_dt, fill = cat, y = waarde,
+  title = title_long, subtitle = ylab_long)
+```
+
+## long legend labels (fill categories)
+
+```{r donut-long-legend}
+cpb_donut(donut_long_dt, fill = cat, y = waarde,
+  title = title_short, subtitle = ylab_short)
+```
+
+## long wedge labels, label_style = "wedge" (wraps)
+
+```{r donut-long-wedge-labels-wedge}
+cpb_donut(donut_long_dt, fill = cat, y = waarde, label = cat,
+  label_style = "wedge",
+  title = title_short, subtitle = ylab_short)
+```
+
+## long wedge labels, label_style = "leader" (wraps too, capped at 3 lines)
+
+`"leader"` places its labels with its own collision-avoidance math
+(spacing same-side labels apart vertically) -- capping the wrap at 3
+lines keeps that math's assumed label height bounded, however long
+the input text runs, rather than leaving it unwrapped and unbounded.
+
+```{r donut-long-wedge-labels-leader}
+cpb_donut(donut_long_dt, fill = cat, y = waarde, label = cat,
+  label_style = "leader",
+  title = title_short, subtitle = ylab_short)
+```
+
+# cpb_map()
+
+`cpb_map()` has no conventional x/y axes (the panel is the
+choropleth itself), so only title/subtitle/legend length are relevant
+here, not tick labels or `ylab`/`xlab`. Every map goes through
+`save_cpb()`, the same way `vignette("maps")` does, since that is what
+auto-fits the panel to the boundaries' true aspect ratio.
+
+```{r show_map}
+show_map <- function(...) {
+  f <- tempfile(fileext = ".png")
+  save_cpb(f, cpb_map(...), page = "half")
+  knitr::include_graphics(f)
+}
+```
+
+```{r map-data}
+map_dt <- tibble(naam = unique(cpb_nl_geo("provincie")$name),
+                 waarde = rnorm(12, 100, 12))
+```
+
+## baseline (everything short)
+
+```{r map-baseline}
+show_map(map_dt, region = naam, value = waarde, level = "provincie",
+  title = title_short, subtitle = ylab_short)
+```
+
+## long title + subtitle
+
+```{r map-long-title}
+show_map(map_dt, region = naam, value = waarde, level = "provincie",
+  title = title_long, subtitle = ylab_long)
+```
+
+## long legend title (filllab)
+
+```{r map-long-filllab}
+show_map(map_dt, region = naam, value = waarde, level = "provincie",
+  title = title_short, subtitle = ylab_short, filllab = xlab_long)
+```

@@ -2,10 +2,28 @@
 .Rhistory
 .RData
 .Ruserdata
+.DS_Store
 inst/doc
 reports/
 Rplots.pdf
 inst/examples/output
+inst/autogenerate_plots/generated
+inst/autogenerate_plots/params_log.txt
+# tools/render_vignettes.R writes doc/*.md and doc/*_files/ -- those
+# are deliberately tracked (so GitHub can render them with figures);
+# the throwaway HTML/R/Rmd copies devtools::build_vignettes() also
+# drops in doc/ are not. Scoped to these three extensions specifically,
+# not a blanket doc/ ignore, so a genuinely new tracked file under
+# doc/ (a new vignette's .md, its own _files/) still shows up as
+# untracked instead of silently needing `git add -f` to even be
+# noticed -- a blanket doc/ ignore (this repo's own past setup, in the
+# untracked .git/info/exclude rather than here) is exactly how three
+# doc/boxplots_files/figure-gfm/box-extended*.png files ended up
+# committed nowhere despite doc/boxplots.md already linking to them.
+doc/*.html
+doc/*.R
+doc/*.Rmd
+Meta/
 # reference material: the internal originals stay untracked; only the
 # anonymised plot snippets and the (already published) reference PNGs are
 # committed. reference_code.txt and the nicerplot/ clone remain ignored.

@@ -77,3 +77,22 @@ or dropped.
 - **Em dash**: the bundled Rijksoverheid font has no em-dash glyph (it
   renders as `...`); consider substituting en/em dashes in title
   strings automatically.
+- ~~**RoxygenNote drift**~~ -- resolved. What looked like a roxygen2
+  8.0.0 bug (regenerating `cpb_line.Rd` dropped its entire `sec_y`
+  documentation) turned out to be two real, pre-existing mistakes in
+  `R/wrappers.R`'s own roxygen comments, present regardless of roxygen2
+  version: `@param legend_ncol` duplicated (with two different,
+  inconsistent descriptions) in both `cpb_area()` and `cpb_line()`, and
+  `cpb_line()` additionally carrying two entire, *contradictory*
+  `@param sec_y`/`sec_limits`/`sec_label`/`sec_ylab`/`sec_linewidth`
+  blocks -- one describing an old design (`sec_y` joins the primary
+  series' own `colour` scale) that roxygen2 7.3.3 was silently
+  resolving by keeping only the last-declared block, papering over the
+  contradiction; the committed `man/cpb_line.Rd` already had a broken,
+  doubled-up `\usage{}` as a result, well before any of this session's
+  roxygen2 8.0.0 investigation. Removed both stale blocks, confirmed no
+  other `@param` duplicates exist anywhere in `R/*.R`, regenerated
+  `man/` cleanly, bumped to `Config/roxygen2/version: 8.0.0` (the field
+  roxygen2 8.0.0 itself uses in place of `RoxygenNote`) to match what's
+  actually installed. `devtools::document()` needs no more manual
+  revert-unrelated-changes workaround from here.

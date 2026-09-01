@@ -20,7 +20,8 @@ axes, [`vignette("boxplots")`](boxplots.md) for the box-plot styles
 and combinations, [`vignette("annotation")`](annotation.md) for
 reference lines and forecast windows, [`vignette("maps")`](maps.md)
 for choropleths, [`vignette("colours")`](colours.md) for picking
-series colours, and [`vignette("ggcpb")`](ggcpb.md) for the basic
+series colours, [`vignette("import")`](import.md) for building figures
+straight from a CSV, and [`vignette("ggcpb")`](ggcpb.md) for the basic
 setup and export.
 
 Two house conventions to know up front:
@@ -50,9 +51,11 @@ cpb_line(bbp, x = jaar, y = index,
   ylab  = "index (2015 = 100)") +
   scale_x_continuous(breaks = seq(2015, 2027, 3), minor_breaks = 2015:2027,
                      guide = guide_axis(minor.ticks = TRUE))
+#> Scale for x is already present.
+#> Adding another scale for x, which will replace the existing scale.
 ```
 
-<img src="chart-types_files/figure-gfm/line-single-1.png" width="350px" />
+<img src="chart-types_files/figure-gfm/line-single-1.png" alt="" width="350px" />
 
 Map a column to `colour` for multiple series. The series take the house
 colours in their published order – blue, then magenta – with nothing to
@@ -71,9 +74,11 @@ cpb_line(groei, x = jaar, y = waarde, colour = reeks,
     minor_breaks = 2000:2024,
     guide        = guide_axis(minor.ticks = TRUE)
   )
+#> Scale for x is already present.
+#> Adding another scale for x, which will replace the existing scale.
 ```
 
-<img src="chart-types_files/figure-gfm/line-multi-1.png" width="350px" />
+<img src="chart-types_files/figure-gfm/line-multi-1.png" alt="" width="350px" />
 
 The added `scale_x_continuous()` shows the usual refinements for a year
 axis: labelled breaks every few years plus small minor ticks for the
@@ -103,9 +108,13 @@ cpb_line(tarieven, x = leeftijd, y = tarief, colour = erfenis,
   value_limits = c(0, 40),
   title = "Voorkeurstarieven erfbelasting naar leeftijd",
   ylab  = "% gemiddeld voorkeurstarief")
+#> Warning: Removed 1 row containing missing values or values outside the scale range
+#> (`geom_line()`).
+#> Warning: Removed 1 row containing missing values or values outside the scale range
+#> (`geom_point()`).
 ```
 
-<img src="chart-types_files/figure-gfm/line-points-1.png" width="350px" />
+<img src="chart-types_files/figure-gfm/line-points-1.png" alt="" width="350px" />
 
 `points = TRUE` is the only thing separating this from an ordinary
 `cpb_line()` call; `point_size` adjusts the marker if the default reads
@@ -127,7 +136,7 @@ cpb_col(tw, x = jaar, y = waarde, fill = sector,
   ylab  = "mld euro")
 ```
 
-<img src="chart-types_files/figure-gfm/col-stacked-1.png" width="350px" />
+<img src="chart-types_files/figure-gfm/col-stacked-1.png" alt="" width="350px" />
 
 By default the fill legend is reversed (`reverse_legend = TRUE`), so it
 reads in the same top-to-bottom order as the stack. For dodged bars,
@@ -145,7 +154,7 @@ cpb_col(scenario, x = regio, y = effect, fill = scenario,
   ylab  = "% mutatie")
 ```
 
-<img src="chart-types_files/figure-gfm/col-dodged-1.png" width="350px" />
+<img src="chart-types_files/figure-gfm/col-dodged-1.png" alt="" width="350px" />
 
 ## Horizontal bars
 
@@ -175,7 +184,7 @@ cpb_col(auto, x = inkomensgroep, y = share,
   xlab  = "huishoudens zonder auto")
 ```
 
-<img src="chart-types_files/figure-gfm/col-horizontal-1.png" width="350px" />
+<img src="chart-types_files/figure-gfm/col-horizontal-1.png" alt="" width="350px" />
 
 A horizontal *dodged* bar needs one extra trick. Under `coord_flip()`
 the dodge draws the *last* factor level on top within each group, so to
@@ -201,12 +210,61 @@ cpb_col(pv, x = inkomensgroep, y = share, fill = jaar,
   xlab  = "aandeel binnen inkomensgroep (%)")
 ```
 
-<img src="chart-types_files/figure-gfm/col-horizontal-dodged-1.png" width="350px" />
+<img src="chart-types_files/figure-gfm/col-horizontal-dodged-1.png" alt="" width="350px" />
 
 Note `value_breaks`: custom breaks for the value axis go through the
 wrapper, not through a second `scale_y_continuous()`, which would
 silently replace the wrapper’s percentage labels and zero-flush
 expansion.
+
+## Automatic vs. manual value-axis limits
+
+Left on its own, the value axis is always flush to the data: its limits
+come from `pretty()`’ing whatever range `y` (or `p5`/`p95`,
+`lower`/`upper`, …) actually spans, so the panel starts exactly where
+the data does, on both ends. `value_limits` overrides that with an
+explicit `c(min, max)` instead – not a coordinate-system zoom, but the
+value axis’s own hard limits, drawn flush the same way. Useful to line
+several figures up on one shared scale, to leave room for a reference
+value the data itself does not reach, or simply to round the axis to
+tidier numbers than the data’s own extremes happen to produce.
+Automatic, on the same `auto` data as above:
+
+``` r
+cpb_col(auto, x = inkomensgroep, y = share,
+  orientation = "horizontal",
+  pct_axis    = TRUE,
+  width       = 0.6,
+  title = "Aandeel huishoudens zonder auto naar inkomen",
+  ylab  = "inkomensgroep",
+  xlab  = "huishoudens zonder auto")
+```
+
+<img src="chart-types_files/figure-gfm/col-auto-limits-1.png" alt="" width="350px" />
+
+The data itself only spans 13 to 62, so `pretty()` flushes the axis to
+0-70 – already close to the full 0-100% a share is naturally read
+against, but not quite it. `value_limits` fixes that instead:
+
+``` r
+cpb_col(auto, x = inkomensgroep, y = share,
+  orientation  = "horizontal",
+  pct_axis     = TRUE,
+  value_limits = c(0, 100),
+  width        = 0.6,
+  title = "Aandeel huishoudens zonder auto naar inkomen",
+  ylab  = "inkomensgroep",
+  xlab  = "huishoudens zonder auto")
+```
+
+<img src="chart-types_files/figure-gfm/col-manual-limits-1.png" alt="" width="350px" />
+
+Nothing about the bars themselves changes; only the axis they are read
+against does – the same bars read as noticeably smaller shares once the
+full 0-100% range is behind them. An estimate that fell *outside* an
+explicit `value_limits` would be dropped, with a warning, the same as
+setting `limits` on any ggplot2 scale – here every value already falls
+well within the wider range, so nothing is cropped.
 
 ## A secondary axis
 
@@ -216,7 +274,15 @@ raised on it. `sec_y` draws the second series as a line against a
 right-hand axis, with `sec_limits` fixing the range that axis spans. The
 line is placed by mapping `sec_limits` linearly onto the primary range,
 so both axes start together and the line cannot drift out of step with
-its own labels:
+its own labels.
+
+`sec_ylab`’s caption on the right is placed to line up exactly with
+`ylab`’s own caption on the left, but only `save_cpb()` lines it up
+exactly; knitr’s own plotting device shows an approximate placement
+instead (close, not exact, since at print time the plot has not actually
+been rendered yet to measure against). So, like every figure with a
+`sec_y` below, this one is written to a file with `save_cpb()` and shown
+from that file rather than printed directly:
 
 ``` r
 nalatenschap <- expand_grid(
@@ -235,18 +301,21 @@ erfbelasting <- tibble(
               1.6, 1.7, 1.8, 1.8, 1.8, 2.3, 2.4, 2.5)
 )
 
-nalatenschap |>
+p <- nalatenschap |>
   left_join(erfbelasting, by = "jaar") |>
   cpb_col(x = jaar, y = mld, fill = soort,
     sec_y      = heffing,
     sec_limits = c(0, 3),
-    sec_label  = "erfbelasting (rechteras)",
+    sec_label  = "erfbelasting",
     sec_ylab   = "mld euro",
     title = "Belasting over erfenissen, prijzen 2022",
     ylab  = "mld euro")
+
+path <- tempfile(fileext = ".png")
+save_cpb(path, p, page = "full")
 ```
 
-<img src="chart-types_files/figure-gfm/col-secaxis-1.png" width="700px" />
+<img src="chart-types_files/figure-gfm/col-secaxis-show-1.png" alt="" width="700px" />
 
 `sec_ylab` mirrors on the right what `ylab` puts above the panel on the
 left, and `sec_label` names the line in the legend – house style says
@@ -265,7 +334,7 @@ lonen <- tibble(
   reeel = c(100.5, 100.0, 96.8, 98.5, 99.2, 100.4, 101.6, 102.5)
 )
 
-lonen |>
+p <- lonen |>
   pivot_longer(c(cao, cpi), names_to = "reeks", values_to = "waarde") |>
   mutate(reeks = recode(reeks,
     cao = "cao-loon bedrijven (linkeras)",
@@ -282,9 +351,14 @@ lonen |>
     title = "Cao-loon bedrijven en inflatie (cpi)",
     ylab  = "mutatie in %") +
   scale_x_continuous(breaks = seq(2020, 2026, 2))
+#> Scale for x is already present.
+#> Adding another scale for x, which will replace the existing scale.
+
+path <- tempfile(fileext = ".png")
+save_cpb(path, p, page = "half")
 ```
 
-<img src="chart-types_files/figure-gfm/line-secondary-1.png" width="350px" />
+<img src="chart-types_files/figure-gfm/line-secondary-show-1.png" alt="" width="350px" />
 
 The one difference from `cpb_col()`: there the columns key on `fill` and
 the secondary line on `colour`, so they form two legend blocks. Here the
@@ -310,9 +384,67 @@ cpb_area(mix, x = jaar, y = aandeel, fill = bron,
   ylab     = "aandeel") +
   scale_x_continuous(breaks = seq(2018, 2027, 3), minor_breaks = 2018:2027,
                      guide = guide_axis(minor.ticks = TRUE))
+#> Scale for x is already present.
+#> Adding another scale for x, which will replace the existing scale.
 ```
 
-<img src="chart-types_files/figure-gfm/area-1.png" width="350px" />
+<img src="chart-types_files/figure-gfm/area-1.png" alt="" width="350px" />
+
+# Donut charts
+
+`cpb_donut()` draws a single share-of-total breakdown as a ring instead
+of a stacked area over time – one wedge per category, sized by `y`.
+There is no value axis to read (nothing to label), so wedge sizes are
+read off the legend or the data itself. `ring_width` controls how thick
+the ring is, from a thin ring around a large hole up to `2` (no hole at
+all – a full pie).
+
+`cpb_donut()`’s ring keeps a fixed physical size regardless of title or
+legend length (see `panel_size`), which knitr’s own plotting device does
+not apply on its own – only `save_cpb()` does. So instead of printing
+the plot directly, every donut here is written to a file with
+`save_cpb()` and shown from that file, exactly as it would look saved
+for a report:
+
+``` r
+energie <- tibble(
+  bron  = factor(bronnen, levels = bronnen),
+  share = c(45, 30, 15, 10)
+)
+
+path <- tempfile(fileext = ".png")
+save_cpb(path, cpb_donut(energie, fill = bron, y = share,
+  index = c(6, 5, 2, 4),
+  title = "Energiemix van huishoudens"), page = "half")
+```
+
+<img src="chart-types_files/figure-gfm/donut-show-1.png" alt="" width="350px" />
+
+With more wedges, printing the value on the wedge itself gets cramped
+for the thin slices. `label_style = "leader"` moves every value outside
+the ring instead, connected back to its own wedge by a line that stays
+perpendicular to the wedge and straight the rest of the way out – and
+automatically spaces out any wedges whose values would otherwise land on
+top of each other, like the two thinnest slices here:
+
+``` r
+niveaus <- c("aardgas", "overig", "windenergie op land", "zonne-energie",
+             "kernenergie", "windenergie op zee")
+energie2 <- tibble(
+  bron  = factor(c("aardgas", "windenergie op land", "overig",
+                    "kernenergie", "windenergie op zee", "zonne-energie"),
+                 levels = niveaus),
+  share = c(40, 35, 13, 3, 2, 7)
+)
+
+path <- tempfile(fileext = ".png")
+save_cpb(path, cpb_donut(energie2, fill = bron, y = share,
+  label_style = "leader",
+  index = c(6, 4, 5, 1, 3, 2),
+  title = "Energiemix, met lijnlabels"), page = "half")
+```
+
+<img src="chart-types_files/figure-gfm/donut-leader-show-1.png" alt="" width="350px" />
 
 # Quantile boxplots
 
@@ -346,7 +478,7 @@ cpb_box(kk, x = groep,
   ylab     = "% koopkrachtmutatie")
 ```
 
-<img src="chart-types_files/figure-gfm/box-single-1.png" width="350px" />
+<img src="chart-types_files/figure-gfm/box-single-1.png" alt="" width="350px" />
 
 Boxes without a `fill` mapping are drawn in the CPB primary blue. The
 other box constructions – the legacy and designer styles, fill-dodged
@@ -362,11 +494,9 @@ bottom in the order of the factor levels. `group` collects the rows
 under bold headings, exactly as in `cpb_box()`:
 
 ``` r
-termen <- c("Belasting ontmoedigt werken en sparen",
-            "Ongelijkheid is oneerlijk", "Succes door hard werken",
-            "Vertrouwen in de politiek", "Leeftijdscategorie",
-            "Geslacht (vrouw t.o.v. man)", "Heeft kinderen",
-            "Vermogenskwintiel")
+termen <- c("Werken ontmoedigd", "Ongelijkheid", "Hard werken loont",
+            "Politiek", "Leeftijdscategorie", "Geslacht (v/m)",
+            "Heeft kinderen", "Vermogenskwintiel")
 schatting <- tibble(
   term = factor(termen, levels = termen),
   blok = factor(rep(c("Percepties", "Achtergrond"), each = 4),
@@ -382,7 +512,7 @@ cpb_dot(schatting, x = term, y = coef, lower = lo, upper = hi,
   xlab  = "%-punt verandering in voorkeurstarief")
 ```
 
-<img src="chart-types_files/figure-gfm/dot-1.png" width="700px" />
+<img src="chart-types_files/figure-gfm/dot-1.png" alt="" width="700px" />
 
 The estimates carry no `colour` mapping here, so everything is drawn in
 the house pink and no legend appears. Map `colour` to compare two
@@ -416,9 +546,11 @@ cpb_scatter(hh, x = inkomen, y = energierekening,
   xlab  = "besteedbaar inkomen (euro per maand)",
   colourlab = "koopkracht (%)") +
   scale_x_continuous(labels = label_euro_nl())
+#> Scale for x is already present.
+#> Adding another scale for x, which will replace the existing scale.
 ```
 
-<img src="chart-types_files/figure-gfm/scatter-1.png" width="700px" />
+<img src="chart-types_files/figure-gfm/scatter-1.png" alt="" width="700px" />
 
 # Histograms
 
@@ -435,7 +567,7 @@ cpb_hist(duur, x = maanden, binwidth = 2,
   xlab  = "duur (maanden)")
 ```
 
-<img src="chart-types_files/figure-gfm/hist-1.png" width="350px" />
+<img src="chart-types_files/figure-gfm/hist-1.png" alt="" width="350px" />
 
 For a rendered gallery of all chart types against the published
 reference figures, run `inst/examples/smoke_test_plots.R`.

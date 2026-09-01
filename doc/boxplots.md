@@ -52,7 +52,7 @@ cpb_box(kk, x = groep,
   ylab     = "% koopkrachtmutatie")
 ```
 
-<img src="boxplots_files/figure-gfm/box-ggcpb-1.png" width="350px" />
+<img src="boxplots_files/figure-gfm/box-ggcpb-1.png" alt="" width="350px" />
 
 `"james"` is the legacy plotter’s box: borderless, plain capless
 whiskers, a black median line extending past the box, and the median
@@ -68,7 +68,7 @@ cpb_box(kk, x = groep,
   ylab     = "% koopkrachtmutatie")
 ```
 
-<img src="boxplots_files/figure-gfm/box-james-1.png" width="350px" />
+<img src="boxplots_files/figure-gfm/box-james-1.png" alt="" width="350px" />
 
 `"modern"` is the designer variant: light-blue boxes and whiskers, a
 thick dark-blue median with the value in bold above it, and the quartile
@@ -77,18 +77,16 @@ values printed below the box ends.
 ``` r
 cpb_box(kk, x = groep,
   p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-  box_style   = "modern",
-  orientation = "horizontal",
-  width       = 0.35,
+  box_style      = "modern",
+  orientation    = "horizontal",
+  width          = 0.35,
+  value_accuracy = 0.1,
   title    = "Koopkracht per inkomensgroep",
   subtitle = "inkomensgroep",
-  ylab     = "% koopkrachtmutatie") +
-  scale_y_continuous(labels = label_number_nl(accuracy = 0.1))
-#> Scale for y is already present.
-#> Adding another scale for y, which will replace the existing scale.
+  ylab     = "% koopkrachtmutatie")
 ```
 
-<img src="boxplots_files/figure-gfm/box-modern-1.png" width="350px" />
+<img src="boxplots_files/figure-gfm/box-modern-1.png" alt="" width="350px" />
 
 `"james"` and `"modern"` print value labels by default
 (`box_labels = FALSE` turns them off, `label_accuracy` controls their
@@ -122,7 +120,7 @@ cpb_box(voorkeur, x = erfenis,
   ylab  = "voorkeurstarief (%)")
 ```
 
-<img src="boxplots_files/figure-gfm/box-dot-1.png" width="350px" />
+<img src="boxplots_files/figure-gfm/box-dot-1.png" alt="" width="350px" />
 
 Leave `mean` out and the diamond disappears from both the chart and the
 legend. `dot_labels` renames any of the five keys – pass only the ones
@@ -144,13 +142,10 @@ cpb_box(kk2, x = groep,
   position = position_dodge(width = 0.6),
   fill_index = c(6, 2),
   title    = "Koopkracht per jaar, 2026 en 2027",
-  ylab     = "% koopkrachtmutatie") +
-  scale_y_continuous(labels = label_number_nl())
-#> Scale for y is already present.
-#> Adding another scale for y, which will replace the existing scale.
+  ylab     = "% koopkrachtmutatie")
 ```
 
-<img src="boxplots_files/figure-gfm/box-dodged-1.png" width="700px" />
+<img src="boxplots_files/figure-gfm/box-dodged-1.png" alt="" width="700px" />
 
 # Grouped, with a fill per year
 
@@ -179,7 +174,7 @@ cpb_box(kk3, x = groep,
   ylab  = "% koopkrachtmutatie")
 ```
 
-<img src="boxplots_files/figure-gfm/box-grouped-fill-1.png" width="350px" />
+<img src="boxplots_files/figure-gfm/box-grouped-fill-1.png" alt="" width="350px" />
 
 For the single-colour grouped layout (one box per category, one colour
 per group, as in the published inkomenseffecten figures), see
@@ -203,12 +198,83 @@ cpb_box(kk, x = groep,
   subtitle = "statisch, verandering in %")
 ```
 
-<img src="boxplots_files/figure-gfm/box-top-1.png" width="350px" />
+<img src="boxplots_files/figure-gfm/box-top-1.png" alt="" width="350px" />
 
 Under the hood this sets the value scale to `position = "right"`, which
 `coord_flip()` renders along the top edge. Set custom tick positions
 through the wrapper’s `value_breaks` (as here) rather than adding a
 second `scale_y_continuous()`, which would replace the wrapper’s scale.
+
+# The extended look
+
+`cpb_boxplot_extended()` wraps `cpb_box()` with a fixed set of visual
+choices baked in – a light blue panel, white gridlines instead of black,
+a bold value axis on its own edge, and a title that adapts to whether
+the figure is faceted – so a caller does not have to reach for a manual
+`theme()` call to get that look. It takes the same arguments as
+`cpb_box()` itself, with a handful of defaults already changed to match:
+`box_style = "modern"`, `orientation = "horizontal"`,
+`value_axis = "top"`, `width = 0.45`.
+
+``` r
+cpb_boxplot_extended(kk, x = groep,
+  p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  title = "Koopkracht per inkomensgroep",
+  ylab  = "% koopkrachtmutatie")
+```
+
+<img src="boxplots_files/figure-gfm/box-extended-1.png" alt="" width="350px" />
+
+With `facet`, the same call splits into one panel per level – here,
+`kk2` from the fill-per-year example above, one panel per year – and the
+title switches from centred over the single panel above to the ordinary
+full-width, left-aligned house title spanning all of them:
+
+``` r
+cpb_boxplot_extended(kk2, x = groep,
+  p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  facet      = jaar,
+  facet_ncol = 2,
+  title = "Koopkracht per jaar",
+  ylab  = "% koopkrachtmutatie")
+```
+
+<img src="boxplots_files/figure-gfm/box-extended-facet-1.png" alt="" width="700px" />
+
+`group` works the same way it does on `cpb_box()` itself: every category
+belongs to a group, and each group gets its own bold heading row above
+its categories, with the categories underneath left at the ordinary text
+weight – so the two read apart from each other without needing a legend.
+A taller figure with three groups, a mix of income brackets and income
+sources:
+
+``` r
+groepen2 <- c("tot 120% wml", "120% wml - mod.", "1 - 1,5x mod.",
+             "1,5 - 2x mod.", "2 - 3x mod.", "boven 3x mod.", "nog extra boven",
+             "groep 8", "groep 9")
+
+ink <- tibble(
+  cat = factor(c("Totaal", groepen2,
+                 "Werkenden", "Uitkeringsgerechtigden", "Gepensioneerden",
+                 "Inkomensbron 4", "Inkomensbron 5"),
+               levels = c("Totaal", groepen2,
+                          "Werkenden", "Uitkeringsgerechtigden", "Gepensioneerden",
+                          "Inkomensbron 4", "Inkomensbron 5")),
+  grp = factor(rep(c("Totaal", "Inkomensgroepen", "Inkomensbron"), c(1, 9, 5)),
+               levels = c("Totaal", "Inkomensgroepen", "Inkomensbron")),
+  p50 = c(0.09, 0.02, 0.07, 0.07, 0.06, 0.04, 0.05, 0.04, 0.05, 0.06,
+          0.09, 0.04, 0.05, 0.06, 0.07)
+) |>
+  mutate(p25 = p50 - runif(n(), 0.05, 0.2), p75 = p50 + runif(n(), 0.05, 0.2),
+         p5  = p25 - runif(n(), 0.05, 0.2), p95 = p75 + runif(n(), 0.05, 0.2))
+
+cpb_boxplot_extended(ink, x = cat, group = grp,
+  p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  title = "Koopkracht naar inkomensgroep en -bron",
+  ylab  = "% koopkrachtmutatie")
+```
+
+<img src="boxplots_files/figure-gfm/box-extended-groups-1.png" alt="" width="700px" />
 
 # Sources
 
