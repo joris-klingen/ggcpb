@@ -44,8 +44,14 @@ APT_PKGS=(
 
 # The image carries third-party PPAs that can fail to refresh; their
 # errors are not fatal for the Ubuntu archive packages we need.
+#
+# stdout is dropped: -qq silences apt's own progress but not dpkg's
+# per-package unpack/setup lines, which on a cold container bury the
+# summary this script ends with under ~100 kB of noise. Failures still
+# surface -- apt writes them to stderr, set -e aborts on a non-zero
+# exit, and the verification block below re-checks every hard dependency.
 sudo apt-get update -qq || true
-sudo apt-get install -y --no-install-recommends "${APT_PKGS[@]}"
+sudo apt-get install -y -qq --no-install-recommends "${APT_PKGS[@]}" >/dev/null
 
 # Pin a UTF-8 locale. The image comes up in the C locale, where R reads
 # each accented character ("reele", "geindexeerd" with their diaereses)
