@@ -157,7 +157,27 @@ Rscript -e '
     stop("LC_CTYPE is \"", ctype, "\", not UTF-8: accented characters in ",
          "figures would be drawn as missing glyphs.")
   }
+  # The house font lives in inst/fonts/ and is registered at load time
+  # into the systemfonts *registry* -- not the OS font database, so
+  # system_fonts() will never list it. cpb_font_family() degrades to ""
+  # when registration fails, and every figure then renders in the
+  # fallback family with nothing to say so, which is exactly the kind of
+  # silently-wrong output this block exists to catch. Skipped rather than
+  # fatal if the package itself will not load: a session opened to repair
+  # broken R code must not be blocked by that code failing here.
+  font <- tryCatch({
+    suppressMessages(pkgload::load_all(
+      Sys.getenv("CLAUDE_PROJECT_DIR", "."), quiet = TRUE, export_all = FALSE
+    ))
+    cpb_font_family()
+  }, error = function(e) NA_character_)
+  if (identical(font, "")) {
+    stop("the bundled RijksoverheidSansText font did not register; every ",
+         "figure would silently render in the fallback family instead.")
+  }
   cat("R deps ready:", R.version.string, "with ggplot2", format(gg),
       "| roxygen2", format(utils::packageVersion("roxygen2")),
-      "| LC_CTYPE", ctype, "\n")
+      "| LC_CTYPE", ctype,
+      "| font", if (is.na(font)) "unchecked (package did not load)" else font,
+      "\n")
 '
