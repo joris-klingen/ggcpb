@@ -9,6 +9,10 @@
 # (R/scales.R uses the post-3.5 discrete_scale() signature, and
 # theme.R/map.R use theme elements that 3.4 does not have).
 #
+# The session also gets a UTF-8 locale pinned below: CPB figure labels
+# are Dutch and carry accented characters, which a C locale silently
+# mangles into missing glyphs.
+#
 # CRAN, not Posit Package Manager: P3M serves its index from
 # packagemanager.posit.co but redirects the actual downloads to
 # rspm-sync.rstudio.com, which the environment's network policy does
@@ -24,7 +28,7 @@ export DEBIAN_FRONTEND=noninteractive
 
 APT_PKGS=(
   r-base-core r-base-dev r-recommended
-  pandoc
+  pandoc qpdf
   libcurl4-openssl-dev libssl-dev libxml2-dev
   libpng-dev libtiff5-dev libjpeg-dev
   libfreetype6-dev libharfbuzz-dev libfribidi-dev libfontconfig1-dev
@@ -40,8 +44,35 @@ APT_PKGS=(
 
 # The image carries third-party PPAs that can fail to refresh; their
 # errors are not fatal for the Ubuntu archive packages we need.
+#
+# stdout is dropped: -qq silences apt's own progress but not dpkg's
+# per-package unpack/setup lines, which on a cold container bury the
+# summary this script ends with under ~100 kB of noise. Failures still
+# surface -- apt writes them to stderr, set -e aborts on a non-zero
+# exit, and the verification block below re-checks every hard dependency.
 sudo apt-get update -qq || true
-sudo apt-get install -y --no-install-recommends "${APT_PKGS[@]}"
+sudo apt-get install -y -qq --no-install-recommends "${APT_PKGS[@]}" >/dev/null
+
+# Pin a UTF-8 locale. The image comes up in the C locale, where R reads
+# each accented character ("reele", "geindexeerd" with their diaereses)
+# as two undefined bytes and every graphics device draws them as
+# missing glyphs -- with no warning, so the figure looks finished and
+# reads as mojibake. tools/render_vignettes.R refuses to run without
+# this; plots drawn by hand would silently come out wrong.
+for loc in C.UTF-8 en_US.UTF-8; do
+  if locale -a 2>/dev/null | tr -d '-' | grep -qix "$(echo "$loc" | tr -d '-')"; then
+    export LANG="$loc" LC_ALL="$loc"
+    break
+  fi
+done
+if [ -z "${LC_ALL:-}" ]; then
+  sudo locale-gen C.UTF-8 >/dev/null 2>&1 || true
+  export LANG=C.UTF-8 LC_ALL=C.UTF-8
+fi
+if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
+  echo "export LANG=\"$LANG\"" >> "$CLAUDE_ENV_FILE"
+  echo "export LC_ALL=\"$LC_ALL\"" >> "$CLAUDE_ENV_FILE"
+fi
 
 # User library for anything installed from source, kept out of the
 # system tree so it does not need root.
@@ -50,6 +81,26 @@ mkdir -p "$R_LIBS_USER"
 export R_LIBS_USER
 if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
   echo "export R_LIBS_USER=\"$R_LIBS_USER\"" >> "$CLAUDE_ENV_FILE"
+fi
+
+# Rscript's default graphics device is pdf(), which resolves font
+# families against its own Type1 database and knows nothing about the
+# bundled RijksoverheidSansText: a bare print(p) emits one "not found in
+# PostScript font database" warning per text grob and then fails outright
+# with "invalid font type". ragg goes through systemfonts, which is where
+# cpb_register_fonts() puts the family, so it draws the house font
+# correctly. save_cpb() already uses ragg; this covers everything that
+# does not go through it.
+#
+# The ragg call sits inside a function body so it is only evaluated when
+# a device is actually opened -- .Rprofile runs before packages are
+# available. Marker-guarded because SessionStart fires again on resume.
+R_PROFILE_USER="${R_PROFILE_USER:-$HOME/.Rprofile}"
+if ! grep -q "ggcpb-default-device" "$R_PROFILE_USER" 2>/dev/null; then
+  cat >> "$R_PROFILE_USER" <<'RPROFILE'
+# ggcpb-default-device
+options(device = function(...) ragg::agg_png(tempfile(fileext = ".png"), ...))
+RPROFILE
 fi
 
 # The user library comes first on .libPaths(), so what is installed
@@ -61,16 +112,34 @@ Rscript -e '
     if (!requireNamespace(pkg, quietly = TRUE)) return(TRUE)
     !is.null(min_version) && utils::packageVersion(pkg) < min_version
   }
+  # roxygen2 must match what man/ was generated with, or devtools
+  # regenerates every .Rd and tools/check_docs_fresh.R reports drift.
+  # Read it from DESCRIPTION rather than pinning a literal here, so
+  # this cannot silently fall behind the package again.
+  desc_path <- file.path(Sys.getenv("CLAUDE_PROJECT_DIR", "."), "DESCRIPTION")
+  rox <- tryCatch({
+    d <- read.dcf(desc_path)
+    fld <- intersect(c("Config/roxygen2/version", "RoxygenNote"), colnames(d))
+    if (length(fld)) unname(d[1, fld[[1]]]) else NULL
+  }, error = function(e) NULL)
+
   wanted <- list(
     ggplot2  = "3.5.0",   # the floor ggcpb declares in DESCRIPTION
     sysfonts = NULL,      # no Ubuntu build exists for these two
-    showtext = NULL,
-    roxygen2 = "7.3.3"    # matches RoxygenNote, so docs regenerate clean
+    showtext = NULL
   )
   missing <- names(wanted)[vapply(names(wanted),
                                   function(p) needed(p, wanted[[p]]),
                                   logical(1))]
   if (length(missing)) install.packages(missing)
+
+  # roxygen2 is pinned to the *exact* recorded version, not a floor: it
+  # stamps its own version into DESCRIPTION and rewrites every .Rd, so a
+  # newer one turns `devtools::document()` into a whole-tree diff.
+  if (!is.null(rox) && !identical(as.character(utils::packageVersion("roxygen2")), rox)) {
+    if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes")
+    remotes::install_version("roxygen2", version = rox, upgrade = "never")
+  }
 '
 
 # Fail loudly if a hard dependency did not make it in.
@@ -83,5 +152,32 @@ Rscript -e '
     stop("ggplot2 ", gg, " is installed but ggcpb needs >= 3.5.0; ",
          "check that cloud.r-project.org is reachable from this environment.")
   }
-  cat("R deps ready:", R.version.string, "with ggplot2", format(gg), "\n")
+  ctype <- Sys.getlocale("LC_CTYPE")
+  if (!grepl("UTF-?8", ctype, ignore.case = TRUE)) {
+    stop("LC_CTYPE is \"", ctype, "\", not UTF-8: accented characters in ",
+         "figures would be drawn as missing glyphs.")
+  }
+  # The house font lives in inst/fonts/ and is registered at load time
+  # into the systemfonts *registry* -- not the OS font database, so
+  # system_fonts() will never list it. cpb_font_family() degrades to ""
+  # when registration fails, and every figure then renders in the
+  # fallback family with nothing to say so, which is exactly the kind of
+  # silently-wrong output this block exists to catch. Skipped rather than
+  # fatal if the package itself will not load: a session opened to repair
+  # broken R code must not be blocked by that code failing here.
+  font <- tryCatch({
+    suppressMessages(pkgload::load_all(
+      Sys.getenv("CLAUDE_PROJECT_DIR", "."), quiet = TRUE, export_all = FALSE
+    ))
+    cpb_font_family()
+  }, error = function(e) NA_character_)
+  if (identical(font, "")) {
+    stop("the bundled RijksoverheidSansText font did not register; every ",
+         "figure would silently render in the fallback family instead.")
+  }
+  cat("R deps ready:", R.version.string, "with ggplot2", format(gg),
+      "| roxygen2", format(utils::packageVersion("roxygen2")),
+      "| LC_CTYPE", ctype,
+      "| font", if (is.na(font)) "unchecked (package did not load)" else font,
+      "\n")
 '
