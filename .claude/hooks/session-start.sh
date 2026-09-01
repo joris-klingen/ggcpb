@@ -83,6 +83,26 @@ if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
   echo "export R_LIBS_USER=\"$R_LIBS_USER\"" >> "$CLAUDE_ENV_FILE"
 fi
 
+# Rscript's default graphics device is pdf(), which resolves font
+# families against its own Type1 database and knows nothing about the
+# bundled RijksoverheidSansText: a bare print(p) emits one "not found in
+# PostScript font database" warning per text grob and then fails outright
+# with "invalid font type". ragg goes through systemfonts, which is where
+# cpb_register_fonts() puts the family, so it draws the house font
+# correctly. save_cpb() already uses ragg; this covers everything that
+# does not go through it.
+#
+# The ragg call sits inside a function body so it is only evaluated when
+# a device is actually opened -- .Rprofile runs before packages are
+# available. Marker-guarded because SessionStart fires again on resume.
+R_PROFILE_USER="${R_PROFILE_USER:-$HOME/.Rprofile}"
+if ! grep -q "ggcpb-default-device" "$R_PROFILE_USER" 2>/dev/null; then
+  cat >> "$R_PROFILE_USER" <<'RPROFILE'
+# ggcpb-default-device
+options(device = function(...) ragg::agg_png(tempfile(fileext = ".png"), ...))
+RPROFILE
+fi
+
 # The user library comes first on .libPaths(), so what is installed
 # here shadows any older apt build of the same package.
 Rscript -e '
