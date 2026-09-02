@@ -498,7 +498,7 @@ autogenerate_plots <- function(dest, overwrite = FALSE) {
     dir.create(dest, recursive = TRUE)
   }
 
-  files <- list.files(kit_dir)
+  files <- list.files(kit_dir, recursive = FALSE)
   already_there <- files[file.exists(file.path(dest, files))]
   if (length(already_there) && !isTRUE(overwrite)) {
     stop("The following file(s) already exist in `dest` and were not ",
@@ -508,7 +508,8 @@ autogenerate_plots <- function(dest, overwrite = FALSE) {
     )
   }
 
-  file.copy(file.path(kit_dir, files), dest, overwrite = TRUE)
+  file.copy(list.files(kit_dir, full.names = TRUE), dest,
+            overwrite = TRUE, recursive = TRUE)
 
   # a Mac launcher has to keep its executable bit to double-click at
   # all; file.copy() does not promise to carry permissions over, so it
