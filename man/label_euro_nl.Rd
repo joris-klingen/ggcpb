@@ -4,11 +4,14 @@
 \alias{label_euro_nl}
 \title{Euro-formatted labels, Dutch locale}
 \usage{
-label_euro_nl(accuracy = NULL, ...)
+label_euro_nl(accuracy = NULL, style = c("dutch", "english"), ...)
 }
 \arguments{
 \item{accuracy}{Passed to \code{\link[scales:label_currency]{scales::label_currency()}}; \code{NULL}
 (default) lets \code{scales} pick a sensible accuracy from the data.}
+
+\item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
+or \code{"english"} (\verb{,} thousands, \code{.} decimal).}
 
 \item{...}{Further arguments passed to \code{\link[scales:label_currency]{scales::label_currency()}}.}
 }
@@ -16,10 +19,10 @@ label_euro_nl(accuracy = NULL, ...)
 A labelling function suitable for \code{scale_*(labels = ...)}.
 }
 \description{
-A thin wrapper around \code{\link[scales:label_currency]{scales::label_currency()}} with the euro sign,
-Dutch thousands separator (\code{.}) and decimal mark (\verb{,}).
+A thin wrapper around \code{\link[scales:label_currency]{scales::label_currency()}} with the euro sign and
+configurable grouping/decimal punctuation for Dutch or English styles.
 }
 \examples{
 label_euro_nl()(1234.5)
-label_euro_nl(accuracy = 1)(c(1000, 25000))
+label_euro_nl(style = "english")(1234.5)
 }

@@ -4,7 +4,7 @@
 \alias{label_pct_nl}
 \title{Percent-formatted labels, Dutch locale}
 \usage{
-label_pct_nl(scale = 1, accuracy = 1, ...)
+label_pct_nl(scale = 1, accuracy = 1, style = c("dutch", "english"), ...)
 }
 \arguments{
 \item{scale}{Multiplier applied before formatting; \code{1} (default)
@@ -14,18 +14,21 @@ proportions in \verb{[0, 1]}.}
 \item{accuracy}{Rounding accuracy; \code{1} (default) rounds to whole
 percentage points.}
 
+\item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
+or \code{"english"} (\verb{,} thousands, \code{.} decimal).}
+
 \item{...}{Further arguments passed to \code{\link[scales:label_percent]{scales::label_percent()}}.}
 }
 \value{
 A labelling function suitable for \code{scale_*(labels = ...)}.
 }
 \description{
-A thin wrapper around \code{\link[scales:label_percent]{scales::label_percent()}} with Dutch grouping
+A thin wrapper around \code{\link[scales:label_percent]{scales::label_percent()}} with Dutch or English grouping
 and decimal marks. Note the default \code{scale = 1}: CPB data is
 typically already expressed in percentage points (e.g. \code{45} meaning
 45\%), unlike \code{scales::label_percent()}'s own default of \code{scale = 100}, which expects a proportion (e.g. \code{0.45}).
 }
 \examples{
 label_pct_nl()(c(4.5, 12, 100))
-label_pct_nl(scale = 100)(c(0.045, 0.12))
+label_pct_nl(style = "english")(c(4.5, 12, 100))
 }

@@ -56,6 +56,7 @@ cpb_col(
   xlab = NULL,
   ylab = NULL,
   filllab = NULL,
+  style = c("dutch", "english"),
   ...
 )
 }
@@ -277,6 +278,9 @@ axis is the category axis; in a vertical one it is the value axis.}
 
 \item{filllab}{Legend title override; defaults to \code{NULL} (no legend
 title), matching CPB house style.}
+
+\item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
+or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).}
 
 \item{...}{Further arguments passed to \code{\link[ggplot2:geom_col]{ggplot2::geom_col()}}.}
 }
