@@ -84,3 +84,16 @@ test_that("no sec_ylab still leaves the subtitle row alone with no title and no 
   p <- cpb_line(d, x = x, y = y)
   expect_null(p$labels$subtitle)
 })
+
+test_that("style = 'english' toggles English labels for secondary axis and forecast window", {
+  d <- data.frame(x = 2020:2025, y = 1:6, z = c(10, 20, 30, 40, 50, 60))
+  p_nl <- cpb_line(d, x = x, y = y, sec_y = z, forecast_x = 2023, style = "dutch")
+  p_en <- cpb_line(d, x = x, y = y, sec_y = z, forecast_x = 2023, style = "english")
+
+  # forecast label text check
+  forecast_layer_nl <- p_nl$layers[[which(vapply(p_nl$layers, function(l) inherits(l$geom, "GeomText"), TRUE))]]
+  forecast_layer_en <- p_en$layers[[which(vapply(p_en$layers, function(l) inherits(l$geom, "GeomText"), TRUE))]]
+  expect_equal(forecast_layer_nl$aes_params$label, "raming")
+  expect_equal(forecast_layer_en$aes_params$label, "forecast")
+})
+
