@@ -81,6 +81,29 @@ The window is drawn *underneath* the data and the label is centred in
 it at the top of the panel; for bar charts pick a `forecast_x` between
 two bars (e.g. `2025.5`) so no bar is cut.
 
+# Language style (`style = "english"`)
+
+All plot wrappers accept `style = "english"` (default `"dutch"`). Passing `style = "english"` uses English number formatting (`,` thousands separator, `.` decimal mark) and updates house annotation labels:
+
+* Secondary-axis legend suffixes change from `"(linkeras)"` / `"(rechteras)"` to `"(left axis)"` / `"(right axis)"`.
+* Forecast window labels change from `"raming"` to `"forecast"`.
+
+```{r style-english}
+# English style: decimal point (1.5), forecast label ("forecast") and dual axis ("(left axis)" / "(right axis)")
+groeipad_sec <- dplyr::mutate(
+  groeipad,
+  inflatie = round(c(1.2, 1.4, 1.8, 1.5, 2.1, 2.7, 3.8, 4.2, 2.8, 2.1, 1.9, 1.8, 1.7), 1)
+)
+
+cpb_line(groeipad_sec, x = jaar, y = groei, ymin = lo, ymax = hi,
+  sec_y = inflatie, forecast_x = 2023.5,
+  value_accuracy = 0.1, style = "english",
+  title = "Economic growth and inflation forecast",
+  ylab = "%", sec_ylab = "%") +
+  scale_x_continuous(breaks = seq(2015, 2027, 3), minor_breaks = 2015:2027,
+                     guide = guide_axis(minor.ticks = TRUE))
+```
+
 # Composing: a line over stacked columns
 
 Because every wrapper returns a real `ggplot`, a decomposition chart

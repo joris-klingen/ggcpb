@@ -38,6 +38,7 @@ cpb_scatter(
   xlab = NULL,
   ylab = NULL,
   colourlab = NULL,
+  style = c("dutch", "english"),
   ...
 )
 }
@@ -133,6 +134,9 @@ house defaults.}
 it is rendered as the plot \emph{subtitle} -- a left-aligned italic
 caption above the panel -- unless an explicit \code{subtitle} is also
 given, in which case it falls back to a rotated y-axis title.}
+
+\item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
+or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).}
 
 \item{...}{Further arguments passed to \code{\link[ggplot2:geom_point]{ggplot2::geom_point()}}.}
 }
