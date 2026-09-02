@@ -156,7 +156,9 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
                                   zero_indicator = TRUE,
                                   zero_indicator_linewidth = 2,
                                   ylab_position = NULL,
+                                  style = c("dutch", "english"),
                                   ...) {
+  style <- match.arg(style)
   box_style <- match.arg(box_style)
   orientation <- match.arg(orientation)
   has_facet <- !rlang::quo_is_null(rlang::enquo(facet))
@@ -201,7 +203,7 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
     axis_text_size = axis_text_size, legend_key_size = legend_key_size,
     grid_colour = grid_colour, grid_linewidth = grid_linewidth,
     title = title, subtitle = subtitle, xlab = xlab, ylab = ylab,
-    filllab = filllab, ...
+    filllab = filllab, style = style, ...
   )
 
   # the value axis is x post-coord_flip() when horizontal, y when not
