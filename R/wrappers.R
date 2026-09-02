@@ -862,6 +862,8 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   (`x`) aesthetic otherwise.
 #' @param filllab Legend title override; defaults to `NULL` (no legend
 #'   title), matching CPB house style.
+#' @param style Formatting style: `"dutch"` (default, `.` thousands, `,` decimal)
+#'   or `"english"` (`,` thousands, `.` decimal, English forecast / axis labels).
 #' @param ... Further arguments passed to [ggplot2::geom_col()].
 #' @return A `ggplot` object.
 #' @examples
@@ -1375,6 +1377,8 @@ cpb_col <- function(data, x, y, fill = NULL,
 #'   it is rendered as the plot *subtitle* -- a left-aligned italic
 #'   caption above the panel -- unless an explicit `subtitle` is also
 #'   given, in which case it falls back to a rotated y-axis title.
+#' @param style Formatting style: `"dutch"` (default, `.` thousands, `,` decimal)
+#'   or `"english"` (`,` thousands, `.` decimal, English forecast / axis labels).
 #' @param ... Further arguments passed to [ggplot2::geom_area()].
 #' @return A `ggplot` object.
 #' @examples
@@ -1722,6 +1726,8 @@ cpb_area <- function(data, x, y, fill,
 #'   caption above the panel (e.g. the unit, `"%"`) -- unless an
 #'   explicit `subtitle` is also given, in which case it falls back to
 #'   a rotated y-axis title.
+#' @param style Formatting style: `"dutch"` (default, `.` thousands, `,` decimal)
+#'   or `"english"` (`,` thousands, `.` decimal, English forecast / axis labels).
 #' @param ... Further arguments passed to [ggplot2::geom_line()].
 #' @return A `ggplot` object.
 #' @examples
@@ -2246,6 +2252,8 @@ cpb_line <- function(data, x, y, colour = NULL,
 #'   (after `coord_flip()`). When `"vertical"`, CPB house style renders
 #'   it as the plot *subtitle* -- unless an explicit `subtitle` is also
 #'   given, in which case it falls back to a rotated y-axis title.
+#' @param style Formatting style: `"dutch"` (default, `.` thousands, `,` decimal)
+#'   or `"english"` (`,` thousands, `.` decimal, English forecast / axis labels).
 #' @param ... Further arguments passed to both [ggplot2::geom_errorbar()]
 #'   and [ggplot2::geom_boxplot()].
 #' @return A `ggplot` object.
@@ -2833,6 +2841,8 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
 #'   it is rendered as the plot *subtitle* -- a left-aligned italic
 #'   caption above the panel -- unless an explicit `subtitle` is also
 #'   given, in which case it falls back to a rotated y-axis title.
+#' @param style Formatting style: `"dutch"` (default, `.` thousands, `,` decimal)
+#'   or `"english"` (`,` thousands, `.` decimal, English forecast / axis labels).
 #' @param ... Further arguments passed to [ggplot2::geom_point()].
 #' @return A `ggplot` object.
 #' @examples
@@ -3065,6 +3075,8 @@ cpb_scatter <- function(data, x, y, colour = NULL,
 #' @param ylab Label for the count (y) axis, rendered as the plot
 #'   *subtitle* (e.g. `"aantal"`) unless an explicit `subtitle` is
 #'   also given.
+#' @param style Formatting style: `"dutch"` (default, `.` thousands, `,` decimal)
+#'   or `"english"` (`,` thousands, `.` decimal, English forecast / axis labels).
 #' @param ... Further arguments passed to [ggplot2::geom_histogram()].
 #' @return A `ggplot` object.
 #' @examples
@@ -3324,6 +3336,8 @@ cpb_hist <- function(data, x, fill = NULL,
 #' @param ylab Label for the category axis. Following CPB house style
 #'   this is normally left `NULL`.
 #' @param colourlab Legend title override; defaults to `NULL`.
+#' @param style Formatting style: `"dutch"` (default, `.` thousands, `,` decimal)
+#'   or `"english"` (`,` thousands, `.` decimal, English forecast / axis labels).
 #' @param ... Further arguments passed to [ggplot2::geom_point()].
 #' @return A `ggplot` object.
 #' @examples

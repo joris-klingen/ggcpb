@@ -87,6 +87,8 @@
 #'   set and `"middle"` otherwise, matching every reference figure this
 #'   look has been checked against; pass one explicitly to override
 #'   that for a single figure.
+#' @param style Formatting style: `"dutch"` (default, `.` thousands, `,` decimal)
+#'   or `"english"` (`,` thousands, `.` decimal, English forecast / axis labels).
 #' @param ... Further arguments passed to both [ggplot2::geom_errorbar()]
 #'   and [ggplot2::geom_boxplot()], as in [cpb_box()].
 #' @return A `ggplot` object.

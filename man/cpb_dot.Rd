@@ -58,6 +58,7 @@ cpb_dot(
   xlab = NULL,
   ylab = NULL,
   colourlab = NULL,
+  style = c("dutch", "english"),
   ...
 )
 }
@@ -243,6 +244,9 @@ value axis lands after \code{coord_flip()}).}
 this is normally left \code{NULL}.}
 
 \item{colourlab}{Legend title override; defaults to \code{NULL}.}
+
+\item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
+or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).}
 
 \item{...}{Further arguments passed to \code{\link[ggplot2:geom_point]{ggplot2::geom_point()}}.}
 }
