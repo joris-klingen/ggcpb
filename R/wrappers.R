@@ -376,22 +376,27 @@ cpb_zeroline_auto <- function(lo, hi) {
 # the reverse conversion, so its labels read in the secondary series'
 # own units again.
 
-# Step 1: work out that conversion, from the secondary column's own
-# values (a default range, when `sec_limits` isn't set) and the primary
-# axis's flush min/max. Also checks the two ways this can go wrong: a
-# non-numeric sec_y column, or a range with no actual width to map onto.
-cpb_sec_map <- function(sec_vals, sec_limits, prim_min, prim_max) {
-  if (!is.numeric(sec_vals)) {
-    stop("`sec_y` must be a numeric column.", call. = FALSE)
+# Calculates secondary breaks matching the number of primary gridlines N,
+# ensuring right y-axis ticks align at the exact height of left y-axis gridlines.
+odd_elements <- function(x) {
+  x[seq(1, length(x), by = 2)]
+}
+
+cpb_find_sec_breaks <- function(primary_breaks, sec_vals, sec_limits = NULL, sec_at = NULL, sec_scale_auto = TRUE) {
+  n_labels <- length(primary_breaks)
+  if (n_labels < 2) {
+    stop("The primary value axis must have at least 2 breaks for `sec_y` mapping.", call. = FALSE)
   }
+  if (!is.null(sec_at)) {
+    if (length(sec_at) != n_labels) {
+      stop(sprintf("Number of values in `sec_at` (%d) must match the number of primary axis gridlines (%d).", length(sec_at), n_labels), call. = FALSE)
+    }
+    return(sec_at)
+  }
+
+  user_custom_limits <- !is.null(sec_limits) && !isTRUE(all.equal(sec_limits, range(sec_vals, na.rm = TRUE)))
+
   if (is.null(sec_limits)) {
-    # sec_y's own data range, not forced to include zero: it is drawn
-    # as an overlay (line/points/thin bars), not an area encoding like
-    # the primary bars, and a series that is e.g. always negative (a
-    # deficit) or confined to a narrow band (a price index around 100)
-    # would otherwise have most of its own axis wasted on values that
-    # never occur. Pass `sec_limits` explicitly for a forced zero
-    # baseline.
     sec_limits <- range(sec_vals, na.rm = TRUE)
   }
   if (length(sec_limits) != 2 || !is.numeric(sec_limits) ||
@@ -401,60 +406,153 @@ cpb_sec_map <- function(sec_vals, sec_limits, prim_min, prim_max) {
       call. = FALSE
     )
   }
-  # all.equal(), not ==: two floating-point doubles can be the same
-  # value in every way that matters (e.g. 0.06 vs
-  # 0.06000000000000001) while still comparing unequal -- == would let
-  # that through into a division by a near-zero range next, producing
-  # wildly unstable positions instead of a clean error.
-  if (isTRUE(all.equal(prim_min, prim_max))) {
-    stop("the primary value axis has no range for `sec_y` to map onto.",
-      call. = FALSE
-    )
+
+  low <- sec_limits[1]
+  high <- sec_limits[2]
+
+  if (!isTRUE(sec_scale_auto) || user_custom_limits) {
+    y_r_at <- seq(low, high, length.out = n_labels)
+  } else {
+    y_r_at <- pretty(c(low, high), n = n_labels)
+    n <- n_labels - length(y_r_at)
+    delta <- if (length(y_r_at) >= 2) diff(y_r_at[1:2]) else (high - low) / n_labels
+
+    while (n != 0) {
+      if (n > 0) {
+        for (i in seq_len(n)) {
+          if ((low - y_r_at[1]) < (tail(y_r_at, 1) - high)) {
+            y_r_at <- c(y_r_at[1] - delta, y_r_at)
+          } else {
+            y_r_at <- c(y_r_at, tail(y_r_at, 1) + delta)
+          }
+        }
+      } else {
+        y_r_at <- odd_elements(y_r_at)
+        delta <- if (length(y_r_at) >= 2) diff(y_r_at[1:2]) else delta
+      }
+      n <- n_labels - length(y_r_at)
+    }
   }
+
+  y_r_at
+}
+
+cpb_resolve_sec_opts <- function(sec_limits, sec_at, sec_scale_auto, sec_labels,
+                                 y_r_lim, y_r_at, y_r_scale_auto, y_r_lab) {
   list(
-    prim_min = prim_min, prim_max = prim_max,
-    sec_min = sec_limits[[1]], sec_max = sec_limits[[2]]
+    limits     = if (!is.null(y_r_lim)) y_r_lim else sec_limits,
+    at         = if (!is.null(y_r_at)) y_r_at else sec_at,
+    scale_auto = if (!is.null(y_r_scale_auto)) y_r_scale_auto else sec_scale_auto,
+    labels     = if (!is.null(y_r_lab)) y_r_lab else sec_labels
   )
 }
 
-# Step 2: given the conversion from step 1, turn one secondary value
-# into the position it should actually be drawn at on the primary
-# axis. This is what places the secondary line/points/bars.
+cpb_sec_map <- function(sec_vals, sec_limits = NULL, prim_min = NULL, prim_max = NULL,
+                        primary_breaks = NULL, sec_at = NULL, sec_scale_auto = TRUE) {
+  if (!is.numeric(sec_vals)) {
+    stop("`sec_y` must be a numeric column.", call. = FALSE)
+  }
+
+  if (!is.null(prim_min) && !is.null(prim_max)) {
+    if (isTRUE(all.equal(prim_min, prim_max))) {
+    stop("the primary value axis has no range for `sec_y` to map onto.",
+      call. = FALSE)
+    }
+    if (is.null(primary_breaks)) {
+      primary_breaks <- seq(prim_min, prim_max, length.out = 5)
+    }
+  } else if (!is.null(primary_breaks) && length(primary_breaks) == 2 && !is.null(sec_limits) && is.numeric(sec_limits)) {
+    legacy_sec_limits <- primary_breaks
+    legacy_prim_min <- sec_limits
+    legacy_prim_max <- prim_min
+    if (isTRUE(all.equal(legacy_prim_min, legacy_prim_max))) {
+      stop("the primary value axis has no range for `sec_y` to map onto.", call. = FALSE)
+    }
+    primary_breaks <- seq(legacy_prim_min, legacy_prim_max, length.out = 5)
+    sec_limits <- legacy_sec_limits
+  } else if (!is.null(primary_breaks) && length(primary_breaks) == 2) {
+    if (isTRUE(all.equal(primary_breaks[1], primary_breaks[2]))) {
+      stop("the primary value axis has no range for `sec_y` to map onto.", call. = FALSE)
+    }
+    primary_breaks <- seq(primary_breaks[1], primary_breaks[2], length.out = 5)
+  }
+
+  if (is.null(primary_breaks)) {
+    primary_breaks <- seq(0, 1, length.out = 5)
+  }
+
+  sec_breaks <- cpb_find_sec_breaks(primary_breaks, sec_vals, sec_limits = sec_limits, sec_at = sec_at, sec_scale_auto = sec_scale_auto)
+
+  p_min <- primary_breaks[1]
+  p_max <- primary_breaks[length(primary_breaks)]
+  s_min <- sec_breaks[1]
+  s_max <- sec_breaks[length(sec_breaks)]
+
+  if (isTRUE(all.equal(p_min, p_max))) {
+    stop("the primary value axis has no range for `sec_y` to map onto.", call. = FALSE)
+  }
+
+  slope <- (p_max - p_min) / (s_max - s_min)
+  inter <- p_min - slope * s_min
+
+  list(
+    prim_min = p_min,
+    prim_max = p_max,
+    sec_min = s_min,
+    sec_max = s_max,
+    slope = slope,
+    inter = inter,
+    sec_breaks = sec_breaks,
+    primary_breaks = primary_breaks
+  )
+}
+
+# Maps secondary y-axis values onto primary y-axis positions for drawing
+# secondary series (lines, points, or bars).
 cpb_sec_to_primary <- function(v, sec_map) {
+  if (is.null(sec_map$slope) || is.null(sec_map$inter)) {
   (v - sec_map$sec_min) / (sec_map$sec_max - sec_map$sec_min) *
     (sec_map$prim_max - sec_map$prim_min) + sec_map$prim_min
+} else {
+    sec_map$inter + sec_map$slope * v
+  }
 }
 
-# Step 3: the right-hand axis, undoing step 2's conversion so its
-# labels show the secondary series' real values -- plain Dutch numbers
-# by default, never inheriting the primary axis's own pct_axis
-# formatting, since sec_y is usually a different kind of quantity
-# (e.g. a price alongside a percentage share). `accuracy` (see each
-# wrapper's `sec_accuracy`) works like the primary axis's own
-# `value_accuracy`.
-#
-# Left to itself, ggplot2's sec_axis() would pick "nice" breaks
-# independently in the secondary series' own units, which almost never
-# line up with the primary axis's gridlines (and can leave the top one
-# without a right-hand label). So it's told to use these exact
-# `primary_breaks` instead -- but its `breaks` argument reads in the
-# SECONDARY axis's own units, so each primary break is first run
-# through the same `transform` to get the matching secondary-space
-# number.
-cpb_sec_axis <- function(sec_map, primary_breaks, accuracy = NULL, style = "dutch") {
+# Builds the right-hand secondary axis, converting primary y-axis positions
+# back into secondary values with formatted tick labels.
+cpb_sec_axis <- function(sec_map, accuracy = NULL, sec_labels = NULL, style = "dutch", primary_breaks = NULL) {
   to_sec <- function(v) {
+    if (is.null(sec_map$slope) || is.null(sec_map$inter)) {
     (v - sec_map$prim_min) / (sec_map$prim_max - sec_map$prim_min) *
       (sec_map$sec_max - sec_map$sec_min) + sec_map$sec_min
+  } else {
+      (v - sec_map$inter) / sec_map$slope
+    }
   }
+
+  breaks_val <- if (!is.null(sec_map$sec_breaks)) {
+    sec_map$sec_breaks
+  } else if (!is.null(primary_breaks)) {
+    to_sec(primary_breaks)
+  } else {
+    to_sec(c(sec_map$prim_min, sec_map$prim_max))
+  }
+
+  labels_arg <- if (!is.null(sec_labels)) {
+    sec_labels
+  } else {
+    label_number_nl(accuracy = accuracy, style = style)
+  }
+
   ggplot2::sec_axis(
     transform = to_sec,
-    breaks = to_sec(primary_breaks),
-    labels = label_number_nl(accuracy = accuracy, style = style)
+    breaks = breaks_val,
+    labels = labels_arg
   )
 }
 
-# Step 4: draw the secondary series (line, points, or thin bars -- see
-# `sec_type`) at the positions from step 2, with its own legend key.
+# Draws the secondary series (line, points, or bars) on the primary scale,
+# adding a legend key with axis suffix.
 # The key's label always gets " (rechteras)" ("right axis") appended --
 # the CPB convention for showing which axis a legend entry belongs to.
 #
@@ -538,9 +636,11 @@ cpb_add_sec_guides <- function(p, has_sec, reverse_legend, legend_ncol) {
   if (!isTRUE(has_sec)) return(p)
   p +
     ggplot2::guides(
-      fill = ggplot2::guide_legend(order = 1, reverse = isTRUE(reverse_legend),
+      fill = ggplot2::guide_legend(
+        order = 1, reverse = isTRUE(reverse_legend),
                                    ncol = legend_ncol,
-                                   override.aes = list(colour = NA, shape = NA)),
+                                   override.aes = list(colour = NA, shape = NA)
+      ),
       colour = ggplot2::guide_legend(order = 2)
     ) +
     ggplot2::theme(legend.box = "vertical", legend.box.just = "left")
@@ -649,7 +749,8 @@ cpb_forecast_pos <- function(forecast_x, xvals) {
   pos <- match(as.character(forecast_x), levs)
   if (is.na(pos)) {
     stop("`forecast_x` (\"", forecast_x, "\") is not one of the values on ",
-         "the x axis.", call. = FALSE)
+         "the x axis.", call. = FALSE
+    )
   }
   pos - 0.5
 }
@@ -892,7 +993,14 @@ cpb_col <- function(data, x, y, fill = NULL,
                      sec_point_size = 1.6,
                      sec_col_width = 0.3,
                      sec_accuracy = NULL,
-                     palette = "qualitative",
+                    sec_scale_auto = TRUE,
+                    sec_at = NULL,
+                    sec_labels = NULL,
+                    y_r_scale_auto = NULL,
+                    y_r_at = NULL,
+                    y_r_lab = NULL,
+                    y_r_lim = NULL,
+                    palette = "qualitative",
                      fill_index = NULL,
                      index = NULL,
                      pct_axis = FALSE,
@@ -923,8 +1031,8 @@ cpb_col <- function(data, x, y, fill = NULL,
                      xlab = NULL,
                      ylab = NULL,
                      filllab = NULL,
-                     style = c("dutch", "english"),
-                     ...) {
+                    style = c("dutch", "english"),
+                    ...) {
   style <- match.arg(style)
   .cpb_idx <- cpb_resolve_index(fill_index, index, palette, !missing(palette), "fill_index")
   index <- .cpb_idx$index
@@ -1061,20 +1169,31 @@ cpb_col <- function(data, x, y, fill = NULL,
     ggplot2::geom_col(position = position, fill = single_fill, ...)
   }
 
-  # The secondary series is drawn on the primary scale and read off a
-  # right-hand axis; see the "sec_y helpers" block near the top of
-  # this file for how the two are kept in sync.
-  sec_map <- NULL
+  scale_args <- cpb_flush_scale_args(
+    axis_values = axis_values,
+    pct_axis = pct_axis,
+    pct_scale = if (position == "fill") 100 else 1,
+    value_accuracy = value_accuracy,
+    value_breaks = value_breaks,
+    value_limits = value_limits,
+    style = style
+  )
+
   if (has_sec) {
+    opts <- cpb_resolve_sec_opts(
+      sec_limits, sec_at, sec_scale_auto, sec_labels,
+      y_r_lim, y_r_at, y_r_scale_auto, y_r_lab
+    )
     sec_vals <- rlang::eval_tidy(sec_y, data)
-    # map onto the flush axis range computed above (the exact range
-    # the panel is drawn to), not the raw data
-    sec_map <- cpb_sec_map(sec_vals, sec_limits, flush_ylim[[1]], flush_ylim[[2]])
+    sec_map <- cpb_sec_map(sec_vals, primary_breaks = scale_args$breaks, sec_limits = opts$limits, sec_at = opts$at, sec_scale_auto = opts$scale_auto)
     sec_lab <- if (is.null(sec_label)) rlang::as_label(sec_y) else sec_label
     sec_col <- cpb_single_colour(sec_colour, 2)
     p <- cpb_sec_layer(p, data, x, sec_vals, sec_map, sec_type,
                        sec_col, sec_lab, sec_linewidth, sec_points,
-                       sec_point_size, sec_col_width, style = style)
+                       sec_point_size, sec_col_width,
+      style = style
+    )
+    scale_args$sec.axis <- cpb_sec_axis(sec_map, accuracy = sec_accuracy, sec_labels = opts$labels, style = style)
   }
 
   # The zero line sits on the value axis (the y aesthetic even under
@@ -1085,28 +1204,11 @@ cpb_col <- function(data, x, y, fill = NULL,
   if (!is.null(forecast_x)) {
     p <- p + cpb_forecast_label(
       cpb_forecast_pos(forecast_x, rlang::eval_tidy(x, data)),
-      rlang::eval_tidy(x, data), forecast_label, style = style)
+      rlang::eval_tidy(x, data), forecast_label,
+      style = style
+    )
   }
 
-  # x_lim_follow_data's flush: for a numeric x, computed as the
-  # coord's own xlim below (survives a caller's own follow-up
-  # scale_x_continuous(), e.g. for minor ticks -- see cpb_x_scale()'s
-  # own comment for why); for a discrete x, scale-based instead
-  # (cpb_x_scale(), further down) since a coord-level flush also
-  # strips a discrete axis's own default padding, clipping
-  # markers/labels at the first/last category. Ignored for the
-  # grouped layout, which needs its own fixed margin for the heading
-  # rows, and superseded by an explicit x_lim either way.
-  #
-  # padded by half the bars' own width: a numeric x's flush range is
-  # otherwise only as wide as the data *positions*, but a bar drawn at
-  # the outermost position still extends half its width past it --
-  # invisibly cropped before (clip defaulted to "on"), but clip is
-  # "off" by default now (see below), so that overhang would otherwise
-  # spill visibly past the panel instead. position = "dodge" splits
-  # the width *within* one x position across groups, so the outermost
-  # edge of the whole cluster is still this same half-width, regardless
-  # of how many groups share it.
   bar_width <- list(...)$width
   if (is.null(bar_width)) {
     xvals_for_width <- rlang::eval_tidy(x, data)
@@ -1168,18 +1270,6 @@ cpb_col <- function(data, x, y, fill = NULL,
 
   p <- cpb_add_sec_ylab(p, has_sec, sec_ylab)
 
-  scale_args <- cpb_flush_scale_args(
-    axis_values  = axis_values,
-    pct_axis     = pct_axis,
-    pct_scale    = if (position == "fill") 100 else 1,
-    value_accuracy = value_accuracy,
-    value_breaks = value_breaks,
-    value_limits = value_limits,
-    style = style
-  )
-  if (has_sec) {
-    scale_args$sec.axis <- cpb_sec_axis(sec_map, scale_args$breaks, sec_accuracy, style = style)
-  }
   if (length(scale_args)) {
     p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
   }
@@ -1402,7 +1492,14 @@ cpb_area <- function(data, x, y, fill,
                       sec_point_size = 1.6,
                       sec_col_width = 0.3,
                       sec_accuracy = NULL,
-                      palette = "qualitative",
+                     sec_scale_auto = TRUE,
+                     sec_at = NULL,
+                     sec_labels = NULL,
+                     y_r_scale_auto = NULL,
+                     y_r_at = NULL,
+                     y_r_lab = NULL,
+                     y_r_lim = NULL,
+                     palette = "qualitative",
                       fill_index = NULL,
                       index = NULL,
                       pct_axis = FALSE,
@@ -1432,8 +1529,8 @@ cpb_area <- function(data, x, y, fill,
                       xlab = NULL,
                       ylab = NULL,
                       filllab = NULL,
-                      style = c("dutch", "english"),
-                      ...) {
+                     style = c("dutch", "english"),
+                     ...) {
   style <- match.arg(style)
   .cpb_idx <- cpb_resolve_index(fill_index, index, palette, !missing(palette), "fill_index")
   index <- .cpb_idx$index
@@ -1492,19 +1589,21 @@ cpb_area <- function(data, x, y, fill,
     style = style
   )
 
-  # sec_y is drawn on top of the areas, mapped onto this same flush
-  # range, and read off its own axis on the right; see the "sec_y
-  # helpers" block near the top of this file for how that mapping and
-  # its axis labels are kept in sync with each other.
   if (has_sec) {
+    opts <- cpb_resolve_sec_opts(
+      sec_limits, sec_at, sec_scale_auto, sec_labels,
+      y_r_lim, y_r_at, y_r_scale_auto, y_r_lab
+    )
     sec_vals <- rlang::eval_tidy(sec_y, data)
-    sec_map <- cpb_sec_map(sec_vals, sec_limits, scale_args$limits[[1]], scale_args$limits[[2]])
+    sec_map <- cpb_sec_map(sec_vals, primary_breaks = scale_args$breaks, sec_limits = opts$limits, sec_at = opts$at, sec_scale_auto = opts$scale_auto)
     sec_lab <- if (is.null(sec_label)) rlang::as_label(sec_y) else sec_label
     sec_col <- cpb_single_colour(sec_colour, 2)
     p <- cpb_sec_layer(p, data, x, sec_vals, sec_map, sec_type,
                        sec_col, sec_lab, sec_linewidth, sec_points,
-                       sec_point_size, sec_col_width, style = style)
-    scale_args$sec.axis <- cpb_sec_axis(sec_map, scale_args$breaks, sec_accuracy, style = style)
+                       sec_point_size, sec_col_width,
+      style = style
+    )
+    scale_args$sec.axis <- cpb_sec_axis(sec_map, accuracy = sec_accuracy, sec_labels = opts$labels, style = style)
   }
   if (length(scale_args)) {
     p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
@@ -1755,7 +1854,14 @@ cpb_line <- function(data, x, y, colour = NULL,
                       sec_point_size = 1.6,
                       sec_col_width = 0.3,
                       sec_accuracy = NULL,
-                      palette = "qualitative",
+                     sec_scale_auto = TRUE,
+                     sec_at = NULL,
+                     sec_labels = NULL,
+                     y_r_scale_auto = NULL,
+                     y_r_at = NULL,
+                     y_r_lab = NULL,
+                     y_r_lim = NULL,
+                     palette = "qualitative",
                       colour_index = NULL,
                       color_index = NULL,
                       index = NULL,
@@ -1788,8 +1894,8 @@ cpb_line <- function(data, x, y, colour = NULL,
                       xlab = NULL,
                       ylab = NULL,
                       colourlab = NULL,
-                      style = c("dutch", "english"),
-                      ...) {
+                     style = c("dutch", "english"),
+                     ...) {
   style <- match.arg(style)
   if (is.null(colour_index)) colour_index <- color_index
   .cpb_idx <- cpb_resolve_index(colour_index, index, palette, !missing(palette), "colour_index")
@@ -1821,43 +1927,42 @@ cpb_line <- function(data, x, y, colour = NULL,
   # the secondary series is placed by mapping its range linearly onto
   # the primary one, so the two axes always start together
   if (has_sec) {
+    opts <- cpb_resolve_sec_opts(
+      sec_limits, sec_at, sec_scale_auto, sec_labels,
+      y_r_lim, y_r_at, y_r_scale_auto, y_r_lab
+    )
     sec_vals <- rlang::eval_tidy(sec_y, data)
     if (!is.numeric(sec_vals)) {
       stop("`sec_y` must be a numeric column.", call. = FALSE)
     }
-    prim_vals <- rlang::eval_tidy(y, data)
-    prim_min <- min(prim_vals, na.rm = TRUE)
-    prim_max <- max(prim_vals, na.rm = TRUE)
-    if (!is.null(value_limits)) {
-      prim_min <- value_limits[[1]]
-      prim_max <- value_limits[[2]]
-    }
-    if (is.null(sec_limits)) {
-      sec_limits <- c(min(sec_vals, na.rm = TRUE), max(sec_vals, na.rm = TRUE))
-    }
-    if (length(sec_limits) != 2 || !is.numeric(sec_limits) ||
-        sec_limits[[2]] == sec_limits[[1]]) {
-      stop("`sec_limits` must be a length-2 numeric vector spanning a ",
-           "non-zero range.", call. = FALSE)
-    }
-    if (prim_max == prim_min) {
-      stop("the primary value axis has no range for `sec_y` to map onto.",
-           call. = FALSE)
-    }
-    sec_map <- list(prim_min = prim_min, prim_max = prim_max,
-                    sec_min = sec_limits[[1]], sec_max = sec_limits[[2]])
     sec_lab <- if (is.null(sec_label)) rlang::as_label(sec_y) else sec_label
+
+    axis_values_tmp <- rlang::eval_tidy(y, data)
+    if (has_band) {
+      axis_values_tmp <- c(
+        axis_values_tmp, rlang::eval_tidy(ymin, data),
+        rlang::eval_tidy(ymax, data)
+      )
+    }
+    scale_args_tmp <- cpb_flush_scale_args(
+      axis_values = axis_values_tmp, pct_axis = pct_axis,
+      value_accuracy = value_accuracy,
+      value_breaks = value_breaks,
+      value_limits = value_limits,
+      style = style
+    )
+    sec_map <- cpb_sec_map(sec_vals, primary_breaks = scale_args_tmp$breaks, sec_limits = opts$limits, sec_at = opts$at, sec_scale_auto = opts$scale_auto)
     sec_df <- as.data.frame(data)
-    sec_df[["cpb__sec"]] <-
-      (sec_vals - sec_map$sec_min) / (sec_map$sec_max - sec_map$sec_min) *
-      (sec_map$prim_max - sec_map$prim_min) + sec_map$prim_min
+    sec_df[["cpb__sec"]] <- cpb_sec_to_primary(sec_vals, sec_map)
     sec_df[["cpb__seclab"]] <- sec_lab
     sec_df <- sec_df[!duplicated(rlang::eval_tidy(x, data)), , drop = FALSE]
   }
 
   if (has_colour) {
-    mapping <- ggplot2::aes(x = !!x, y = !!y, colour = !!colour,
-                            group = !!colour)
+    mapping <- ggplot2::aes(
+      x = !!x, y = !!y, colour = !!colour,
+                            group = !!colour
+    )
   } else if (has_sec) {
     # without a colour mapping there would be no key naming the primary
     # line, leaving the legend explaining only the secondary axis. Give
@@ -1970,16 +2075,7 @@ cpb_line <- function(data, x, y, colour = NULL,
   )
 
   if (has_sec) {
-    # the right-hand axis is the inverse of the map that placed the
-    # line, so its labels read in the secondary series' own units
-    sm <- sec_map
-    scale_args$sec.axis <- ggplot2::sec_axis(
-      transform = function(v) {
-        (v - sm$prim_min) / (sm$prim_max - sm$prim_min) *
-          (sm$sec_max - sm$sec_min) + sm$sec_min
-      },
-      labels = if (isTRUE(pct_axis)) label_pct_nl(style = style) else label_number_nl(style = style)
-    )
+    scale_args$sec.axis <- cpb_sec_axis(sec_map, accuracy = sec_accuracy, sec_labels = opts$labels, style = style)
   }
   if (length(scale_args)) {
     p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
@@ -2303,7 +2399,14 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                      sec_point_size = 1.6,
                      sec_col_width = 0.3,
                      sec_accuracy = NULL,
-                     facet = NULL,
+                    sec_scale_auto = TRUE,
+                    sec_at = NULL,
+                    sec_labels = NULL,
+                    y_r_scale_auto = NULL,
+                    y_r_at = NULL,
+                    y_r_lab = NULL,
+                    y_r_lim = NULL,
+                    facet = NULL,
                      facet_ncol = NULL,
                      facet_scales = "fixed",
                      legend = "bottom",
@@ -2322,8 +2425,8 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                      xlab = NULL,
                      ylab = NULL,
                      filllab = NULL,
-                     style = c("dutch", "english"),
-                     ...) {
+                    style = c("dutch", "english"),
+                    ...) {
   style <- match.arg(style)
   .cpb_idx <- cpb_resolve_index(fill_index, index, palette, !missing(palette), "fill_index")
   index <- .cpb_idx$index
@@ -2643,19 +2746,21 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     style = style
   )
 
-  # sec_y is drawn alongside the boxes, mapped onto this same flush
-  # range, and read off its own axis on the right; see the "sec_y
-  # helpers" block near the top of this file for how that mapping and
-  # its axis labels are kept in sync with each other.
   if (has_sec) {
+    opts <- cpb_resolve_sec_opts(
+      sec_limits, sec_at, sec_scale_auto, sec_labels,
+      y_r_lim, y_r_at, y_r_scale_auto, y_r_lab
+    )
     sec_vals <- rlang::eval_tidy(sec_y, data)
-    sec_map <- cpb_sec_map(sec_vals, sec_limits, scale_args$limits[[1]], scale_args$limits[[2]])
+    sec_map <- cpb_sec_map(sec_vals, primary_breaks = scale_args$breaks, sec_limits = opts$limits, sec_at = opts$at, sec_scale_auto = opts$scale_auto)
     sec_lab <- if (is.null(sec_label)) rlang::as_label(sec_y) else sec_label
     sec_col <- cpb_single_colour(sec_colour, 2)
     p <- cpb_sec_layer(p, data, x, sec_vals, sec_map, sec_type,
                        sec_col, sec_lab, sec_linewidth, sec_points,
-                       sec_point_size, sec_col_width, style = style)
-    scale_args$sec.axis <- cpb_sec_axis(sec_map, scale_args$breaks, sec_accuracy, style = style)
+                       sec_point_size, sec_col_width,
+      style = style
+    )
+    scale_args$sec.axis <- cpb_sec_axis(sec_map, accuracy = sec_accuracy, sec_labels = opts$labels, style = style)
   }
 
   p <- cpb_apply_coord(
@@ -3342,14 +3447,18 @@ cpb_hist <- function(data, x, fill = NULL,
 #' @return A `ggplot` object.
 #' @examples
 #' df <- data.frame(
-#'   term  = c("Vertrouwen in de politiek", "Succes door hard werken",
-#'             "Heeft kinderen", "Vermogenskwintiel"),
+#'   term  = c(
+#'     "Vertrouwen in de politiek", "Succes door hard werken",
+#'             "Heeft kinderen", "Vermogenskwintiel"
+#'   ),
 #'   coef  = c(2.9, -2.0, -1.4, -2.5),
 #'   lo    = c(1.9, -3.0, -3.3, -3.2),
 #'   hi    = c(3.9, -1.1, 0.6, -1.8)
 #' )
-#' cpb_dot(df, x = term, y = coef, lower = lo, upper = hi,
-#'         xlab = "%-punt verandering")
+#' cpb_dot(df,
+#'   x = term, y = coef, lower = lo, upper = hi,
+#'         xlab = "%-punt verandering"
+#' )
 #' @export
 cpb_dot <- function(data, x, y, lower, upper,
                      colour = NULL,
@@ -3371,6 +3480,13 @@ cpb_dot <- function(data, x, y, lower, upper,
                      sec_point_size = size,
                      sec_col_width = 0.3,
                      sec_accuracy = NULL,
+                    sec_scale_auto = TRUE,
+                    sec_at = NULL,
+                    sec_labels = NULL,
+                    y_r_scale_auto = NULL,
+                    y_r_at = NULL,
+                    y_r_lab = NULL,
+                    y_r_lim = NULL,
                      palette = "qualitative",
                      colour_index = NULL,
                      color_index = NULL,
@@ -3400,8 +3516,8 @@ cpb_dot <- function(data, x, y, lower, upper,
                      xlab = NULL,
                      ylab = NULL,
                      colourlab = NULL,
-                     style = c("dutch", "english"),
-                     ...) {
+                    style = c("dutch", "english"),
+                    ...) {
   style <- match.arg(style)
   if (is.null(colour_index)) colour_index <- color_index
   .cpb_idx <- cpb_resolve_index(colour_index, index, palette, !missing(palette), "colour_index")
@@ -3516,19 +3632,21 @@ cpb_dot <- function(data, x, y, lower, upper,
     style = style
   )
 
-  # sec_y is drawn alongside the points, mapped onto this same flush
-  # range, and read off its own axis on the right; see the "sec_y
-  # helpers" block near the top of this file for how that mapping and
-  # its axis labels are kept in sync with each other.
   if (has_sec) {
+    opts <- cpb_resolve_sec_opts(
+      sec_limits, sec_at, sec_scale_auto, sec_labels,
+      y_r_lim, y_r_at, y_r_scale_auto, y_r_lab
+    )
     sec_vals <- rlang::eval_tidy(sec_y, data)
-    sec_map <- cpb_sec_map(sec_vals, sec_limits, scale_args$limits[[1]], scale_args$limits[[2]])
+    sec_map <- cpb_sec_map(sec_vals, primary_breaks = scale_args$breaks, sec_limits = opts$limits, sec_at = opts$at, sec_scale_auto = opts$scale_auto)
     sec_lab <- if (is.null(sec_label)) rlang::as_label(sec_y) else sec_label
     sec_col <- cpb_single_colour(sec_colour, 2)
     p <- cpb_sec_layer(p, data, x, sec_vals, sec_map, sec_type,
                        sec_col, sec_lab, sec_linewidth, sec_points,
-                       sec_point_size, sec_col_width, style = style)
-    scale_args$sec.axis <- cpb_sec_axis(sec_map, scale_args$breaks, sec_accuracy, style = style)
+                       sec_point_size, sec_col_width,
+      style = style
+    )
+    scale_args$sec.axis <- cpb_sec_axis(sec_map, accuracy = sec_accuracy, sec_labels = opts$labels, style = style)
   }
 
   p <- cpb_apply_coord(

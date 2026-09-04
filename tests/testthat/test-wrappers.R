@@ -1192,6 +1192,25 @@ test_that("cpb_sec_map()'s primary-range check also uses floating point toleranc
   expect_no_error(cpb_sec_map(c(1, 2), NULL, 0.02, 0.06))
 })
 
+test_that("nicerplot secondary axis auto-scaling and parameter aliases work as expected", {
+  prim_breaks <- c(0, 5, 10, 15, 20)
+  sec_vals <- c(12, 48)
+
+  # Default auto-scaling produces pretty breaks matching length of primary breaks
+  sec_br <- cpb_find_sec_breaks(prim_breaks, sec_vals, sec_scale_auto = TRUE)
+  expect_equal(length(sec_br), length(prim_breaks))
+
+  # Explicit sec_at (y_r_at)
+  sec_at_custom <- c(10, 20, 30, 40, 50)
+  sec_br_at <- cpb_find_sec_breaks(prim_breaks, sec_vals, sec_at = sec_at_custom)
+  expect_equal(sec_br_at, sec_at_custom)
+
+  # Wrapper supports y_r_scale_auto, y_r_lim, y_r_at, y_r_lab aliases
+  df <- data.frame(jaar = 2018:2022, v = c(10, 15, 12, 18, 14), sec = c(100, 150, 120, 180, 140))
+  expect_no_error(cpb_line(df, x = jaar, y = v, sec_y = sec, y_r_scale_auto = FALSE))
+  expect_no_error(cpb_line(df, x = jaar, y = v, sec_y = sec, y_r_lim = c(100, 200)))
+})
+
 test_that("cpb_add_sec_guides() -- shared by cpb_col/area/box -- is a no-op without sec_y", {
   p <- ggplot2::ggplot()
   expect_identical(cpb_add_sec_guides(p, FALSE, FALSE, NULL), p)
