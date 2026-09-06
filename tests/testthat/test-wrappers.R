@@ -338,7 +338,7 @@ test_that("cpb_hist maps fill for grouped histograms", {
 test_that("forecast_x adds the raming window under the data with a label on top", {
   df <- data.frame(jaar = 2020:2027, waarde = 1:8)
   p <- cpb_line(df, x = jaar, y = waarde, forecast_x = 2024.5)
-  geoms <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  geoms <- vapply(p$layers, geom_class1, character(1))
   expect_true("GeomRect" %in% geoms)
   expect_true("GeomText" %in% geoms)
   # rect underneath the line, label on top
@@ -351,14 +351,14 @@ test_that("forecast_x adds the raming window under the data with a label on top"
 
   # forecast_label = NULL suppresses the label
   p2 <- cpb_line(df, x = jaar, y = waarde, forecast_x = 2024.5, forecast_label = NULL)
-  geoms2 <- vapply(p2$layers, function(l) class(l$geom)[1], character(1))
+  geoms2 <- vapply(p2$layers, geom_class1, character(1))
   expect_false("GeomText" %in% geoms2)
 
   # also available on columns and areas
   df$grp <- "a"
   for (p3 in list(cpb_col(df, x = jaar, y = waarde, forecast_x = 2024.5),
                   cpb_area(df, x = jaar, y = waarde, fill = grp, forecast_x = 2024.5))) {
-    geoms3 <- vapply(p3$layers, function(l) class(l$geom)[1], character(1))
+    geoms3 <- vapply(p3$layers, geom_class1, character(1))
     expect_true(all(c("GeomRect", "GeomText") %in% geoms3))
   }
 })
@@ -368,7 +368,7 @@ test_that("cpb_line draws an uncertainty band under the lines", {
   df$lo <- df$waarde - 1
   df$hi <- df$waarde + 1
   p <- cpb_line(df, x = jaar, y = waarde, ymin = lo, ymax = hi)
-  geoms <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  geoms <- vapply(p$layers, geom_class1, character(1))
   expect_true("GeomRibbon" %in% geoms)
   expect_lt(which(geoms == "GeomRibbon"), which(geoms == "GeomLine"))
 
@@ -387,7 +387,7 @@ test_that("cpb_box box_style = 'james' and 'modern' build the legacy box", {
   for (style in c("james", "modern")) {
     p <- cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                  box_style = style, orientation = "horizontal")
-    geoms <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+    geoms <- vapply(p$layers, geom_class1, character(1))
     # two capless whiskers, borderless box, median tick
     expect_equal(sum(geoms == "GeomErrorbar"), 3)
     expect_true("GeomBoxplot" %in% geoms)
@@ -402,7 +402,7 @@ test_that("cpb_box box_style = 'james' and 'modern' build the legacy box", {
   # blue box/dark blue median
   pj <- cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                 box_style = "james")
-  gj <- vapply(pj$layers, function(l) class(l$geom)[1], character(1))
+  gj <- vapply(pj$layers, geom_class1, character(1))
   expect_equal(pj$layers[[which(gj == "GeomBoxplot")]]$aes_params$fill,
                unname(cpb_cols(6)))
   med_j <- pj$layers[[max(which(gj == "GeomErrorbar"))]]
@@ -410,7 +410,7 @@ test_that("cpb_box box_style = 'james' and 'modern' build the legacy box", {
 
   pm <- cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                 box_style = "modern")
-  gm <- vapply(pm$layers, function(l) class(l$geom)[1], character(1))
+  gm <- vapply(pm$layers, geom_class1, character(1))
   expect_equal(pm$layers[[which(gm == "GeomBoxplot")]]$aes_params$fill,
                unname(cpb_cols(5)))
   med_m <- pm$layers[[max(which(gm == "GeomErrorbar"))]]
@@ -422,7 +422,7 @@ test_that("cpb_box box_style = 'james' and 'modern' build the legacy box", {
   expect_equal(sum(gj == "GeomText"), 1)
   p0 <- cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                 box_style = "modern", box_labels = FALSE)
-  expect_false("GeomText" %in% vapply(p0$layers, function(l) class(l$geom)[1], character(1)))
+  expect_false("GeomText" %in% vapply(p0$layers, geom_class1, character(1)))
 })
 
 test_that("james/modern box styles reject a fill mapping", {
@@ -513,22 +513,22 @@ test_that("sec_type controls how sec_y is drawn, sharing one legend key", {
   df <- data.frame(jaar = 2018:2020, mld = c(10, 12, 9), heffing = c(1.2, 1.4, 1.1))
 
   p <- cpb_col(df, x = jaar, y = mld, sec_y = heffing)
-  classes <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  classes <- vapply(p$layers, geom_class1, character(1))
   expect_true("GeomLine" %in% classes)
 
   p <- cpb_col(df, x = jaar, y = mld, sec_y = heffing, sec_type = "point")
-  classes <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  classes <- vapply(p$layers, geom_class1, character(1))
   expect_true("GeomPoint" %in% classes)
   expect_false("GeomLine" %in% classes)
 
   p <- cpb_col(df, x = jaar, y = mld, sec_y = heffing, sec_type = "col")
-  classes <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  classes <- vapply(p$layers, geom_class1, character(1))
   expect_equal(sum(classes == "GeomCol"), 2) # the primary bars plus the secondary ones
   expect_false("GeomLine" %in% classes)
 
   # sec_points only takes effect for sec_type = "line"
   p <- cpb_col(df, x = jaar, y = mld, sec_y = heffing, sec_type = "col", sec_points = TRUE)
-  classes <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  classes <- vapply(p$layers, geom_class1, character(1))
   expect_false("GeomPoint" %in% classes)
 
   # all three share one legend key (one colour scale), not one per geom
@@ -589,7 +589,12 @@ test_that("x_lim zooms without dropping data, across all wrappers", {
 
   p <- cpb_area(yr_df, x = x, y = y, fill = factor("a"), x_lim = c(2017, 2019))
   b <- ggplot2::ggplot_build(p)
-  expect_equal(nrow(b$data[[1]]), 6)
+  # not nrow(): a single-group geom_area() under ggplot2 3.5.x (not 4.0,
+  # where this package is developed) pads each x with two extra
+  # near-duplicate neighbours via stat_align(), tripling the row count --
+  # an internal rendering detail unrelated to x_lim, which rounding back
+  # out sees past
+  expect_equal(length(unique(round(b$data[[1]]$x))), 6)
 
   p <- cpb_box(box_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                x_lim = c(2017, 2019))
@@ -671,7 +676,7 @@ test_that("cpb_scatter draws the forecast window like cpb_line", {
   num <- data.frame(x = rep(2015:2019, 2), g = rep(c("s1", "s2"), each = 5),
                     y = c(1:5, 2:6))
   p <- cpb_scatter(num, x = x, y = y, colour = g, forecast_x = 2017.5)
-  classes <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  classes <- vapply(p$layers, geom_class1, character(1))
   rect_i  <- which(classes == "GeomRect")
   point_i <- which(classes == "GeomPoint")
   text_i  <- which(classes == "GeomText")
@@ -991,7 +996,7 @@ test_that("cpb_line(points = TRUE) adds markers and keeps the lines joined", {
     reeks = rep(c("a", "b"), each = 3)
   )
   p <- cpb_line(df, x = cat, y = y, colour = reeks, points = TRUE)
-  geoms <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  geoms <- vapply(p$layers, geom_class1, character(1))
   expect_true("GeomPoint" %in% geoms)
   expect_true("GeomLine" %in% geoms)
   # a discrete x would otherwise leave every observation in its own
@@ -1001,7 +1006,7 @@ test_that("cpb_line(points = TRUE) adds markers and keeps the lines joined", {
   # markers are off by default
   p0 <- cpb_line(df, x = cat, y = y, colour = reeks)
   expect_false("GeomPoint" %in%
-                 vapply(p0$layers, function(l) class(l$geom)[1], character(1)))
+                 vapply(p0$layers, geom_class1, character(1)))
   # without a colour mapping the single series stays one group
   p1 <- cpb_line(df[df$reeks == "a", ], x = cat, y = y, points = TRUE)
   expect_equal(nrow(unique(ggplot2::layer_data(p1, 1)["group"])), 1)
@@ -1013,7 +1018,7 @@ test_that("cpb_box box_style = 'dot' draws markers with a named legend", {
                    gem = c(2.2, 3.4))
   p <- cpb_box(df, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75,
                p95 = p95, mean = gem, box_style = "dot")
-  geoms <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  geoms <- vapply(p$layers, geom_class1, character(1))
   # no box: the style is markers plus ranges only
   expect_false("GeomBoxplot" %in% geoms)
   expect_equal(sum(geoms == "GeomPoint"), 4L)   # p5, p95, median, mean
@@ -1021,7 +1026,7 @@ test_that("cpb_box box_style = 'dot' draws markers with a named legend", {
   p0 <- cpb_box(df, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75,
                 p95 = p95, box_style = "dot")
   expect_equal(
-    sum(vapply(p0$layers, function(l) class(l$geom)[1], character(1)) ==
+    sum(vapply(p0$layers, geom_class1, character(1)) ==
           "GeomPoint"), 3L
   )
   # every statistic is named in the legend, in the published order
@@ -1060,13 +1065,13 @@ test_that("cpb_dot draws estimates with intervals and a zero line", {
   df <- data.frame(term = c("a", "b", "c"), est = c(1, -2, 0.5),
                    lo = c(0.2, -3, -0.4), hi = c(1.8, -1, 1.4))
   p <- cpb_dot(df, x = term, y = est, lower = lo, upper = hi)
-  geoms <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  geoms <- vapply(p$layers, geom_class1, character(1))
   expect_true(all(c("GeomHline", "GeomErrorbar", "GeomPoint") %in% geoms))
   expect_s3_class(p$coordinates, "CoordFlip")
   # the reference line can be turned off
   p0 <- cpb_dot(df, x = term, y = est, lower = lo, upper = hi, zeroline = FALSE)
   expect_false("GeomHline" %in%
-                 vapply(p0$layers, function(l) class(l$geom)[1], character(1)))
+                 vapply(p0$layers, geom_class1, character(1)))
   # vertical drops coord_flip()
   pv <- cpb_dot(df, x = term, y = est, lower = lo, upper = hi,
                 orientation = "vertical")
@@ -1277,7 +1282,12 @@ test_that("sec_point_size and sec_col_width replace the old hardcoded sizes", {
   p <- cpb_col(df, x = jaar, y = mld, sec_y = heffing, sec_type = "col",
               sec_col_width = 0.7)
   cols <- Filter(function(l) inherits(l$geom, "GeomCol"), p$layers)
-  expect_equal(cols[[2]]$aes_params$width, 0.7) # [[1]] is the primary bars
+  # a literal width lands in aes_params under ggplot2 4.0, geom_params
+  # under 3.5.x -- not a real behaviour difference, just which slot the
+  # resolved parameter ends up in; [[1]] is the primary bars
+  width2 <- cols[[2]]$aes_params$width
+  if (is.null(width2)) width2 <- cols[[2]]$geom_params$width
+  expect_equal(width2, 0.7)
 
   # cpb_dot()'s own sec_point_size defaults to its primary `size`, so a
   # sec_type = "point" series reads as the same kind of mark by default
