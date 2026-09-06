@@ -454,11 +454,20 @@ test_that("value_breaks and value_limits work in area, line and box", {
                     y = c(1:3, 2:4))
   box_df <- data.frame(x = c("a", "b"), p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5)
 
-  sc <- cpb_area(num, x = x, y = y, fill = g,
-                 value_breaks = c(0, 2, 4))$scales$get_scales("y")
+  # both narrower than the actual (stacked, for cpb_area) data range --
+  # each warns, since the scale's own limits no longer narrow to match
+  # value_breaks when that would drop data (see cpb_flush_scale_args())
+  expect_warning(
+    p_area <- cpb_area(num, x = x, y = y, fill = g, value_breaks = c(0, 2, 4)),
+    "cropped for display"
+  )
+  sc <- p_area$scales$get_scales("y")
   expect_equal(sc$breaks, c(0, 2, 4))
-  sc <- cpb_line(num, x = x, y = y, colour = g,
-                 value_breaks = c(1, 3))$scales$get_scales("y")
+  expect_warning(
+    p_line <- cpb_line(num, x = x, y = y, colour = g, value_breaks = c(1, 3)),
+    "cropped for display"
+  )
+  sc <- p_line$scales$get_scales("y")
   expect_equal(sc$breaks, c(1, 3))
   sc <- cpb_box(box_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                 value_breaks = c(1, 3, 5))$scales$get_scales("y")
@@ -467,12 +476,14 @@ test_that("value_breaks and value_limits work in area, line and box", {
   # limits go through the coordinate system (zoom), never dropping data
   p <- cpb_area(num, x = x, y = y, fill = g, value_limits = c(0, 10))
   expect_equal(p$coordinates$limits$y, c(0, 10))
-  # cpb_line() applies value_limits on the scale too, not just the
-  # coord -- but here `num`'s x (2015:2017) is numeric, so it also
-  # gets its own coord-based flush by default (x_lim_follow_data),
-  # which folds expand = FALSE into this same coord_cartesian() call;
-  # that is safe for the value axis's own already-zero expansion (see
-  # cpb_flush_scale_args()), so both agree on the same (0, 10) either
+  # cpb_line() still sets the scale's own limits to value_limits too,
+  # not just the coord -- but only because (0, 10) here is wider than
+  # `num`'s actual y range, so widening it to stay data-safe is a
+  # no-op (see cpb_flush_scale_args()); `num`'s x (2015:2017) is
+  # numeric, so it also gets its own coord-based flush by default
+  # (x_lim_follow_data), which folds expand = FALSE into this same
+  # coord_cartesian() call -- safe for the value axis's own
+  # already-zero expansion, so both agree on the same (0, 10) either
   # way
   p <- cpb_line(num, x = x, y = y, colour = g, value_limits = c(0, 10))
   expect_equal(p$scales$get_scales("y")$limits, c(0, 10))

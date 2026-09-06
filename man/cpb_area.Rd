@@ -179,7 +179,9 @@ wrapper's axis formatting and expansion.}
 
 \item{value_limits}{Optional length-2 limits for the value axis,
 applied through the coordinate system (zoom) so no data is
-dropped.}
+dropped -- an area outside it is only visually cropped, with a
+warning naming how many values, rather than deleted (a stacked
+total, for instance, still comes out right).}
 
 \item{x_lim}{Optional length-2 vector zooming the \code{x} axis to a
 range, without dropping data -- applied as a coordinate-system

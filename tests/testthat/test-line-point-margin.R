@@ -38,18 +38,21 @@ test_that("the point margin (via clip) survives a user-supplied x scale", {
 
 test_that("points do not stop value_limits from cropping", {
   d <- data.frame(x = 1:10, y = c(1.2, 2.4, 1.8, 3.1, 2.2, -0.6, 3.4, 2.9, 1.1, 2.6))
-  p <- cpb_line(d, x = x, y = y, points = TRUE, value_limits = c(0, 3))
+  expect_warning(
+    p <- cpb_line(d, x = x, y = y, points = TRUE, value_limits = c(0, 3)),
+    "cropped for display"
+  )
   b <- ggplot2::ggplot_build(p)
   # clip defaults to "off" now (see cpb_line's x_lim_follow_data docs),
-  # but that doesn't stop value_limits from cropping: value_limits sets
-  # the value scale's own `limits`, so the out-of-range observations
-  # become NA (with a warning) and are silently skipped when drawn, the
-  # same as setting `limits` on any ggplot2 scale -- clipping was never
-  # what did the cropping here
+  # and value_limits crops the *view* via coord_cartesian()'s ylim, not
+  # the value scale's own `limits` -- so the out-of-range observations
+  # survive undropped (a stacked total elsewhere, say, still comes out
+  # right) and are only visually cropped when drawn, same as any other
+  # coord_cartesian() zoom
   expect_equal(b$layout$coord$clip, "off")
   line_y <- b$data[[which(vapply(p$layers, function(l) inherits(l$geom, "GeomLine"), TRUE))]]$y
-  expect_true(anyNA(line_y))
-  expect_equal(sum(is.na(line_y)), sum(d$y < 0 | d$y > 3))
+  expect_false(anyNA(line_y))
+  expect_equal(line_y, d$y)
   yr <- b$layout$panel_params[[1]]$y.range
   expect_equal(yr, c(0, 3))
 })

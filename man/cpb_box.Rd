@@ -196,12 +196,13 @@ instead of adding a second y scale, which would discard the
 wrapper's axis formatting and expansion.}
 
 \item{value_limits}{Optional length-2 numeric vector giving the
-value-axis range, applied as the wrapper-built value scale's own
-\code{limits} (not a coordinate-system zoom) -- the hard bound the axis
-is drawn flush to; a box/whisker outside it is genuinely dropped,
-with a warning, the same as setting \code{limits} on any ggplot2 scale.
-\code{NULL} (default) flushes to the full p5-p95 (and \code{mean}) range
-instead.}
+value-axis range, applied through the coordinate system (a
+\code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} zoom), not as the wrapper-built value
+scale's own \code{limits} -- this is the hard bound the axis is drawn
+flush to, but a box/whisker outside it is only visually cropped,
+with a warning naming how many values, rather than dropped from
+the data. \code{NULL} (default) flushes to the full p5-p95 (and \code{mean})
+range instead.}
 
 \item{value_axis}{Where the value axis is drawn: \code{"bottom"}
 (default) or \code{"top"}. \code{"top"} places the numeric scale along the

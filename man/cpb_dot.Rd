@@ -215,10 +215,11 @@ wrapper's flush axis (see \code{value_breaks}).}
 \code{\link[ggplot2:scale_y_continuous]{ggplot2::scale_y_continuous()}}).}
 
 \item{value_limits}{Optional length-2 numeric vector giving the
-value-axis range, applied as the wrapper-built value scale's own
-\code{limits} (not a coordinate-system zoom) -- the hard bound the axis
-is drawn flush to; an estimate outside it is genuinely dropped,
-with a warning, the same as setting \code{limits} on any ggplot2 scale.
+value-axis range, applied through the coordinate system (a
+\code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} zoom), not as the wrapper-built value
+scale's own \code{limits} -- this is the hard bound the axis is drawn
+flush to, but an estimate outside it is only visually cropped,
+with a warning naming how many, rather than dropped from the data.
 \code{NULL} (default) flushes to the full lower-upper (and point) range
 instead.}
 

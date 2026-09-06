@@ -706,7 +706,12 @@ cpb_add_sec_ylab <- function(p, has_sec, sec_ylab) {
 # gridline land exactly on the axis edge. pretty() is used over
 # extended_breaks() because it's guaranteed to cover its input range;
 # extended_breaks() can silently drop data when used as limits.
-# Caller-supplied value_breaks/value_limits always wins.
+# Caller-supplied value_breaks/value_limits always wins, but never
+# narrows the *scale*'s own limits below the data (see args$limits
+# below) -- callers are expected to apply the narrower request
+# themselves as a coord_cartesian()/coord_flip() ylim instead, so a
+# deliberately tight value_breaks/value_limits still visually crops
+# the data rather than deleting it outright.
 cpb_flush_scale_args <- function(axis_values, pct_axis = FALSE, pct_scale = 1,
                                  value_accuracy = NULL,
                                  value_breaks = NULL, value_limits = NULL,
@@ -741,7 +746,31 @@ cpb_flush_scale_args <- function(axis_values, pct_axis = FALSE, pct_scale = 1,
     pretty(range(axis_values, na.rm = TRUE))
   }
   args$breaks <- breaks_final
-  args$limits <- if (!is.null(value_limits)) value_limits else range(breaks_final)
+  requested_limits <- if (!is.null(value_limits)) value_limits else range(breaks_final)
+  # requested_limits narrower than the data would, applied as a *scale*
+  # limit, delete every out-of-range row outright (ggplot2's default
+  # oob = censor turns them NA before any stat runs) -- silently, so a
+  # stacked total comes out wrong rather than a bar just getting cut
+  # short. Widened here to never go narrower than the data actually
+  # requires; callers apply requested_limits themselves, as the
+  # coord_cartesian()/coord_flip() ylim, for the crop that was actually
+  # asked for -- a coord zoom clips the drawing, never the data feeding
+  # it, so nothing is lost even when requested_limits is genuinely
+  # tighter than the data.
+  data_range <- range(axis_values, na.rm = TRUE)
+  args$limits <- c(
+    min(requested_limits[1], data_range[1]),
+    max(requested_limits[2], data_range[2])
+  )
+  if (!isTRUE(all.equal(args$limits, requested_limits))) {
+    n_out <- sum(axis_values < requested_limits[1] | axis_values > requested_limits[2], na.rm = TRUE)
+    warning(
+      "ggcpb: ", n_out, " value(s) fall outside the range implied by ",
+      "`value_limits`/`value_breaks`; cropped for display (via the ",
+      "plot's coordinate system) rather than dropped from it.",
+      call. = FALSE
+    )
+  }
   args$expand <- ggplot2::expansion(mult = c(0, 0))
   args
 }
@@ -899,13 +928,15 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   given; `NULL` (default) defers to it.
 #' @param value_limits Optional length-2 numeric vector giving the
 #'   value-axis range (the `y` axis, or the flipped axis when
-#'   `orientation = "horizontal"`). Applied as the wrapper-built value
-#'   scale's own `limits` (not a coordinate-system zoom), so this is
-#'   the hard bound the axis is drawn flush to; a bar/segment that
-#'   falls outside it is genuinely dropped, with a warning, the same
-#'   as setting `limits` on any ggplot2 scale. `NULL` (default) flushes
-#'   to the full data range instead (see `x_lim`/`x_lim_follow_data`
-#'   for the category axis's equivalent).
+#'   `orientation = "horizontal"`). Applied through the coordinate
+#'   system (a [ggplot2::coord_cartesian()] zoom), not as the
+#'   wrapper-built value scale's own `limits` -- this is the axis the
+#'   panel is drawn flush to, but a bar/segment that falls outside it
+#'   is only visually cropped, with a warning naming how many, rather
+#'   than dropped from the data (a stacked total, for instance, still
+#'   comes out right). `NULL` (default) flushes to the full data range
+#'   instead (see `x_lim`/`x_lim_follow_data` for the category axis's
+#'   equivalent).
 #' @param x_lim Optional length-2 vector zooming the category (`x`)
 #'   axis to a range, without dropping data -- applied as a
 #'   coordinate-system zoom ([ggplot2::coord_cartesian()] /
@@ -1220,6 +1251,10 @@ cpb_col <- function(data, x, y, fill = NULL,
     value_limits = value_limits,
     style = style
   )
+  # the crop cpb_flush_scale_args() no longer applies as a scale limit
+  # when it would drop data (see there) -- applied instead, below, as
+  # this wrapper's own coord_cartesian()/coord_flip() ylim
+  value_limits_visual <- if (!is.null(value_limits)) value_limits else range(scale_args$breaks)
 
   if (has_sec) {
     opts <- cpb_resolve_sec_opts(
@@ -1294,16 +1329,16 @@ cpb_col <- function(data, x, y, fill = NULL,
         vjust = 5.1, fontface = "bold", size = 7 / ggplot2::.pt,
         family = cpb_font_family()
       ) +
-      ggplot2::coord_cartesian(xlim = x_lim, ylim = value_limits, clip = "off")
+      ggplot2::coord_cartesian(xlim = x_lim, ylim = value_limits_visual, clip = "off")
   } else if (orientation == "horizontal") {
     p <- p + if (!is.null(value_limits) || !is.null(xlim_final)) {
-      ggplot2::coord_flip(xlim = xlim_final, ylim = value_limits, clip = clip, expand = expand)
+      ggplot2::coord_flip(xlim = xlim_final, ylim = value_limits_visual, clip = clip, expand = expand)
     } else {
       ggplot2::coord_flip(clip = clip)
     }
   } else if (!is.null(value_limits) || !is.null(xlim_final) || clip == "off") {
     p <- p + ggplot2::coord_cartesian(
-      xlim = xlim_final, ylim = value_limits, clip = clip, expand = expand
+      xlim = xlim_final, ylim = value_limits_visual, clip = clip, expand = expand
     )
   }
   if (do_flush) {
@@ -1477,7 +1512,9 @@ cpb_col <- function(data, x, y, fill = NULL,
 #'   wrapper's axis formatting and expansion.
 #' @param value_limits Optional length-2 limits for the value axis,
 #'   applied through the coordinate system (zoom) so no data is
-#'   dropped.
+#'   dropped -- an area outside it is only visually cropped, with a
+#'   warning naming how many values, rather than deleted (a stacked
+#'   total, for instance, still comes out right).
 #' @param x_lim Optional length-2 vector zooming the `x` axis to a
 #'   range, without dropping data -- applied as a coordinate-system
 #'   zoom ([ggplot2::coord_cartesian()] `xlim`). `NULL` (default) shows
@@ -1651,6 +1688,11 @@ cpb_area <- function(data, x, y, fill,
     style = style
   )
 
+  # the crop cpb_flush_scale_args() no longer applies as a scale limit
+  # when it would drop data (see there) -- applied instead, below, as
+  # this wrapper's own coord_cartesian() ylim
+  value_limits_visual <- if (!is.null(value_limits)) value_limits else range(scale_args$breaks)
+
   if (has_sec) {
     opts <- cpb_resolve_sec_opts(
       sec_limits, sec_at, sec_scale_auto, sec_labels,
@@ -1691,7 +1733,7 @@ cpb_area <- function(data, x, y, fill,
     # already zero either way (see cpb_flush_scale_args()), so this
     # never strips anything from it
     p <- p + ggplot2::coord_cartesian(
-      xlim = xlim_final, ylim = value_limits, clip = clip,
+      xlim = xlim_final, ylim = value_limits_visual, clip = clip,
       expand = is.null(flush_xlim)
     )
   }
@@ -1843,11 +1885,14 @@ cpb_area <- function(data, x, y, fill,
 #'   instead of adding a second y scale, which would discard the
 #'   wrapper's axis formatting and expansion.
 #' @param value_limits Optional length-2 numeric vector giving the
-#'   value-axis range, applied as the wrapper-built value scale's own
-#'   `limits` (not a coordinate-system zoom) -- the hard bound the axis
-#'   is drawn flush to; a point outside it is genuinely dropped, with a
-#'   warning, the same as setting `limits` on any ggplot2 scale. `NULL`
-#'   (default) flushes to the full data range instead.
+#'   value-axis range, applied through the coordinate system (a
+#'   [ggplot2::coord_cartesian()] zoom), not as the wrapper-built value
+#'   scale's own `limits` -- this is the hard bound the axis is drawn
+#'   flush to, but a point outside it is only visually cropped, with a
+#'   warning naming how many, rather than dropped from the data (which
+#'   would otherwise also isolate and hide whichever in-range point sits
+#'   next to it on the line). `NULL` (default) flushes to the full data
+#'   range instead.
 #' @param x_lim Optional length-2 vector zooming the `x` axis to a
 #'   range, without dropping data -- applied as a coordinate-system
 #'   zoom ([ggplot2::coord_cartesian()] `xlim`). `NULL` (default) shows
@@ -2155,6 +2200,10 @@ cpb_line <- function(data, x, y, colour = NULL,
     value_limits = value_limits,
     style = style
   )
+  # the crop cpb_flush_scale_args() no longer applies as a scale limit
+  # when it would drop data (see there) -- applied instead, below, as
+  # this wrapper's own coord_cartesian() ylim
+  value_limits_visual <- if (!is.null(value_limits)) value_limits else range(scale_args$breaks)
 
   if (has_sec) {
     scale_args$sec.axis <- cpb_sec_axis(sec_map, accuracy = sec_accuracy, sec_labels = opts$labels, style = style)
@@ -2186,7 +2235,7 @@ cpb_line <- function(data, x, y, colour = NULL,
     # already zero either way (see cpb_flush_scale_args()), so this
     # never strips anything from it
     p <- p + ggplot2::coord_cartesian(
-      xlim = xlim_final, clip = clip, expand = is.null(flush_xlim)
+      xlim = xlim_final, ylim = value_limits_visual, clip = clip, expand = is.null(flush_xlim)
     )
   }
   if (do_flush) {
@@ -2325,12 +2374,13 @@ cpb_line <- function(data, x, y, colour = NULL,
 #'   instead of adding a second y scale, which would discard the
 #'   wrapper's axis formatting and expansion.
 #' @param value_limits Optional length-2 numeric vector giving the
-#'   value-axis range, applied as the wrapper-built value scale's own
-#'   `limits` (not a coordinate-system zoom) -- the hard bound the axis
-#'   is drawn flush to; a box/whisker outside it is genuinely dropped,
-#'   with a warning, the same as setting `limits` on any ggplot2 scale.
-#'   `NULL` (default) flushes to the full p5-p95 (and `mean`) range
-#'   instead.
+#'   value-axis range, applied through the coordinate system (a
+#'   [ggplot2::coord_cartesian()] zoom), not as the wrapper-built value
+#'   scale's own `limits` -- this is the hard bound the axis is drawn
+#'   flush to, but a box/whisker outside it is only visually cropped,
+#'   with a warning naming how many values, rather than dropped from
+#'   the data. `NULL` (default) flushes to the full p5-p95 (and `mean`)
+#'   range instead.
 #' @param value_axis Where the value axis is drawn: `"bottom"`
 #'   (default) or `"top"`. `"top"` places the numeric scale along the
 #'   top of the panel, the convention of the CPB koopkracht figures;
@@ -2848,6 +2898,11 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     style = style
   )
 
+  # the crop cpb_flush_scale_args() no longer applies as a scale limit
+  # when it would drop data (see there) -- applied instead, below, as
+  # cpb_apply_coord()'s own ylim
+  value_limits_visual <- if (!is.null(value_limits)) value_limits else range(scale_args$breaks)
+
   if (has_sec) {
     opts <- cpb_resolve_sec_opts(
       sec_limits, sec_at, sec_scale_auto, sec_labels,
@@ -2866,7 +2921,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   }
 
   p <- cpb_apply_coord(
-    p, orientation, x_lim, value_limits,
+    p, orientation, x_lim, value_limits_visual,
     x, data, x_lim_follow_data, has_group,
     skip_x_flush = isTRUE(box_labels) && !has_group
   )
@@ -3516,10 +3571,11 @@ cpb_hist <- function(data, x, fill = NULL,
 #' @param value_breaks Optional breaks for the value axis (passed to
 #'   [ggplot2::scale_y_continuous()]).
 #' @param value_limits Optional length-2 numeric vector giving the
-#'   value-axis range, applied as the wrapper-built value scale's own
-#'   `limits` (not a coordinate-system zoom) -- the hard bound the axis
-#'   is drawn flush to; an estimate outside it is genuinely dropped,
-#'   with a warning, the same as setting `limits` on any ggplot2 scale.
+#'   value-axis range, applied through the coordinate system (a
+#'   [ggplot2::coord_cartesian()] zoom), not as the wrapper-built value
+#'   scale's own `limits` -- this is the hard bound the axis is drawn
+#'   flush to, but an estimate outside it is only visually cropped,
+#'   with a warning naming how many, rather than dropped from the data.
 #'   `NULL` (default) flushes to the full lower-upper (and point) range
 #'   instead.
 #' @param x_lim Optional length-2 vector zooming the category (`x`)
@@ -3754,6 +3810,11 @@ cpb_dot <- function(data, x, y, lower, upper,
     style = style
   )
 
+  # the crop cpb_flush_scale_args() no longer applies as a scale limit
+  # when it would drop data (see there) -- applied instead, below, as
+  # cpb_apply_coord()'s own ylim
+  value_limits_visual <- if (!is.null(value_limits)) value_limits else range(scale_args$breaks)
+
   if (has_sec) {
     opts <- cpb_resolve_sec_opts(
       sec_limits, sec_at, sec_scale_auto, sec_labels,
@@ -3772,7 +3833,7 @@ cpb_dot <- function(data, x, y, lower, upper,
   }
 
   p <- cpb_apply_coord(
-    p, orientation, x_lim, value_limits,
+    p, orientation, x_lim, value_limits_visual,
     x, data, x_lim_follow_data, has_group
   )
 

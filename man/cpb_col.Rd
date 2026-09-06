@@ -214,13 +214,15 @@ wrapper's axis formatting and expansion.}
 
 \item{value_limits}{Optional length-2 numeric vector giving the
 value-axis range (the \code{y} axis, or the flipped axis when
-\code{orientation = "horizontal"}). Applied as the wrapper-built value
-scale's own \code{limits} (not a coordinate-system zoom), so this is
-the hard bound the axis is drawn flush to; a bar/segment that
-falls outside it is genuinely dropped, with a warning, the same
-as setting \code{limits} on any ggplot2 scale. \code{NULL} (default) flushes
-to the full data range instead (see \code{x_lim}/\code{x_lim_follow_data}
-for the category axis's equivalent).}
+\code{orientation = "horizontal"}). Applied through the coordinate
+system (a \code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} zoom), not as the
+wrapper-built value scale's own \code{limits} -- this is the axis the
+panel is drawn flush to, but a bar/segment that falls outside it
+is only visually cropped, with a warning naming how many, rather
+than dropped from the data (a stacked total, for instance, still
+comes out right). \code{NULL} (default) flushes to the full data range
+instead (see \code{x_lim}/\code{x_lim_follow_data} for the category axis's
+equivalent).}
 
 \item{value_labels}{If \code{TRUE}, add \code{\link[ggplot2:geom_text]{ggplot2::geom_text()}} value
 labels using \code{y}, positioned to match \code{position}.}
