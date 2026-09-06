@@ -130,6 +130,15 @@ theme_cpb <- function(base_family = cpb_font_family(),
 
     axis.title = ggplot2::element_text(face = "italic", hjust = 1, size = 7),
     axis.text  = ggplot2::element_text(colour = "black", size = axis_text_size),
+    # ggplot2's own theme_grey() left-aligns a secondary axis's tick
+    # labels (hjust = 0: text starts flush against the axis, ragged on
+    # the far side) but that default doesn't survive into
+    # theme_minimal(), which this theme is built on -- reinstated
+    # explicitly rather than relying on inheritance, since a right-hand
+    # sec_y axis reading right-aligned (numbers flush on the outside,
+    # ragged against the axis they belong to) is the one place that
+    # default actually matters.
+    axis.text.y.right = ggplot2::element_text(hjust = 0),
 
     legend.position   = legend,
     legend.title      = ggplot2::element_text(face = "italic", size = 7),
