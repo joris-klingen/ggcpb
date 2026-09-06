@@ -108,10 +108,9 @@ cpb_line(tarieven, x = leeftijd, y = tarief, colour = erfenis,
   value_limits = c(0, 40),
   title = "Voorkeurstarieven erfbelasting naar leeftijd",
   ylab  = "% gemiddeld voorkeurstarief")
-#> Warning: Removed 1 row containing missing values or values outside the scale range
-#> (`geom_line()`).
-#> Warning: Removed 1 row containing missing values or values outside the scale range
-#> (`geom_point()`).
+#> Warning: ggcpb: 1 value(s) fall outside the range implied by
+#> `value_limits`/`value_breaks`; cropped for display (via the plot's coordinate
+#> system) rather than dropped from it.
 ```
 
 <img src="chart-types_files/figure-gfm/line-points-1.png" alt="" width="350px" />
@@ -366,30 +365,6 @@ primary series already key on `colour`, so the secondary line joins that
 same scale, takes the next `index` position and shares a single legend –
 which is why all three labels name their axis.
 
-# Area charts
-
-`cpb_area()` draws the recurring share-of-total-over-time figure. With
-`pct_axis = TRUE` the y axis gets Dutch percentage labels:
-
-``` r
-bronnen <- c("gas", "elektriciteit", "warmte", "overig")
-mix <- expand_grid(jaar = 2018:2027,
-                   bron = factor(bronnen, levels = bronnen)) |>
-  mutate(ruw = runif(n(), 1, 10)) |>
-  mutate(aandeel = 100 * ruw / sum(ruw), .by = jaar)
-
-cpb_area(mix, x = jaar, y = aandeel, fill = bron,
-  pct_axis = TRUE,
-  title    = "Energiemix van huishoudens",
-  ylab     = "aandeel") +
-  scale_x_continuous(breaks = seq(2018, 2027, 3), minor_breaks = 2018:2027,
-                     guide = guide_axis(minor.ticks = TRUE))
-#> Scale for x is already present.
-#> Adding another scale for x, which will replace the existing scale.
-```
-
-<img src="chart-types_files/figure-gfm/area-1.png" alt="" width="350px" />
-
 # Donut charts
 
 `cpb_donut()` draws a single share-of-total breakdown as a ring instead
@@ -407,6 +382,7 @@ the plot directly, every donut here is written to a file with
 for a report:
 
 ``` r
+bronnen <- c("gas", "elektriciteit", "warmte", "overig")
 energie <- tibble(
   bron  = factor(bronnen, levels = bronnen),
   share = c(45, 30, 15, 10)
@@ -415,10 +391,10 @@ energie <- tibble(
 path <- tempfile(fileext = ".png")
 save_cpb(path, cpb_donut(energie, fill = bron, y = share,
   index = c(6, 5, 2, 4),
-  title = "Energiemix van huishoudens"), page = "half")
+  title = "Energiemix van huishoudens"), page = "full")
 ```
 
-<img src="chart-types_files/figure-gfm/donut-show-1.png" alt="" width="350px" />
+<img src="chart-types_files/figure-gfm/donut-show-1.png" alt="" width="700px" />
 
 With more wedges, printing the value on the wedge itself gets cramped
 for the thin slices. `label_style = "leader"` moves every value outside
@@ -441,10 +417,10 @@ path <- tempfile(fileext = ".png")
 save_cpb(path, cpb_donut(energie2, fill = bron, y = share,
   label_style = "leader",
   index = c(6, 4, 5, 1, 3, 2),
-  title = "Energiemix, met lijnlabels"), page = "half")
+  title = "Energiemix, met lijnlabels"), page = "full")
 ```
 
-<img src="chart-types_files/figure-gfm/donut-leader-show-1.png" alt="" width="350px" />
+<img src="chart-types_files/figure-gfm/donut-leader-show-1.png" alt="" width="700px" />
 
 # Quantile boxplots
 

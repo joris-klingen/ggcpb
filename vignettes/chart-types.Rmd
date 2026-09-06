@@ -382,26 +382,6 @@ Here the primary series already key on `colour`, so the secondary line
 joins that same scale, takes the next `index` position and shares a
 single legend -- which is why all three labels name their axis.
 
-# Area charts
-
-`cpb_area()` draws the recurring share-of-total-over-time figure.
-With `pct_axis = TRUE` the y axis gets Dutch percentage labels:
-
-```{r area}
-bronnen <- c("gas", "elektriciteit", "warmte", "overig")
-mix <- expand_grid(jaar = 2018:2027,
-                   bron = factor(bronnen, levels = bronnen)) |>
-  mutate(ruw = runif(n(), 1, 10)) |>
-  mutate(aandeel = 100 * ruw / sum(ruw), .by = jaar)
-
-cpb_area(mix, x = jaar, y = aandeel, fill = bron,
-  pct_axis = TRUE,
-  title    = "Energiemix van huishoudens",
-  ylab     = "aandeel") +
-  scale_x_continuous(breaks = seq(2018, 2027, 3), minor_breaks = 2018:2027,
-                     guide = guide_axis(minor.ticks = TRUE))
-```
-
 # Donut charts
 
 `cpb_donut()` draws a single share-of-total breakdown as a ring
@@ -419,6 +399,7 @@ printing the plot directly, every donut here is written to a file with
 for a report:
 
 ```{r donut, results = "hide"}
+bronnen <- c("gas", "elektriciteit", "warmte", "overig")
 energie <- tibble(
   bron  = factor(bronnen, levels = bronnen),
   share = c(45, 30, 15, 10)
@@ -427,10 +408,10 @@ energie <- tibble(
 path <- tempfile(fileext = ".png")
 save_cpb(path, cpb_donut(energie, fill = bron, y = share,
   index = c(6, 5, 2, 4),
-  title = "Energiemix van huishoudens"), page = "half")
+  title = "Energiemix van huishoudens"), page = "full")
 ```
 
-```{r donut-show, echo = FALSE}
+```{r donut-show, echo = FALSE, out.width = "700px"}
 .show_saved(path)
 ```
 
@@ -456,10 +437,10 @@ path <- tempfile(fileext = ".png")
 save_cpb(path, cpb_donut(energie2, fill = bron, y = share,
   label_style = "leader",
   index = c(6, 4, 5, 1, 3, 2),
-  title = "Energiemix, met lijnlabels"), page = "half")
+  title = "Energiemix, met lijnlabels"), page = "full")
 ```
 
-```{r donut-leader-show, echo = FALSE}
+```{r donut-leader-show, echo = FALSE, out.width = "700px"}
 .show_saved(path)
 ```
 

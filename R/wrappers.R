@@ -1577,8 +1577,8 @@ cpb_col <- function(data, x, y, fill = NULL,
 #'   bron = rep(c("gas", "elektriciteit"), 4),
 #'   aandeel = c(60, 40, 55, 45, 50, 50, 48, 52)
 #' )
-#' cpb_area(df, x = year, y = aandeel, fill = bron, pct_axis = TRUE)
-#' @export
+#' ggcpb:::cpb_area(df, x = year, y = aandeel, fill = bron, pct_axis = TRUE)
+#' @keywords internal
 cpb_area <- function(data, x, y, fill,
                       sec_y = NULL,
                       sec_type = c("line", "point", "col"),
@@ -1598,7 +1598,7 @@ cpb_area <- function(data, x, y, fill,
                      y_r_at = NULL,
                      y_r_lab = NULL,
                      y_r_lim = NULL,
-                     palette = "qualitative",
+                      palette = "qualitative",
                       fill_index = NULL,
                       index = NULL,
                       pct_axis = FALSE,

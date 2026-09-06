@@ -59,7 +59,7 @@ auto <- tibble(
 
 Time-series figures mark the forecast part of the axis with a
 translucent window and a label -- pass `forecast_x` (the x value where
-the forecast starts) to `cpb_line()`, `cpb_col()` or `cpb_area()`, and
+the forecast starts) to `cpb_line()` or `cpb_col()`, and
 `forecast_label` to override the default `"raming"`. `cpb_line()` can
 additionally draw an uncertainty band from `ymin`/`ymax` columns:
 

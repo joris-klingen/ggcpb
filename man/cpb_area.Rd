@@ -268,5 +268,6 @@ df <- data.frame(
   bron = rep(c("gas", "elektriciteit"), 4),
   aandeel = c(60, 40, 55, 45, 50, 50, 48, 52)
 )
-cpb_area(df, x = year, y = aandeel, fill = bron, pct_axis = TRUE)
+ggcpb:::cpb_area(df, x = year, y = aandeel, fill = bron, pct_axis = TRUE)
 }
+\keyword{internal}

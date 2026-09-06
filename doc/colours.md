@@ -16,7 +16,7 @@ the argument name, which follows the aesthetic being coloured:
 - `colour_index` on the wrappers that map `colour` – `cpb_line()`,
   `cpb_scatter()`, `cpb_dot()`
 - `fill_index` on the wrappers that map `fill` – `cpb_col()`,
-  `cpb_area()`, `cpb_box()`, `cpb_hist()`, `cpb_map()`
+  `cpb_box()`, `cpb_hist()`, `cpb_map()`
 
 `color_index` is accepted wherever `colour_index` is.
 
