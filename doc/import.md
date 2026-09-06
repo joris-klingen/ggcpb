@@ -13,7 +13,7 @@ CSV files, a data file and a parameter file.
 
 The data file contains the data used in the figures. The parameter file
 specifies which figures to create and how they should be configured. The
-`import_csv()` function reads both files and creates the figures.
+`cpb_import_csv()` function reads both files and creates the figures.
 
 This approach is useful when figure specifications need to be kept
 separate from R code, for example when the data and figure settings are
@@ -57,8 +57,8 @@ read.csv(data_csv)
 
 The important point for the import method is that the parameter file
 refers to variables by their column names. For example, if a parameter
-contains `jaar`, `import_csv()` looks for a column named `jaar` in the
-data file.
+contains `jaar`, `cpb_import_csv()` looks for a column named `jaar` in
+the data file.
 
 # The parameter file
 
@@ -102,16 +102,16 @@ supplies the text `% mutatie` directly.
 
 # Creating the figures
 
-Once the two files are available, pass them to `import_csv()`:
+Once the two files are available, pass them to `cpb_import_csv()`:
 
 ``` r
 tmp_params <- tempfile(fileext = ".csv")
 file.copy(params_csv, tmp_params, overwrite = TRUE)
 
-figs <- import_csv(data_csv, tmp_params)
+figs <- cpb_import_csv(data_csv, tmp_params)
 ```
 
-When the parameter file contains multiple figures, `import_csv()`
+When the parameter file contains multiple figures, `cpb_import_csv()`
 returns a named list. The names come from the `id` parameter.
 
 The `koopkracht` figure has a second value axis (`sec_y`), and its right
@@ -193,11 +193,11 @@ werkloosheid
 This layout can be convenient when a figure has many parameters, because
 each setting has its own row.
 
-When the parameter file describes one figure, `import_csv()` returns
+When the parameter file describes one figure, `cpb_import_csv()` returns
 that figure directly rather than a named list.
 
 ``` r
-fig_vertical <- import_csv(data_csv, params_vertical)
+fig_vertical <- cpb_import_csv(data_csv, params_vertical)
 ```
 
 <img src="import_files/figure-gfm/vertical-build-show-1.png" alt="" width="350px" />
@@ -213,9 +213,9 @@ If a figure cannot be created, for example because a column referenced
 by a parameter does not exist in the data file, that figure is skipped.
 Other figures in the same parameter file are still created.
 
-Each call to `import_csv()` also writes a log file next to the parameter
-file. The log records figures that were created or skipped and any
-parameter problems.
+Each call to `cpb_import_csv()` also writes a log file next to the
+parameter file. The log records figures that were created or skipped and
+any parameter problems.
 
 # Run the import without opening R
 
