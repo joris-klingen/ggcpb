@@ -21,6 +21,7 @@ cpb_donut(
   index = NULL,
   reverse_legend = FALSE,
   legend_ncol = NULL,
+  legend_nrow = NULL,
   legend = "bottom",
   flush_legend = TRUE,
   legend_key_size = NULL,
@@ -125,6 +126,11 @@ to \code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} instead of the 
 \item{legend_ncol}{Number of columns to lay the legend keys out in,
 passed to \code{guide_legend(ncol = ...)}. \code{NULL} (default) keeps
 ggplot2's own single-row/column layout.}
+
+\item{legend_nrow}{Number of rows to lay the legend keys out in,
+passed to \code{guide_legend(nrow = ...)}. Combine with \code{legend_ncol}
+to pin both dimensions of the grid at once. \code{NULL} (default) keeps
+ggplot2's own sizing.}
 
 \item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}.}
 

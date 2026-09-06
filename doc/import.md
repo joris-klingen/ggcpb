@@ -268,6 +268,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | legend | literal | bottom | bottom |
 | legend_key_size | literal |  | 0.3 |
 | legend_ncol | literal |  | 2 |
+| legend_nrow | literal |  |  |
 | palette | literal | qualitative | qualitative |
 | subtitle | literal |  | ondertitel (vervangt de standaard eenheid boven de figuur) |
 | title | literal |  | Titel van de figuur |
@@ -296,16 +297,20 @@ to, so a table for one `plot_type` does not necessarily match another.
 | position | literal | stack/dodge/fill (default: stack) | stack/dodge/fill (default: stack) |
 | reverse_legend | literal | TRUE | TRUE |
 | sec_accuracy | literal |  | 0.1 |
+| sec_at | literal |  |  |
 | sec_col_width | literal | 0.3 | 0.3 |
 | sec_colour | literal |  | \#e6006e |
 | sec_label | literal |  | naam van de tweede reeks |
+| sec_labels | literal |  |  |
 | sec_limits | literal |  | 0;100 |
 | sec_linewidth | literal | 0.55 | 0.55 |
 | sec_point_size | literal | 1.6 | 1.6 |
 | sec_points | literal | FALSE | FALSE |
+| sec_scale_auto | literal | TRUE | TRUE |
 | sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
 | sec_y | column (from data_csv) |  | werkloosheid |
 | sec_ylab | literal |  | eenheid van de rechteras |
+| style | literal | dutch/english (default: dutch) | dutch/english (default: dutch) |
 | ticks | literal | TRUE | TRUE |
 | value_accuracy | literal |  | 0.1 |
 | value_breaks | literal |  | 0;25;50;75;100 |
@@ -316,6 +321,10 @@ to, so a table for one `plot_type` does not necessarily match another.
 | x_lim_follow_data | literal | FALSE | FALSE |
 | xlab | literal |  | eenheid onderaan de x-as |
 | y | column (from data_csv) | (required) | koopkracht |
+| y_r_at | literal |  |  |
+| y_r_lab | literal |  |  |
+| y_r_lim | literal |  |  |
+| y_r_scale_auto | literal |  |  |
 | ylab | literal |  | % mutatie |
 | zeroline | literal | TRUE | TRUE |
 
@@ -338,16 +347,20 @@ to, so a table for one `plot_type` does not necessarily match another.
 | pct_axis | literal | FALSE | FALSE |
 | reverse_legend | literal | TRUE | TRUE |
 | sec_accuracy | literal |  | 0.1 |
+| sec_at | literal |  |  |
 | sec_col_width | literal | 0.3 | 0.3 |
 | sec_colour | literal |  | \#e6006e |
 | sec_label | literal |  | naam van de tweede reeks |
+| sec_labels | literal |  |  |
 | sec_limits | literal |  | 0;100 |
 | sec_linewidth | literal | 0.55 | 0.55 |
 | sec_point_size | literal | 1.6 | 1.6 |
 | sec_points | literal | FALSE | FALSE |
+| sec_scale_auto | literal | TRUE | TRUE |
 | sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
 | sec_y | column (from data_csv) |  | werkloosheid |
 | sec_ylab | literal |  | eenheid van de rechteras |
+| style | literal | dutch/english (default: dutch) | dutch/english (default: dutch) |
 | ticks | literal | TRUE | TRUE |
 | value_accuracy | literal |  | 0.1 |
 | value_breaks | literal |  | 0;25;50;75;100 |
@@ -357,6 +370,10 @@ to, so a table for one `plot_type` does not necessarily match another.
 | x_lim_follow_data | literal | FALSE | FALSE |
 | xlab | literal |  | eenheid onderaan de x-as |
 | y | column (from data_csv) | (required) | koopkracht |
+| y_r_at | literal |  |  |
+| y_r_lab | literal |  |  |
+| y_r_lim | literal |  |  |
+| y_r_scale_auto | literal |  |  |
 | ylab | literal |  | % mutatie |
 | zeroline | literal | TRUE | TRUE |
 
@@ -384,16 +401,20 @@ to, so a table for one `plot_type` does not necessarily match another.
 | points | literal | FALSE | FALSE |
 | reverse_legend | literal | FALSE | FALSE |
 | sec_accuracy | literal |  | 0.1 |
+| sec_at | literal |  |  |
 | sec_col_width | literal | 0.3 | 0.3 |
 | sec_colour | literal |  | \#e6006e |
 | sec_label | literal |  | naam van de tweede reeks |
+| sec_labels | literal |  |  |
 | sec_limits | literal |  | 0;100 |
 | sec_linewidth | literal |  | 0.55 |
 | sec_point_size | literal | 1.6 | 1.6 |
 | sec_points | literal | FALSE | FALSE |
+| sec_scale_auto | literal | TRUE | TRUE |
 | sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
 | sec_y | column (from data_csv) |  | werkloosheid |
 | sec_ylab | literal |  | eenheid van de rechteras |
+| style | literal | dutch/english (default: dutch) | dutch/english (default: dutch) |
 | ticks | literal | TRUE | TRUE |
 | value_accuracy | literal |  | 0.1 |
 | value_breaks | literal |  | 0;25;50;75;100 |
@@ -403,6 +424,10 @@ to, so a table for one `plot_type` does not necessarily match another.
 | x_lim_follow_data | literal | TRUE | TRUE |
 | xlab | literal |  | eenheid onderaan de x-as |
 | y | column (from data_csv) | (required) | koopkracht |
+| y_r_at | literal |  |  |
+| y_r_lab | literal |  |  |
+| y_r_lim | literal |  |  |
+| y_r_scale_auto | literal |  |  |
 | ylab | literal |  | % mutatie |
 | ymax | column (from data_csv) |  | bovengrens |
 | ymin | column (from data_csv) |  | ondergrens |
@@ -440,16 +465,20 @@ to, so a table for one `plot_type` does not necessarily match another.
 | pct_axis | literal | FALSE | FALSE |
 | reverse_legend | literal | FALSE | FALSE |
 | sec_accuracy | literal |  | 0.1 |
+| sec_at | literal |  |  |
 | sec_col_width | literal | 0.3 | 0.3 |
 | sec_colour | literal |  | \#e6006e |
 | sec_label | literal |  | naam van de tweede reeks |
+| sec_labels | literal |  |  |
 | sec_limits | literal |  | 0;100 |
 | sec_linewidth | literal | 0.55 | 0.55 |
 | sec_point_size | literal | 1.6 | 1.6 |
 | sec_points | literal | FALSE | FALSE |
+| sec_scale_auto | literal | TRUE | TRUE |
 | sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
 | sec_y | column (from data_csv) |  | werkloosheid |
 | sec_ylab | literal |  | eenheid van de rechteras |
+| style | literal | dutch/english (default: dutch) | dutch/english (default: dutch) |
 | ticks | literal | TRUE | TRUE |
 | value_accuracy | literal |  | 0.1 |
 | value_axis | literal | bottom/top (default: bottom) | bottom/top (default: bottom) |
@@ -460,6 +489,10 @@ to, so a table for one `plot_type` does not necessarily match another.
 | x_lim | literal |  | 2015;2025 |
 | x_lim_follow_data | literal | TRUE | TRUE |
 | xlab | literal |  | eenheid onderaan de x-as |
+| y_r_at | literal |  |  |
+| y_r_lab | literal |  |  |
+| y_r_lim | literal |  |  |
+| y_r_scale_auto | literal |  |  |
 | ylab | literal |  | % mutatie |
 | zeroline | literal |  | TRUE |
 
@@ -488,17 +521,21 @@ to, so a table for one `plot_type` does not necessarily match another.
 | point_colour | literal |  | \#e6006e |
 | reverse_legend | literal | FALSE | FALSE |
 | sec_accuracy | literal |  | 0.1 |
+| sec_at | literal |  |  |
 | sec_col_width | literal | 0.3 | 0.3 |
 | sec_colour | literal |  | \#e6006e |
 | sec_label | literal |  | naam van de tweede reeks |
+| sec_labels | literal |  |  |
 | sec_limits | literal |  | 0;100 |
 | sec_linewidth | literal | 0.55 | 0.55 |
 | sec_point_size | literal | size | size |
 | sec_points | literal | FALSE | FALSE |
+| sec_scale_auto | literal | TRUE | TRUE |
 | sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
 | sec_y | column (from data_csv) |  | werkloosheid |
 | sec_ylab | literal |  | eenheid van de rechteras |
 | size | literal | 1.4 | 1.4 |
+| style | literal | dutch/english (default: dutch) | dutch/english (default: dutch) |
 | ticks | literal | TRUE | TRUE |
 | upper | column (from data_csv) | (required) | bovengrens |
 | value_accuracy | literal |  | 0.1 |
@@ -509,6 +546,10 @@ to, so a table for one `plot_type` does not necessarily match another.
 | x_lim_follow_data | literal | TRUE | TRUE |
 | xlab | literal |  | eenheid onderaan de x-as |
 | y | column (from data_csv) | (required) | koopkracht |
+| y_r_at | literal |  |  |
+| y_r_lab | literal |  |  |
+| y_r_lim | literal |  |  |
+| y_r_scale_auto | literal |  |  |
 | ylab | literal |  | % mutatie |
 | zeroline | literal | TRUE | TRUE |
 
@@ -532,6 +573,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | point_colour | literal |  | \#e6006e |
 | reverse_legend | literal | FALSE | FALSE |
 | size | literal | 0.8 | 0.8 |
+| style | literal | dutch/english (default: dutch) | dutch/english (default: dutch) |
 | ticks | literal | TRUE | TRUE |
 | x | column (from data_csv) | (required) | jaar |
 | x_lim | literal |  | 2015;2025 |
@@ -561,6 +603,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | outline | literal | white | white |
 | position | literal | stack | stack |
 | reverse_legend | literal | TRUE | TRUE |
+| style | literal | dutch/english (default: dutch) | dutch/english (default: dutch) |
 | ticks | literal | TRUE | TRUE |
 | x | column (from data_csv) | (required) | jaar |
 | x_lim | literal |  | 2015;2025 |

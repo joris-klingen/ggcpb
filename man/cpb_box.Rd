@@ -58,6 +58,7 @@ cpb_box(
   legend = "bottom",
   reverse_legend = FALSE,
   legend_ncol = NULL,
+  legend_nrow = NULL,
   zeroline = NULL,
   minor = FALSE,
   ticks = TRUE,
@@ -331,6 +332,11 @@ passed to \code{guide_legend(ncol = )}. \code{NULL} (default) leaves the
 single flush-left column of the house style; \code{2} and up suit a
 legend with many short keys, such as binned classes from
 \code{\link[=cpb_cut]{cpb_cut()}}, which would otherwise run past the panel.}
+
+\item{legend_nrow}{Number of rows to lay the legend keys out in,
+passed to \code{guide_legend(nrow = )}. Combine with \code{legend_ncol} to
+pin both dimensions of the grid at once. \code{NULL} (default) leaves
+the number of rows to ggplot2's own sizing.}
 
 \item{zeroline}{If \code{TRUE}, draw a solid black line at zero on the
 value axis underneath the boxes. \code{NULL} (default) draws it

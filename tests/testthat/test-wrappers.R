@@ -683,6 +683,45 @@ test_that("legend_ncol lays the legend out in the requested number of columns", 
   expect_equal(p_sec$guides$guides$fill$params$ncol, 2)
 })
 
+test_that("legend_nrow lays the legend out in the requested number of rows", {
+  num <- data.frame(x = rep(2015:2017, 2), g = rep(c("s1", "s2"), each = 3),
+                    y = c(1:3, 2:4))
+  cat_df <- data.frame(x = c("a", "b"), y = c(1, 2), g = c("s1", "s2"))
+
+  # fill-based wrappers
+  expect_equal(cpb_col(cat_df, x = x, y = y, fill = g, legend_nrow = 2)$guides$guides$fill$params$nrow, 2)
+  expect_equal(cpb_area(num, x = x, y = y, fill = g, legend_nrow = 2)$guides$guides$fill$params$nrow, 2)
+  box_df <- data.frame(x = c("a", "b"), p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5, g = c("s1", "s2"))
+  expect_equal(cpb_box(box_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+                       fill = g, legend_nrow = 2)$guides$guides$fill$params$nrow, 2)
+  expect_equal(cpb_hist(num, x = y, fill = g, legend_nrow = 2)$guides$guides$fill$params$nrow, 2)
+
+  # colour-based wrappers
+  expect_equal(cpb_line(num, x = x, y = y, colour = g, legend_nrow = 3)$guides$guides$colour$params$nrow, 3)
+  expect_equal(cpb_scatter(num, x = x, y = y, colour = g, legend_nrow = 3)$guides$guides$colour$params$nrow, 3)
+  dot_df <- data.frame(x = c("a", "b"), y = c(1, 2), lower = c(0, 1), upper = c(2, 3), g = c("s1", "s2"))
+  expect_equal(cpb_dot(dot_df, x = x, y = y, lower = lower, upper = upper,
+                       colour = g, legend_nrow = 3)$guides$guides$colour$params$nrow, 3)
+
+  # cpb_donut() has its own, shorter legend_ncol/legend_nrow docs --
+  # still the same underlying guide_legend()
+  donut_df <- data.frame(g = c("s1", "s2"), y = c(1, 2))
+  expect_equal(cpb_donut(donut_df, fill = g, y = y, legend_nrow = 1)$guides$guides$fill$params$nrow, 1)
+
+  # legend_ncol and legend_nrow combine to pin both grid dimensions
+  both <- cpb_col(cat_df, x = x, y = y, fill = g, legend_ncol = 2, legend_nrow = 1)
+  expect_equal(both$guides$guides$fill$params$ncol, 2)
+  expect_equal(both$guides$guides$fill$params$nrow, 1)
+
+  # NULL (default) is a no-op: no guides() call added at all
+  expect_null(cpb_col(cat_df, x = x, y = y, fill = g, reverse_legend = FALSE)$guides$guides$fill)
+
+  # cpb_col's secondary-axis layout (order = 1/2) also honours legend_nrow
+  sec_df <- data.frame(x = c("a", "b", "c"), y = c(1, 2, 3), s = c(0.5, 1.5, 1.0))
+  p_sec <- cpb_col(sec_df, x = x, y = y, sec_y = s, legend_nrow = 2)
+  expect_equal(p_sec$guides$guides$fill$params$nrow, 2)
+})
+
 test_that("cpb_scatter draws the forecast window like cpb_line", {
   num <- data.frame(x = rep(2015:2019, 2), g = rep(c("s1", "s2"), each = 5),
                     y = c(1:5, 2:6))
@@ -1263,11 +1302,12 @@ test_that("cpb_add_sec_guides() -- shared by cpb_col/area/box -- is a no-op with
 
 test_that("cpb_add_sec_guides() stacks the fill/colour guides and legend.box when sec_y is present", {
   p <- ggplot2::ggplot() + ggplot2::geom_blank()
-  out <- cpb_add_sec_guides(p, TRUE, reverse_legend = TRUE, legend_ncol = 2)
+  out <- cpb_add_sec_guides(p, TRUE, reverse_legend = TRUE, legend_ncol = 2, legend_nrow = 1)
 
   fill_params <- out$guides$guides[["fill"]]$params
   expect_equal(fill_params$reverse, TRUE)
   expect_equal(fill_params$ncol, 2)
+  expect_equal(fill_params$nrow, 1)
   expect_equal(fill_params$override.aes, list(colour = NA, shape = NA))
   expect_equal(fill_params$order, 1)
   expect_equal(out$guides$guides[["colour"]]$params$order, 2)
