@@ -29,6 +29,13 @@ cpb_dot(
   sec_point_size = size,
   sec_col_width = 0.3,
   sec_accuracy = NULL,
+  sec_scale_auto = TRUE,
+  sec_at = NULL,
+  sec_labels = NULL,
+  y_r_scale_auto = NULL,
+  y_r_at = NULL,
+  y_r_lab = NULL,
+  y_r_lim = NULL,
   palette = "qualitative",
   colour_index = NULL,
   color_index = NULL,
@@ -151,6 +158,30 @@ function's own automatic rounding -- set this when \code{sec_y} needs
 a different precision than its default (e.g. whole numbers for a
 count alongside a one-decimal percentage share).}
 
+\item{sec_scale_auto}{If \code{TRUE} (default), auto-scale the secondary
+axis's breaks to "nice" numbers via \code{\link[=pretty]{pretty()}}, matching the
+primary axis's own break count. Set to \code{FALSE} to instead space
+breaks evenly across \code{sec_limits} (or the \code{sec_y} data range)
+without rounding them to nice numbers.}
+
+\item{sec_at}{Explicit secondary-axis break values, in \code{sec_y}'s own
+units. Must have exactly as many values as the primary axis has
+breaks, since each secondary break is drawn level with one
+primary gridline. \code{NULL} (default) auto-computes them; see
+\code{sec_scale_auto}.}
+
+\item{sec_labels}{Labels for the secondary axis's breaks; anything
+ggplot2's own axis \code{labels} accepts (a character vector matching
+\code{sec_at}/the auto-computed breaks one-for-one, or a labelling
+function such as \code{\link[scales:label_number]{scales::label_number()}}). \code{NULL} (default) uses
+\code{\link[=label_number_nl]{label_number_nl()}}, matching the primary axis's own formatting.}
+
+\item{y_r_scale_auto, y_r_at, y_r_lab, y_r_lim}{nicerplot-style aliases
+for \code{sec_scale_auto}, \code{sec_at}, \code{sec_labels}, and \code{sec_limits}
+respectively, for figures ported over from that convention. Takes
+precedence over the \verb{sec_*} argument it aliases when both are
+given; \code{NULL} (default) defers to it.}
+
 \item{palette}{CPB palette to use for \code{colour}; one of
 \code{"qualitative"} (default), \code{"discr"}, \code{"sequential"}
 (pink ramp), or \code{"blues"} (blue ramp).}
@@ -269,12 +300,16 @@ read top to bottom.
 }
 \examples{
 df <- data.frame(
-  term  = c("Vertrouwen in de politiek", "Succes door hard werken",
-            "Heeft kinderen", "Vermogenskwintiel"),
-  coef  = c(2.9, -2.0, -1.4, -2.5),
-  lo    = c(1.9, -3.0, -3.3, -3.2),
-  hi    = c(3.9, -1.1, 0.6, -1.8)
+  term = c(
+    "Vertrouwen in de politiek", "Succes door hard werken",
+    "Heeft kinderen", "Vermogenskwintiel"
+  ),
+  coef = c(2.9, -2.0, -1.4, -2.5),
+  lo = c(1.9, -3.0, -3.3, -3.2),
+  hi = c(3.9, -1.1, 0.6, -1.8)
 )
-cpb_dot(df, x = term, y = coef, lower = lo, upper = hi,
-        xlab = "\%-punt verandering")
+cpb_dot(df,
+  x = term, y = coef, lower = lo, upper = hi,
+  xlab = "\%-punt verandering"
+)
 }

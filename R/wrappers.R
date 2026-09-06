@@ -420,10 +420,10 @@ cpb_find_sec_breaks <- function(primary_breaks, sec_vals, sec_limits = NULL, sec
     while (n != 0) {
       if (n > 0) {
         for (i in seq_len(n)) {
-          if ((low - y_r_at[1]) < (tail(y_r_at, 1) - high)) {
+          if ((low - y_r_at[1]) < (utils::tail(y_r_at, 1) - high)) {
             y_r_at <- c(y_r_at[1] - delta, y_r_at)
           } else {
-            y_r_at <- c(y_r_at, tail(y_r_at, 1) + delta)
+            y_r_at <- c(y_r_at, utils::tail(y_r_at, 1) + delta)
           }
         }
       } else {
@@ -536,6 +536,28 @@ cpb_sec_axis <- function(sec_map, accuracy = NULL, sec_labels = NULL, style = "d
     to_sec(primary_breaks)
   } else {
     to_sec(c(sec_map$prim_min, sec_map$prim_max))
+  }
+
+  # ggplot2 doesn't trust sec_min/sec_max directly: internally it densely
+  # resamples the primary axis range through `transform` and takes the
+  # min/max of that to derive the secondary axis's own range, then censors
+  # any break outside it (AxisSecondary$break_info() -> oob_censor_any(),
+  # a strict `<`/`>` with no tolerance). Because slope/inter are built from
+  # a floating-point division that rarely lands on an exact binary fraction,
+  # that resampled range differs from the true boundary by ~1e-13 to 1e-16,
+  # and our bottom/top break -- which sits exactly at that true boundary by
+  # construction -- can fall a hair outside it and get silently dropped
+  # (e.g. the axis's very first tick label going missing). Nudging the two
+  # extreme breaks a tiny relative amount inward keeps them safely inside
+  # whichever way that noise falls, far below anything visible in their
+  # drawn position or rounded label.
+  if (length(breaks_val) >= 2) {
+    span <- diff(range(breaks_val))
+    if (is.finite(span) && span > 0) {
+      eps <- span * 1e-8
+      breaks_val[1] <- breaks_val[1] + eps
+      breaks_val[length(breaks_val)] <- breaks_val[length(breaks_val)] - eps
+    }
   }
 
   labels_arg <- if (!is.null(sec_labels)) {
@@ -855,6 +877,26 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   function's own automatic rounding -- set this when `sec_y` needs
 #'   a different precision than its default (e.g. whole numbers for a
 #'   count alongside a one-decimal percentage share).
+#' @param sec_scale_auto If `TRUE` (default), auto-scale the secondary
+#'   axis's breaks to "nice" numbers via [pretty()], matching the
+#'   primary axis's own break count. Set to `FALSE` to instead space
+#'   breaks evenly across `sec_limits` (or the `sec_y` data range)
+#'   without rounding them to nice numbers.
+#' @param sec_at Explicit secondary-axis break values, in `sec_y`'s own
+#'   units. Must have exactly as many values as the primary axis has
+#'   breaks, since each secondary break is drawn level with one
+#'   primary gridline. `NULL` (default) auto-computes them; see
+#'   `sec_scale_auto`.
+#' @param sec_labels Labels for the secondary axis's breaks; anything
+#'   ggplot2's own axis `labels` accepts (a character vector matching
+#'   `sec_at`/the auto-computed breaks one-for-one, or a labelling
+#'   function such as [scales::label_number()]). `NULL` (default) uses
+#'   [label_number_nl()], matching the primary axis's own formatting.
+#' @param y_r_scale_auto,y_r_at,y_r_lab,y_r_lim nicerplot-style aliases
+#'   for `sec_scale_auto`, `sec_at`, `sec_labels`, and `sec_limits`
+#'   respectively, for figures ported over from that convention. Takes
+#'   precedence over the `sec_*` argument it aliases when both are
+#'   given; `NULL` (default) defers to it.
 #' @param value_limits Optional length-2 numeric vector giving the
 #'   value-axis range (the `y` axis, or the flipped axis when
 #'   `orientation = "horizontal"`). Applied as the wrapper-built value
@@ -1389,6 +1431,26 @@ cpb_col <- function(data, x, y, fill = NULL,
 #'   function's own automatic rounding -- set this when `sec_y` needs
 #'   a different precision than its default (e.g. whole numbers for a
 #'   count alongside a one-decimal percentage share).
+#' @param sec_scale_auto If `TRUE` (default), auto-scale the secondary
+#'   axis's breaks to "nice" numbers via [pretty()], matching the
+#'   primary axis's own break count. Set to `FALSE` to instead space
+#'   breaks evenly across `sec_limits` (or the `sec_y` data range)
+#'   without rounding them to nice numbers.
+#' @param sec_at Explicit secondary-axis break values, in `sec_y`'s own
+#'   units. Must have exactly as many values as the primary axis has
+#'   breaks, since each secondary break is drawn level with one
+#'   primary gridline. `NULL` (default) auto-computes them; see
+#'   `sec_scale_auto`.
+#' @param sec_labels Labels for the secondary axis's breaks; anything
+#'   ggplot2's own axis `labels` accepts (a character vector matching
+#'   `sec_at`/the auto-computed breaks one-for-one, or a labelling
+#'   function such as [scales::label_number()]). `NULL` (default) uses
+#'   [label_number_nl()], matching the primary axis's own formatting.
+#' @param y_r_scale_auto,y_r_at,y_r_lab,y_r_lim nicerplot-style aliases
+#'   for `sec_scale_auto`, `sec_at`, `sec_labels`, and `sec_limits`
+#'   respectively, for figures ported over from that convention. Takes
+#'   precedence over the `sec_*` argument it aliases when both are
+#'   given; `NULL` (default) defers to it.
 #' @param palette CPB palette to use for `fill`; one of
 #'   `"qualitative"` (default), `"discr"`, `"sequential"`
 #'   (pink ramp), or `"blues"` (blue ramp).
@@ -1734,6 +1796,26 @@ cpb_area <- function(data, x, y, fill,
 #'   function's own automatic rounding -- set this when `sec_y` needs
 #'   a different precision than its default (e.g. whole numbers for a
 #'   count alongside a one-decimal percentage share).
+#' @param sec_scale_auto If `TRUE` (default), auto-scale the secondary
+#'   axis's breaks to "nice" numbers via [pretty()], matching the
+#'   primary axis's own break count. Set to `FALSE` to instead space
+#'   breaks evenly across `sec_limits` (or the `sec_y` data range)
+#'   without rounding them to nice numbers.
+#' @param sec_at Explicit secondary-axis break values, in `sec_y`'s own
+#'   units. Must have exactly as many values as the primary axis has
+#'   breaks, since each secondary break is drawn level with one
+#'   primary gridline. `NULL` (default) auto-computes them; see
+#'   `sec_scale_auto`.
+#' @param sec_labels Labels for the secondary axis's breaks; anything
+#'   ggplot2's own axis `labels` accepts (a character vector matching
+#'   `sec_at`/the auto-computed breaks one-for-one, or a labelling
+#'   function such as [scales::label_number()]). `NULL` (default) uses
+#'   [label_number_nl()], matching the primary axis's own formatting.
+#' @param y_r_scale_auto,y_r_at,y_r_lab,y_r_lim nicerplot-style aliases
+#'   for `sec_scale_auto`, `sec_at`, `sec_labels`, and `sec_limits`
+#'   respectively, for figures ported over from that convention. Takes
+#'   precedence over the `sec_*` argument it aliases when both are
+#'   given; `NULL` (default) defers to it.
 #' @param palette CPB palette to use for `colour`; one of
 #'   `"qualitative"` (default), `"discr"`, `"sequential"`
 #'   (pink ramp), or `"blues"` (blue ramp).
@@ -2314,6 +2396,26 @@ cpb_line <- function(data, x, y, colour = NULL,
 #'   function's own automatic rounding -- set this when `sec_y` needs
 #'   a different precision than its default (e.g. whole numbers for a
 #'   count alongside a one-decimal percentage share).
+#' @param sec_scale_auto If `TRUE` (default), auto-scale the secondary
+#'   axis's breaks to "nice" numbers via [pretty()], matching the
+#'   primary axis's own break count. Set to `FALSE` to instead space
+#'   breaks evenly across `sec_limits` (or the `sec_y` data range)
+#'   without rounding them to nice numbers.
+#' @param sec_at Explicit secondary-axis break values, in `sec_y`'s own
+#'   units. Must have exactly as many values as the primary axis has
+#'   breaks, since each secondary break is drawn level with one
+#'   primary gridline. `NULL` (default) auto-computes them; see
+#'   `sec_scale_auto`.
+#' @param sec_labels Labels for the secondary axis's breaks; anything
+#'   ggplot2's own axis `labels` accepts (a character vector matching
+#'   `sec_at`/the auto-computed breaks one-for-one, or a labelling
+#'   function such as [scales::label_number()]). `NULL` (default) uses
+#'   [label_number_nl()], matching the primary axis's own formatting.
+#' @param y_r_scale_auto,y_r_at,y_r_lab,y_r_lim nicerplot-style aliases
+#'   for `sec_scale_auto`, `sec_at`, `sec_labels`, and `sec_limits`
+#'   respectively, for figures ported over from that convention. Takes
+#'   precedence over the `sec_*` argument it aliases when both are
+#'   given; `NULL` (default) defers to it.
 #' @param reverse_legend If `TRUE`, reverse the fill legend order via
 #'   `guide_legend(reverse = TRUE)`. Defaults to `FALSE`; useful when
 #'   the fill levels were reversed to control the dodge order under
@@ -3368,6 +3470,26 @@ cpb_hist <- function(data, x, fill = NULL,
 #'   function's own automatic rounding -- set this when `sec_y` needs
 #'   a different precision than its default (e.g. whole numbers for a
 #'   count alongside a one-decimal percentage share).
+#' @param sec_scale_auto If `TRUE` (default), auto-scale the secondary
+#'   axis's breaks to "nice" numbers via [pretty()], matching the
+#'   primary axis's own break count. Set to `FALSE` to instead space
+#'   breaks evenly across `sec_limits` (or the `sec_y` data range)
+#'   without rounding them to nice numbers.
+#' @param sec_at Explicit secondary-axis break values, in `sec_y`'s own
+#'   units. Must have exactly as many values as the primary axis has
+#'   breaks, since each secondary break is drawn level with one
+#'   primary gridline. `NULL` (default) auto-computes them; see
+#'   `sec_scale_auto`.
+#' @param sec_labels Labels for the secondary axis's breaks; anything
+#'   ggplot2's own axis `labels` accepts (a character vector matching
+#'   `sec_at`/the auto-computed breaks one-for-one, or a labelling
+#'   function such as [scales::label_number()]). `NULL` (default) uses
+#'   [label_number_nl()], matching the primary axis's own formatting.
+#' @param y_r_scale_auto,y_r_at,y_r_lab,y_r_lim nicerplot-style aliases
+#'   for `sec_scale_auto`, `sec_at`, `sec_labels`, and `sec_limits`
+#'   respectively, for figures ported over from that convention. Takes
+#'   precedence over the `sec_*` argument it aliases when both are
+#'   given; `NULL` (default) defers to it.
 #' @param palette CPB palette to use for `colour`; one of
 #'   `"qualitative"` (default), `"discr"`, `"sequential"`
 #'   (pink ramp), or `"blues"` (blue ramp).

@@ -1211,6 +1211,35 @@ test_that("nicerplot secondary axis auto-scaling and parameter aliases work as e
   expect_no_error(cpb_line(df, x = jaar, y = v, sec_y = sec, y_r_lim = c(100, 200)))
 })
 
+test_that("cpb_sec_axis() keeps the boundary-most break when slope/inter aren't exact floats", {
+  # Primary breaks -4:2 mapped onto a secondary range of 3.4-3.7 forces a
+  # slope/intercept division that isn't an exact binary fraction (6 / 0.3).
+  # ggplot2 re-derives the secondary axis's own range internally by densely
+  # resampling the primary range through the transform and taking its
+  # min/max, rather than trusting sec_min/sec_max exactly -- so without the
+  # inward nudge in cpb_sec_axis(), that resampled range comes out a hair
+  # narrower than [3.4, 3.7] and its own exact boundary break gets silently
+  # censored, dropping one label short of the primary axis's break count.
+  prim_breaks <- c(-4, -3, -2, -1, 0, 1, 2)
+  sec_map <- cpb_sec_map(c(3.4, 3.7), primary_breaks = prim_breaks, sec_limits = c(3.4, 3.7))
+  df <- data.frame(x = prim_breaks, y = prim_breaks)
+  p <- ggplot2::ggplot(df, ggplot2::aes(x, y)) +
+    ggplot2::geom_line() +
+    ggplot2::scale_y_continuous(
+      breaks = prim_breaks,
+      limits = range(prim_breaks),
+      # zero expansion, matching cpb_flush_scale_args(): with the default
+      # expansion the panel's continuous_range would extend past the
+      # breaks, landing the resampled secondary range comfortably clear of
+      # the boundary and masking exactly the bug this test guards against.
+      expand = ggplot2::expansion(mult = c(0, 0)),
+      sec.axis = cpb_sec_axis(sec_map, primary_breaks = prim_breaks)
+    )
+  built <- ggplot2::ggplot_build(p)
+  sec_labels <- built$layout$panel_params[[1]]$y.sec$get_labels()
+  expect_equal(length(sec_labels), length(prim_breaks))
+})
+
 test_that("cpb_add_sec_guides() -- shared by cpb_col/area/box -- is a no-op without sec_y", {
   p <- ggplot2::ggplot()
   expect_identical(cpb_add_sec_guides(p, FALSE, FALSE, NULL), p)
