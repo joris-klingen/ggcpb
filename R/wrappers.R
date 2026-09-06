@@ -4329,6 +4329,10 @@ cpb_donut <- function(data, fill, y,
   # panel_size at the save call too (though they still can, to
   # override it)
   attr(p, "cpb_panel_size") <- panel_size
+  # a donut's legend is often the longest in the house style (see
+  # above), and needs the width beside the ring to itself -- save_cpb()
+  # warns using this when asked to fit both into a half page
+  attr(p, "cpb_half_page_unsuitable") <- "a donut chart's ring and legend"
   # print.cpb_plot() (see save.R) warns, once, that a bare print()
   # shows this approximately rather than exactly -- only save_cpb()
   # reads the attribute above

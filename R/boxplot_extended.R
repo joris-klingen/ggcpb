@@ -285,6 +285,11 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
     # second, conflicting facet_wrap() layer just to change one of its
     # own arguments
     p$facet$params$strip.position <- "top"
+    # one column's worth of panels (each still needing its own
+    # category labels and, per box, a full whisker-to-whisker span) is
+    # rarely legible split across a half page's 2.98 in -- save_cpb()
+    # warns using this when asked to
+    attr(p, "cpb_half_page_unsuitable") <- "an extended boxplot faceted into multiple panels"
   }
 
   if (isTRUE(zero_indicator)) {
