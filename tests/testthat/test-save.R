@@ -90,6 +90,40 @@ test_that("save_cpb warns on a title too long for the page, not when wrapped", {
   expect_no_warning(save_cpb(path, cpb_col(df, x = x, y = y), page = "half"))
 })
 
+test_that("save_cpb warns when the category labels are too long to sit side by side", {
+  path <- withr::local_tempfile(fileext = ".png")
+  groepen <- c("tot 120% wml", "120% wml - mod.", "1 - 1,5x mod.",
+               "1,5 - 2x mod.", "2 - 3x mod.", "boven 3x mod.")
+  long <- data.frame(g = factor(groepen, levels = groepen), y = 1:6)
+
+  expect_warning(
+    save_cpb(path, cpb_col(long, x = g, y = y), page = "half"),
+    "too long for the category labels"
+  )
+  # the same labels have room on a full page
+  expect_no_warning(save_cpb(path, cpb_col(long, x = g, y = y), page = "full"))
+  # horizontal puts the categories on the axis that has the room
+  expect_no_warning(
+    save_cpb(path, cpb_col(long, x = g, y = y, orientation = "horizontal"), page = "half")
+  )
+  # breaking a label over two lines is the documented fix, and works:
+  # each label is measured by its longest line, not its total length
+  wrapped <- data.frame(
+    g = factor(c("tot 120%\nwml", "120% wml\n- mod.", "1 - 1,5x\nmod.",
+                 "1,5 - 2x\nmod.", "2 - 3x\nmod.", "boven 3x\nmod."),
+               levels = c("tot 120%\nwml", "120% wml\n- mod.", "1 - 1,5x\nmod.",
+                          "1,5 - 2x\nmod.", "2 - 3x\nmod.", "boven 3x\nmod.")),
+    y = 1:6
+  )
+  expect_no_warning(save_cpb(path, cpb_col(wrapped, x = g, y = y), page = "half"))
+  # short category names, and a numeric axis, are left alone
+  short <- data.frame(g = c("a", "b", "c"), y = 1:3)
+  expect_no_warning(save_cpb(path, cpb_col(short, x = g, y = y), page = "half"))
+  expect_no_warning(
+    save_cpb(path, cpb_line(data.frame(x = 2015:2027, y = 1:13), x = x, y = y), page = "half")
+  )
+})
+
 test_that("save_cpb warns when a plot's own type is not suitable for a half page", {
   path <- withr::local_tempfile(fileext = ".png")
 

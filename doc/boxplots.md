@@ -145,7 +145,7 @@ cpb_box(kk2, x = groep,
   ylab     = "% koopkrachtmutatie")
 ```
 
-<img src="boxplots_files/figure-gfm/box-dodged-1.png" alt="" width="700px" />
+<img src="boxplots_files/figure-gfm/box-dodged-1.png" alt="" width="350px" />
 
 # Grouped, with a fill per year
 

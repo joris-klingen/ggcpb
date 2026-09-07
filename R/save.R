@@ -470,6 +470,7 @@ save_cpb <- function(filename,
 
   cpb_check_title(plot$labels$title, width)
   cpb_check_half_page(plot, width)
+  cpb_check_category_labels(plot, width)
 
   # an explicit panel_size always wins; failing that, a wrapper (only
   # cpb_donut() so far) may have already asked for one of its own
@@ -592,6 +593,56 @@ cpb_check_title <- function(title, width) {
       "ggcpb: the title's longest line is ", longest, " characters, which ",
       "is likely too wide for a ", round(width, 2), " in figure (about ",
       budget, " fit). Break it over two lines with \"\\n\".",
+      call. = FALSE
+    )
+    return(invisible(FALSE))
+  }
+  invisible(TRUE)
+}
+
+#' Warn when the category labels are too long to sit side by side
+#'
+#' Each category on a discrete axis only gets its share of the panel's
+#' width, so a handful of long names ("120% wml - mod.") run into each
+#' other rather than wrapping or rotating -- the house style keeps them
+#' horizontal. The fix is always the label, not the figure: shorten it,
+#' or break it over two lines with `"\n"`. Estimated the same way
+#' `cpb_check_title()` estimates a title's width (7 pt regular within
+#' the house margins), and deliberately generous about how much room a
+#' slot has, so this flags labels that genuinely collide rather than
+#' ones that merely come close.
+#'
+#' @param plot The plot passed to `save_cpb()`.
+#' @param width Figure width in inches, already resolved from `page`/
+#'   `width`.
+#' @return Invisibly `TRUE` if the labels fit, `FALSE` otherwise.
+#' @noRd
+cpb_check_category_labels <- function(plot, width) {
+  built <- tryCatch(ggplot2::ggplot_build(plot), error = function(e) NULL)
+  if (is.null(built)) return(invisible(TRUE))
+  labels <- tryCatch(
+    built$layout$panel_params[[1]]$x$get_labels(),
+    error = function(e) NULL
+  )
+  labels <- labels[!is.na(labels)]
+  if (length(labels) < 2 || !is.character(labels)) return(invisible(TRUE))
+
+  # a label already broken with "\n" is measured by its longest line,
+  # the same way cpb_check_title() measures a title
+  widest <- max(vapply(
+    strsplit(labels, "\n", fixed = TRUE),
+    function(lines) max(nchar(lines)), integer(1)
+  ))
+  # usable width in points, minus the house left+right plot margins;
+  # ~3.5 pt per 7 pt glyph on average
+  slot <- (width * 72 - 20) / length(labels)
+  if (widest * 3.5 > slot) {
+    warning(
+      "ggcpb: the longest category label is ", widest, " characters, which ",
+      "is too long for ", length(labels), " labels side by side on a ",
+      round(width, 2), " in figure (about ", max(floor(slot / 3.5), 1),
+      " fit). Text is too long for the category labels -- please shorten ",
+      "them, or break them over two lines with \"\\n\".",
       call. = FALSE
     )
     return(invisible(FALSE))
