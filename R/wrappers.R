@@ -387,6 +387,22 @@ cpb_find_sec_breaks <- function(primary_breaks, sec_vals, sec_limits = NULL, sec
   if (n_labels < 2) {
     stop("The primary value axis must have at least 2 breaks for `sec_y` mapping.", call. = FALSE)
   }
+
+  # A high-to-low sec_limits/sec_at reads naturally enough as "the range
+  # 15 to 25, written the other way round", but every step below (and
+  # the linear mapping cpb_sec_map() anchors on the result) assumes
+  # low-to-high: left descending, the axis comes out with its boundary
+  # labels dropped and the rest against the wrong gridlines. Sorted
+  # here, once, so both arguments behave the same way -- an axis
+  # deliberately drawn high-to-low is not something these wrappers
+  # support either way, so nothing that used to work changes.
+  if (!is.null(sec_at)) {
+    sec_at <- sort(sec_at)
+  }
+  if (!is.null(sec_limits) && is.numeric(sec_limits) && length(sec_limits) == 2) {
+    sec_limits <- sort(sec_limits)
+  }
+
   if (!is.null(sec_at)) {
     if (length(sec_at) != n_labels) {
       stop(sprintf("Number of values in `sec_at` (%d) must match the number of primary axis gridlines (%d).", length(sec_at), n_labels), call. = FALSE)
@@ -554,9 +570,15 @@ cpb_sec_axis <- function(sec_map, accuracy = NULL, sec_labels = NULL, style = "d
   if (length(breaks_val) >= 2) {
     span <- diff(range(breaks_val))
     if (is.finite(span) && span > 0) {
+      # by value, not by position: a descending breaks vector (an
+      # inverted sec_limits/sec_at, before cpb_find_sec_breaks() sorts
+      # it) would otherwise get both ends nudged the wrong way, pushing
+      # them outside the range and losing *both* boundary labels
       eps <- span * 1e-8
-      breaks_val[1] <- breaks_val[1] + eps
-      breaks_val[length(breaks_val)] <- breaks_val[length(breaks_val)] - eps
+      i_min <- which.min(breaks_val)
+      i_max <- which.max(breaks_val)
+      breaks_val[i_min] <- breaks_val[i_min] + eps
+      breaks_val[i_max] <- breaks_val[i_max] - eps
     }
   }
 
@@ -2060,6 +2082,32 @@ cpb_line <- function(data, x, y, colour = NULL,
     zeroline <- cpb_zeroline_auto(yvals, yvals)
   }
 
+  # Use pretty() breaks as scale limits to keep the value axis flush.
+  # Built here, before the secondary series rather than after it, so
+  # that sec_map below is anchored to the very same breaks the axis is
+  # finally drawn with -- the arrangement every other sec_y wrapper
+  # uses. Computing it twice (once for the mapping, once for the scale)
+  # left the two free to disagree, and warned twice over for one
+  # too-narrow value_breaks/value_limits.
+  axis_values <- rlang::eval_tidy(y, data)
+  if (has_band) {
+    axis_values <- c(
+      axis_values, rlang::eval_tidy(ymin, data),
+      rlang::eval_tidy(ymax, data)
+    )
+  }
+  scale_args <- cpb_flush_scale_args(
+    axis_values = axis_values, pct_axis = pct_axis,
+    value_accuracy = value_accuracy,
+    value_breaks = value_breaks,
+    value_limits = value_limits,
+    style = style
+  )
+  # the crop cpb_flush_scale_args() no longer applies as a scale limit
+  # when it would drop data (see there) -- applied instead, below, as
+  # this wrapper's own coord_cartesian() ylim
+  value_limits_visual <- if (!is.null(value_limits)) value_limits else range(scale_args$breaks)
+
   # `group` is set explicitly rather than left to ggplot2, which infers
   # it from every discrete aesthetic: on a categorical x axis (age
   # brackets, quintiles) that puts each observation in a group of its
@@ -2079,21 +2127,7 @@ cpb_line <- function(data, x, y, colour = NULL,
     }
     sec_lab <- if (is.null(sec_label)) rlang::as_label(sec_y) else sec_label
 
-    axis_values_tmp <- rlang::eval_tidy(y, data)
-    if (has_band) {
-      axis_values_tmp <- c(
-        axis_values_tmp, rlang::eval_tidy(ymin, data),
-        rlang::eval_tidy(ymax, data)
-      )
-    }
-    scale_args_tmp <- cpb_flush_scale_args(
-      axis_values = axis_values_tmp, pct_axis = pct_axis,
-      value_accuracy = value_accuracy,
-      value_breaks = value_breaks,
-      value_limits = value_limits,
-      style = style
-    )
-    sec_map <- cpb_sec_map(sec_vals, primary_breaks = scale_args_tmp$breaks, sec_limits = opts$limits, sec_at = opts$at, sec_scale_auto = opts$scale_auto)
+    sec_map <- cpb_sec_map(sec_vals, primary_breaks = scale_args$breaks, sec_limits = opts$limits, sec_at = opts$at, sec_scale_auto = opts$scale_auto)
     sec_df <- as.data.frame(data)
     sec_df[["cpb__sec"]] <- cpb_sec_to_primary(sec_vals, sec_map)
     sec_df[["cpb__seclab"]] <- sec_lab
@@ -2173,7 +2207,25 @@ cpb_line <- function(data, x, y, colour = NULL,
   # colour -- so the secondary line joins that same scale and takes the
   # next palette position, which is how the published figures name both
   # axes in a single legend block.
+  # sec_type/sec_points/sec_point_size/sec_col_width/sec_colour mean the
+  # same here as in cpb_sec_layer() (which every other sec_y wrapper
+  # calls); this block is separate only because the secondary series
+  # keys on the shared colour scale rather than getting its own literal
+  # colour, per the note above.
   if (has_sec) {
+    sec_aes <- ggplot2::aes(x = !!x, y = .data[["cpb__sec"]],
+                            colour = .data[["cpb__seclab"]])
+    if (sec_type == "col") {
+      p <- p + ggplot2::geom_col(
+        data = sec_df, sec_aes,
+        fill = cpb_single_colour(sec_colour, 2), width = sec_col_width,
+        show.legend = TRUE
+      )
+    } else if (sec_type == "point") {
+      p <- p + ggplot2::geom_point(
+        data = sec_df, sec_aes, size = sec_point_size, show.legend = TRUE
+      )
+    } else {
     p <- p + ggplot2::geom_line(
       data = sec_df,
       ggplot2::aes(x = !!x, y = .data[["cpb__sec"]], colour = .data[["cpb__seclab"]],
@@ -2181,13 +2233,18 @@ cpb_line <- function(data, x, y, colour = NULL,
       linewidth = if (is.null(sec_linewidth)) linewidth else sec_linewidth,
       show.legend = TRUE
     )
-    if (isTRUE(points)) {
+      # markers keep following the primary series' own `points` (a line
+      # chart with markers wants them on both series, and that is what
+      # this wrapper has always done); sec_points turns them on for the
+      # secondary series by itself, at cpb_sec_layer()'s smaller
+      # decorating-a-line size
+      if (isTRUE(points) || isTRUE(sec_points)) {
       p <- p + ggplot2::geom_point(
-        data = sec_df,
-        ggplot2::aes(x = !!x, y = .data[["cpb__sec"]],
-                     colour = .data[["cpb__seclab"]]),
-        size = point_size, show.legend = TRUE
+        data = sec_df, sec_aes,
+          size = if (isTRUE(points)) point_size else sec_point_size * 0.7,
+          show.legend = TRUE
       )
+      }
     }
   }
 
@@ -2200,26 +2257,9 @@ cpb_line <- function(data, x, y, colour = NULL,
 
   p <- cpb_add_sec_ylab(p, has_sec, sec_ylab)
 
-  # Use pretty() breaks as scale limits to keep the value axis flush.
-  axis_values <- rlang::eval_tidy(y, data)
-  if (has_band) {
-    axis_values <- c(
-      axis_values, rlang::eval_tidy(ymin, data),
-      rlang::eval_tidy(ymax, data)
-    )
-  }
-  scale_args <- cpb_flush_scale_args(
-    axis_values = axis_values, pct_axis = pct_axis,
-    value_accuracy = value_accuracy,
-    value_breaks = value_breaks,
-    value_limits = value_limits,
-    style = style
-  )
-  # the crop cpb_flush_scale_args() no longer applies as a scale limit
-  # when it would drop data (see there) -- applied instead, below, as
-  # this wrapper's own coord_cartesian() ylim
-  value_limits_visual <- if (!is.null(value_limits)) value_limits else range(scale_args$breaks)
-
+  # scale_args (and value_limits_visual) are built once, near the top of
+  # this function, so the secondary mapping and this scale cannot drift
+  # apart -- see there.
   if (has_sec) {
     scale_args$sec.axis <- cpb_sec_axis(sec_map, accuracy = sec_accuracy, sec_labels = opts$labels, style = style)
   }

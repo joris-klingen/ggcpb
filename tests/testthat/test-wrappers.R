@@ -1295,6 +1295,81 @@ test_that("cpb_sec_axis() keeps the boundary-most break when slope/inter aren't 
   expect_equal(length(sec_labels), length(prim_breaks))
 })
 
+test_that("a high-to-low sec_limits/sec_at is read as the same range, low to high", {
+  # descending, it used to reach cpb_sec_axis() as a descending breaks
+  # vector, whose two extreme breaks the inward nudge there then pushed
+  # *outward* -- losing both boundary labels, so the rest sat against
+  # the wrong gridlines
+  expect_equal(
+    cpb_find_sec_breaks(c(0, 5, 10, 15, 20), c(12, 48), sec_limits = c(25, 15)),
+    cpb_find_sec_breaks(c(0, 5, 10, 15, 20), c(12, 48), sec_limits = c(15, 25))
+  )
+  expect_equal(
+    cpb_find_sec_breaks(c(0, 5, 10), c(1, 9), sec_at = c(30, 20, 10)),
+    c(10, 20, 30)
+  )
+
+  d <- data.frame(jaar = 2018:2027, prim = seq(4, 12, length.out = 10),
+                  sec = c(12, 16, 22, 28, 35, 42, 38, 30, 24, 18))
+  built <- function(lim) {
+    p <- suppressWarnings(cpb_line(d, x = jaar, y = prim, sec_y = sec, sec_limits = lim))
+    pp <- ggplot2::ggplot_build(p)$layout$panel_params[[1]]
+    list(n_prim = length(pp$y$breaks[!is.na(pp$y$breaks)]),
+         labels = pp$y.sec$get_labels())
+  }
+  down <- built(c(25, 15))
+  up <- built(c(15, 25))
+  # every gridline keeps its own label, either way round, and the axis
+  # reads low-to-high in both cases
+  expect_equal(length(down$labels), down$n_prim)
+  expect_equal(down$labels, up$labels)
+})
+
+test_that("cpb_sec_axis() keeps both boundary breaks when handed them descending", {
+  prim <- c(-4, -3, -2, -1, 0, 1, 2)
+  sec_map <- cpb_sec_map(c(3.4, 3.7), primary_breaks = prim, sec_limits = c(3.4, 3.7))
+  sec_map$sec_breaks <- rev(sec_map$sec_breaks)
+  df <- data.frame(x = prim, y = prim)
+  p <- ggplot2::ggplot(df, ggplot2::aes(x, y)) +
+    ggplot2::geom_line() +
+    ggplot2::scale_y_continuous(
+      breaks = prim, limits = range(prim),
+      expand = ggplot2::expansion(mult = c(0, 0)),
+      sec.axis = cpb_sec_axis(sec_map, primary_breaks = prim)
+    )
+  labs <- ggplot2::ggplot_build(p)$layout$panel_params[[1]]$y.sec$get_labels()
+  expect_equal(length(labs), length(prim))
+})
+
+test_that("cpb_line honours sec_type/sec_points like the wrappers using cpb_sec_layer()", {
+  d <- data.frame(jaar = 2018:2022, prim = c(5, 6, 7, 8, 9), sec = c(12, 16, 22, 28, 35))
+  geoms <- function(p) vapply(p$layers, geom_class1, character(1))
+
+  # sec_type was match.arg()'d and then ignored: "point"/"col" silently
+  # drew a line like every other value
+  expect_true("GeomPoint" %in% geoms(cpb_line(d, x = jaar, y = prim, sec_y = sec, sec_type = "point")))
+  expect_true("GeomCol" %in% geoms(cpb_line(d, x = jaar, y = prim, sec_y = sec, sec_type = "col")))
+  expect_equal(sum(geoms(cpb_line(d, x = jaar, y = prim, sec_y = sec, sec_type = "line")) == "GeomLine"), 2)
+
+  # sec_points adds markers to the secondary line on its own ...
+  expect_true("GeomPoint" %in% geoms(cpb_line(d, x = jaar, y = prim, sec_y = sec, sec_points = TRUE)))
+  # ... and the primary `points` still puts them on both series, as before
+  expect_equal(sum(geoms(cpb_line(d, x = jaar, y = prim, sec_y = sec, points = TRUE)) == "GeomPoint"), 2)
+
+  # cpb_line used to build its value scale twice over -- once for the
+  # secondary mapping, once for the axis -- so one too-narrow
+  # value_breaks warned twice, and the two were free to disagree
+  w <- character(0)
+  withCallingHandlers(
+    invisible(cpb_line(d, x = jaar, y = prim, sec_y = sec, value_breaks = c(0, 2, 4))),
+    warning = function(cnd) {
+      w <<- c(w, conditionMessage(cnd))
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_equal(sum(grepl("cropped for display", w)), 1)
+})
+
 test_that("cpb_add_sec_guides() -- shared by cpb_col/area/box -- is a no-op without sec_y", {
   p <- ggplot2::ggplot()
   expect_identical(cpb_add_sec_guides(p, FALSE, FALSE, NULL), p)
