@@ -20,7 +20,11 @@ knitr::opts_chunk$set(
   fig.height = 2.98,
   dpi = 300,
   out.width = "350px",
-  dev = if (requireNamespace("ragg", quietly = TRUE)) "ragg_png" else "png"
+  dev = if (requireNamespace("ragg", quietly = TRUE)) "ragg_png" else "png",
+  # save_cpb() writes on the CPB background; match it here so a figure
+  # that does not fill its canvas (an aspect-locked donut or map) does
+  # not show white bands down the sides
+  dev.args = list(background = "#eef8ff")
 )
 ```
 
@@ -31,34 +35,18 @@ library(dplyr)
 set.seed(42)
 ```
 
-```{r show-saved-helper, include = FALSE}
-# Displays a file save_cpb() already wrote to a temporary path, at a
-# stable location knitr manages itself -- so the rendered copy of this
-# page (e.g. on GitHub) keeps a working image link rather than one
-# pointing at a temp file that no longer exists. Purely a display
-# detail for this page, not part of any save_cpb() example above it.
-.show_saved <- function(path) {
-  stable <- knitr::fig_path(".png")
-  dir.create(dirname(stable), recursive = TRUE, showWarnings = FALSE)
-  file.copy(path, stable, overwrite = TRUE)
-  knitr::include_graphics(stable)
-}
-```
-
 `cpb_map()` draws a value per Dutch municipality or province on
 bundled generalised CBS/Kadaster boundaries (2025, via cartomap), so
 no geo packages or downloads are needed. Regions are separated by thin
 background-colour seams, and the legend sits inside the panel at
 top-left -- in the empty North Sea corner of the country.
 
-A map is taller relative to its width than a chart, so `save_cpb()`
-auto-fits the panel to the boundaries' true aspect ratio, rather than
-letting it sit letterboxed inside a guessed `fig.height` (see "Styling
-and raw boundaries" below). Every map below is therefore written to a
-file with `save_cpb()` and shown from that file, exactly as it would
-look saved for a report -- the code that builds and saves each map is
-the code shown; only the line that displays it back inline for this
-page is left out.
+A map is taller relative to its width than a chart. Written out with
+`save_cpb()` (see `vignette("ggcpb")`), the panel is auto-fitted to the
+boundaries' true aspect ratio rather than letterboxed inside a guessed
+height. The maps below are printed directly instead, on the same
+half-page canvas as every other figure in these vignettes, so they are
+fitted to that canvas rather than to the boundaries.
 
 # Classed maps
 
@@ -71,21 +59,16 @@ the house blue ramp. Regions are joined by CBS code (`"GM0014"`,
 regions without a value get the CPB missing-value grey, and unmatched
 regions raise a warning:
 
-```{r map-classed, results = "hide"}
+```{r map-classed, warning = FALSE}
 gemeenten <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
   mutate(aandeel = runif(n(), 5, 75),
          klasse  = cpb_cut(aandeel, breaks = c(0, 20, 30, 40, 50, 60, Inf),
                            labeller = label_pct_nl()))
 
-path <- tempfile(fileext = ".png")
-save_cpb(path, cpb_map(gemeenten, region = code, value = klasse,
+cpb_map(gemeenten, region = code, value = klasse,
   palette = "blues",
   title   = "Aandeel huishoudens met zonnepanelen",
-  filllab = "aandeel"), page = "half")
-```
-
-```{r map-classed-show, echo = FALSE}
-.show_saved(path)
+  filllab = "aandeel")
 ```
 
 `cpb_cut()` is a house-styled wrapper around `cut()`: give it the
@@ -102,18 +85,13 @@ gradient and a compact colourbar (vertical, top-left, alongside the
 map). As elsewhere the unit caption goes in `subtitle`; there is no
 value axis, so `ylab` does not apply here:
 
-```{r map-gemeente, results = "hide"}
+```{r map-gemeente, warning = FALSE}
 gemeenten_ct <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
   mutate(index = rnorm(n(), 100, 15))
 
-path <- tempfile(fileext = ".png")
-save_cpb(path, cpb_map(gemeenten_ct, region = code, value = index,
+cpb_map(gemeenten_ct, region = code, value = index,
   title    = "Voorbeeldindex per gemeente",
-  subtitle = "index (Nederland = 100)"), page = "half")
-```
-
-```{r map-gemeente-show, echo = FALSE}
-.show_saved(path)
+  subtitle = "index (Nederland = 100)")
 ```
 
 # Provinces
@@ -122,23 +100,18 @@ save_cpb(path, cpb_map(gemeenten_ct, region = code, value = index,
 `"corop"` works the same way for COROP regions. A discrete `value`
 gets the discrete CPB palette (pick colours with `index`); a title
 that runs wider than the panel triggers a warning from `save_cpb()`,
-which suggests breaking it over two lines with `"\n"`, as here:
+which suggests breaking it over two lines with `"\n"` -- done here:
 
-```{r map-provincie, results = "hide"}
+```{r map-provincie, warning = FALSE}
 provincies <- tibble(naam = unique(cpb_nl_geo("provincie")$name)) |>
   mutate(klasse = factor(
     sample(c("onder gemiddeld", "boven gemiddeld"), n(), replace = TRUE),
     levels = c("onder gemiddeld", "boven gemiddeld")
   ))
 
-path <- tempfile(fileext = ".png")
-save_cpb(path, cpb_map(provincies, region = naam, value = klasse, level = "provincie",
+cpb_map(provincies, region = naam, value = klasse, level = "provincie",
   fill_index = c(2, 6),
-  title = "Groei ten opzichte van het\nlandelijk gemiddelde"), page = "half")
-```
-
-```{r map-provincie-show, echo = FALSE}
-.show_saved(path)
+  title = "Groei ten opzichte van het\nlandelijk gemiddelde")
 ```
 
 # Styling and raw boundaries
