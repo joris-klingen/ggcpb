@@ -335,12 +335,12 @@ lonen <- tibble(
 p <- lonen |>
   pivot_longer(c(cao, cpi), names_to = "reeks", values_to = "waarde") |>
   mutate(reeks = recode(reeks,
-    cao = "cao-loon bedrijven (linkeras)",
-    cpi = "inflatie (cpi, linkeras)")) |>
+    cao = "cao-loon bedrijven",
+    cpi = "inflatie (cpi)")) |>
   cpb_line(x = jaar, y = waarde, colour = reeks,
     sec_y      = reeel,
     sec_limits = c(95, 110),
-    sec_label  = "reële cao-loon bedrijven (rechteras)",
+    sec_label  = "reële cao-loon bedrijven",
     sec_ylab   = "geïndexeerd, 2021 = 100",
     value_limits = c(-5, 10),
     value_breaks = seq(-5, 10, 5),

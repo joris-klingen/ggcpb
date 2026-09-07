@@ -33,12 +33,12 @@ test_that("cpb_box()'s primary fill layer does not bleed into sec_y's colour gui
   expect_equal(box_layer$show.legend, c(fill = TRUE, colour = FALSE))
 })
 
-test_that("cpb_dot()'s primary point layer does not bleed into sec_y's colour guide", {
+test_that("cpb_dot()'s primary point layer keys on fill only, not sec_y's colour guide", {
   d <- data.frame(x = c("a", "b"), y = c(1, 2), lo = c(0, 1), hi = c(2, 3), z = c(5, 6))
   p <- cpb_dot(d, x = x, y = y, lower = lo, upper = hi, orientation = "vertical",
                sec_y = z, sec_type = "line")
   point_layer <- p$layers[[which(vapply(p$layers, function(l) inherits(l$geom, "GeomPoint"), TRUE))]]
-  expect_false(isTRUE(point_layer$show.legend))
+  expect_equal(point_layer$show.legend, c(fill = TRUE, colour = FALSE))
 })
 
 test_that("cpb_dot()'s primary point layer still gets its own key when colour is mapped", {
@@ -47,6 +47,38 @@ test_that("cpb_dot()'s primary point layer still gets its own key when colour is
   p <- cpb_dot(d, x = x, y = y, lower = lo, upper = hi, colour = g)
   point_layer <- p$layers[[which(vapply(p$layers, function(l) inherits(l$geom, "GeomPoint"), TRUE))]]
   expect_true(isTRUE(point_layer$show.legend))
+})
+
+test_that("with sec_y, every wrapper names both axes in the legend", {
+  keys <- function(p, aes) {
+    b <- ggplot2::ggplot_build(p)
+    b$plot$guides$get_params(aes)$key$.label
+  }
+  d  <- data.frame(x = 1:3, y = c(1, 2, 3), z = c(5, 6, 7))
+  dd <- data.frame(x = c("a", "b"), y = c(1, 2), lo = c(0, 1), hi = c(2, 3), z = c(5, 6))
+  db <- data.frame(x = c("A", "B"), p5 = 1:2, p25 = 2:3, p50 = 3:4,
+                   p75 = 4:5, p95 = 5:6, z = c(5, 6))
+
+  # fill-primary wrappers: square (fill guide) + line (colour guide)
+  for (p in list(
+    cpb_col(d, x = x, y = y, sec_y = z, sec_label = "sec"),
+    cpb_area(d, x = x, y = y, fill = factor("v"), sec_y = z, sec_label = "sec"),
+    cpb_box(db, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+            sec_y = z, sec_label = "sec")
+  )) {
+    expect_match(keys(p, "fill"), "\\(linkeras\\)$", all = TRUE)
+    expect_equal(keys(p, "colour"), "sec (rechteras)")
+  }
+
+  # cpb_dot: primary keyed on fill (square), sec on colour (line)
+  pd <- cpb_dot(dd, x = x, y = y, lower = lo, upper = hi, orientation = "vertical",
+                sec_y = z, sec_label = "sec")
+  expect_match(keys(pd, "fill"), "\\(linkeras\\)$")
+  expect_equal(keys(pd, "colour"), "sec (rechteras)")
+
+  # cpb_line: both series share the colour scale
+  pl <- cpb_line(d, x = x, y = y, sec_y = z, sec_label = "sec", ylab = "prim")
+  expect_setequal(keys(pl, "colour"), c("prim (linkeras)", "sec (rechteras)"))
 })
 
 # cpb_add_sec_ylab_grob() (see save.R) places the right-hand unit

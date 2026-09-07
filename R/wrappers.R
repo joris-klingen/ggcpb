@@ -734,6 +734,16 @@ cpb_linkeras_labels <- function(has_sec, style = "dutch") {
   if (isTRUE(has_sec)) function(b) paste0(b, suffix) else ggplot2::waiver()
 }
 
+# cpb_line()/cpb_dot() key the primary and secondary series on one shared
+# scale, so cpb_linkeras_labels() (which suffixes every entry) would
+# label the sec_y key "(linkeras)" too. This suffixes the sec_y level
+# "(rechteras)" and every other level "(linkeras)" instead.
+cpb_dual_axis_labels <- function(sec_lab, style = "dutch") {
+  left  <- if (style == "english") " (left axis)" else " (linkeras)"
+  right <- if (style == "english") " (right axis)" else " (rechteras)"
+  function(b) ifelse(as.character(b) == sec_lab, paste0(b, right), paste0(b, left))
+}
+
 # Step 6: once has_sec is TRUE, the primary fill guide and sec_y's own
 # colour guide are two separate ggplot2 guides; stack them into one
 # left-aligned block instead of letting them sit side by side, fill
@@ -2218,11 +2228,19 @@ cpb_line <- function(data, x, y, colour = NULL,
       stop("`sec_y` must be a numeric column.", call. = FALSE)
     }
     sec_lab <- if (is.null(sec_label)) rlang::as_label(sec_y) else sec_label
+    prim_lab <- if (is.null(ylab)) rlang::as_label(y) else ylab
 
     sec_map <- cpb_sec_map(sec_vals, primary_breaks = scale_args$breaks, sec_limits = opts$limits, sec_at = opts$at, sec_scale_auto = opts$scale_auto)
     sec_df <- as.data.frame(data)
     sec_df[["cpb__sec"]] <- cpb_sec_to_primary(sec_vals, sec_map)
-    sec_df[["cpb__seclab"]] <- sec_lab
+    # without a colour mapping, factor the shared-scale labels so the
+    # primary series stays first (CPB blue) and sec_y second (pink) --
+    # a bare character would order the palette alphabetically instead
+    sec_df[["cpb__seclab"]] <- if (has_colour) {
+      sec_lab
+    } else {
+      factor(sec_lab, levels = c(prim_lab, sec_lab))
+    }
     sec_df <- sec_df[!duplicated(rlang::eval_tidy(x, data)), , drop = FALSE]
   }
 
@@ -2233,9 +2251,8 @@ cpb_line <- function(data, x, y, colour = NULL,
     # without a colour mapping there would be no key naming the primary
     # line, leaving the legend explaining only the secondary axis. Give
     # the primary line a key of its own, named after the `y` column.
-    prim_lab <- if (is.null(ylab)) rlang::as_label(y) else ylab
     data <- as.data.frame(data)
-    data[["cpb__primlab"]] <- prim_lab
+    data[["cpb__primlab"]] <- factor(prim_lab, levels = c(prim_lab, sec_lab))
     mapping <- ggplot2::aes(x = !!x, y = !!y,
                             colour = .data[["cpb__primlab"]], group = 1)
   } else {
@@ -2393,7 +2410,11 @@ cpb_line <- function(data, x, y, colour = NULL,
   }
 
   if (has_colour || has_sec) {
-    p <- p + cpb_discrete_scale("colour", index, palette)
+    # with sec_y the primary and secondary series share this one colour
+    # scale; suffix every key with the axis it belongs to (the sec_y
+    # level is `sec_lab`), the way cpb_col() does on its fill scale
+    sec_labels_fn <- if (has_sec) cpb_dual_axis_labels(sec_lab, style) else ggplot2::waiver()
+    p <- p + cpb_discrete_scale("colour", index, palette, labels = sec_labels_fn)
     p <- cpb_add_legend_guide(p, "colour", reverse_legend, legend_ncol, legend_nrow)
   }
 
@@ -3908,6 +3929,7 @@ cpb_dot <- function(data, x, y, lower, upper,
   # 2) below), so the primary points fall back to CPB blue instead --
   # the same two-colour pairing cpb_line() and cpb_box() use
   single_colour <- cpb_single_colour(point_colour, if (has_sec) 6 else 2)
+  primary_lab <- if (is.null(ylab)) rlang::as_label(y) else ylab
 
   slots <- NULL
   if (has_group) {
@@ -3933,7 +3955,13 @@ cpb_dot <- function(data, x, y, lower, upper,
   } else {
     mapping_interval <- ggplot2::aes(x = !!x, ymin = !!lower, ymax = !!upper,
                                      group = !!x)
-    mapping_point <- ggplot2::aes(x = !!x, y = !!y, group = !!x)
+    # sec_y keys the secondary line on colour; give the estimate series
+    # a one-level fill mapping so it gets its own square legend key too
+    mapping_point <- if (has_sec) {
+      ggplot2::aes(x = !!x, y = !!y, fill = primary_lab, group = !!x)
+    } else {
+      ggplot2::aes(x = !!x, y = !!y, group = !!x)
+    }
   }
 
   p <- ggplot2::ggplot(data)
@@ -3946,17 +3974,16 @@ cpb_dot <- function(data, x, y, lower, upper,
 
   interval_args <- list(mapping = mapping_interval, width = cap_width,
                         linewidth = linewidth)
-  # show.legend = TRUE only when colour is actually mapped: colour and
-  # sec_y are mutually exclusive here, so with has_sec this layer maps
-  # neither colour nor fill and needs no key of its own -- an
-  # unconditional TRUE would still draw one anyway, and not an empty
-  # one either: a bare show.legend = TRUE draws a layer's own key
-  # glyph (points-on-an-errorbar-cap, here) into every active guide in
-  # the plot, not just ones it maps something to, which would leak
-  # straight into sec_y's own colour guide otherwise (see the "sec_y
-  # helpers" block near the top of this file).
+  # With sec_y the point layer names the primary series on its `fill`
+  # mapping (a square, via key_glyph); show.legend is named per aesthetic
+  # -- fill on, colour off -- so its glyph never bleeds into sec_y's own
+  # colour guide, the same fix cpb_col()/cpb_area()/cpb_box() use.
   point_args <- list(mapping = mapping_point, size = size,
                      show.legend = has_colour, ...)
+  if (has_sec && !has_colour) {
+    point_args$show.legend <- c(fill = TRUE, colour = FALSE)
+    point_args$key_glyph <- "rect"
+  }
   if (!has_colour) {
     interval_args$colour <- single_colour
     point_args$colour <- single_colour
@@ -4039,6 +4066,15 @@ cpb_dot <- function(data, x, y, lower, upper,
   if (has_colour) {
     p <- p + cpb_discrete_scale("colour", index, palette)
     p <- cpb_add_legend_guide(p, "colour", reverse_legend, legend_ncol, legend_nrow)
+  } else if (has_sec) {
+    # the estimate series has no colour/fill mapping of its own, so key
+    # it on a one-colour fill scale (a square) beside sec_y's own line
+    # key -- both axes named in one stacked legend block, as cpb_col()
+    # and cpb_box() do (cpb_add_sec_guides() stacks them, applied last)
+    p <- p + ggplot2::scale_fill_manual(
+      values = stats::setNames(single_colour, primary_lab), name = NULL,
+      labels = cpb_linkeras_labels(TRUE, style = style)
+    )
   }
 
   p <- cpb_add_facet(p, facet, facet_ncol, facet_scales)
@@ -4066,10 +4102,16 @@ cpb_dot <- function(data, x, y, lower, upper,
   }
   subtitle <- cpb_reserve_subtitle(title, subtitle, force = has_sec && !is.null(sec_ylab))
 
-  p +
+  p <- p +
     ggplot2::labs(title = title, subtitle = subtitle, x = lab_x, y = lab_y,
                   colour = colourlab) +
     cpb_wrapper_theme()
+
+  # stack the primary fill key and sec_y's colour key into one block --
+  # applied after the theme so its legend.box override survives, as in
+  # cpb_box()
+  cpb_add_sec_guides(p, has_sec && !has_colour, reverse_legend,
+                     legend_ncol, legend_nrow)
 }
 
 # donut ----
