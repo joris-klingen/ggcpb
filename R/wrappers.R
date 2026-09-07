@@ -573,8 +573,18 @@ cpb_sec_axis <- function(sec_map, accuracy = NULL, sec_labels = NULL, style = "d
       # by value, not by position: a descending breaks vector (an
       # inverted sec_limits/sec_at, before cpb_find_sec_breaks() sorts
       # it) would otherwise get both ends nudged the wrong way, pushing
-      # them outside the range and losing *both* boundary labels
-      eps <- span * 1e-8
+      # them outside the range and losing *both* boundary labels.
+      #
+      # scaled by the larger of span and the breaks' own magnitude: the
+      # floating-point noise this guards against comes from the
+      # slope/intercept division and scales with how big the numbers
+      # being divided are, not with how far apart they are -- a narrow
+      # sec_limits on a large-magnitude series (say 1e9 to 1e9+2) has a
+      # tiny span but the same double-precision noise as any other
+      # value near 1e9, which a span-only epsilon would be too small to
+      # clear
+      magnitude <- max(abs(breaks_val))
+      eps <- max(span, magnitude) * 1e-8
       i_min <- which.min(breaks_val)
       i_max <- which.max(breaks_val)
       breaks_val[i_min] <- breaks_val[i_min] + eps
@@ -586,6 +596,27 @@ cpb_sec_axis <- function(sec_map, accuracy = NULL, sec_labels = NULL, style = "d
     sec_labels
   } else {
     label_number_nl(accuracy = accuracy, style = style)
+  }
+
+  # Left to itself, label_number_nl() picks a precision fine enough to
+  # tell the breaks apart -- a 15.00-15.36 range comes out as 15,000 /
+  # 15,072 / ... rather than six copies of "15". An explicit
+  # sec_accuracy overrides that judgement, and a value coarser than the
+  # spacing rounds every break to the same text: the gridlines are
+  # still where they belong, but the axis reads as though it repeats
+  # itself. Checked here rather than left to the reader to notice.
+  if (!is.null(accuracy) && is.null(sec_labels)) {
+    shown <- tryCatch(labels_arg(breaks_val), error = function(e) NULL)
+    if (!is.null(shown) && anyDuplicated(shown) > 0) {
+      warning(
+        "ggcpb: `sec_accuracy` = ", accuracy, " rounds the secondary axis's ",
+        "breaks to only ", length(unique(shown)), " distinct label(s) for ",
+        length(breaks_val), " gridlines (", paste(unique(shown), collapse = ", "),
+        "). Use a finer `sec_accuracy` -- the breaks themselves are ",
+        round(min(diff(sort(breaks_val))), 6), " apart.",
+        call. = FALSE
+      )
+    }
   }
 
   ggplot2::sec_axis(

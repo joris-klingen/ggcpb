@@ -1325,6 +1325,28 @@ test_that("a high-to-low sec_limits/sec_at is read as the same range, low to hig
   expect_equal(down$labels, up$labels)
 })
 
+test_that("a sec_accuracy too coarse for the break spacing is flagged, not left to read", {
+  d <- data.frame(
+    jaar = 2018:2027, prim = 1:10,
+    sec = c(15.00, 15.04, 15.08, 15.12, 15.16, 15.20, 15.24, 15.28, 15.32, 15.36)
+  )
+  # rounds all six breaks to "15": gridlines right, axis unreadable
+  expect_warning(
+    cpb_line(d, x = jaar, y = prim, sec_y = sec, sec_scale_auto = FALSE, sec_accuracy = 1),
+    "rounds the secondary axis's breaks"
+  )
+  # left to itself, label_number_nl() picks a precision that tells them apart
+  expect_no_warning(
+    cpb_line(d, x = jaar, y = prim, sec_y = sec, sec_scale_auto = FALSE)
+  )
+  expect_no_warning(
+    cpb_line(d, x = jaar, y = prim, sec_y = sec, sec_scale_auto = FALSE, sec_accuracy = 0.001)
+  )
+  # a coarse accuracy is fine when the breaks are far enough apart for it
+  wide <- data.frame(jaar = 2018:2024, prim = 1:7, sec = seq(100, 700, length.out = 7))
+  expect_no_warning(cpb_line(wide, x = jaar, y = prim, sec_y = sec, sec_accuracy = 1))
+})
+
 test_that("cpb_sec_axis() keeps both boundary breaks when handed them descending", {
   prim <- c(-4, -3, -2, -1, 0, 1, 2)
   sec_map <- cpb_sec_map(c(3.4, 3.7), primary_breaks = prim, sec_limits = c(3.4, 3.7))
