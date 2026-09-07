@@ -498,6 +498,44 @@ test_that("value_breaks and value_limits work in area, line and box", {
   expect_equal(p$coordinates$limits$y, c(0, 10))
 })
 
+test_that("a value axis narrower than the data actually clips the drawing", {
+  # box-df's own p5/p95 (1, 5) sit inside value_breaks = c(1,3,5)'s own
+  # range -- nothing to crop, so clip must stay off (a real p5/p95
+  # marker legitimately touches that boundary and should not be cut in
+  # half). wide_df's whiskers (-6.5, 7.1) run well past value_breaks =
+  # seq(-6,6,2)'s range: this is the case that was drawing straight
+  # into the page margin -- clip must be "on" so the coord zoom this is
+  # documented as actually crops
+  box_df <- data.frame(x = c("a", "b"), p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5)
+  p_flush <- cpb_box(box_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+                     value_breaks = c(1, 3, 5))
+  expect_equal(p_flush$coordinates$clip, "off")
+
+  wide_df <- data.frame(x = c("a", "b"), p5 = -6.5, p25 = -3, p50 = 0, p75 = 3, p95 = 7.1)
+  expect_warning(
+    p_crop <- cpb_box(wide_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+                      value_breaks = seq(-6, 6, 2)),
+    "cropped for display"
+  )
+  expect_equal(p_crop$coordinates$clip, "on")
+  # the crop is visual only -- the box's own data still carries the
+  # true p5/p95, unclipped, matching cpb_flush_scale_args()'s own
+  # promise that this data is never dropped
+  built <- ggplot2::ggplot_build(p_crop)
+  box_data <- built$data[[which(vapply(p_crop$layers, function(l)
+    inherits(l$geom, "GeomErrorbar"), logical(1)))[1]]]
+  expect_equal(sort(unique(c(box_data$ymin, box_data$ymax))), c(-6.5, 7.1))
+
+  # the same holds for cpb_line() -- a line/point past value_limits
+  # is cropped, not left to draw off the edge of the panel
+  line_df <- data.frame(x = 1:5, y = c(1, 8, 3, -4, 2))
+  expect_warning(
+    p_line <- cpb_line(line_df, x = x, y = y, value_limits = c(0, 5)),
+    "cropped for display"
+  )
+  expect_equal(p_line$coordinates$clip, "on")
+})
+
 test_that("pct_axis works in cpb_box", {
   box_df <- data.frame(x = c("a", "b"), p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5)
   sc <- cpb_box(box_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,

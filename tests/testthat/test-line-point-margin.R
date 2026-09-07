@@ -43,13 +43,15 @@ test_that("points do not stop value_limits from cropping", {
     "cropped for display"
   )
   b <- ggplot2::ggplot_build(p)
-  # clip defaults to "off" now (see cpb_line's x_lim_follow_data docs),
-  # and value_limits crops the *view* via coord_cartesian()'s ylim, not
-  # the value scale's own `limits` -- so the out-of-range observations
-  # survive undropped (a stacked total elsewhere, say, still comes out
-  # right) and are only visually cropped when drawn, same as any other
-  # coord_cartesian() zoom
-  expect_equal(b$layout$coord$clip, "off")
+  # clip is "on" here: value_limits crops the *view* via
+  # coord_cartesian()'s ylim, not the value scale's own `limits` -- so
+  # the out-of-range observations survive undropped (a stacked total
+  # elsewhere, say, still comes out right) -- but the crop still has to
+  # be a real, visible crop, the same as any other coord_cartesian()
+  # zoom: with clip left "off" the line would run straight past the
+  # panel edge into the page margin instead of stopping at the axis it
+  # was asked to stop at
+  expect_equal(b$layout$coord$clip, "on")
   line_y <- b$data[[which(vapply(p$layers, function(l) inherits(l$geom, "GeomLine"), TRUE))]]$y
   expect_false(anyNA(line_y))
   expect_equal(line_y, d$y)
