@@ -68,6 +68,8 @@ label_pct_nl <- function(scale = 1, accuracy = 1, style = c("dutch", "english"),
 #' A thin wrapper around [scales::label_number()] with Dutch or English grouping
 #' (`.`) and decimal (`,`) marks.
 #'
+#' @param accuracy Accuracy passed to [scales::label_number()]; `NULL`
+#'   (default) automatically calculates the required decimal precision.
 #' @param style Formatting style: `"dutch"` (default, `.` thousands, `,` decimal)
 #'   or `"english"` (`,` thousands, `.` decimal).
 #' @param ... Further arguments passed to [scales::label_number()].
@@ -76,14 +78,45 @@ label_pct_nl <- function(scale = 1, accuracy = 1, style = c("dutch", "english"),
 #' label_number_nl()(1234567.8)
 #' label_number_nl(style = "english")(1234567.8)
 #' @export
-label_number_nl <- function(style = c("dutch", "english"), ...) {
+label_number_nl <- function(accuracy = NULL, style = c("dutch", "english"), ...) {
   style <- match.arg(style)
   m <- number_format_style(style)
-  scales::label_number(
-    big.mark     = m$big.mark,
-    decimal.mark = m$decimal.mark,
-    ...
-  )
+  dots <- list(...)
+  function(x) {
+    acc <- accuracy
+    if (is.null(acc) && length(x) > 0) {
+      acc <- cpb_accuracy(x)
+    }
+    lab_fn <- do.call(scales::label_number, c(list(
+      accuracy     = acc,
+      big.mark     = m$big.mark,
+      decimal.mark = m$decimal.mark
+    ), dots))
+    lab_fn(x)
+  }
+}
+
+#' Determine required decimal accuracy for label_number_nl
+#' @noRd
+cpb_accuracy <- function(x) {
+  if (length(x) == 0) return(NULL)
+  vals <- round(x[is.finite(x)], 6)
+  if (length(vals) == 0) return(NULL)
+  if (all(abs(vals - round(vals)) < 1e-4)) {
+    return(1)
+  }
+  for (k in 1:6) {
+    acc <- 10^(-k)
+    if (all(abs(vals / acc - round(vals / acc)) < 1e-4)) {
+      return(acc)
+    }
+  }
+  diffs <- diff(sort(unique(vals)))
+  if (length(diffs) > 0 && min(diffs) > 0) {
+    10^(-floor(log10(min(diffs))))
+  } else {
+    1
+  }
 }
 
 #' Helper function for thousands and decimal marks for Dutch or English styles

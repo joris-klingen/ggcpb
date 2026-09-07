@@ -1385,6 +1385,41 @@ test_that("a sec_accuracy too coarse for the break spacing is flagged, not left 
   expect_no_warning(cpb_line(wide, x = jaar, y = prim, sec_y = sec, sec_accuracy = 1))
 })
 
+test_that("a fixed secondary scale caps its auto label precision at one decimal", {
+  sec_labels <- function(p) {
+    pp <- ggplot2::ggplot_build(p)$layout$panel_params[[1]]
+    pp$y.sec$get_labels()
+  }
+  d <- data.frame(jaar = 2018:2027, prim = 1:10, sec = c(9, 20, 35, 50, 60, 70, 77, 80, 90, 95))
+
+  # sec_limits divides into arbitrary fractions -> one decimal, not 3-6
+  fixed <- cpb_line(d, x = jaar, y = prim, sec_y = sec,
+                    sec_limits = c(7, 78), sec_scale_auto = FALSE)
+  labs <- sec_labels(fixed)
+  expect_true(all(grepl("^-?[0-9]+,[0-9]$", labs)))
+
+  # english style uses a decimal point instead
+  fixed_en <- cpb_line(d, x = jaar, y = prim, sec_y = sec,
+                       sec_limits = c(7, 78), sec_scale_auto = FALSE, style = "english")
+  expect_true(all(grepl("^-?[0-9]+\\.[0-9]$", sec_labels(fixed_en))))
+
+  # steps that land on whole numbers stay integer -- the cap only bites
+  # when a decimal is actually needed
+  ints <- cpb_line(d, x = jaar, y = prim, sec_y = sec,
+                   sec_limits = c(10, 80), sec_scale_auto = FALSE)
+  expect_false(any(grepl(",", sec_labels(ints), fixed = TRUE)))
+
+  # an explicit sec_accuracy overrides the cap for callers who want more
+  finer <- cpb_line(d, x = jaar, y = prim, sec_y = sec,
+                    sec_limits = c(7, 78), sec_scale_auto = FALSE, sec_accuracy = 0.001)
+  expect_true(any(grepl("^-?[0-9]+,[0-9]{3}$", sec_labels(finer))))
+
+  # a narrow range keeps the finer precision it needs to stay legible
+  narrow <- cpb_line(d, x = jaar, y = prim, sec_y = sec,
+                     sec_limits = c(15, 15.36), sec_scale_auto = FALSE)
+  expect_equal(anyDuplicated(sec_labels(narrow)), 0L)
+})
+
 test_that("cpb_sec_axis() keeps both boundary breaks when handed them descending", {
   prim <- c(-4, -3, -2, -1, 0, 1, 2)
   sec_map <- cpb_sec_map(c(3.4, 3.7), primary_breaks = prim, sec_limits = c(3.4, 3.7))

@@ -504,6 +504,14 @@ cpb_sec_map <- function(sec_vals, sec_limits = NULL, prim_min = NULL, prim_max =
 
   sec_breaks <- cpb_find_sec_breaks(primary_breaks, sec_vals, sec_limits = sec_limits, sec_at = sec_at, sec_scale_auto = sec_scale_auto)
 
+  # TRUE when sec_breaks come from an even linear split of sec_limits
+  # (fixed scale, or limits that differ from the data range) rather than
+  # pretty() -- those breaks are arbitrary fractions, so cpb_sec_axis()
+  # caps their auto label precision. Explicit sec_at is the caller's own.
+  user_custom_limits <- is.numeric(sec_limits) && length(sec_limits) == 2 &&
+    !isTRUE(all.equal(sort(as.numeric(sec_limits)), range(sec_vals, na.rm = TRUE)))
+  forced_linear <- is.null(sec_at) && (!isTRUE(sec_scale_auto) || user_custom_limits)
+
   p_min <- primary_breaks[1]
   p_max <- primary_breaks[length(primary_breaks)]
   s_min <- sec_breaks[1]
@@ -524,7 +532,8 @@ cpb_sec_map <- function(sec_vals, sec_limits = NULL, prim_min = NULL, prim_max =
     slope = slope,
     inter = inter,
     sec_breaks = sec_breaks,
-    primary_breaks = primary_breaks
+    primary_breaks = primary_breaks,
+    forced_linear = forced_linear
   )
 }
 
@@ -558,6 +567,11 @@ cpb_sec_axis <- function(sec_map, accuracy = NULL, sec_labels = NULL, style = "d
   } else {
     to_sec(c(sec_map$prim_min, sec_map$prim_max))
   }
+
+  # The unrounded breaks, kept before the nudge below shifts the two
+  # extremes inward. Labels format these, not `breaks_val`: the nudge is
+  # a drawing-only workaround and must not reach the text.
+  breaks_true <- breaks_val
 
   # ggplot2 doesn't trust sec_min/sec_max directly: internally it densely
   # resamples the primary axis range through `transform` and takes the
@@ -597,19 +611,43 @@ cpb_sec_axis <- function(sec_map, accuracy = NULL, sec_labels = NULL, style = "d
     }
   }
 
+  # Resolve the label accuracy. label_number_nl(NULL) picks a precision
+  # fine enough to tell the breaks apart. On a forced linear split the
+  # breaks are arbitrary fractions (0.128333...), so cap that at one
+  # decimal -- but keep whole numbers when the steps are integers, and
+  # back off to the finer value if one decimal would collapse adjacent
+  # labels (a sec range only tenths wide). An explicit sec_accuracy wins.
+  acc <- accuracy
+  if (is.null(acc) && is.null(sec_labels) && isTRUE(sec_map$forced_linear)) {
+    detected <- cpb_accuracy(breaks_true)
+    if (is.null(detected)) detected <- 0.1
+    capped <- max(detected, 0.1)
+    shown_capped <- tryCatch(
+      label_number_nl(accuracy = capped, style = style)(breaks_true),
+      error = function(e) NULL
+    )
+    acc <- if (!is.null(shown_capped) && anyDuplicated(shown_capped) == 0) capped else detected
+  }
+
   labels_arg <- if (!is.null(sec_labels)) {
     sec_labels
   } else {
-    label_number_nl(accuracy = accuracy, style = style)
+    base_labeller <- label_number_nl(accuracy = acc, style = style)
+    # ggplot hands the labeller the eps-nudged `breaks_val`; format the
+    # unrounded values instead, so a break sitting exactly at 7 renders
+    # "7", not "7.000001".
+    function(x) {
+      if (length(x) == length(breaks_val) &&
+        isTRUE(all.equal(as.numeric(x), as.numeric(breaks_val)))) {
+        x <- breaks_true
+      }
+      base_labeller(x)
+    }
   }
 
-  # Left to itself, label_number_nl() picks a precision fine enough to
-  # tell the breaks apart -- a 15.00-15.36 range comes out as 15,000 /
-  # 15,072 / ... rather than six copies of "15". An explicit
-  # sec_accuracy overrides that judgement, and a value coarser than the
-  # spacing rounds every break to the same text: the gridlines are
-  # still where they belong, but the axis reads as though it repeats
-  # itself. Checked here rather than left to the reader to notice.
+  # An explicit sec_accuracy coarser than the break spacing rounds every
+  # break to the same text: gridlines still right, but the axis reads as
+  # though it repeats itself. (The auto path above already backs off.)
   if (!is.null(accuracy) && is.null(sec_labels)) {
     shown <- tryCatch(labels_arg(breaks_val), error = function(e) NULL)
     if (!is.null(shown) && anyDuplicated(shown) > 0) {
@@ -867,8 +905,7 @@ cpb_forecast_pos <- function(forecast_x, xvals) {
   pos <- match(as.character(forecast_x), levs)
   if (is.na(pos)) {
     stop("`forecast_x` (\"", forecast_x, "\") is not one of the values on ",
-         "the x axis.", call. = FALSE
-    )
+         "the x axis.", call. = FALSE)
   }
   pos - 0.5
 }
@@ -1342,9 +1379,7 @@ cpb_col <- function(data, x, y, fill = NULL,
     sec_col <- cpb_single_colour(sec_colour, 2)
     p <- cpb_sec_layer(p, data, x, sec_vals, sec_map, sec_type,
                        sec_col, sec_lab, sec_linewidth, sec_points,
-                       sec_point_size, sec_col_width,
-      style = style
-    )
+                       sec_point_size, sec_col_width, style = style)
     scale_args$sec.axis <- cpb_sec_axis(sec_map, accuracy = sec_accuracy, sec_labels = opts$labels, style = style)
   }
 
@@ -1356,9 +1391,7 @@ cpb_col <- function(data, x, y, fill = NULL,
   if (!is.null(forecast_x)) {
     p <- p + cpb_forecast_label(
       cpb_forecast_pos(forecast_x, rlang::eval_tidy(x, data)),
-      rlang::eval_tidy(x, data), forecast_label,
-      style = style
-    )
+      rlang::eval_tidy(x, data), forecast_label, style = style)
   }
 
   bar_width <- list(...)$width
@@ -1793,9 +1826,7 @@ cpb_area <- function(data, x, y, fill,
     sec_col <- cpb_single_colour(sec_colour, 2)
     p <- cpb_sec_layer(p, data, x, sec_vals, sec_map, sec_type,
                        sec_col, sec_lab, sec_linewidth, sec_points,
-                       sec_point_size, sec_col_width,
-      style = style
-    )
+                       sec_point_size, sec_col_width, style = style)
     scale_args$sec.axis <- cpb_sec_axis(sec_map, accuracy = sec_accuracy, sec_labels = opts$labels, style = style)
   }
   scale_args$value_crops <- NULL
@@ -2196,10 +2227,8 @@ cpb_line <- function(data, x, y, colour = NULL,
   }
 
   if (has_colour) {
-    mapping <- ggplot2::aes(
-      x = !!x, y = !!y, colour = !!colour,
-                            group = !!colour
-    )
+    mapping <- ggplot2::aes(x = !!x, y = !!y, colour = !!colour,
+                            group = !!colour)
   } else if (has_sec) {
     # without a colour mapping there would be no key naming the primary
     # line, leaving the legend explaining only the secondary axis. Give
@@ -3043,9 +3072,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     sec_col <- cpb_single_colour(sec_colour, 2)
     p <- cpb_sec_layer(p, data, x, sec_vals, sec_map, sec_type,
                        sec_col, sec_lab, sec_linewidth, sec_points,
-                       sec_point_size, sec_col_width,
-      style = style
-    )
+                       sec_point_size, sec_col_width, style = style)
     scale_args$sec.axis <- cpb_sec_axis(sec_map, accuracy = sec_accuracy, sec_labels = opts$labels, style = style)
   }
 
@@ -3770,18 +3797,14 @@ cpb_hist <- function(data, x, fill = NULL,
 #' @return A `ggplot` object.
 #' @examples
 #' df <- data.frame(
-#'   term  = c(
-#'     "Vertrouwen in de politiek", "Succes door hard werken",
-#'             "Heeft kinderen", "Vermogenskwintiel"
-#'   ),
+#'   term  = c("Vertrouwen in de politiek", "Succes door hard werken",
+#'             "Heeft kinderen", "Vermogenskwintiel"),
 #'   coef  = c(2.9, -2.0, -1.4, -2.5),
 #'   lo    = c(1.9, -3.0, -3.3, -3.2),
 #'   hi    = c(3.9, -1.1, 0.6, -1.8)
 #' )
-#' cpb_dot(df,
-#'   x = term, y = coef, lower = lo, upper = hi,
-#'         xlab = "%-punt verandering"
-#' )
+#' cpb_dot(df, x = term, y = coef, lower = lo, upper = hi,
+#'         xlab = "%-punt verandering")
 #' @export
 cpb_dot <- function(data, x, y, lower, upper,
                      colour = NULL,
@@ -3975,9 +3998,7 @@ cpb_dot <- function(data, x, y, lower, upper,
     sec_col <- cpb_single_colour(sec_colour, 2)
     p <- cpb_sec_layer(p, data, x, sec_vals, sec_map, sec_type,
                        sec_col, sec_lab, sec_linewidth, sec_points,
-                       sec_point_size, sec_col_width,
-      style = style
-    )
+                       sec_point_size, sec_col_width, style = style)
     scale_args$sec.axis <- cpb_sec_axis(sec_map, accuracy = sec_accuracy, sec_labels = opts$labels, style = style)
   }
 

@@ -4,9 +4,12 @@
 \alias{label_number_nl}
 \title{Plain number labels, Dutch locale}
 \usage{
-label_number_nl(style = c("dutch", "english"), ...)
+label_number_nl(accuracy = NULL, style = c("dutch", "english"), ...)
 }
 \arguments{
+\item{accuracy}{Accuracy passed to \code{\link[scales:label_number]{scales::label_number()}}; \code{NULL}
+(default) automatically calculates the required decimal precision.}
+
 \item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
 or \code{"english"} (\verb{,} thousands, \code{.} decimal).}
 

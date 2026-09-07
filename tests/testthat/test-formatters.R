@@ -22,3 +22,12 @@ test_that("label_number_nl uses Dutch grouping and decimal marks", {
   out_dec <- label_number_nl(accuracy = 0.1)(1234.5)
   expect_equal(out_dec, "1.234,5")
 })
+
+test_that("label_number_nl auto-detects decimal accuracy when accuracy is NULL", {
+  breaks <- c(7.0, 20.8, 34.6, 48.4, 62.2, 76.0)
+  out_dutch <- label_number_nl(style = "dutch")(breaks)
+  expect_equal(out_dutch, c("7,0", "20,8", "34,6", "48,4", "62,2", "76,0"))
+
+  out_english <- label_number_nl(style = "english")(breaks)
+  expect_equal(out_english, c("7.0", "20.8", "34.6", "48.4", "62.2", "76.0"))
+})
