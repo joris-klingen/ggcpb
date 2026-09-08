@@ -89,6 +89,9 @@
 #'   that for a single figure.
 #' @param style Formatting style: `"dutch"` (default, `.` thousands, `,` decimal)
 #'   or `"english"` (`,` thousands, `.` decimal, English forecast / axis labels).
+#'   Taken from `getOption("ggcpb.style")`, so an English report can set
+#'   `options(ggcpb.style = "english")` once rather than passing `style` to
+#'   every figure and risking a stray Dutch decimal comma.
 #' @param ... Further arguments passed to both [ggplot2::geom_errorbar()]
 #'   and [ggplot2::geom_boxplot()], as in [cpb_box()].
 #' @return A `ggplot` object.
@@ -166,9 +169,9 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
                                   zero_indicator = TRUE,
                                   zero_indicator_linewidth = 2,
                                   ylab_position = NULL,
-                                  style = c("dutch", "english"),
+                                  style = getOption("ggcpb.style", "dutch"),
                                   ...) {
-  style <- match.arg(style)
+  style <- match.arg(style, c("dutch", "english"))
   box_style <- match.arg(box_style)
   orientation <- match.arg(orientation)
   has_facet <- !rlang::quo_is_null(rlang::enquo(facet))

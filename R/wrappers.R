@@ -1122,6 +1122,9 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   title), matching CPB house style.
 #' @param style Formatting style: `"dutch"` (default, `.` thousands, `,` decimal)
 #'   or `"english"` (`,` thousands, `.` decimal, English forecast / axis labels).
+#'   Taken from `getOption("ggcpb.style")`, so an English report can set
+#'   `options(ggcpb.style = "english")` once rather than passing `style` to
+#'   every figure and risking a stray Dutch decimal comma.
 #' @param ... Further arguments passed to [ggplot2::geom_col()].
 #' @return A `ggplot` object.
 #' @examples
@@ -1189,9 +1192,9 @@ cpb_col <- function(data, x, y, fill = NULL,
                      xlab = NULL,
                      ylab = NULL,
                      filllab = NULL,
-                    style = c("dutch", "english"),
+                    style = getOption("ggcpb.style", "dutch"),
                     ...) {
-  style <- match.arg(style)
+  style <- match.arg(style, c("dutch", "english"))
   .cpb_idx <- cpb_resolve_index(fill_index, index, palette, !missing(palette), "fill_index")
   index <- .cpb_idx$index
   palette <- .cpb_idx$palette
@@ -1668,6 +1671,9 @@ cpb_col <- function(data, x, y, fill = NULL,
 #'   given, in which case it falls back to a rotated y-axis title.
 #' @param style Formatting style: `"dutch"` (default, `.` thousands, `,` decimal)
 #'   or `"english"` (`,` thousands, `.` decimal, English forecast / axis labels).
+#'   Taken from `getOption("ggcpb.style")`, so an English report can set
+#'   `options(ggcpb.style = "english")` once rather than passing `style` to
+#'   every figure and risking a stray Dutch decimal comma.
 #' @param ... Further arguments passed to [ggplot2::geom_area()].
 #' @return A `ggplot` object.
 #' @examples
@@ -1729,9 +1735,9 @@ cpb_area <- function(data, x, y, fill,
                       xlab = NULL,
                       ylab = NULL,
                       filllab = NULL,
-                     style = c("dutch", "english"),
+                     style = getOption("ggcpb.style", "dutch"),
                      ...) {
-  style <- match.arg(style)
+  style <- match.arg(style, c("dutch", "english"))
   .cpb_idx <- cpb_resolve_index(fill_index, index, palette, !missing(palette), "fill_index")
   index <- .cpb_idx$index
   palette <- .cpb_idx$palette
@@ -2068,6 +2074,9 @@ cpb_area <- function(data, x, y, fill,
 #'   a rotated y-axis title.
 #' @param style Formatting style: `"dutch"` (default, `.` thousands, `,` decimal)
 #'   or `"english"` (`,` thousands, `.` decimal, English forecast / axis labels).
+#'   Taken from `getOption("ggcpb.style")`, so an English report can set
+#'   `options(ggcpb.style = "english")` once rather than passing `style` to
+#'   every figure and risking a stray Dutch decimal comma.
 #' @param ... Further arguments passed to [ggplot2::geom_line()].
 #' @return A `ggplot` object.
 #' @examples
@@ -2136,9 +2145,9 @@ cpb_line <- function(data, x, y, colour = NULL,
                       xlab = NULL,
                       ylab = NULL,
                       colourlab = NULL,
-                     style = c("dutch", "english"),
+                     style = getOption("ggcpb.style", "dutch"),
                      ...) {
-  style <- match.arg(style)
+  style <- match.arg(style, c("dutch", "english"))
   if (is.null(colour_index)) colour_index <- color_index
   .cpb_idx <- cpb_resolve_index(colour_index, index, palette, !missing(palette), "colour_index")
   index <- .cpb_idx$index
@@ -2657,6 +2666,9 @@ cpb_line <- function(data, x, y, colour = NULL,
 #'   given, in which case it falls back to a rotated y-axis title.
 #' @param style Formatting style: `"dutch"` (default, `.` thousands, `,` decimal)
 #'   or `"english"` (`,` thousands, `.` decimal, English forecast / axis labels).
+#'   Taken from `getOption("ggcpb.style")`, so an English report can set
+#'   `options(ggcpb.style = "english")` once rather than passing `style` to
+#'   every figure and risking a stray Dutch decimal comma.
 #' @param ... Further arguments passed to both [ggplot2::geom_errorbar()]
 #'   and [ggplot2::geom_boxplot()].
 #' @return A `ggplot` object.
@@ -2733,9 +2745,9 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                      xlab = NULL,
                      ylab = NULL,
                      filllab = NULL,
-                    style = c("dutch", "english"),
+                    style = getOption("ggcpb.style", "dutch"),
                     ...) {
-  style <- match.arg(style)
+  style <- match.arg(style, c("dutch", "english"))
   .cpb_idx <- cpb_resolve_index(fill_index, index, palette, !missing(palette), "fill_index")
   index <- .cpb_idx$index
   palette <- .cpb_idx$palette
@@ -2973,7 +2985,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
         q_labels  = TRUE, q_lab_col = "#00a5ff", q_lab_size = 2.2
       )
     )
-    fmt <- label_number_nl(accuracy = label_accuracy)
+    fmt <- label_number_nl(accuracy = label_accuracy, style = style)
 
     # plain whiskers: capless (width = 0) segments p5-p25 and p75-p95;
     # then the borderless box (colour = NA also hides the boxplot's own
@@ -3265,6 +3277,9 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
 #'   given, in which case it falls back to a rotated y-axis title.
 #' @param style Formatting style: `"dutch"` (default, `.` thousands, `,` decimal)
 #'   or `"english"` (`,` thousands, `.` decimal, English forecast / axis labels).
+#'   Taken from `getOption("ggcpb.style")`, so an English report can set
+#'   `options(ggcpb.style = "english")` once rather than passing `style` to
+#'   every figure and risking a stray Dutch decimal comma.
 #' @param ... Further arguments passed to [ggplot2::geom_point()].
 #' @return A `ggplot` object.
 #' @examples
@@ -3307,9 +3322,9 @@ cpb_scatter <- function(data, x, y, colour = NULL,
                          xlab = NULL,
                          ylab = NULL,
                          colourlab = NULL,
-                         style = c("dutch", "english"),
+                         style = getOption("ggcpb.style", "dutch"),
                          ...) {
-  style <- match.arg(style)
+  style <- match.arg(style, c("dutch", "english"))
   if (is.null(colour_index)) colour_index <- color_index
   .cpb_idx <- cpb_resolve_index(colour_index, index, palette, !missing(palette), "colour_index")
   index <- .cpb_idx$index
@@ -3504,6 +3519,9 @@ cpb_scatter <- function(data, x, y, colour = NULL,
 #'   also given.
 #' @param style Formatting style: `"dutch"` (default, `.` thousands, `,` decimal)
 #'   or `"english"` (`,` thousands, `.` decimal, English forecast / axis labels).
+#'   Taken from `getOption("ggcpb.style")`, so an English report can set
+#'   `options(ggcpb.style = "english")` once rather than passing `style` to
+#'   every figure and risking a stray Dutch decimal comma.
 #' @param ... Further arguments passed to [ggplot2::geom_histogram()].
 #' @return A `ggplot` object.
 #' @examples
@@ -3545,9 +3563,9 @@ cpb_hist <- function(data, x, fill = NULL,
                       xlab = NULL,
                       ylab = NULL,
                       filllab = NULL,
-                      style = c("dutch", "english"),
+                      style = getOption("ggcpb.style", "dutch"),
                       ...) {
-  style <- match.arg(style)
+  style <- match.arg(style, c("dutch", "english"))
   .cpb_idx <- cpb_resolve_index(fill_index, index, palette, !missing(palette), "fill_index")
   index <- .cpb_idx$index
   palette <- .cpb_idx$palette
@@ -3799,6 +3817,9 @@ cpb_hist <- function(data, x, fill = NULL,
 #' @param colourlab Legend title override; defaults to `NULL`.
 #' @param style Formatting style: `"dutch"` (default, `.` thousands, `,` decimal)
 #'   or `"english"` (`,` thousands, `.` decimal, English forecast / axis labels).
+#'   Taken from `getOption("ggcpb.style")`, so an English report can set
+#'   `options(ggcpb.style = "english")` once rather than passing `style` to
+#'   every figure and risking a stray Dutch decimal comma.
 #' @param ... Further arguments passed to [ggplot2::geom_point()].
 #' @return A `ggplot` object.
 #' @examples
@@ -3869,9 +3890,9 @@ cpb_dot <- function(data, x, y, lower, upper,
                      xlab = NULL,
                      ylab = NULL,
                      colourlab = NULL,
-                    style = c("dutch", "english"),
+                    style = getOption("ggcpb.style", "dutch"),
                     ...) {
-  style <- match.arg(style)
+  style <- match.arg(style, c("dutch", "english"))
   if (is.null(colour_index)) colour_index <- color_index
   .cpb_idx <- cpb_resolve_index(colour_index, index, palette, !missing(palette), "colour_index")
   index <- .cpb_idx$index
@@ -4198,6 +4219,11 @@ cpb_dot <- function(data, x, y, lower, upper,
 #' @param title,subtitle Plot title/subtitle.
 #' @param filllab Legend title override; defaults to `NULL` (no
 #'   title), matching CPB house style.
+#' @param style Formatting style for the percentages: `"dutch"`
+#'   (default, `,` decimal) or `"english"` (`.` decimal). Taken from
+#'   `getOption("ggcpb.style")`, so an English report can set
+#'   `options(ggcpb.style = "english")` once rather than passing `style` to
+#'   every figure and risking a stray Dutch decimal comma.
 #' @param ... Further arguments passed to [ggplot2::geom_col()].
 #' @return A `ggplot` object.
 #' @examples
@@ -4232,12 +4258,14 @@ cpb_donut <- function(data, fill, y,
                       title = NULL,
                       subtitle = NULL,
                       filllab = NULL,
+                      style = getOption("ggcpb.style", "dutch"),
                       ...) {
   fill <- rlang::enquo(fill)
   y <- rlang::enquo(y)
   label <- rlang::enquo(label)
   has_label <- !rlang::quo_is_null(label)
   label_style <- match.arg(label_style)
+  style <- match.arg(style, c("dutch", "english"))
 
   if (ring_width <= 0 || ring_width > 2) {
     stop("`ring_width` must be greater than 0 and at most 2 (2 draws a ",
@@ -4259,7 +4287,7 @@ cpb_donut <- function(data, fill, y,
     )
   }
 
-  fmt_pct <- label_pct_nl(accuracy = label_accuracy)
+  fmt_pct <- label_pct_nl(accuracy = label_accuracy, style = style)
   pct <- yvals / sum(yvals, na.rm = TRUE) * 100
 
   # a single constant x stacks every fill level into one bar; wrapping

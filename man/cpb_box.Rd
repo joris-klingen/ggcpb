@@ -72,7 +72,7 @@ cpb_box(
   xlab = NULL,
   ylab = NULL,
   filllab = NULL,
-  style = c("dutch", "english"),
+  style = getOption("ggcpb.style", "dutch"),
   ...
 )
 }
@@ -366,7 +366,10 @@ it as the plot \emph{subtitle} -- unless an explicit \code{subtitle} is also
 given, in which case it falls back to a rotated y-axis title.}
 
 \item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
-or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).}
+or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).
+Taken from \code{getOption("ggcpb.style")}, so an English report can set
+\code{options(ggcpb.style = "english")} once rather than passing \code{style} to
+every figure and risking a stray Dutch decimal comma.}
 
 \item{...}{Further arguments passed to both \code{\link[ggplot2:geom_errorbar]{ggplot2::geom_errorbar()}}
 and \code{\link[ggplot2:geom_boxplot]{ggplot2::geom_boxplot()}}.}

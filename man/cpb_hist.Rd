@@ -38,7 +38,7 @@ cpb_hist(
   xlab = NULL,
   ylab = NULL,
   filllab = NULL,
-  style = c("dutch", "english"),
+  style = getOption("ggcpb.style", "dutch"),
   ...
 )
 }
@@ -137,7 +137,10 @@ house defaults.}
 also given.}
 
 \item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
-or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).}
+or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).
+Taken from \code{getOption("ggcpb.style")}, so an English report can set
+\code{options(ggcpb.style = "english")} once rather than passing \code{style} to
+every figure and risking a stray Dutch decimal comma.}
 
 \item{...}{Further arguments passed to \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}}.}
 }

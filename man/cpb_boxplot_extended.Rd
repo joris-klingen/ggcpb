@@ -76,7 +76,7 @@ cpb_boxplot_extended(
   zero_indicator = TRUE,
   zero_indicator_linewidth = 2,
   ylab_position = NULL,
-  style = c("dutch", "english"),
+  style = getOption("ggcpb.style", "dutch"),
   ...
 )
 }
@@ -388,7 +388,10 @@ look has been checked against; pass one explicitly to override
 that for a single figure.}
 
 \item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
-or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).}
+or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).
+Taken from \code{getOption("ggcpb.style")}, so an English report can set
+\code{options(ggcpb.style = "english")} once rather than passing \code{style} to
+every figure and risking a stray Dutch decimal comma.}
 
 \item{...}{Further arguments passed to both \code{\link[ggplot2:geom_errorbar]{ggplot2::geom_errorbar()}}
 and \code{\link[ggplot2:geom_boxplot]{ggplot2::geom_boxplot()}}, as in \code{\link[=cpb_box]{cpb_box()}}.}

@@ -58,7 +58,7 @@ cpb_area(
   xlab = NULL,
   ylab = NULL,
   filllab = NULL,
-  style = c("dutch", "english"),
+  style = getOption("ggcpb.style", "dutch"),
   ...
 )
 }
@@ -268,7 +268,10 @@ caption above the panel -- unless an explicit \code{subtitle} is also
 given, in which case it falls back to a rotated y-axis title.}
 
 \item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
-or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).}
+or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).
+Taken from \code{getOption("ggcpb.style")}, so an English report can set
+\code{options(ggcpb.style = "english")} once rather than passing \code{style} to
+every figure and risking a stray Dutch decimal comma.}
 
 \item{...}{Further arguments passed to \code{\link[ggplot2:geom_area]{ggplot2::geom_area()}}.}
 }
