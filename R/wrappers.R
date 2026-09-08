@@ -521,43 +521,53 @@ cpb_sec_map <- function(sec_vals, sec_limits = NULL, prim_min = NULL, prim_max =
     stop("the primary value axis has no range for `sec_y` to map onto.", call. = FALSE)
   }
 
-  slope <- (p_max - p_min) / (s_max - s_min)
-  inter <- p_min - slope * s_min
-
   list(
     prim_min = p_min,
     prim_max = p_max,
     sec_min = s_min,
     sec_max = s_max,
-    slope = slope,
-    inter = inter,
     sec_breaks = sec_breaks,
     primary_breaks = primary_breaks,
     forced_linear = forced_linear
   )
 }
 
+# The primary <-> secondary conversion, as a two-point interpolation
+# between the two axes' outermost breaks rather than a precomputed
+# slope/intercept pair.
+#
+# Why it matters: ggplot2 derives the secondary axis's own range by
+# resampling the primary range through this function and taking range()
+# of the result, then censors any break outside it with a strict
+# `<`/`>`, no tolerance (AxisSecondary$break_info() -> oob_censor_any()).
+# Our outermost breaks sit exactly on that boundary by construction, so
+# a transform that lands even 1 ulp inside loses its first or last tick
+# label. A slope/intercept form does exactly that: both constants come
+# out of a division, so neither endpoint round-trips exactly.
+#
+# Here the low end is exact for free -- at v == from_lo the (v - from_lo)
+# term is exactly 0, so the result is to_lo unchanged. The high end is
+# not: multiplying by (to_hi - to_lo) then dividing by (from_hi - from_lo)
+# does not cancel exactly in floating point, so it is pinned explicitly.
+cpb_sec_interp <- function(v, from_lo, from_hi, to_lo, to_hi) {
+  out <- to_lo + (v - from_lo) * (to_hi - to_lo) / (from_hi - from_lo)
+  out[which(v == from_hi)] <- to_hi
+  out
+}
+
 # Maps secondary y-axis values onto primary y-axis positions for drawing
 # secondary series (lines, points, or bars).
 cpb_sec_to_primary <- function(v, sec_map) {
-  if (is.null(sec_map$slope) || is.null(sec_map$inter)) {
-  (v - sec_map$sec_min) / (sec_map$sec_max - sec_map$sec_min) *
-    (sec_map$prim_max - sec_map$prim_min) + sec_map$prim_min
-} else {
-    sec_map$inter + sec_map$slope * v
-  }
+  cpb_sec_interp(v, sec_map$sec_min, sec_map$sec_max,
+                 sec_map$prim_min, sec_map$prim_max)
 }
 
 # Builds the right-hand secondary axis, converting primary y-axis positions
 # back into secondary values with formatted tick labels.
 cpb_sec_axis <- function(sec_map, accuracy = NULL, sec_labels = NULL, style = "dutch", primary_breaks = NULL) {
   to_sec <- function(v) {
-    if (is.null(sec_map$slope) || is.null(sec_map$inter)) {
-    (v - sec_map$prim_min) / (sec_map$prim_max - sec_map$prim_min) *
-      (sec_map$sec_max - sec_map$sec_min) + sec_map$sec_min
-  } else {
-      (v - sec_map$inter) / sec_map$slope
-    }
+    cpb_sec_interp(v, sec_map$prim_min, sec_map$prim_max,
+                   sec_map$sec_min, sec_map$sec_max)
   }
 
   breaks_val <- if (!is.null(sec_map$sec_breaks)) {
@@ -568,49 +578,6 @@ cpb_sec_axis <- function(sec_map, accuracy = NULL, sec_labels = NULL, style = "d
     to_sec(c(sec_map$prim_min, sec_map$prim_max))
   }
 
-  # The unrounded breaks, kept before the nudge below shifts the two
-  # extremes inward. Labels format these, not `breaks_val`: the nudge is
-  # a drawing-only workaround and must not reach the text.
-  breaks_true <- breaks_val
-
-  # ggplot2 doesn't trust sec_min/sec_max directly: internally it densely
-  # resamples the primary axis range through `transform` and takes the
-  # min/max of that to derive the secondary axis's own range, then censors
-  # any break outside it (AxisSecondary$break_info() -> oob_censor_any(),
-  # a strict `<`/`>` with no tolerance). Because slope/inter are built from
-  # a floating-point division that rarely lands on an exact binary fraction,
-  # that resampled range differs from the true boundary by ~1e-13 to 1e-16,
-  # and our bottom/top break -- which sits exactly at that true boundary by
-  # construction -- can fall a hair outside it and get silently dropped
-  # (e.g. the axis's very first tick label going missing). Nudging the two
-  # extreme breaks a tiny relative amount inward keeps them safely inside
-  # whichever way that noise falls, far below anything visible in their
-  # drawn position or rounded label.
-  if (length(breaks_val) >= 2) {
-    span <- diff(range(breaks_val))
-    if (is.finite(span) && span > 0) {
-      # by value, not by position: a descending breaks vector (an
-      # inverted sec_limits/sec_at, before cpb_find_sec_breaks() sorts
-      # it) would otherwise get both ends nudged the wrong way, pushing
-      # them outside the range and losing *both* boundary labels.
-      #
-      # scaled by the larger of span and the breaks' own magnitude: the
-      # floating-point noise this guards against comes from the
-      # slope/intercept division and scales with how big the numbers
-      # being divided are, not with how far apart they are -- a narrow
-      # sec_limits on a large-magnitude series (say 1e9 to 1e9+2) has a
-      # tiny span but the same double-precision noise as any other
-      # value near 1e9, which a span-only epsilon would be too small to
-      # clear
-      magnitude <- max(abs(breaks_val))
-      eps <- max(span, magnitude) * 1e-8
-      i_min <- which.min(breaks_val)
-      i_max <- which.max(breaks_val)
-      breaks_val[i_min] <- breaks_val[i_min] + eps
-      breaks_val[i_max] <- breaks_val[i_max] - eps
-    }
-  }
-
   # Resolve the label accuracy. label_number_nl(NULL) picks a precision
   # fine enough to tell the breaks apart. On a forced linear split the
   # breaks are arbitrary fractions (0.128333...), so cap that at one
@@ -619,11 +586,11 @@ cpb_sec_axis <- function(sec_map, accuracy = NULL, sec_labels = NULL, style = "d
   # labels (a sec range only tenths wide). An explicit sec_accuracy wins.
   acc <- accuracy
   if (is.null(acc) && is.null(sec_labels) && isTRUE(sec_map$forced_linear)) {
-    detected <- cpb_accuracy(breaks_true)
+    detected <- cpb_accuracy(breaks_val)
     if (is.null(detected)) detected <- 0.1
     capped <- max(detected, 0.1)
     shown_capped <- tryCatch(
-      label_number_nl(accuracy = capped, style = style)(breaks_true),
+      label_number_nl(accuracy = capped, style = style)(breaks_val),
       error = function(e) NULL
     )
     acc <- if (!is.null(shown_capped) && anyDuplicated(shown_capped) == 0) capped else detected
@@ -632,17 +599,7 @@ cpb_sec_axis <- function(sec_map, accuracy = NULL, sec_labels = NULL, style = "d
   labels_arg <- if (!is.null(sec_labels)) {
     sec_labels
   } else {
-    base_labeller <- label_number_nl(accuracy = acc, style = style)
-    # ggplot hands the labeller the eps-nudged `breaks_val`; format the
-    # unrounded values instead, so a break sitting exactly at 7 renders
-    # "7", not "7.000001".
-    function(x) {
-      if (length(x) == length(breaks_val) &&
-        isTRUE(all.equal(as.numeric(x), as.numeric(breaks_val)))) {
-        x <- breaks_true
-      }
-      base_labeller(x)
-    }
+    label_number_nl(accuracy = acc, style = style)
   }
 
   # An explicit sec_accuracy coarser than the break spacing rounds every

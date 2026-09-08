@@ -1436,6 +1436,55 @@ test_that("cpb_sec_axis() keeps both boundary breaks when handed them descending
   expect_equal(length(labs), length(prim))
 })
 
+# ggplot2 censors any secondary break falling outside the range it
+# re-derives by resampling the primary range through the transform, with
+# no tolerance -- so a transform whose endpoints do not round-trip
+# exactly silently loses the axis's first or last tick label. These are
+# the ratios that have actually triggered it, gathered in one place so a
+# future ggplot2 (or a change to cpb_sec_interp()) fails loudly here
+# rather than quietly dropping a label in a figure.
+test_that("no secondary break loses its label, whatever the primary/secondary ratio", {
+  cases <- list(
+    list(prim = -4:2,                     sec = c(3.4, 3.7)),
+    list(prim = seq(0, 60, 10),           sec = c(7, 78)),
+    list(prim = seq(0, 10, 2),            sec = c(1e9, 1e9 + 50)),
+    list(prim = seq(0, 100, 25),          sec = c(0.1, 0.7)),
+    list(prim = seq(0, 1, length.out = 7), sec = c(15.00, 15.36)),
+    list(prim = seq(2, 9, length.out = 8), sec = c(-1.5, 2.5)),
+    list(prim = seq(-5, 10, 5),           sec = c(95, 110))
+  )
+  for (cs in cases) {
+    prim <- cs$prim
+    sec_map <- cpb_sec_map(cs$sec, primary_breaks = prim,
+                           sec_limits = cs$sec, sec_scale_auto = FALSE)
+    df <- data.frame(x = prim, y = prim)
+    p <- ggplot2::ggplot(df, ggplot2::aes(x, y)) +
+      ggplot2::geom_line() +
+      ggplot2::scale_y_continuous(
+        breaks = prim, limits = range(prim),
+        expand = ggplot2::expansion(mult = c(0, 0)),
+        sec.axis = cpb_sec_axis(sec_map, primary_breaks = prim)
+      )
+    labs <- ggplot2::ggplot_build(p)$layout$panel_params[[1]]$y.sec$get_labels()
+    expect_equal(length(labs), length(prim),
+                 info = paste0("prim ", prim[1], "-", prim[length(prim)],
+                               " sec ", cs$sec[1], "-", cs$sec[2]))
+  }
+})
+
+# the transform has to round-trip both outermost breaks exactly, which is
+# what keeps them inside ggplot2's censoring range in the test above
+test_that("cpb_sec_interp() maps both endpoints exactly, in both directions", {
+  cases <- list(c(-4, 2, 3.4, 3.7), c(0, 60, 7, 78), c(0, 10, 1e9, 1e9 + 50),
+                c(0, 100, 0.1, 0.7), c(0, 1, 15.00, 15.36))
+  for (cs in cases) {
+    expect_identical(cpb_sec_interp(cs[1], cs[1], cs[2], cs[3], cs[4]), cs[3])
+    expect_identical(cpb_sec_interp(cs[2], cs[1], cs[2], cs[3], cs[4]), cs[4])
+    expect_identical(cpb_sec_interp(cs[3], cs[3], cs[4], cs[1], cs[2]), cs[1])
+    expect_identical(cpb_sec_interp(cs[4], cs[3], cs[4], cs[1], cs[2]), cs[2])
+  }
+})
+
 test_that("cpb_line honours sec_type/sec_points like the wrappers using cpb_sec_layer()", {
   d <- data.frame(jaar = 2018:2022, prim = c(5, 6, 7, 8, 9), sec = c(12, 16, 22, 28, 35))
   geoms <- function(p) vapply(p$layers, geom_class1, character(1))
