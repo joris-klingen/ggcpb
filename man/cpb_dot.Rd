@@ -29,6 +29,13 @@ cpb_dot(
   sec_point_size = size,
   sec_col_width = 0.3,
   sec_accuracy = NULL,
+  sec_scale_auto = TRUE,
+  sec_at = NULL,
+  sec_labels = NULL,
+  y_r_scale_auto = NULL,
+  y_r_at = NULL,
+  y_r_lab = NULL,
+  y_r_lim = NULL,
   palette = "qualitative",
   colour_index = NULL,
   color_index = NULL,
@@ -42,6 +49,7 @@ cpb_dot(
   zeroline = TRUE,
   reverse_legend = FALSE,
   legend_ncol = NULL,
+  legend_nrow = NULL,
   facet = NULL,
   facet_ncol = NULL,
   facet_scales = "fixed",
@@ -58,6 +66,7 @@ cpb_dot(
   xlab = NULL,
   ylab = NULL,
   colourlab = NULL,
+  style = getOption("ggcpb.style", "dutch"),
   ...
 )
 }
@@ -150,6 +159,34 @@ function's own automatic rounding -- set this when \code{sec_y} needs
 a different precision than its default (e.g. whole numbers for a
 count alongside a one-decimal percentage share).}
 
+\item{sec_scale_auto}{If \code{TRUE} (default), auto-scale the secondary
+axis's breaks to "nice" numbers via \code{\link[=pretty]{pretty()}}, matching the
+primary axis's own break count. Set to \code{FALSE} to instead space
+breaks evenly across \code{sec_limits} (or the \code{sec_y} data range)
+without rounding them to nice numbers. Only takes effect when
+\code{sec_limits} is left at its default: an explicit \code{sec_limits} is
+always spaced evenly, whatever this is set to, since breaks
+rounded to nice numbers would not land on the endpoints asked
+for.}
+
+\item{sec_at}{Explicit secondary-axis break values, in \code{sec_y}'s own
+units. Must have exactly as many values as the primary axis has
+breaks, since each secondary break is drawn level with one
+primary gridline. \code{NULL} (default) auto-computes them; see
+\code{sec_scale_auto}.}
+
+\item{sec_labels}{Labels for the secondary axis's breaks; anything
+ggplot2's own axis \code{labels} accepts (a character vector matching
+\code{sec_at}/the auto-computed breaks one-for-one, or a labelling
+function such as \code{\link[scales:label_number]{scales::label_number()}}). \code{NULL} (default) uses
+\code{\link[=label_number_nl]{label_number_nl()}}, matching the primary axis's own formatting.}
+
+\item{y_r_scale_auto, y_r_at, y_r_lab, y_r_lim}{nicerplot-style aliases
+for \code{sec_scale_auto}, \code{sec_at}, \code{sec_labels}, and \code{sec_limits}
+respectively, for figures ported over from that convention. Takes
+precedence over the \verb{sec_*} argument it aliases when both are
+given; \code{NULL} (default) defers to it.}
+
 \item{palette}{CPB palette to use for \code{colour}; one of
 \code{"qualitative"} (default), \code{"discr"}, \code{"sequential"}
 (pink ramp), or \code{"blues"} (blue ramp).}
@@ -180,15 +217,20 @@ adding a second \code{scale_y_continuous()}, which would discard the
 wrapper's flush axis (see \code{value_breaks}).}
 
 \item{value_breaks}{Optional breaks for the value axis (passed to
-\code{\link[ggplot2:scale_y_continuous]{ggplot2::scale_y_continuous()}}).}
+\code{\link[ggplot2:scale_y_continuous]{ggplot2::scale_y_continuous()}}). These choose where the
+ticks sit, not where the axis stops: if the data runs past the
+outermost break, evenly spaced breaks are extended outward in
+their own step until they cover it, so the axis still ends on a
+labelled gridline and no value is hidden.}
 
 \item{value_limits}{Optional length-2 numeric vector giving the
-value-axis range, applied as the wrapper-built value scale's own
-\code{limits} (not a coordinate-system zoom) -- the hard bound the axis
-is drawn flush to; an estimate outside it is genuinely dropped,
-with a warning, the same as setting \code{limits} on any ggplot2 scale.
-\code{NULL} (default) flushes to the full lower-upper (and point) range
-instead.}
+span the value axis must \emph{at least} cover -- typically to force
+it wider than the data needs, e.g. always showing zero, or a
+fixed range shared across several figures. It is a minimum, not
+a crop: where the data runs past it the axis is widened to fit,
+so no value is ever hidden. \code{NULL} (default) flushes to
+the full lower-upper (and point) range. For a deliberate zoom that does hide
+values, add \code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} yourself.}
 
 \item{x_lim}{Optional length-2 vector zooming the category (\code{x})
 axis to a range, without dropping data -- applied as a
@@ -222,6 +264,11 @@ single flush-left column of the house style; \code{2} and up suit a
 legend with many short keys, such as binned classes from
 \code{\link[=cpb_cut]{cpb_cut()}}, which would otherwise run past the panel.}
 
+\item{legend_nrow}{Number of rows to lay the legend keys out in,
+passed to \code{guide_legend(nrow = )}. Combine with \code{legend_ncol} to
+pin both dimensions of the grid at once. \code{NULL} (default) leaves
+the number of rows to ggplot2's own sizing.}
+
 \item{facet}{Optional column (tidy eval) to facet by.}
 
 \item{facet_ncol}{Number of facet columns, passed to
@@ -243,6 +290,12 @@ value axis lands after \code{coord_flip()}).}
 this is normally left \code{NULL}.}
 
 \item{colourlab}{Legend title override; defaults to \code{NULL}.}
+
+\item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
+or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).
+Taken from \code{getOption("ggcpb.style")}, so an English report can set
+\code{options(ggcpb.style = "english")} once rather than passing \code{style} to
+every figure and risking a stray Dutch decimal comma.}
 
 \item{...}{Further arguments passed to \code{\link[ggplot2:geom_point]{ggplot2::geom_point()}}.}
 }

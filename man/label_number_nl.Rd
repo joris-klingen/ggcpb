@@ -4,18 +4,32 @@
 \alias{label_number_nl}
 \title{Plain number labels, Dutch locale}
 \usage{
-label_number_nl(...)
+label_number_nl(
+  accuracy = NULL,
+  style = getOption("ggcpb.style", "dutch"),
+  ...
+)
 }
 \arguments{
+\item{accuracy}{Accuracy passed to \code{\link[scales:label_number]{scales::label_number()}}; \code{NULL}
+(default) automatically calculates the required decimal precision.}
+
+\item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
+or \code{"english"} (\verb{,} thousands, \code{.} decimal). Taken from
+\code{getOption("ggcpb.style")}, so an English report can set
+\code{options(ggcpb.style = "english")} once rather than passing \code{style}
+to every call.}
+
 \item{...}{Further arguments passed to \code{\link[scales:label_number]{scales::label_number()}}.}
 }
 \value{
 A labelling function suitable for \code{scale_*(labels = ...)}.
 }
 \description{
-A thin wrapper around \code{\link[scales:label_number]{scales::label_number()}} with Dutch grouping
+A thin wrapper around \code{\link[scales:label_number]{scales::label_number()}} with Dutch or English grouping
 (\code{.}) and decimal (\verb{,}) marks.
 }
 \examples{
 label_number_nl()(1234567.8)
+label_number_nl(style = "english")(1234567.8)
 }

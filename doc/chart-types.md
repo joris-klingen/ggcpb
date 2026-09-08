@@ -108,10 +108,6 @@ cpb_line(tarieven, x = leeftijd, y = tarief, colour = erfenis,
   value_limits = c(0, 40),
   title = "Voorkeurstarieven erfbelasting naar leeftijd",
   ylab  = "% gemiddeld voorkeurstarief")
-#> Warning: Removed 1 row containing missing values or values outside the scale range
-#> (`geom_line()`).
-#> Warning: Removed 1 row containing missing values or values outside the scale range
-#> (`geom_point()`).
 ```
 
 <img src="chart-types_files/figure-gfm/line-points-1.png" alt="" width="350px" />
@@ -276,13 +272,13 @@ line is placed by mapping `sec_limits` linearly onto the primary range,
 so both axes start together and the line cannot drift out of step with
 its own labels.
 
-`sec_ylab`’s caption on the right is placed to line up exactly with
-`ylab`’s own caption on the left, but only `save_cpb()` lines it up
-exactly; knitr’s own plotting device shows an approximate placement
-instead (close, not exact, since at print time the plot has not actually
-been rendered yet to measure against). So, like every figure with a
-`sec_y` below, this one is written to a file with `save_cpb()` and shown
-from that file rather than printed directly:
+`sec_ylab`’s caption on the right is placed to line up with `ylab`’s own
+caption on the left. Every figure on this page is printed directly, at
+the house half-page canvas, so that caption sits where knitr’s own
+plotting device puts it – close to, but not exactly, where it lands in
+an exported figure, since at print time the plot has not been rendered
+yet to measure against. Writing the figure out with `save_cpb()` (see
+`vignette("ggcpb")`) is what places it exactly:
 
 ``` r
 nalatenschap <- expand_grid(
@@ -311,11 +307,10 @@ p <- nalatenschap |>
     title = "Belasting over erfenissen, prijzen 2022",
     ylab  = "mld euro")
 
-path <- tempfile(fileext = ".png")
-save_cpb(path, p, page = "full")
+p
 ```
 
-<img src="chart-types_files/figure-gfm/col-secaxis-show-1.png" alt="" width="700px" />
+<img src="chart-types_files/figure-gfm/col-secaxis-1.png" alt="" width="350px" />
 
 `sec_ylab` mirrors on the right what `ylab` puts above the panel on the
 left, and `sec_label` names the line in the legend – house style says
@@ -337,12 +332,12 @@ lonen <- tibble(
 p <- lonen |>
   pivot_longer(c(cao, cpi), names_to = "reeks", values_to = "waarde") |>
   mutate(reeks = recode(reeks,
-    cao = "cao-loon bedrijven (linkeras)",
-    cpi = "inflatie (cpi, linkeras)")) |>
+    cao = "cao-loon bedrijven",
+    cpi = "inflatie (cpi)")) |>
   cpb_line(x = jaar, y = waarde, colour = reeks,
     sec_y      = reeel,
     sec_limits = c(95, 110),
-    sec_label  = "reële cao-loon bedrijven (rechteras)",
+    sec_label  = "reële cao-loon bedrijven",
     sec_ylab   = "geïndexeerd, 2021 = 100",
     value_limits = c(-5, 10),
     value_breaks = seq(-5, 10, 5),
@@ -354,41 +349,16 @@ p <- lonen |>
 #> Scale for x is already present.
 #> Adding another scale for x, which will replace the existing scale.
 
-path <- tempfile(fileext = ".png")
-save_cpb(path, p, page = "half")
+p
 ```
 
-<img src="chart-types_files/figure-gfm/line-secondary-show-1.png" alt="" width="350px" />
+<img src="chart-types_files/figure-gfm/line-secondary-1.png" alt="" width="350px" />
 
 The one difference from `cpb_col()`: there the columns key on `fill` and
 the secondary line on `colour`, so they form two legend blocks. Here the
 primary series already key on `colour`, so the secondary line joins that
 same scale, takes the next `index` position and shares a single legend –
 which is why all three labels name their axis.
-
-# Area charts
-
-`cpb_area()` draws the recurring share-of-total-over-time figure. With
-`pct_axis = TRUE` the y axis gets Dutch percentage labels:
-
-``` r
-bronnen <- c("gas", "elektriciteit", "warmte", "overig")
-mix <- expand_grid(jaar = 2018:2027,
-                   bron = factor(bronnen, levels = bronnen)) |>
-  mutate(ruw = runif(n(), 1, 10)) |>
-  mutate(aandeel = 100 * ruw / sum(ruw), .by = jaar)
-
-cpb_area(mix, x = jaar, y = aandeel, fill = bron,
-  pct_axis = TRUE,
-  title    = "Energiemix van huishoudens",
-  ylab     = "aandeel") +
-  scale_x_continuous(breaks = seq(2018, 2027, 3), minor_breaks = 2018:2027,
-                     guide = guide_axis(minor.ticks = TRUE))
-#> Scale for x is already present.
-#> Adding another scale for x, which will replace the existing scale.
-```
-
-<img src="chart-types_files/figure-gfm/area-1.png" alt="" width="350px" />
 
 # Donut charts
 
@@ -400,25 +370,25 @@ the ring is, from a thin ring around a large hole up to `2` (no hole at
 all – a full pie).
 
 `cpb_donut()`’s ring keeps a fixed physical size regardless of title or
-legend length (see `panel_size`), which knitr’s own plotting device does
-not apply on its own – only `save_cpb()` does. So instead of printing
-the plot directly, every donut here is written to a file with
-`save_cpb()` and shown from that file, exactly as it would look saved
-for a report:
+legend length (`panel_size`, 1.8 in by default) – but only when the
+figure is written out with `save_cpb()`, which is what applies it.
+Printed directly, as here, the ring is sized to fit whatever canvas it
+is drawn on instead, so these two fit the same half-page canvas as every
+other figure on this page:
 
 ``` r
+bronnen <- c("gas", "elektriciteit", "warmte", "overig")
 energie <- tibble(
   bron  = factor(bronnen, levels = bronnen),
   share = c(45, 30, 15, 10)
 )
 
-path <- tempfile(fileext = ".png")
-save_cpb(path, cpb_donut(energie, fill = bron, y = share,
+cpb_donut(energie, fill = bron, y = share,
   index = c(6, 5, 2, 4),
-  title = "Energiemix van huishoudens"), page = "half")
+  title = "Energiemix van huishoudens")
 ```
 
-<img src="chart-types_files/figure-gfm/donut-show-1.png" alt="" width="350px" />
+<img src="chart-types_files/figure-gfm/donut-1.png" alt="" width="350px" />
 
 With more wedges, printing the value on the wedge itself gets cramped
 for the thin slices. `label_style = "leader"` moves every value outside
@@ -437,14 +407,16 @@ energie2 <- tibble(
   share = c(40, 35, 13, 3, 2, 7)
 )
 
-path <- tempfile(fileext = ".png")
-save_cpb(path, cpb_donut(energie2, fill = bron, y = share,
-  label_style = "leader",
+# leader_length is shortened from its 0.15 default: on this narrower
+# canvas the default lines push their labels past the figure's edge
+cpb_donut(energie2, fill = bron, y = share,
+  label_style   = "leader",
+  leader_length = 0.08,
   index = c(6, 4, 5, 1, 3, 2),
-  title = "Energiemix, met lijnlabels"), page = "half")
+  title = "Energiemix, met lijnlabels")
 ```
 
-<img src="chart-types_files/figure-gfm/donut-leader-show-1.png" alt="" width="350px" />
+<img src="chart-types_files/figure-gfm/donut-leader-1.png" alt="" width="350px" />
 
 # Quantile boxplots
 
@@ -512,7 +484,7 @@ cpb_dot(schatting, x = term, y = coef, lower = lo, upper = hi,
   xlab  = "%-punt verandering in voorkeurstarief")
 ```
 
-<img src="chart-types_files/figure-gfm/dot-1.png" alt="" width="700px" />
+<img src="chart-types_files/figure-gfm/dot-1.png" alt="" width="350px" />
 
 The estimates carry no `colour` mapping here, so everything is drawn in
 the house pink and no legend appears. Map `colour` to compare two
@@ -550,7 +522,7 @@ cpb_scatter(hh, x = inkomen, y = energierekening,
 #> Adding another scale for x, which will replace the existing scale.
 ```
 
-<img src="chart-types_files/figure-gfm/scatter-1.png" alt="" width="700px" />
+<img src="chart-types_files/figure-gfm/scatter-1.png" alt="" width="350px" />
 
 # Histograms
 

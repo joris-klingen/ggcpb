@@ -36,20 +36,66 @@ test_that("the point margin (via clip) survives a user-supplied x scale", {
   expect_equal(xr, c(1, 10))
 })
 
-test_that("points do not stop value_limits from cropping", {
+test_that("value_limits narrower than the data widens the axis, it does not crop", {
   d <- data.frame(x = 1:10, y = c(1.2, 2.4, 1.8, 3.1, 2.2, -0.6, 3.4, 2.9, 1.1, 2.6))
-  p <- cpb_line(d, x = x, y = y, points = TRUE, value_limits = c(0, 3))
+  # value_limits asks for the span the axis must *at least* cover. The
+  # data runs past it at both ends, so the breaks are extended outward
+  # in their own step rather than the ends being hidden -- nothing is
+  # cropped, so clip stays "off" and the markers sitting on the panel
+  # edge still draw whole.
+  p <- expect_no_warning(
+    cpb_line(d, x = x, y = y, points = TRUE, value_limits = c(0, 3))
+  )
   b <- ggplot2::ggplot_build(p)
-  # clip defaults to "off" now (see cpb_line's x_lim_follow_data docs),
-  # but that doesn't stop value_limits from cropping: value_limits sets
-  # the value scale's own `limits`, so the out-of-range observations
-  # become NA (with a warning) and are silently skipped when drawn, the
-  # same as setting `limits` on any ggplot2 scale -- clipping was never
-  # what did the cropping here
   expect_equal(b$layout$coord$clip, "off")
+
   line_y <- b$data[[which(vapply(p$layers, function(l) inherits(l$geom, "GeomLine"), TRUE))]]$y
-  expect_true(anyNA(line_y))
-  expect_equal(sum(is.na(line_y)), sum(d$y < 0 | d$y > 3))
+  expect_false(anyNA(line_y))
+  expect_equal(line_y, d$y)
+
   yr <- b$layout$panel_params[[1]]$y.range
-  expect_equal(yr, c(0, 3))
+  expect_lte(yr[1], min(d$y))
+  expect_gte(yr[2], max(d$y))
+})
+
+test_that("a stacked total a hair over the limit is drawn, not censored", {
+  # The axis is sized from tapply(..., sum) -- a forward sum -- while
+  # position_stack() reaches its top by cumsum()ing the same numbers in
+  # reverse. Floating point is not associative, so the two can differ in
+  # the last bit: here the forward sum is exactly 100 while the stack
+  # tops out at 100 + 1e-14. The scale's limits are flush (no expansion)
+  # and oob_censor() compares strictly, so without a tolerance that top
+  # point becomes NA -- geom_area() then fails to build a grob at all,
+  # and geom_col() silently drops the segment.
+  raw <- c(3.03, 6.10, 8.66)
+  shares <- 100 * raw / sum(raw)
+  expect_equal(sum(shares), 100, tolerance = 0) # what the axis is sized from
+  expect_gt(cumsum(rev(shares))[3], 100) # what position_stack() reaches
+
+  d <- data.frame(
+    jaar  = rep(2020:2021, each = 3),
+    grp   = factor(rep(c("a", "b", "c"), times = 2)),
+    share = rep(shares, times = 2)
+  )
+
+  has_na <- function(p) {
+    any(vapply(
+      ggplot2::ggplot_build(p)$data,
+      function(l) if ("y" %in% names(l)) anyNA(l$y) else FALSE,
+      logical(1)
+    ))
+  }
+
+  col <- cpb_col(d, x = jaar, y = share, fill = grp, pct_axis = TRUE)
+  expect_false(has_na(col))
+
+  area <- cpb_area(d, x = jaar, y = share, fill = grp, pct_axis = TRUE)
+  expect_false(has_na(area))
+  # the area has to survive all the way to a grob, not just to build
+  expect_no_error(ggplot2::ggplotGrob(area))
+
+  # the tolerance is far below a screen pixel, so the axis still reads
+  # as flush: the limits are still 0-100 to any visible precision
+  lims <- ggplot2::ggplot_build(col)$layout$panel_scales_y[[1]]$get_limits()
+  expect_equal(lims, c(0, 100))
 })

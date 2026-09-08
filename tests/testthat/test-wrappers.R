@@ -338,7 +338,7 @@ test_that("cpb_hist maps fill for grouped histograms", {
 test_that("forecast_x adds the raming window under the data with a label on top", {
   df <- data.frame(jaar = 2020:2027, waarde = 1:8)
   p <- cpb_line(df, x = jaar, y = waarde, forecast_x = 2024.5)
-  geoms <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  geoms <- vapply(p$layers, geom_class1, character(1))
   expect_true("GeomRect" %in% geoms)
   expect_true("GeomText" %in% geoms)
   # rect underneath the line, label on top
@@ -351,14 +351,14 @@ test_that("forecast_x adds the raming window under the data with a label on top"
 
   # forecast_label = NULL suppresses the label
   p2 <- cpb_line(df, x = jaar, y = waarde, forecast_x = 2024.5, forecast_label = NULL)
-  geoms2 <- vapply(p2$layers, function(l) class(l$geom)[1], character(1))
+  geoms2 <- vapply(p2$layers, geom_class1, character(1))
   expect_false("GeomText" %in% geoms2)
 
   # also available on columns and areas
   df$grp <- "a"
   for (p3 in list(cpb_col(df, x = jaar, y = waarde, forecast_x = 2024.5),
                   cpb_area(df, x = jaar, y = waarde, fill = grp, forecast_x = 2024.5))) {
-    geoms3 <- vapply(p3$layers, function(l) class(l$geom)[1], character(1))
+    geoms3 <- vapply(p3$layers, geom_class1, character(1))
     expect_true(all(c("GeomRect", "GeomText") %in% geoms3))
   }
 })
@@ -368,7 +368,7 @@ test_that("cpb_line draws an uncertainty band under the lines", {
   df$lo <- df$waarde - 1
   df$hi <- df$waarde + 1
   p <- cpb_line(df, x = jaar, y = waarde, ymin = lo, ymax = hi)
-  geoms <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  geoms <- vapply(p$layers, geom_class1, character(1))
   expect_true("GeomRibbon" %in% geoms)
   expect_lt(which(geoms == "GeomRibbon"), which(geoms == "GeomLine"))
 
@@ -387,7 +387,7 @@ test_that("cpb_box box_style = 'james' and 'modern' build the legacy box", {
   for (style in c("james", "modern")) {
     p <- cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                  box_style = style, orientation = "horizontal")
-    geoms <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+    geoms <- vapply(p$layers, geom_class1, character(1))
     # two capless whiskers, borderless box, median tick
     expect_equal(sum(geoms == "GeomErrorbar"), 3)
     expect_true("GeomBoxplot" %in% geoms)
@@ -402,7 +402,7 @@ test_that("cpb_box box_style = 'james' and 'modern' build the legacy box", {
   # blue box/dark blue median
   pj <- cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                 box_style = "james")
-  gj <- vapply(pj$layers, function(l) class(l$geom)[1], character(1))
+  gj <- vapply(pj$layers, geom_class1, character(1))
   expect_equal(pj$layers[[which(gj == "GeomBoxplot")]]$aes_params$fill,
                unname(cpb_cols(6)))
   med_j <- pj$layers[[max(which(gj == "GeomErrorbar"))]]
@@ -410,7 +410,7 @@ test_that("cpb_box box_style = 'james' and 'modern' build the legacy box", {
 
   pm <- cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                 box_style = "modern")
-  gm <- vapply(pm$layers, function(l) class(l$geom)[1], character(1))
+  gm <- vapply(pm$layers, geom_class1, character(1))
   expect_equal(pm$layers[[which(gm == "GeomBoxplot")]]$aes_params$fill,
                unname(cpb_cols(5)))
   med_m <- pm$layers[[max(which(gm == "GeomErrorbar"))]]
@@ -422,7 +422,7 @@ test_that("cpb_box box_style = 'james' and 'modern' build the legacy box", {
   expect_equal(sum(gj == "GeomText"), 1)
   p0 <- cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                 box_style = "modern", box_labels = FALSE)
-  expect_false("GeomText" %in% vapply(p0$layers, function(l) class(l$geom)[1], character(1)))
+  expect_false("GeomText" %in% vapply(p0$layers, geom_class1, character(1)))
 })
 
 test_that("james/modern box styles reject a fill mapping", {
@@ -454,12 +454,20 @@ test_that("value_breaks and value_limits work in area, line and box", {
                     y = c(1:3, 2:4))
   box_df <- data.frame(x = c("a", "b"), p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5)
 
-  sc <- cpb_area(num, x = x, y = y, fill = g,
-                 value_breaks = c(0, 2, 4))$scales$get_scales("y")
-  expect_equal(sc$breaks, c(0, 2, 4))
-  sc <- cpb_line(num, x = x, y = y, colour = g,
-                 value_breaks = c(1, 3))$scales$get_scales("y")
-  expect_equal(sc$breaks, c(1, 3))
+  # both narrower than the actual (stacked, for cpb_area) data range.
+  # value_breaks says where the ticks go, not where the axis stops, so
+  # the sequence is extended outward in its own step until it spans the
+  # data -- nothing is hidden and nothing warns.
+  p_area <- expect_no_warning(
+    cpb_area(num, x = x, y = y, fill = g, value_breaks = c(0, 2, 4))
+  )
+  sc <- p_area$scales$get_scales("y")
+  expect_equal(sc$breaks, c(0, 2, 4, 6, 8))
+  p_line <- expect_no_warning(
+    cpb_line(num, x = x, y = y, colour = g, value_breaks = c(1, 3))
+  )
+  sc <- p_line$scales$get_scales("y")
+  expect_equal(sc$breaks, c(1, 3, 5))
   sc <- cpb_box(box_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                 value_breaks = c(1, 3, 5))$scales$get_scales("y")
   expect_equal(sc$breaks, c(1, 3, 5))
@@ -467,12 +475,14 @@ test_that("value_breaks and value_limits work in area, line and box", {
   # limits go through the coordinate system (zoom), never dropping data
   p <- cpb_area(num, x = x, y = y, fill = g, value_limits = c(0, 10))
   expect_equal(p$coordinates$limits$y, c(0, 10))
-  # cpb_line() applies value_limits on the scale too, not just the
-  # coord -- but here `num`'s x (2015:2017) is numeric, so it also
-  # gets its own coord-based flush by default (x_lim_follow_data),
-  # which folds expand = FALSE into this same coord_cartesian() call;
-  # that is safe for the value axis's own already-zero expansion (see
-  # cpb_flush_scale_args()), so both agree on the same (0, 10) either
+  # cpb_line() still sets the scale's own limits to value_limits too,
+  # not just the coord -- but only because (0, 10) here is wider than
+  # `num`'s actual y range, so widening it to stay data-safe is a
+  # no-op (see cpb_flush_scale_args()); `num`'s x (2015:2017) is
+  # numeric, so it also gets its own coord-based flush by default
+  # (x_lim_follow_data), which folds expand = FALSE into this same
+  # coord_cartesian() call -- safe for the value axis's own
+  # already-zero expansion, so both agree on the same (0, 10) either
   # way
   p <- cpb_line(num, x = x, y = y, colour = g, value_limits = c(0, 10))
   expect_equal(p$scales$get_scales("y")$limits, c(0, 10))
@@ -485,6 +495,85 @@ test_that("value_breaks and value_limits work in area, line and box", {
                orientation = "horizontal", value_limits = c(0, 10))
   expect_s3_class(p$coordinates, "CoordFlip")
   expect_equal(p$coordinates$limits$y, c(0, 10))
+})
+
+test_that("a value axis narrower than the data is widened, never cropped", {
+  # The axis always covers the data. value_breaks says where the ticks
+  # go and value_limits the span the axis must at least reach; when the
+  # data runs past either, the ticks are extended outward in their own
+  # step. So nothing is ever clipped for the value axis, and clip stays
+  # "off" -- which is what keeps a p5/p95 marker sitting exactly on the
+  # panel edge from being cut in half.
+  box_df <- data.frame(x = c("a", "b"), p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5)
+  p_flush <- cpb_box(box_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+                     value_breaks = c(1, 3, 5))
+  expect_equal(p_flush$coordinates$clip, "off")
+  expect_equal(p_flush$scales$get_scales("y")$breaks, c(1, 3, 5))
+
+  # whiskers at -6.5 / 7.1 run past seq(-6, 6, 2): extended to +/- 8
+  wide_df <- data.frame(x = c("a", "b"), p5 = -6.5, p25 = -3, p50 = 0, p75 = 3, p95 = 7.1)
+  p_wide <- expect_no_warning(
+    cpb_box(wide_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+            value_breaks = seq(-6, 6, 2))
+  )
+  expect_equal(p_wide$scales$get_scales("y")$breaks, seq(-8, 8, 2))
+  expect_equal(p_wide$coordinates$clip, "off")
+
+  built <- ggplot2::ggplot_build(p_wide)
+  box_data <- built$data[[which(vapply(p_wide$layers, function(l)
+    inherits(l$geom, "GeomErrorbar"), logical(1)))[1]]]
+  expect_equal(sort(unique(c(box_data$ymin, box_data$ymax))), c(-6.5, 7.1))
+  # and the drawn range really does contain them
+  yr <- built$layout$panel_params[[1]]$y.range
+  expect_lte(yr[1], -6.5)
+  expect_gte(yr[2], 7.1)
+
+  # the same for cpb_line() with value_limits
+  line_df <- data.frame(x = 1:5, y = c(1, 8, 3, -4, 2))
+  p_line <- expect_no_warning(cpb_line(line_df, x = x, y = y, value_limits = c(0, 5)))
+  expect_equal(p_line$coordinates$clip, "off")
+  yl <- ggplot2::ggplot_build(p_line)$layout$panel_params[[1]]$y.range
+  expect_lte(yl[1], -4)
+  expect_gte(yl[2], 8)
+})
+
+test_that("breaks that cannot be extended still never drop data", {
+  built_y <- function(p) ggplot2::ggplot_build(p)$data[[1]]$y
+
+  # irregular spacing: no single step to extend by, so the breaks stay
+  # as given -- but the scale's limits must still reach the data, or it
+  # would be censored right back out of the figure
+  irr <- function() {
+    cpb_col(data.frame(x = 1:3, y = c(1, 5, 41)), x = x, y = y,
+            value_breaks = c(0, 1, 10, 40))
+  }
+  expect_warning(irr(), "could not be extended")
+  p_irr <- suppressWarnings(irr())
+  expect_equal(p_irr$scales$get_scales("y")$breaks, c(0, 1, 10, 40))
+  expect_false(anyNA(built_y(p_irr)))
+  expect_gte(max(p_irr$scales$get_scales("y")$limits), 41)
+
+  # a step so fine that covering the data would need hundreds of
+  # gridlines is refused too, rather than drawing a wall of them
+  fine <- function() {
+    cpb_col(data.frame(x = 1:3, y = c(1, 250, 500)), x = x, y = y,
+            value_breaks = c(0, 1))
+  }
+  expect_warning(fine(), "could not be extended")
+  p_fine <- suppressWarnings(fine())
+  expect_lte(length(p_fine$scales$get_scales("y")$breaks), 25)
+  expect_false(anyNA(built_y(p_fine)))
+  expect_gte(max(p_fine$scales$get_scales("y")$limits), 500)
+})
+
+test_that("extending the value axis never crosses a zero anchor", {
+  # columns grow from zero: if nothing is negative the axis must still
+  # start at 0, not gain a negative tick just because the top extended
+  d <- data.frame(x = 1:3, y = c(10, 25, 41))
+  p <- cpb_col(d, x = x, y = y, value_breaks = seq(0, 40, 10))
+  b <- p$scales$get_scales("y")$breaks
+  expect_equal(b, seq(0, 50, 10))
+  expect_equal(min(b), 0)
 })
 
 test_that("pct_axis works in cpb_box", {
@@ -513,22 +602,22 @@ test_that("sec_type controls how sec_y is drawn, sharing one legend key", {
   df <- data.frame(jaar = 2018:2020, mld = c(10, 12, 9), heffing = c(1.2, 1.4, 1.1))
 
   p <- cpb_col(df, x = jaar, y = mld, sec_y = heffing)
-  classes <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  classes <- vapply(p$layers, geom_class1, character(1))
   expect_true("GeomLine" %in% classes)
 
   p <- cpb_col(df, x = jaar, y = mld, sec_y = heffing, sec_type = "point")
-  classes <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  classes <- vapply(p$layers, geom_class1, character(1))
   expect_true("GeomPoint" %in% classes)
   expect_false("GeomLine" %in% classes)
 
   p <- cpb_col(df, x = jaar, y = mld, sec_y = heffing, sec_type = "col")
-  classes <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  classes <- vapply(p$layers, geom_class1, character(1))
   expect_equal(sum(classes == "GeomCol"), 2) # the primary bars plus the secondary ones
   expect_false("GeomLine" %in% classes)
 
   # sec_points only takes effect for sec_type = "line"
   p <- cpb_col(df, x = jaar, y = mld, sec_y = heffing, sec_type = "col", sec_points = TRUE)
-  classes <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  classes <- vapply(p$layers, geom_class1, character(1))
   expect_false("GeomPoint" %in% classes)
 
   # all three share one legend key (one colour scale), not one per geom
@@ -589,7 +678,12 @@ test_that("x_lim zooms without dropping data, across all wrappers", {
 
   p <- cpb_area(yr_df, x = x, y = y, fill = factor("a"), x_lim = c(2017, 2019))
   b <- ggplot2::ggplot_build(p)
-  expect_equal(nrow(b$data[[1]]), 6)
+  # not nrow(): a single-group geom_area() under ggplot2 3.5.x (not 4.0,
+  # where this package is developed) pads each x with two extra
+  # near-duplicate neighbours via stat_align(), tripling the row count --
+  # an internal rendering detail unrelated to x_lim, which rounding back
+  # out sees past
+  expect_equal(length(unique(round(b$data[[1]]$x))), 6)
 
   p <- cpb_box(box_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                x_lim = c(2017, 2019))
@@ -667,11 +761,50 @@ test_that("legend_ncol lays the legend out in the requested number of columns", 
   expect_equal(p_sec$guides$guides$fill$params$ncol, 2)
 })
 
+test_that("legend_nrow lays the legend out in the requested number of rows", {
+  num <- data.frame(x = rep(2015:2017, 2), g = rep(c("s1", "s2"), each = 3),
+                    y = c(1:3, 2:4))
+  cat_df <- data.frame(x = c("a", "b"), y = c(1, 2), g = c("s1", "s2"))
+
+  # fill-based wrappers
+  expect_equal(cpb_col(cat_df, x = x, y = y, fill = g, legend_nrow = 2)$guides$guides$fill$params$nrow, 2)
+  expect_equal(cpb_area(num, x = x, y = y, fill = g, legend_nrow = 2)$guides$guides$fill$params$nrow, 2)
+  box_df <- data.frame(x = c("a", "b"), p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5, g = c("s1", "s2"))
+  expect_equal(cpb_box(box_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+                       fill = g, legend_nrow = 2)$guides$guides$fill$params$nrow, 2)
+  expect_equal(cpb_hist(num, x = y, fill = g, legend_nrow = 2)$guides$guides$fill$params$nrow, 2)
+
+  # colour-based wrappers
+  expect_equal(cpb_line(num, x = x, y = y, colour = g, legend_nrow = 3)$guides$guides$colour$params$nrow, 3)
+  expect_equal(cpb_scatter(num, x = x, y = y, colour = g, legend_nrow = 3)$guides$guides$colour$params$nrow, 3)
+  dot_df <- data.frame(x = c("a", "b"), y = c(1, 2), lower = c(0, 1), upper = c(2, 3), g = c("s1", "s2"))
+  expect_equal(cpb_dot(dot_df, x = x, y = y, lower = lower, upper = upper,
+                       colour = g, legend_nrow = 3)$guides$guides$colour$params$nrow, 3)
+
+  # cpb_donut() has its own, shorter legend_ncol/legend_nrow docs --
+  # still the same underlying guide_legend()
+  donut_df <- data.frame(g = c("s1", "s2"), y = c(1, 2))
+  expect_equal(cpb_donut(donut_df, fill = g, y = y, legend_nrow = 1)$guides$guides$fill$params$nrow, 1)
+
+  # legend_ncol and legend_nrow combine to pin both grid dimensions
+  both <- cpb_col(cat_df, x = x, y = y, fill = g, legend_ncol = 2, legend_nrow = 1)
+  expect_equal(both$guides$guides$fill$params$ncol, 2)
+  expect_equal(both$guides$guides$fill$params$nrow, 1)
+
+  # NULL (default) is a no-op: no guides() call added at all
+  expect_null(cpb_col(cat_df, x = x, y = y, fill = g, reverse_legend = FALSE)$guides$guides$fill)
+
+  # cpb_col's secondary-axis layout (order = 1/2) also honours legend_nrow
+  sec_df <- data.frame(x = c("a", "b", "c"), y = c(1, 2, 3), s = c(0.5, 1.5, 1.0))
+  p_sec <- cpb_col(sec_df, x = x, y = y, sec_y = s, legend_nrow = 2)
+  expect_equal(p_sec$guides$guides$fill$params$nrow, 2)
+})
+
 test_that("cpb_scatter draws the forecast window like cpb_line", {
   num <- data.frame(x = rep(2015:2019, 2), g = rep(c("s1", "s2"), each = 5),
                     y = c(1:5, 2:6))
   p <- cpb_scatter(num, x = x, y = y, colour = g, forecast_x = 2017.5)
-  classes <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  classes <- vapply(p$layers, geom_class1, character(1))
   rect_i  <- which(classes == "GeomRect")
   point_i <- which(classes == "GeomPoint")
   text_i  <- which(classes == "GeomText")
@@ -991,7 +1124,7 @@ test_that("cpb_line(points = TRUE) adds markers and keeps the lines joined", {
     reeks = rep(c("a", "b"), each = 3)
   )
   p <- cpb_line(df, x = cat, y = y, colour = reeks, points = TRUE)
-  geoms <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  geoms <- vapply(p$layers, geom_class1, character(1))
   expect_true("GeomPoint" %in% geoms)
   expect_true("GeomLine" %in% geoms)
   # a discrete x would otherwise leave every observation in its own
@@ -1001,7 +1134,7 @@ test_that("cpb_line(points = TRUE) adds markers and keeps the lines joined", {
   # markers are off by default
   p0 <- cpb_line(df, x = cat, y = y, colour = reeks)
   expect_false("GeomPoint" %in%
-                 vapply(p0$layers, function(l) class(l$geom)[1], character(1)))
+                 vapply(p0$layers, geom_class1, character(1)))
   # without a colour mapping the single series stays one group
   p1 <- cpb_line(df[df$reeks == "a", ], x = cat, y = y, points = TRUE)
   expect_equal(nrow(unique(ggplot2::layer_data(p1, 1)["group"])), 1)
@@ -1013,7 +1146,7 @@ test_that("cpb_box box_style = 'dot' draws markers with a named legend", {
                    gem = c(2.2, 3.4))
   p <- cpb_box(df, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75,
                p95 = p95, mean = gem, box_style = "dot")
-  geoms <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  geoms <- vapply(p$layers, geom_class1, character(1))
   # no box: the style is markers plus ranges only
   expect_false("GeomBoxplot" %in% geoms)
   expect_equal(sum(geoms == "GeomPoint"), 4L)   # p5, p95, median, mean
@@ -1021,7 +1154,7 @@ test_that("cpb_box box_style = 'dot' draws markers with a named legend", {
   p0 <- cpb_box(df, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75,
                 p95 = p95, box_style = "dot")
   expect_equal(
-    sum(vapply(p0$layers, function(l) class(l$geom)[1], character(1)) ==
+    sum(vapply(p0$layers, geom_class1, character(1)) ==
           "GeomPoint"), 3L
   )
   # every statistic is named in the legend, in the published order
@@ -1060,13 +1193,13 @@ test_that("cpb_dot draws estimates with intervals and a zero line", {
   df <- data.frame(term = c("a", "b", "c"), est = c(1, -2, 0.5),
                    lo = c(0.2, -3, -0.4), hi = c(1.8, -1, 1.4))
   p <- cpb_dot(df, x = term, y = est, lower = lo, upper = hi)
-  geoms <- vapply(p$layers, function(l) class(l$geom)[1], character(1))
+  geoms <- vapply(p$layers, geom_class1, character(1))
   expect_true(all(c("GeomHline", "GeomErrorbar", "GeomPoint") %in% geoms))
   expect_s3_class(p$coordinates, "CoordFlip")
   # the reference line can be turned off
   p0 <- cpb_dot(df, x = term, y = est, lower = lo, upper = hi, zeroline = FALSE)
   expect_false("GeomHline" %in%
-                 vapply(p0$layers, function(l) class(l$geom)[1], character(1)))
+                 vapply(p0$layers, geom_class1, character(1)))
   # vertical drops coord_flip()
   pv <- cpb_dot(df, x = term, y = est, lower = lo, upper = hi,
                 orientation = "vertical")
@@ -1120,7 +1253,7 @@ test_that("cpb_col(sec_y) rescales a line onto a secondary axis", {
                    soort = rep(c("a", "b"), each = 3),
                    klein = rep(c(0.5, 1, 1.5), 2))
   p <- cpb_col(df, x = jaar, y = v, fill = soort, sec_y = klein,
-               sec_limits = c(0, 2), sec_label = "klein (rechteras)")
+               sec_limits = c(0, 2), sec_label = "klein")
   sc <- p$scales$get_scales("y")
   expect_s3_class(sc$secondary.axis, "AxisSecondary")
   # the primary stack tops out at 15, so the secondary maximum of 2
@@ -1128,7 +1261,7 @@ test_that("cpb_col(sec_y) rescales a line onto a secondary axis", {
   line <- Filter(function(l) inherits(l$geom, "GeomLine"), p$layers)[[1]]
   expect_equal(nrow(line$data), 3L)          # one row per x, not per fill
   expect_equal(line$data$cpb__sec, c(3.75, 7.5, 11.25))
-  expect_equal(rlang::eval_tidy(line$mapping$colour), "klein (rechteras)")
+  expect_equal(rlang::eval_tidy(line$mapping$colour), "klein")
   # the combination is refused where it cannot be drawn
   expect_error(
     cpb_col(df, x = jaar, y = v, fill = soort, sec_y = klein,
@@ -1192,6 +1325,269 @@ test_that("cpb_sec_map()'s primary-range check also uses floating point toleranc
   expect_no_error(cpb_sec_map(c(1, 2), NULL, 0.02, 0.06))
 })
 
+test_that("nicerplot secondary axis auto-scaling and parameter aliases work as expected", {
+  prim_breaks <- c(0, 5, 10, 15, 20)
+  sec_vals <- c(12, 48)
+
+  # Default auto-scaling produces pretty breaks matching length of primary breaks
+  sec_br <- cpb_find_sec_breaks(prim_breaks, sec_vals, sec_scale_auto = TRUE)
+  expect_equal(length(sec_br), length(prim_breaks))
+
+  # Explicit sec_at (y_r_at)
+  sec_at_custom <- c(10, 20, 30, 40, 50)
+  sec_br_at <- cpb_find_sec_breaks(prim_breaks, sec_vals, sec_at = sec_at_custom)
+  expect_equal(sec_br_at, sec_at_custom)
+
+  # Wrapper supports y_r_scale_auto, y_r_lim, y_r_at, y_r_lab aliases
+  df <- data.frame(jaar = 2018:2022, v = c(10, 15, 12, 18, 14), sec = c(100, 150, 120, 180, 140))
+  expect_no_error(cpb_line(df, x = jaar, y = v, sec_y = sec, y_r_scale_auto = FALSE))
+  expect_no_error(cpb_line(df, x = jaar, y = v, sec_y = sec, y_r_lim = c(100, 200)))
+})
+
+test_that("cpb_sec_axis() keeps the boundary-most break when slope/inter aren't exact floats", {
+  # Primary breaks -4:2 mapped onto a secondary range of 3.4-3.7 forces a
+  # slope/intercept division that isn't an exact binary fraction (6 / 0.3).
+  # ggplot2 re-derives the secondary axis's own range internally by densely
+  # resampling the primary range through the transform and taking its
+  # min/max, rather than trusting sec_min/sec_max exactly -- so without the
+  # inward nudge in cpb_sec_axis(), that resampled range comes out a hair
+  # narrower than [3.4, 3.7] and its own exact boundary break gets silently
+  # censored, dropping one label short of the primary axis's break count.
+  prim_breaks <- c(-4, -3, -2, -1, 0, 1, 2)
+  sec_map <- cpb_sec_map(c(3.4, 3.7), primary_breaks = prim_breaks, sec_limits = c(3.4, 3.7))
+  df <- data.frame(x = prim_breaks, y = prim_breaks)
+  p <- ggplot2::ggplot(df, ggplot2::aes(x, y)) +
+    ggplot2::geom_line() +
+    ggplot2::scale_y_continuous(
+      breaks = prim_breaks,
+      limits = range(prim_breaks),
+      # zero expansion, matching cpb_flush_scale_args(): with the default
+      # expansion the panel's continuous_range would extend past the
+      # breaks, landing the resampled secondary range comfortably clear of
+      # the boundary and masking exactly the bug this test guards against.
+      expand = ggplot2::expansion(mult = c(0, 0)),
+      sec.axis = cpb_sec_axis(sec_map, primary_breaks = prim_breaks)
+    )
+  built <- ggplot2::ggplot_build(p)
+  sec_labels <- built$layout$panel_params[[1]]$y.sec$get_labels()
+  expect_equal(length(sec_labels), length(prim_breaks))
+})
+
+test_that("a high-to-low sec_limits/sec_at is read as the same range, low to high", {
+  # descending, it used to reach cpb_sec_axis() as a descending breaks
+  # vector, whose two extreme breaks the inward nudge there then pushed
+  # *outward* -- losing both boundary labels, so the rest sat against
+  # the wrong gridlines
+  expect_equal(
+    cpb_find_sec_breaks(c(0, 5, 10, 15, 20), c(12, 48), sec_limits = c(25, 15)),
+    cpb_find_sec_breaks(c(0, 5, 10, 15, 20), c(12, 48), sec_limits = c(15, 25))
+  )
+  expect_equal(
+    cpb_find_sec_breaks(c(0, 5, 10), c(1, 9), sec_at = c(30, 20, 10)),
+    c(10, 20, 30)
+  )
+
+  d <- data.frame(jaar = 2018:2027, prim = seq(4, 12, length.out = 10),
+                  sec = c(12, 16, 22, 28, 35, 42, 38, 30, 24, 18))
+  built <- function(lim) {
+    p <- suppressWarnings(cpb_line(d, x = jaar, y = prim, sec_y = sec, sec_limits = lim))
+    pp <- ggplot2::ggplot_build(p)$layout$panel_params[[1]]
+    list(n_prim = length(pp$y$breaks[!is.na(pp$y$breaks)]),
+         labels = pp$y.sec$get_labels())
+  }
+  down <- built(c(25, 15))
+  up <- built(c(15, 25))
+  # every gridline keeps its own label, either way round, and the axis
+  # reads low-to-high in both cases
+  expect_equal(length(down$labels), down$n_prim)
+  expect_equal(down$labels, up$labels)
+})
+
+test_that("a sec_accuracy too coarse for the break spacing is flagged, not left to read", {
+  d <- data.frame(
+    jaar = 2018:2027, prim = 1:10,
+    sec = c(15.00, 15.04, 15.08, 15.12, 15.16, 15.20, 15.24, 15.28, 15.32, 15.36)
+  )
+  # rounds all six breaks to "15": gridlines right, axis unreadable
+  expect_warning(
+    cpb_line(d, x = jaar, y = prim, sec_y = sec, sec_scale_auto = FALSE, sec_accuracy = 1),
+    "rounds the secondary axis's breaks"
+  )
+  # left to itself, label_number_nl() picks a precision that tells them apart
+  expect_no_warning(
+    cpb_line(d, x = jaar, y = prim, sec_y = sec, sec_scale_auto = FALSE)
+  )
+  expect_no_warning(
+    cpb_line(d, x = jaar, y = prim, sec_y = sec, sec_scale_auto = FALSE, sec_accuracy = 0.001)
+  )
+  # a coarse accuracy is fine when the breaks are far enough apart for it
+  wide <- data.frame(jaar = 2018:2024, prim = 1:7, sec = seq(100, 700, length.out = 7))
+  expect_no_warning(cpb_line(wide, x = jaar, y = prim, sec_y = sec, sec_accuracy = 1))
+})
+
+test_that("a fixed secondary scale caps its auto label precision at one decimal", {
+  sec_labels <- function(p) {
+    pp <- ggplot2::ggplot_build(p)$layout$panel_params[[1]]
+    pp$y.sec$get_labels()
+  }
+  d <- data.frame(jaar = 2018:2027, prim = 1:10, sec = c(9, 20, 35, 50, 60, 70, 77, 80, 90, 95))
+
+  # sec_limits divides into arbitrary fractions -> one decimal, not 3-6
+  fixed <- cpb_line(d, x = jaar, y = prim, sec_y = sec,
+                    sec_limits = c(7, 78), sec_scale_auto = FALSE)
+  labs <- sec_labels(fixed)
+  expect_true(all(grepl("^-?[0-9]+,[0-9]$", labs)))
+
+  # english style uses a decimal point instead
+  fixed_en <- cpb_line(d, x = jaar, y = prim, sec_y = sec,
+                       sec_limits = c(7, 78), sec_scale_auto = FALSE, style = "english")
+  expect_true(all(grepl("^-?[0-9]+\\.[0-9]$", sec_labels(fixed_en))))
+
+  # steps that land on whole numbers stay integer -- the cap only bites
+  # when a decimal is actually needed
+  ints <- cpb_line(d, x = jaar, y = prim, sec_y = sec,
+                   sec_limits = c(10, 80), sec_scale_auto = FALSE)
+  expect_false(any(grepl(",", sec_labels(ints), fixed = TRUE)))
+
+  # an explicit sec_accuracy overrides the cap for callers who want more
+  finer <- cpb_line(d, x = jaar, y = prim, sec_y = sec,
+                    sec_limits = c(7, 78), sec_scale_auto = FALSE, sec_accuracy = 0.001)
+  expect_true(any(grepl("^-?[0-9]+,[0-9]{3}$", sec_labels(finer))))
+
+  # a narrow range keeps the finer precision it needs to stay legible
+  narrow <- cpb_line(d, x = jaar, y = prim, sec_y = sec,
+                     sec_limits = c(15, 15.36), sec_scale_auto = FALSE)
+  expect_equal(anyDuplicated(sec_labels(narrow)), 0L)
+})
+
+test_that("cpb_sec_axis() keeps both boundary breaks when handed them descending", {
+  prim <- c(-4, -3, -2, -1, 0, 1, 2)
+  sec_map <- cpb_sec_map(c(3.4, 3.7), primary_breaks = prim, sec_limits = c(3.4, 3.7))
+  sec_map$sec_breaks <- rev(sec_map$sec_breaks)
+  df <- data.frame(x = prim, y = prim)
+  p <- ggplot2::ggplot(df, ggplot2::aes(x, y)) +
+    ggplot2::geom_line() +
+    ggplot2::scale_y_continuous(
+      breaks = prim, limits = range(prim),
+      expand = ggplot2::expansion(mult = c(0, 0)),
+      sec.axis = cpb_sec_axis(sec_map, primary_breaks = prim)
+    )
+  labs <- ggplot2::ggplot_build(p)$layout$panel_params[[1]]$y.sec$get_labels()
+  expect_equal(length(labs), length(prim))
+})
+
+# ggplot2 censors any secondary break falling outside the range it
+# re-derives by resampling the primary range through the transform, with
+# no tolerance -- so a transform whose endpoints do not round-trip
+# exactly silently loses the axis's first or last tick label. These are
+# the ratios that have actually triggered it, gathered in one place so a
+# future ggplot2 (or a change to cpb_sec_interp()) fails loudly here
+# rather than quietly dropping a label in a figure.
+test_that("no secondary break loses its label, whatever the primary/secondary ratio", {
+  cases <- list(
+    list(prim = -4:2,                     sec = c(3.4, 3.7)),
+    list(prim = seq(0, 60, 10),           sec = c(7, 78)),
+    list(prim = seq(0, 10, 2),            sec = c(1e9, 1e9 + 50)),
+    list(prim = seq(0, 100, 25),          sec = c(0.1, 0.7)),
+    list(prim = seq(0, 1, length.out = 7), sec = c(15.00, 15.36)),
+    list(prim = seq(2, 9, length.out = 8), sec = c(-1.5, 2.5)),
+    list(prim = seq(-5, 10, 5),           sec = c(95, 110))
+  )
+  for (cs in cases) {
+    prim <- cs$prim
+    sec_map <- cpb_sec_map(cs$sec, primary_breaks = prim,
+                           sec_limits = cs$sec, sec_scale_auto = FALSE)
+    df <- data.frame(x = prim, y = prim)
+    p <- ggplot2::ggplot(df, ggplot2::aes(x, y)) +
+      ggplot2::geom_line() +
+      ggplot2::scale_y_continuous(
+        breaks = prim, limits = range(prim),
+        expand = ggplot2::expansion(mult = c(0, 0)),
+        sec.axis = cpb_sec_axis(sec_map, primary_breaks = prim)
+      )
+    labs <- ggplot2::ggplot_build(p)$layout$panel_params[[1]]$y.sec$get_labels()
+    expect_equal(length(labs), length(prim),
+                 info = paste0("prim ", prim[1], "-", prim[length(prim)],
+                               " sec ", cs$sec[1], "-", cs$sec[2]))
+  }
+})
+
+# sec_scale_auto only chooses between pretty() breaks and an even split
+# when the range is the sec_y data's own. An explicit sec_limits always
+# wins, because pretty() would not land on the endpoints the caller
+# asked for. Documented on both @param entries; pinned here so it is a
+# decision rather than something a later change quietly reverses.
+test_that("an explicit sec_limits spaces breaks evenly, whatever sec_scale_auto says", {
+  sec_labels <- function(p) {
+    ggplot2::ggplot_build(p)$layout$panel_params[[1]]$y.sec$get_labels()
+  }
+  d <- data.frame(jaar = 2018:2027, prim = 1:10,
+                  sec = c(9, 20, 35, 50, 60, 70, 77, 80, 90, 95))
+
+  # no sec_limits: sec_scale_auto is what decides
+  pretty_auto <- sec_labels(cpb_line(d, x = jaar, y = prim, sec_y = sec))
+  even_auto <- sec_labels(cpb_line(d, x = jaar, y = prim, sec_y = sec,
+                                   sec_scale_auto = FALSE))
+  expect_false(identical(pretty_auto, even_auto))
+
+  # with sec_limits: both settings give the same, evenly spaced breaks,
+  # and both keep the exact endpoints that were asked for
+  lim <- c(7, 78)
+  with_true <- sec_labels(cpb_line(d, x = jaar, y = prim, sec_y = sec,
+                                   sec_limits = lim, sec_scale_auto = TRUE))
+  with_false <- sec_labels(cpb_line(d, x = jaar, y = prim, sec_y = sec,
+                                    sec_limits = lim, sec_scale_auto = FALSE))
+  expect_identical(with_true, with_false)
+  expect_equal(as.numeric(sub(",", ".", with_true[c(1, length(with_true))])), lim)
+})
+
+# the transform has to round-trip both outermost breaks exactly, which is
+# what keeps them inside ggplot2's censoring range in the test above
+test_that("cpb_sec_interp() maps both endpoints exactly, in both directions", {
+  cases <- list(c(-4, 2, 3.4, 3.7), c(0, 60, 7, 78), c(0, 10, 1e9, 1e9 + 50),
+                c(0, 100, 0.1, 0.7), c(0, 1, 15.00, 15.36))
+  for (cs in cases) {
+    expect_identical(cpb_sec_interp(cs[1], cs[1], cs[2], cs[3], cs[4]), cs[3])
+    expect_identical(cpb_sec_interp(cs[2], cs[1], cs[2], cs[3], cs[4]), cs[4])
+    expect_identical(cpb_sec_interp(cs[3], cs[3], cs[4], cs[1], cs[2]), cs[1])
+    expect_identical(cpb_sec_interp(cs[4], cs[3], cs[4], cs[1], cs[2]), cs[2])
+  }
+})
+
+test_that("cpb_line honours sec_type/sec_points like the wrappers using cpb_sec_layer()", {
+  d <- data.frame(jaar = 2018:2022, prim = c(5, 6, 7, 8, 9), sec = c(12, 16, 22, 28, 35))
+  geoms <- function(p) vapply(p$layers, geom_class1, character(1))
+
+  # sec_type was match.arg()'d and then ignored: "point"/"col" silently
+  # drew a line like every other value
+  expect_true("GeomPoint" %in% geoms(cpb_line(d, x = jaar, y = prim, sec_y = sec, sec_type = "point")))
+  expect_true("GeomCol" %in% geoms(cpb_line(d, x = jaar, y = prim, sec_y = sec, sec_type = "col")))
+  expect_equal(sum(geoms(cpb_line(d, x = jaar, y = prim, sec_y = sec, sec_type = "line")) == "GeomLine"), 2)
+
+  # sec_points adds markers to the secondary line on its own ...
+  expect_true("GeomPoint" %in% geoms(cpb_line(d, x = jaar, y = prim, sec_y = sec, sec_points = TRUE)))
+  # ... and the primary `points` still puts them on both series, as before
+  expect_equal(sum(geoms(cpb_line(d, x = jaar, y = prim, sec_y = sec, points = TRUE)) == "GeomPoint"), 2)
+
+  # cpb_line used to build its value scale twice over -- once for the
+  # secondary mapping, once for the axis -- and the two were free to
+  # disagree. Built once now: no duplicate-scale warning, and the
+  # breaks span the data exactly as in any other wrapper.
+  w <- character(0)
+  p <- withCallingHandlers(
+    cpb_line(d, x = jaar, y = prim, sec_y = sec, value_breaks = c(0, 2, 4)),
+    warning = function(cnd) {
+      w <<- c(w, conditionMessage(cnd))
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_equal(sum(grepl("already present", w)), 0)
+  brk <- p$scales$get_scales("y")$breaks
+  expect_equal(unique(diff(brk)), 2)
+  expect_lte(min(brk), min(d$prim))
+  expect_gte(max(brk), max(d$prim))
+})
+
 test_that("cpb_add_sec_guides() -- shared by cpb_col/area/box -- is a no-op without sec_y", {
   p <- ggplot2::ggplot()
   expect_identical(cpb_add_sec_guides(p, FALSE, FALSE, NULL), p)
@@ -1199,11 +1595,12 @@ test_that("cpb_add_sec_guides() -- shared by cpb_col/area/box -- is a no-op with
 
 test_that("cpb_add_sec_guides() stacks the fill/colour guides and legend.box when sec_y is present", {
   p <- ggplot2::ggplot() + ggplot2::geom_blank()
-  out <- cpb_add_sec_guides(p, TRUE, reverse_legend = TRUE, legend_ncol = 2)
+  out <- cpb_add_sec_guides(p, TRUE, reverse_legend = TRUE, legend_ncol = 2, legend_nrow = 1)
 
   fill_params <- out$guides$guides[["fill"]]$params
   expect_equal(fill_params$reverse, TRUE)
   expect_equal(fill_params$ncol, 2)
+  expect_equal(fill_params$nrow, 1)
   expect_equal(fill_params$override.aes, list(colour = NA, shape = NA))
   expect_equal(fill_params$order, 1)
   expect_equal(out$guides$guides[["colour"]]$params$order, 2)
@@ -1229,7 +1626,12 @@ test_that("sec_point_size and sec_col_width replace the old hardcoded sizes", {
   p <- cpb_col(df, x = jaar, y = mld, sec_y = heffing, sec_type = "col",
               sec_col_width = 0.7)
   cols <- Filter(function(l) inherits(l$geom, "GeomCol"), p$layers)
-  expect_equal(cols[[2]]$aes_params$width, 0.7) # [[1]] is the primary bars
+  # a literal width lands in aes_params under ggplot2 4.0, geom_params
+  # under 3.5.x -- not a real behaviour difference, just which slot the
+  # resolved parameter ends up in; [[1]] is the primary bars
+  width2 <- cols[[2]]$aes_params$width
+  if (is.null(width2)) width2 <- cols[[2]]$geom_params$width
+  expect_equal(width2, 0.7)
 
   # cpb_dot()'s own sec_point_size defaults to its primary `size`, so a
   # sec_type = "point" series reads as the same kind of mark by default

@@ -148,7 +148,7 @@ what you need when the figure is captioned in English.
 Map `fill` (with the `"ggcpb"` style) and pass a `position_dodge()`
 for grouped boxes -- for example one pair of years per income group:
 
-```{r box-dodged, fig.width = 5.96, fig.height = 2.98, out.width = "700px"}
+```{r box-dodged}
 kk2 <- expand_grid(kk, jaar = factor(c(2026, 2027))) |>
   mutate(across(p5:p95, \(q) q + (jaar == "2027") * 0.8))
 

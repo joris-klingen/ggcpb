@@ -14,14 +14,12 @@ packages or downloads are needed. Regions are separated by thin
 background-colour seams, and the legend sits inside the panel at
 top-left – in the empty North Sea corner of the country.
 
-A map is taller relative to its width than a chart, so `save_cpb()`
-auto-fits the panel to the boundaries’ true aspect ratio, rather than
-letting it sit letterboxed inside a guessed `fig.height` (see “Styling
-and raw boundaries” below). Every map below is therefore written to a
-file with `save_cpb()` and shown from that file, exactly as it would
-look saved for a report – the code that builds and saves each map is the
-code shown; only the line that displays it back inline for this page is
-left out.
+A map is taller relative to its width than a chart. Written out with
+`save_cpb()` (see `vignette("ggcpb")`), the panel is auto-fitted to the
+boundaries’ true aspect ratio rather than letterboxed inside a guessed
+height. The maps below are printed directly instead, on the same
+half-page canvas as every other figure in these vignettes, so they are
+fitted to that canvas rather than to the boundaries.
 
 # Classed maps
 
@@ -40,14 +38,13 @@ gemeenten <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
          klasse  = cpb_cut(aandeel, breaks = c(0, 20, 30, 40, 50, 60, Inf),
                            labeller = label_pct_nl()))
 
-path <- tempfile(fileext = ".png")
-save_cpb(path, cpb_map(gemeenten, region = code, value = klasse,
+cpb_map(gemeenten, region = code, value = klasse,
   palette = "blues",
   title   = "Aandeel huishoudens met zonnepanelen",
-  filllab = "aandeel"), page = "half")
+  filllab = "aandeel")
 ```
 
-<img src="maps_files/figure-gfm/map-classed-show-1.png" alt="" width="350px" />
+<img src="maps_files/figure-gfm/map-classed-1.png" alt="" width="350px" />
 
 `cpb_cut()` is a house-styled wrapper around `cut()`: give it the
 `breaks` (including the outer bounds, `Inf` for an open top class) and a
@@ -67,13 +64,12 @@ value axis, so `ylab` does not apply here:
 gemeenten_ct <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
   mutate(index = rnorm(n(), 100, 15))
 
-path <- tempfile(fileext = ".png")
-save_cpb(path, cpb_map(gemeenten_ct, region = code, value = index,
+cpb_map(gemeenten_ct, region = code, value = index,
   title    = "Voorbeeldindex per gemeente",
-  subtitle = "index (Nederland = 100)"), page = "half")
+  subtitle = "index (Nederland = 100)")
 ```
 
-<img src="maps_files/figure-gfm/map-gemeente-show-1.png" alt="" width="350px" />
+<img src="maps_files/figure-gfm/map-gemeente-1.png" alt="" width="350px" />
 
 # Provinces
 
@@ -81,7 +77,7 @@ save_cpb(path, cpb_map(gemeenten_ct, region = code, value = index,
 `"corop"` works the same way for COROP regions. A discrete `value` gets
 the discrete CPB palette (pick colours with `index`); a title that runs
 wider than the panel triggers a warning from `save_cpb()`, which
-suggests breaking it over two lines with `"\n"`, as here:
+suggests breaking it over two lines with `"\n"` – done here:
 
 ``` r
 provincies <- tibble(naam = unique(cpb_nl_geo("provincie")$name)) |>
@@ -90,13 +86,12 @@ provincies <- tibble(naam = unique(cpb_nl_geo("provincie")$name)) |>
     levels = c("onder gemiddeld", "boven gemiddeld")
   ))
 
-path <- tempfile(fileext = ".png")
-save_cpb(path, cpb_map(provincies, region = naam, value = klasse, level = "provincie",
+cpb_map(provincies, region = naam, value = klasse, level = "provincie",
   fill_index = c(2, 6),
-  title = "Groei ten opzichte van het\nlandelijk gemiddelde"), page = "half")
+  title = "Groei ten opzichte van het\nlandelijk gemiddelde")
 ```
 
-<img src="maps_files/figure-gfm/map-provincie-show-1.png" alt="" width="350px" />
+<img src="maps_files/figure-gfm/map-provincie-1.png" alt="" width="350px" />
 
 # Styling and raw boundaries
 
