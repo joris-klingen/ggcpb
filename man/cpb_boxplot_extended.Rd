@@ -272,7 +272,11 @@ count alongside a one-decimal percentage share).}
 axis's breaks to "nice" numbers via \code{\link[=pretty]{pretty()}}, matching the
 primary axis's own break count. Set to \code{FALSE} to instead space
 breaks evenly across \code{sec_limits} (or the \code{sec_y} data range)
-without rounding them to nice numbers.}
+without rounding them to nice numbers. Only takes effect when
+\code{sec_limits} is left at its default: an explicit \code{sec_limits} is
+always spaced evenly, whatever this is set to, since breaks
+rounded to nice numbers would not land on the endpoints asked
+for.}
 
 \item{sec_at}{Explicit secondary-axis break values, in \code{sec_y}'s own
 units. Must have exactly as many values as the primary axis has

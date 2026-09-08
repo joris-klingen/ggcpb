@@ -1472,6 +1472,35 @@ test_that("no secondary break loses its label, whatever the primary/secondary ra
   }
 })
 
+# sec_scale_auto only chooses between pretty() breaks and an even split
+# when the range is the sec_y data's own. An explicit sec_limits always
+# wins, because pretty() would not land on the endpoints the caller
+# asked for. Documented on both @param entries; pinned here so it is a
+# decision rather than something a later change quietly reverses.
+test_that("an explicit sec_limits spaces breaks evenly, whatever sec_scale_auto says", {
+  sec_labels <- function(p) {
+    ggplot2::ggplot_build(p)$layout$panel_params[[1]]$y.sec$get_labels()
+  }
+  d <- data.frame(jaar = 2018:2027, prim = 1:10,
+                  sec = c(9, 20, 35, 50, 60, 70, 77, 80, 90, 95))
+
+  # no sec_limits: sec_scale_auto is what decides
+  pretty_auto <- sec_labels(cpb_line(d, x = jaar, y = prim, sec_y = sec))
+  even_auto <- sec_labels(cpb_line(d, x = jaar, y = prim, sec_y = sec,
+                                   sec_scale_auto = FALSE))
+  expect_false(identical(pretty_auto, even_auto))
+
+  # with sec_limits: both settings give the same, evenly spaced breaks,
+  # and both keep the exact endpoints that were asked for
+  lim <- c(7, 78)
+  with_true <- sec_labels(cpb_line(d, x = jaar, y = prim, sec_y = sec,
+                                   sec_limits = lim, sec_scale_auto = TRUE))
+  with_false <- sec_labels(cpb_line(d, x = jaar, y = prim, sec_y = sec,
+                                    sec_limits = lim, sec_scale_auto = FALSE))
+  expect_identical(with_true, with_false)
+  expect_equal(as.numeric(sub(",", ".", with_true[c(1, length(with_true))])), lim)
+})
+
 # the transform has to round-trip both outermost breaks exactly, which is
 # what keeps them inside ggplot2's censoring range in the test above
 test_that("cpb_sec_interp() maps both endpoints exactly, in both directions", {

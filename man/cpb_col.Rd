@@ -118,9 +118,11 @@ distinct). All three read off the same secondary axis and share
 one legend key with the primary fill.}
 
 \item{sec_limits}{Length-2 numeric vector giving the range the
-secondary axis spans. \code{NULL} (default) uses zero to the maximum of
-\code{sec_y}. \code{sec_y} is placed by mapping this range linearly onto
-the primary range, so the two axes always start together.}
+secondary axis spans. \code{NULL} (default) uses the range of \code{sec_y}
+itself, minimum to maximum. \code{sec_y} is placed by mapping this
+range linearly onto the primary range, so the two axes always
+start together. Giving this explicitly also spaces the breaks
+evenly across it, overriding \code{sec_scale_auto}.}
 
 \item{sec_label}{Legend label for \code{sec_y}. \code{NULL} (default) uses
 the \code{sec_y} column name. Automatically suffixed \code{"(rechteras)"}
@@ -160,7 +162,11 @@ count alongside a one-decimal percentage share).}
 axis's breaks to "nice" numbers via \code{\link[=pretty]{pretty()}}, matching the
 primary axis's own break count. Set to \code{FALSE} to instead space
 breaks evenly across \code{sec_limits} (or the \code{sec_y} data range)
-without rounding them to nice numbers.}
+without rounding them to nice numbers. Only takes effect when
+\code{sec_limits} is left at its default: an explicit \code{sec_limits} is
+always spaced evenly, whatever this is set to, since breaks
+rounded to nice numbers would not land on the endpoints asked
+for.}
 
 \item{sec_at}{Explicit secondary-axis break values, in \code{sec_y}'s own
 units. Must have exactly as many values as the primary axis has

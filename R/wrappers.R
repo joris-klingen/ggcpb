@@ -947,9 +947,11 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   distinct). All three read off the same secondary axis and share
 #'   one legend key with the primary fill.
 #' @param sec_limits Length-2 numeric vector giving the range the
-#'   secondary axis spans. `NULL` (default) uses zero to the maximum of
-#'   `sec_y`. `sec_y` is placed by mapping this range linearly onto
-#'   the primary range, so the two axes always start together.
+#'   secondary axis spans. `NULL` (default) uses the range of `sec_y`
+#'   itself, minimum to maximum. `sec_y` is placed by mapping this
+#'   range linearly onto the primary range, so the two axes always
+#'   start together. Giving this explicitly also spaces the breaks
+#'   evenly across it, overriding `sec_scale_auto`.
 #' @param sec_label Legend label for `sec_y`. `NULL` (default) uses
 #'   the `sec_y` column name. Automatically suffixed `"(rechteras)"`
 #'   (right axis) -- don't add it yourself, e.g. `sec_label =
@@ -981,7 +983,11 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   axis's breaks to "nice" numbers via [pretty()], matching the
 #'   primary axis's own break count. Set to `FALSE` to instead space
 #'   breaks evenly across `sec_limits` (or the `sec_y` data range)
-#'   without rounding them to nice numbers.
+#'   without rounding them to nice numbers. Only takes effect when
+#'   `sec_limits` is left at its default: an explicit `sec_limits` is
+#'   always spaced evenly, whatever this is set to, since breaks
+#'   rounded to nice numbers would not land on the endpoints asked
+#'   for.
 #' @param sec_at Explicit secondary-axis break values, in `sec_y`'s own
 #'   units. Must have exactly as many values as the primary axis has
 #'   breaks, since each secondary break is drawn level with one
@@ -1517,9 +1523,11 @@ cpb_col <- function(data, x, y, fill = NULL,
 #'   three read off the same secondary axis and share one legend key
 #'   with the primary fill.
 #' @param sec_limits Length-2 numeric vector giving the range the
-#'   secondary axis spans. `NULL` (default) uses zero to the maximum of
-#'   `sec_y`. `sec_y` is placed by mapping this range linearly onto
-#'   the primary range, so the two axes always start together.
+#'   secondary axis spans. `NULL` (default) uses the range of `sec_y`
+#'   itself, minimum to maximum. `sec_y` is placed by mapping this
+#'   range linearly onto the primary range, so the two axes always
+#'   start together. Giving this explicitly also spaces the breaks
+#'   evenly across it, overriding `sec_scale_auto`.
 #' @param sec_label Legend label for `sec_y`. `NULL` (default) uses
 #'   the `sec_y` column name. Automatically suffixed `"(rechteras)"`
 #'   (right axis) -- don't add it yourself, e.g. `sec_label =
@@ -1551,7 +1559,11 @@ cpb_col <- function(data, x, y, fill = NULL,
 #'   axis's breaks to "nice" numbers via [pretty()], matching the
 #'   primary axis's own break count. Set to `FALSE` to instead space
 #'   breaks evenly across `sec_limits` (or the `sec_y` data range)
-#'   without rounding them to nice numbers.
+#'   without rounding them to nice numbers. Only takes effect when
+#'   `sec_limits` is left at its default: an explicit `sec_limits` is
+#'   always spaced evenly, whatever this is set to, since breaks
+#'   rounded to nice numbers would not land on the endpoints asked
+#'   for.
 #' @param sec_at Explicit secondary-axis break values, in `sec_y`'s own
 #'   units. Must have exactly as many values as the primary axis has
 #'   breaks, since each secondary break is drawn level with one
@@ -1897,9 +1909,11 @@ cpb_area <- function(data, x, y, fill,
 #' @param sec_type How `sec_y` is drawn: `"line"` (default), `"point"`
 #'   (markers only, no connecting line), or `"col"` (thin bars).
 #' @param sec_limits Length-2 numeric vector giving the range the
-#'   secondary axis spans. `NULL` (default) uses zero to the maximum of
-#'   `sec_y`. `sec_y` is placed by mapping this range linearly onto
-#'   the primary range, so the two axes always start together.
+#'   secondary axis spans. `NULL` (default) uses the range of `sec_y`
+#'   itself, minimum to maximum. `sec_y` is placed by mapping this
+#'   range linearly onto the primary range, so the two axes always
+#'   start together. Giving this explicitly also spaces the breaks
+#'   evenly across it, overriding `sec_scale_auto`.
 #' @param sec_label Legend label for `sec_y`. `NULL` (default) uses
 #'   the `sec_y` column name. Automatically suffixed `"(rechteras)"`
 #'   (right axis) -- don't add it yourself, e.g. `sec_label =
@@ -1930,7 +1944,11 @@ cpb_area <- function(data, x, y, fill,
 #'   axis's breaks to "nice" numbers via [pretty()], matching the
 #'   primary axis's own break count. Set to `FALSE` to instead space
 #'   breaks evenly across `sec_limits` (or the `sec_y` data range)
-#'   without rounding them to nice numbers.
+#'   without rounding them to nice numbers. Only takes effect when
+#'   `sec_limits` is left at its default: an explicit `sec_limits` is
+#'   always spaced evenly, whatever this is set to, since breaks
+#'   rounded to nice numbers would not land on the endpoints asked
+#'   for.
 #' @param sec_at Explicit secondary-axis break values, in `sec_y`'s own
 #'   units. Must have exactly as many values as the primary axis has
 #'   breaks, since each secondary break is drawn level with one
@@ -2578,7 +2596,11 @@ cpb_line <- function(data, x, y, colour = NULL,
 #'   axis's breaks to "nice" numbers via [pretty()], matching the
 #'   primary axis's own break count. Set to `FALSE` to instead space
 #'   breaks evenly across `sec_limits` (or the `sec_y` data range)
-#'   without rounding them to nice numbers.
+#'   without rounding them to nice numbers. Only takes effect when
+#'   `sec_limits` is left at its default: an explicit `sec_limits` is
+#'   always spaced evenly, whatever this is set to, since breaks
+#'   rounded to nice numbers would not land on the endpoints asked
+#'   for.
 #' @param sec_at Explicit secondary-axis break values, in `sec_y`'s own
 #'   units. Must have exactly as many values as the primary axis has
 #'   breaks, since each secondary break is drawn level with one
@@ -3675,7 +3697,11 @@ cpb_hist <- function(data, x, fill = NULL,
 #'   axis's breaks to "nice" numbers via [pretty()], matching the
 #'   primary axis's own break count. Set to `FALSE` to instead space
 #'   breaks evenly across `sec_limits` (or the `sec_y` data range)
-#'   without rounding them to nice numbers.
+#'   without rounding them to nice numbers. Only takes effect when
+#'   `sec_limits` is left at its default: an explicit `sec_limits` is
+#'   always spaced evenly, whatever this is set to, since breaks
+#'   rounded to nice numbers would not land on the endpoints asked
+#'   for.
 #' @param sec_at Explicit secondary-axis break values, in `sec_y`'s own
 #'   units. Must have exactly as many values as the primary axis has
 #'   breaks, since each secondary break is drawn level with one
