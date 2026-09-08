@@ -57,3 +57,45 @@ test_that("value_limits narrower than the data widens the axis, it does not crop
   expect_lte(yr[1], min(d$y))
   expect_gte(yr[2], max(d$y))
 })
+
+test_that("a stacked total a hair over the limit is drawn, not censored", {
+  # The axis is sized from tapply(..., sum) -- a forward sum -- while
+  # position_stack() reaches its top by cumsum()ing the same numbers in
+  # reverse. Floating point is not associative, so the two can differ in
+  # the last bit: here the forward sum is exactly 100 while the stack
+  # tops out at 100 + 1e-14. The scale's limits are flush (no expansion)
+  # and oob_censor() compares strictly, so without a tolerance that top
+  # point becomes NA -- geom_area() then fails to build a grob at all,
+  # and geom_col() silently drops the segment.
+  raw <- c(3.03, 6.10, 8.66)
+  shares <- 100 * raw / sum(raw)
+  expect_equal(sum(shares), 100, tolerance = 0) # what the axis is sized from
+  expect_gt(cumsum(rev(shares))[3], 100) # what position_stack() reaches
+
+  d <- data.frame(
+    jaar  = rep(2020:2021, each = 3),
+    grp   = factor(rep(c("a", "b", "c"), times = 2)),
+    share = rep(shares, times = 2)
+  )
+
+  has_na <- function(p) {
+    any(vapply(
+      ggplot2::ggplot_build(p)$data,
+      function(l) if ("y" %in% names(l)) anyNA(l$y) else FALSE,
+      logical(1)
+    ))
+  }
+
+  col <- cpb_col(d, x = jaar, y = share, fill = grp, pct_axis = TRUE)
+  expect_false(has_na(col))
+
+  area <- cpb_area(d, x = jaar, y = share, fill = grp, pct_axis = TRUE)
+  expect_false(has_na(area))
+  # the area has to survive all the way to a grob, not just to build
+  expect_no_error(ggplot2::ggplotGrob(area))
+
+  # the tolerance is far below a screen pixel, so the axis still reads
+  # as flush: the limits are still 0-100 to any visible precision
+  lims <- ggplot2::ggplot_build(col)$layout$panel_scales_y[[1]]$get_limits()
+  expect_equal(lims, c(0, 100))
+})

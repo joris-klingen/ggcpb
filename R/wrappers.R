@@ -821,6 +821,17 @@ cpb_flush_scale_args <- function(axis_values, pct_axis = FALSE, pct_scale = 1,
       call. = FALSE
     )
   }
+  # position_stack() accumulates a stacked total in a different order
+  # than the sum this axis was sized from, so the two can disagree in
+  # the last bit: a 100% area whose top lands on 100 + 1e-14 sits just
+  # outside a limit of exactly 100. oob_censor() compares strictly, so
+  # that one point becomes NA and the whole geom then fails to build a
+  # grob. Widen by a relative hair -- far under a screen pixel, but
+  # orders of magnitude above any such rounding error.
+  span <- diff(args$limits)
+  if (is.finite(span) && span > 0) {
+    args$limits <- args$limits + c(-1, 1) * span * 1e-12
+  }
   args$expand <- ggplot2::expansion(mult = c(0, 0))
   args
 }
