@@ -454,21 +454,20 @@ test_that("value_breaks and value_limits work in area, line and box", {
                     y = c(1:3, 2:4))
   box_df <- data.frame(x = c("a", "b"), p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5)
 
-  # both narrower than the actual (stacked, for cpb_area) data range --
-  # each warns, since the scale's own limits no longer narrow to match
-  # value_breaks when that would drop data (see cpb_flush_scale_args())
-  expect_warning(
-    p_area <- cpb_area(num, x = x, y = y, fill = g, value_breaks = c(0, 2, 4)),
-    "cropped for display"
+  # both narrower than the actual (stacked, for cpb_area) data range.
+  # value_breaks says where the ticks go, not where the axis stops, so
+  # the sequence is extended outward in its own step until it spans the
+  # data -- nothing is hidden and nothing warns.
+  p_area <- expect_no_warning(
+    cpb_area(num, x = x, y = y, fill = g, value_breaks = c(0, 2, 4))
   )
   sc <- p_area$scales$get_scales("y")
-  expect_equal(sc$breaks, c(0, 2, 4))
-  expect_warning(
-    p_line <- cpb_line(num, x = x, y = y, colour = g, value_breaks = c(1, 3)),
-    "cropped for display"
+  expect_equal(sc$breaks, c(0, 2, 4, 6, 8))
+  p_line <- expect_no_warning(
+    cpb_line(num, x = x, y = y, colour = g, value_breaks = c(1, 3))
   )
   sc <- p_line$scales$get_scales("y")
-  expect_equal(sc$breaks, c(1, 3))
+  expect_equal(sc$breaks, c(1, 3, 5))
   sc <- cpb_box(box_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                 value_breaks = c(1, 3, 5))$scales$get_scales("y")
   expect_equal(sc$breaks, c(1, 3, 5))
@@ -498,42 +497,83 @@ test_that("value_breaks and value_limits work in area, line and box", {
   expect_equal(p$coordinates$limits$y, c(0, 10))
 })
 
-test_that("a value axis narrower than the data actually clips the drawing", {
-  # box-df's own p5/p95 (1, 5) sit inside value_breaks = c(1,3,5)'s own
-  # range -- nothing to crop, so clip must stay off (a real p5/p95
-  # marker legitimately touches that boundary and should not be cut in
-  # half). wide_df's whiskers (-6.5, 7.1) run well past value_breaks =
-  # seq(-6,6,2)'s range: this is the case that was drawing straight
-  # into the page margin -- clip must be "on" so the coord zoom this is
-  # documented as actually crops
+test_that("a value axis narrower than the data is widened, never cropped", {
+  # The axis always covers the data. value_breaks says where the ticks
+  # go and value_limits the span the axis must at least reach; when the
+  # data runs past either, the ticks are extended outward in their own
+  # step. So nothing is ever clipped for the value axis, and clip stays
+  # "off" -- which is what keeps a p5/p95 marker sitting exactly on the
+  # panel edge from being cut in half.
   box_df <- data.frame(x = c("a", "b"), p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5)
   p_flush <- cpb_box(box_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                      value_breaks = c(1, 3, 5))
   expect_equal(p_flush$coordinates$clip, "off")
+  expect_equal(p_flush$scales$get_scales("y")$breaks, c(1, 3, 5))
 
+  # whiskers at -6.5 / 7.1 run past seq(-6, 6, 2): extended to +/- 8
   wide_df <- data.frame(x = c("a", "b"), p5 = -6.5, p25 = -3, p50 = 0, p75 = 3, p95 = 7.1)
-  expect_warning(
-    p_crop <- cpb_box(wide_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-                      value_breaks = seq(-6, 6, 2)),
-    "cropped for display"
+  p_wide <- expect_no_warning(
+    cpb_box(wide_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+            value_breaks = seq(-6, 6, 2))
   )
-  expect_equal(p_crop$coordinates$clip, "on")
-  # the crop is visual only -- the box's own data still carries the
-  # true p5/p95, unclipped, matching cpb_flush_scale_args()'s own
-  # promise that this data is never dropped
-  built <- ggplot2::ggplot_build(p_crop)
-  box_data <- built$data[[which(vapply(p_crop$layers, function(l)
+  expect_equal(p_wide$scales$get_scales("y")$breaks, seq(-8, 8, 2))
+  expect_equal(p_wide$coordinates$clip, "off")
+
+  built <- ggplot2::ggplot_build(p_wide)
+  box_data <- built$data[[which(vapply(p_wide$layers, function(l)
     inherits(l$geom, "GeomErrorbar"), logical(1)))[1]]]
   expect_equal(sort(unique(c(box_data$ymin, box_data$ymax))), c(-6.5, 7.1))
+  # and the drawn range really does contain them
+  yr <- built$layout$panel_params[[1]]$y.range
+  expect_lte(yr[1], -6.5)
+  expect_gte(yr[2], 7.1)
 
-  # the same holds for cpb_line() -- a line/point past value_limits
-  # is cropped, not left to draw off the edge of the panel
+  # the same for cpb_line() with value_limits
   line_df <- data.frame(x = 1:5, y = c(1, 8, 3, -4, 2))
-  expect_warning(
-    p_line <- cpb_line(line_df, x = x, y = y, value_limits = c(0, 5)),
-    "cropped for display"
-  )
-  expect_equal(p_line$coordinates$clip, "on")
+  p_line <- expect_no_warning(cpb_line(line_df, x = x, y = y, value_limits = c(0, 5)))
+  expect_equal(p_line$coordinates$clip, "off")
+  yl <- ggplot2::ggplot_build(p_line)$layout$panel_params[[1]]$y.range
+  expect_lte(yl[1], -4)
+  expect_gte(yl[2], 8)
+})
+
+test_that("breaks that cannot be extended still never drop data", {
+  built_y <- function(p) ggplot2::ggplot_build(p)$data[[1]]$y
+
+  # irregular spacing: no single step to extend by, so the breaks stay
+  # as given -- but the scale's limits must still reach the data, or it
+  # would be censored right back out of the figure
+  irr <- function() {
+    cpb_col(data.frame(x = 1:3, y = c(1, 5, 41)), x = x, y = y,
+            value_breaks = c(0, 1, 10, 40))
+  }
+  expect_warning(irr(), "could not be extended")
+  p_irr <- suppressWarnings(irr())
+  expect_equal(p_irr$scales$get_scales("y")$breaks, c(0, 1, 10, 40))
+  expect_false(anyNA(built_y(p_irr)))
+  expect_gte(max(p_irr$scales$get_scales("y")$limits), 41)
+
+  # a step so fine that covering the data would need hundreds of
+  # gridlines is refused too, rather than drawing a wall of them
+  fine <- function() {
+    cpb_col(data.frame(x = 1:3, y = c(1, 250, 500)), x = x, y = y,
+            value_breaks = c(0, 1))
+  }
+  expect_warning(fine(), "could not be extended")
+  p_fine <- suppressWarnings(fine())
+  expect_lte(length(p_fine$scales$get_scales("y")$breaks), 25)
+  expect_false(anyNA(built_y(p_fine)))
+  expect_gte(max(p_fine$scales$get_scales("y")$limits), 500)
+})
+
+test_that("extending the value axis never crosses a zero anchor", {
+  # columns grow from zero: if nothing is negative the axis must still
+  # start at 0, not gain a negative tick just because the top extended
+  d <- data.frame(x = 1:3, y = c(10, 25, 41))
+  p <- cpb_col(d, x = x, y = y, value_breaks = seq(0, 40, 10))
+  b <- p$scales$get_scales("y")$breaks
+  expect_equal(b, seq(0, 50, 10))
+  expect_equal(min(b), 0)
 })
 
 test_that("pct_axis works in cpb_box", {
@@ -1530,17 +1570,22 @@ test_that("cpb_line honours sec_type/sec_points like the wrappers using cpb_sec_
   expect_equal(sum(geoms(cpb_line(d, x = jaar, y = prim, sec_y = sec, points = TRUE)) == "GeomPoint"), 2)
 
   # cpb_line used to build its value scale twice over -- once for the
-  # secondary mapping, once for the axis -- so one too-narrow
-  # value_breaks warned twice, and the two were free to disagree
+  # secondary mapping, once for the axis -- and the two were free to
+  # disagree. Built once now: no duplicate-scale warning, and the
+  # breaks span the data exactly as in any other wrapper.
   w <- character(0)
-  withCallingHandlers(
-    invisible(cpb_line(d, x = jaar, y = prim, sec_y = sec, value_breaks = c(0, 2, 4))),
+  p <- withCallingHandlers(
+    cpb_line(d, x = jaar, y = prim, sec_y = sec, value_breaks = c(0, 2, 4)),
     warning = function(cnd) {
       w <<- c(w, conditionMessage(cnd))
       invokeRestart("muffleWarning")
     }
   )
-  expect_equal(sum(grepl("cropped for display", w)), 1)
+  expect_equal(sum(grepl("already present", w)), 0)
+  brk <- p$scales$get_scales("y")$breaks
+  expect_equal(unique(diff(brk)), 2)
+  expect_lte(min(brk), min(d$prim))
+  expect_gte(max(brk), max(d$prim))
 })
 
 test_that("cpb_add_sec_guides() -- shared by cpb_col/area/box -- is a no-op without sec_y", {

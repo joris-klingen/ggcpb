@@ -217,16 +217,20 @@ adding a second \code{scale_y_continuous()}, which would discard the
 wrapper's flush axis (see \code{value_breaks}).}
 
 \item{value_breaks}{Optional breaks for the value axis (passed to
-\code{\link[ggplot2:scale_y_continuous]{ggplot2::scale_y_continuous()}}).}
+\code{\link[ggplot2:scale_y_continuous]{ggplot2::scale_y_continuous()}}). These choose where the
+ticks sit, not where the axis stops: if the data runs past the
+outermost break, evenly spaced breaks are extended outward in
+their own step until they cover it, so the axis still ends on a
+labelled gridline and no value is hidden.}
 
 \item{value_limits}{Optional length-2 numeric vector giving the
-value-axis range, applied through the coordinate system (a
-\code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} zoom), not as the wrapper-built value
-scale's own \code{limits} -- this is the hard bound the axis is drawn
-flush to, but an estimate outside it is only visually cropped,
-with a warning naming how many, rather than dropped from the data.
-\code{NULL} (default) flushes to the full lower-upper (and point) range
-instead.}
+span the value axis must \emph{at least} cover -- typically to force
+it wider than the data needs, e.g. always showing zero, or a
+fixed range shared across several figures. It is a minimum, not
+a crop: where the data runs past it the axis is widened to fit,
+so no value is ever hidden. \code{NULL} (default) flushes to
+the full lower-upper (and point) range. For a deliberate zoom that does hide
+values, add \code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} yourself.}
 
 \item{x_lim}{Optional length-2 vector zooming the category (\code{x})
 axis to a range, without dropping data -- applied as a

@@ -301,23 +301,19 @@ cpb_x_flush_xlim <- function(x, data, flush, pad = 0) {
 # for no visible difference other than a "scale already present"
 # warning.
 #
-# clip is "off" only when nothing is actually being cropped -- a flush
-# axis (x or value) legitimately puts a real data point (a p5/p95
-# marker, box_style = "dot"'s own dot, ...) exactly on the panel edge,
-# and clip = "on" would cut half of its symbol off there for no reason.
-# An explicit x_lim is different: it is documented as a deliberate
-# visual crop ("a bar just outside the window still contributes to
-# breaks/totals but is only clipped for display"), so that keeps
-# clipping -- and so does value_crops, set by the caller when
-# value_limits/value_breaks came out narrower than the data actually
-# reaches (cpb_flush_scale_args() widens the *scale* rather than drop
-# that data, see there, so without this a p5/p95 whisker past the
-# requested range would draw straight into the page margin instead of
-# stopping at the axis it was asked to stop at).
+# clip is "off": a flush axis (x or value) legitimately puts a real
+# data point (a p5/p95 marker, box_style = "dot"'s own dot, ...)
+# exactly on the panel edge, and clip = "on" would cut half of its
+# symbol off there for no reason. The value axis never needs clipping
+# any more -- its breaks are extended to span the data, so nothing
+# falls outside it (see cpb_flush_scale_args()). An explicit x_lim is
+# different: it is documented as a deliberate visual crop ("a bar just
+# outside the window still contributes to breaks/totals but is only
+# clipped for display"), so that one keeps clipping.
 cpb_apply_coord <- function(p, orientation, x_lim, value_limits,
                             x, data, x_lim_follow_data, has_group,
-                            skip_x_flush = FALSE, value_crops = FALSE) {
-  clip <- if (is.null(x_lim) && !isTRUE(value_crops)) "off" else "on"
+                            skip_x_flush = FALSE) {
+  clip <- if (is.null(x_lim)) "off" else "on"
   do_flush <- is.null(x_lim) && !has_group && !skip_x_flush
   flush_xlim <- if (do_flush) cpb_x_flush_xlim(x, data, x_lim_follow_data) else NULL
   xlim_final <- if (!is.null(x_lim)) x_lim else flush_xlim
@@ -796,55 +792,60 @@ cpb_flush_scale_args <- function(axis_values, pct_axis = FALSE, pct_scale = 1,
   } else {
     label_number_nl(style = style)
   }
-  breaks_final <- if (!is.null(value_breaks)) {
-    value_breaks
-  } else if (!is.null(value_limits)) {
-    # forced limits, not the raw data, are what the breaks must span:
-    # pretty()'ing the full data range can miss a forced limit entirely
-    # -- e.g. limits = c(0, 40) with data running 8-41 would get
-    # pretty(8, 41)'s breaks (5, 10, ..., 45), never including the 0
-    # the caller asked for
-    pretty(value_limits)
-  } else {
-    pretty(range(axis_values, na.rm = TRUE))
-  }
-  args$breaks <- breaks_final
-  requested_limits <- if (!is.null(value_limits)) value_limits else range(breaks_final)
-  # requested_limits narrower than the data would, applied as a *scale*
-  # limit, delete every out-of-range row outright (ggplot2's default
-  # oob = censor turns them NA before any stat runs) -- silently, so a
-  # stacked total comes out wrong rather than a bar just getting cut
-  # short. Widened here to never go narrower than the data actually
-  # requires; callers apply requested_limits themselves, as the
-  # coord_cartesian()/coord_flip() ylim, for the crop that was actually
-  # asked for -- a coord zoom clips the drawing, never the data feeding
-  # it, so nothing is lost even when requested_limits is genuinely
-  # tighter than the data.
+  # The axis always covers the data. `value_breaks` says where the ticks
+  # go and `value_limits` the span the axis must *at least* reach; if the
+  # data runs past either, the ticks are extended outward in whole steps
+  # rather than the data being hidden. Cropping a value out of a figure
+  # is never something a labelling or minimum-range argument should do
+  # silently -- pass coord_cartesian(ylim = ) yourself for a deliberate
+  # zoom, where it is visible in the calling code.
   data_range <- range(axis_values, na.rm = TRUE)
-  args$limits <- c(
-    min(requested_limits[1], data_range[1]),
-    max(requested_limits[2], data_range[2])
-  )
-  # exposed so callers can tell coord_cartesian()/coord_flip() to
-  # actually clip to requested_limits -- without this, a caller whose
-  # value_breaks/value_limits came out narrower than the data (the case
-  # this widening exists for) draws the overflow straight past the
-  # panel edge and into the page margin instead of stopping at the
-  # axis it asked for, since clip otherwise defaults to "off" (see
-  # cpb_apply_coord()). Popped back off before scale_args reaches
-  # do.call(scale_y_continuous, scale_args), which has no such argument.
-  args$value_crops <- !isTRUE(all.equal(args$limits, requested_limits))
-  if (args$value_crops) {
-    n_out <- sum(axis_values < requested_limits[1] | axis_values > requested_limits[2], na.rm = TRUE)
+  needed <- range(c(data_range, value_limits))
+  breaks_final <- if (!is.null(value_breaks)) value_breaks else pretty(needed)
+  breaks_final <- cpb_extend_breaks(breaks_final, needed)
+  args$breaks <- breaks_final
+  # Normally the extended breaks already span `needed`, so the axis ends
+  # exactly on a labelled gridline, as the flush house style wants. When
+  # they could not be extended -- irregular spacing, or a step so fine
+  # that covering the data would take a wall of gridlines -- the limits
+  # still have to cover the data, or the scale would censor rows right
+  # back out of the figure. The axis then simply does not end on a tick.
+  args$limits <- range(c(breaks_final, needed))
+  if (!isTRUE(all.equal(args$limits, range(breaks_final)))) {
     warning(
-      "ggcpb: ", n_out, " value(s) fall outside the range implied by ",
-      "`value_limits`/`value_breaks`; cropped for display (via the ",
-      "plot's coordinate system) rather than dropped from it.",
+      "ggcpb: `value_breaks` do not cover the data (",
+      paste(signif(data_range, 4), collapse = " to "),
+      ") and could not be extended to, so the axis does not end on a ",
+      "gridline. Give evenly spaced breaks, at a step that reaches the ",
+      "data without needing hundreds of them.",
       call. = FALSE
     )
   }
   args$expand <- ggplot2::expansion(mult = c(0, 0))
   args
+}
+
+# Widen a break sequence outward, in its own step, until it spans
+# `needed`. Extension is driven by the data, so a zero-anchored axis
+# whose data never goes negative is never extended below zero.
+#
+# Returned unchanged when it cannot sensibly be done: an irregular
+# sequence has no single step to extend by, and a step fine enough to
+# need more than `max_breaks` gridlines would draw a solid wall of them
+# (value_breaks = c(0, 1) against data reaching 500 wants 501). The
+# caller widens the scale's limits to cover the data either way, so
+# nothing is hidden -- the axis just stops somewhere other than a tick.
+cpb_extend_breaks <- function(breaks, needed, max_breaks = 25) {
+  b <- sort(unique(breaks[is.finite(breaks)]))
+  if (length(b) < 2 || !all(is.finite(needed))) return(breaks)
+  steps <- diff(b)
+  step <- steps[1]
+  if (step <= 0 || !isTRUE(all.equal(max(steps), min(steps)))) return(breaks)
+  tol <- step * 1e-6
+  below <- max(0, ceiling((b[1] - needed[1] - tol) / step))
+  above <- max(0, ceiling((needed[2] - b[length(b)] - tol) / step))
+  if (length(b) + below + above > max_breaks) return(breaks)
+  seq(b[1] - below * step, b[length(b)] + above * step, by = step)
 }
 
 # columns / bars ----
@@ -1004,16 +1005,14 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   precedence over the `sec_*` argument it aliases when both are
 #'   given; `NULL` (default) defers to it.
 #' @param value_limits Optional length-2 numeric vector giving the
-#'   value-axis range (the `y` axis, or the flipped axis when
-#'   `orientation = "horizontal"`). Applied through the coordinate
-#'   system (a [ggplot2::coord_cartesian()] zoom), not as the
-#'   wrapper-built value scale's own `limits` -- this is the axis the
-#'   panel is drawn flush to, but a bar/segment that falls outside it
-#'   is only visually cropped, with a warning naming how many, rather
-#'   than dropped from the data (a stacked total, for instance, still
-#'   comes out right). `NULL` (default) flushes to the full data range
-#'   instead (see `x_lim`/`x_lim_follow_data` for the category axis's
-#'   equivalent).
+#'   span the value axis must *at least* cover -- typically to force
+#'   it wider than the data needs, e.g. always showing zero, or a
+#'   fixed range shared across several figures. It is a minimum, not
+#'   a crop: where the data runs past it the axis is widened to fit,
+#'   so no value is ever hidden. `NULL` (default) flushes to
+#'   the full data range (see `x_lim`/`x_lim_follow_data` for
+#'   the category axis's equivalent). For a deliberate zoom that does hide
+#'   values, add [ggplot2::coord_cartesian()] yourself.
 #' @param x_lim Optional length-2 vector zooming the category (`x`)
 #'   axis to a range, without dropping data -- applied as a
 #'   coordinate-system zoom ([ggplot2::coord_cartesian()] /
@@ -1060,7 +1059,11 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #' @param value_breaks Optional breaks for the value axis (passed to
 #'   the wrapper-built [ggplot2::scale_y_continuous()]). Use this
 #'   instead of adding a second y scale, which would discard the
-#'   wrapper's axis formatting and expansion.
+#'   wrapper's axis formatting and expansion. These choose where the
+#'   ticks sit, not where the axis stops: if the data runs past the
+#'   outermost break, evenly spaced breaks are extended outward in
+#'   their own step until they cover it, so the axis still ends on a
+#'   labelled gridline and no value is hidden.
 #' @param value_labels If `TRUE`, add [ggplot2::geom_text()] value
 #'   labels using `y`, positioned to match `position`.
 #' @param forecast_x Optional x value where the forecast window starts
@@ -1336,10 +1339,9 @@ cpb_col <- function(data, x, y, fill = NULL,
   # the crop cpb_flush_scale_args() no longer applies as a scale limit
   # when it would drop data (see there) -- applied instead, below, as
   # this wrapper's own coord_cartesian()/coord_flip() ylim
-  value_limits_visual <- if (!is.null(value_limits)) value_limits else range(scale_args$breaks)
-  # popped off scale_args below, before it reaches do.call(scale_y_continuous, ...);
-  # see cpb_flush_scale_args()'s own comment on value_crops
-  value_crops <- isTRUE(scale_args$value_crops)
+  # the breaks already span the data (see cpb_flush_scale_args()), so the
+  # coord's own zoom matches the scale and crops nothing
+  value_limits_visual <- range(scale_args$breaks)
 
   if (has_sec) {
     opts <- cpb_resolve_sec_opts(
@@ -1383,21 +1385,16 @@ cpb_col <- function(data, x, y, fill = NULL,
     NULL
   }
   xlim_final <- if (!is.null(x_lim)) x_lim else flush_xlim
-  # off only when nothing is actually being cropped -- every flush axis
-  # (x or value) legitimately puts a real data point (a sec_y marker,
-  # for instance -- its default range runs to the data's own max)
-  # exactly on the panel edge, and clip = "on" would cut half of its
-  # symbol off there for no reason. An explicit x_lim is a deliberate
-  # visual crop, so that keeps clipping -- and so does value_crops, set
-  # by cpb_flush_scale_args() when value_limits/value_breaks came out
-  # narrower than the data (which no longer drops that data, see
-  # there, so without this it would draw straight past the axis and
-  # into the page margin instead of stopping at it). expand = FALSE
-  # only skips the default expansion flush_xlim itself already
-  # excludes -- the value axis's own expansion is already zero either
-  # way (see cpb_flush_scale_args()), so this never strips anything
-  # from it
-  clip <- if (is.null(x_lim) && !value_crops) "off" else "on"
+  # off: every flush axis (x or value) legitimately puts a real data
+  # point (a sec_y marker, for instance -- its default range runs to
+  # the data's own max) exactly on the panel edge, and clip = "on"
+  # would cut half of its symbol off there for no reason. Only an
+  # explicit x_lim, a deliberate visual crop, keeps clipping.
+  # expand = FALSE only skips the default expansion flush_xlim itself
+  # already excludes -- the value axis's own expansion is already zero
+  # either way (see cpb_flush_scale_args()), so this never strips
+  # anything from it
+  clip <- if (is.null(x_lim)) "off" else "on"
   expand <- is.null(flush_xlim)
 
   if (has_group) {
@@ -1433,7 +1430,6 @@ cpb_col <- function(data, x, y, fill = NULL,
 
   p <- cpb_add_sec_ylab(p, has_sec, sec_ylab)
 
-  scale_args$value_crops <- NULL
   if (length(scale_args)) {
     p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
   }
@@ -1602,12 +1598,19 @@ cpb_col <- function(data, x, y, fill = NULL,
 #' @param value_breaks Optional breaks for the value axis (passed to
 #'   the wrapper-built [ggplot2::scale_y_continuous()]). Use this
 #'   instead of adding a second y scale, which would discard the
-#'   wrapper's axis formatting and expansion.
-#' @param value_limits Optional length-2 limits for the value axis,
-#'   applied through the coordinate system (zoom) so no data is
-#'   dropped -- an area outside it is only visually cropped, with a
-#'   warning naming how many values, rather than deleted (a stacked
-#'   total, for instance, still comes out right).
+#'   wrapper's axis formatting and expansion. These choose where the
+#'   ticks sit, not where the axis stops: if the data runs past the
+#'   outermost break, evenly spaced breaks are extended outward in
+#'   their own step until they cover it, so the axis still ends on a
+#'   labelled gridline and no value is hidden.
+#' @param value_limits Optional length-2 numeric vector giving the
+#'   span the value axis must *at least* cover -- typically to force
+#'   it wider than the data needs, e.g. always showing zero, or a
+#'   fixed range shared across several figures. It is a minimum, not
+#'   a crop: where the data runs past it the axis is widened to fit,
+#'   so no value is ever hidden. `NULL` (default) flushes to
+#'   the full data range. For a deliberate zoom that does hide
+#'   values, add [ggplot2::coord_cartesian()] yourself.
 #' @param x_lim Optional length-2 vector zooming the `x` axis to a
 #'   range, without dropping data -- applied as a coordinate-system
 #'   zoom ([ggplot2::coord_cartesian()] `xlim`). `NULL` (default) shows
@@ -1789,10 +1792,9 @@ cpb_area <- function(data, x, y, fill,
   # the crop cpb_flush_scale_args() no longer applies as a scale limit
   # when it would drop data (see there) -- applied instead, below, as
   # this wrapper's own coord_cartesian() ylim
-  value_limits_visual <- if (!is.null(value_limits)) value_limits else range(scale_args$breaks)
-  # popped off scale_args below, before it reaches do.call(scale_y_continuous, ...);
-  # see cpb_flush_scale_args()'s own comment on value_crops
-  value_crops <- isTRUE(scale_args$value_crops)
+  # the breaks already span the data (see cpb_flush_scale_args()), so the
+  # coord's own zoom matches the scale and crops nothing
+  value_limits_visual <- range(scale_args$breaks)
 
   if (has_sec) {
     opts <- cpb_resolve_sec_opts(
@@ -1808,7 +1810,6 @@ cpb_area <- function(data, x, y, fill,
                        sec_point_size, sec_col_width, style = style)
     scale_args$sec.axis <- cpb_sec_axis(sec_map, accuracy = sec_accuracy, sec_labels = opts$labels, style = style)
   }
-  scale_args$value_crops <- NULL
   if (length(scale_args)) {
     p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
   }
@@ -1826,7 +1827,7 @@ cpb_area <- function(data, x, y, fill,
   # own max) exactly on the panel edge, and clip = "on" would cut half
   # of its symbol off there; an explicit x_lim is a deliberate visual
   # crop instead, so that one case keeps clipping
-  clip <- if (is.null(x_lim) && !value_crops) "off" else "on"
+  clip <- if (is.null(x_lim)) "off" else "on"
   if (!is.null(value_limits) || !is.null(xlim_final) || clip == "off") {
     # expand = FALSE only skips the default expansion flush_xlim
     # itself already excludes -- the value axis's own expansion is
@@ -1989,16 +1990,19 @@ cpb_area <- function(data, x, y, fill,
 #' @param value_breaks Optional breaks for the value axis (passed to
 #'   the wrapper-built [ggplot2::scale_y_continuous()]). Use this
 #'   instead of adding a second y scale, which would discard the
-#'   wrapper's axis formatting and expansion.
+#'   wrapper's axis formatting and expansion. These choose where the
+#'   ticks sit, not where the axis stops: if the data runs past the
+#'   outermost break, evenly spaced breaks are extended outward in
+#'   their own step until they cover it, so the axis still ends on a
+#'   labelled gridline and no value is hidden.
 #' @param value_limits Optional length-2 numeric vector giving the
-#'   value-axis range, applied through the coordinate system (a
-#'   [ggplot2::coord_cartesian()] zoom), not as the wrapper-built value
-#'   scale's own `limits` -- this is the hard bound the axis is drawn
-#'   flush to, but a point outside it is only visually cropped, with a
-#'   warning naming how many, rather than dropped from the data (which
-#'   would otherwise also isolate and hide whichever in-range point sits
-#'   next to it on the line). `NULL` (default) flushes to the full data
-#'   range instead.
+#'   span the value axis must *at least* cover -- typically to force
+#'   it wider than the data needs, e.g. always showing zero, or a
+#'   fixed range shared across several figures. It is a minimum, not
+#'   a crop: where the data runs past it the axis is widened to fit,
+#'   so no value is ever hidden. `NULL` (default) flushes to
+#'   the full data range. For a deliberate zoom that does hide
+#'   values, add [ggplot2::coord_cartesian()] yourself.
 #' @param x_lim Optional length-2 vector zooming the `x` axis to a
 #'   range, without dropping data -- applied as a coordinate-system
 #'   zoom ([ggplot2::coord_cartesian()] `xlim`). `NULL` (default) shows
@@ -2180,10 +2184,9 @@ cpb_line <- function(data, x, y, colour = NULL,
   # the crop cpb_flush_scale_args() no longer applies as a scale limit
   # when it would drop data (see there) -- applied instead, below, as
   # this wrapper's own coord_cartesian() ylim
-  value_limits_visual <- if (!is.null(value_limits)) value_limits else range(scale_args$breaks)
-  # popped off scale_args below, before it reaches do.call(scale_y_continuous, ...);
-  # see cpb_flush_scale_args()'s own comment on value_crops
-  value_crops <- isTRUE(scale_args$value_crops)
+  # the breaks already span the data (see cpb_flush_scale_args()), so the
+  # coord's own zoom matches the scale and crops nothing
+  value_limits_visual <- range(scale_args$breaks)
 
   # `group` is set explicitly rather than left to ggplot2, which infers
   # it from every discrete aesthetic: on a categorical x axis (age
@@ -2345,7 +2348,6 @@ cpb_line <- function(data, x, y, colour = NULL,
   if (has_sec) {
     scale_args$sec.axis <- cpb_sec_axis(sec_map, accuracy = sec_accuracy, sec_labels = opts$labels, style = style)
   }
-  scale_args$value_crops <- NULL
   if (length(scale_args)) {
     p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
   }
@@ -2359,17 +2361,12 @@ cpb_line <- function(data, x, y, colour = NULL,
   do_flush <- is.null(x_lim)
   flush_xlim <- if (do_flush) cpb_x_flush_xlim(x, data, x_lim_follow_data) else NULL
   xlim_final <- if (!is.null(x_lim)) x_lim else flush_xlim
-  # off only when nothing is actually being cropped -- every flush axis
-  # (x or value) legitimately puts a real data point (a sec_y marker, a
-  # points = TRUE marker, ...) exactly on the panel edge, and
-  # clip = "on" would cut half of its symbol off there for no reason.
-  # An explicit x_lim is a deliberate visual crop, so that keeps
-  # clipping -- and so does value_crops, set by cpb_flush_scale_args()
-  # when value_limits/value_breaks came out narrower than the data
-  # (which no longer drops that data, see there, so without this it
-  # would draw straight past the axis and into the page margin instead
-  # of stopping at it)
-  clip <- if (is.null(x_lim) && !value_crops) "off" else "on"
+  # off: every flush axis (x or value) legitimately puts a real data
+  # point (a sec_y marker, a points = TRUE marker, ...) exactly on the
+  # panel edge, and clip = "on" would cut half of its symbol off there
+  # for no reason. Only an explicit x_lim, a deliberate visual crop,
+  # keeps clipping.
+  clip <- if (is.null(x_lim)) "off" else "on"
 
   if (!is.null(xlim_final) || clip == "off") {
     # expand = FALSE only skips the default expansion flush_xlim
@@ -2518,15 +2515,19 @@ cpb_line <- function(data, x, y, colour = NULL,
 #' @param value_breaks Optional breaks for the value axis (passed to
 #'   the wrapper-built [ggplot2::scale_y_continuous()]). Use this
 #'   instead of adding a second y scale, which would discard the
-#'   wrapper's axis formatting and expansion.
+#'   wrapper's axis formatting and expansion. These choose where the
+#'   ticks sit, not where the axis stops: if the data runs past the
+#'   outermost break, evenly spaced breaks are extended outward in
+#'   their own step until they cover it, so the axis still ends on a
+#'   labelled gridline and no value is hidden.
 #' @param value_limits Optional length-2 numeric vector giving the
-#'   value-axis range, applied through the coordinate system (a
-#'   [ggplot2::coord_cartesian()] zoom), not as the wrapper-built value
-#'   scale's own `limits` -- this is the hard bound the axis is drawn
-#'   flush to, but a box/whisker outside it is only visually cropped,
-#'   with a warning naming how many values, rather than dropped from
-#'   the data. `NULL` (default) flushes to the full p5-p95 (and `mean`)
-#'   range instead.
+#'   span the value axis must *at least* cover -- typically to force
+#'   it wider than the data needs, e.g. always showing zero, or a
+#'   fixed range shared across several figures. It is a minimum, not
+#'   a crop: where the data runs past it the axis is widened to fit,
+#'   so no value is ever hidden. `NULL` (default) flushes to
+#'   the full p5-p95 (and `mean`) range. For a deliberate zoom that does hide
+#'   values, add [ggplot2::coord_cartesian()] yourself.
 #' @param value_axis Where the value axis is drawn: `"bottom"`
 #'   (default) or `"top"`. `"top"` places the numeric scale along the
 #'   top of the panel, the convention of the CPB koopkracht figures;
@@ -3056,10 +3057,9 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   # the crop cpb_flush_scale_args() no longer applies as a scale limit
   # when it would drop data (see there) -- applied instead, below, as
   # cpb_apply_coord()'s own ylim
-  value_limits_visual <- if (!is.null(value_limits)) value_limits else range(scale_args$breaks)
-  # popped off scale_args below, before it reaches do.call(scale_y_continuous, ...);
-  # see cpb_flush_scale_args()'s own comment on value_crops
-  value_crops <- isTRUE(scale_args$value_crops)
+  # the breaks already span the data (see cpb_flush_scale_args()), so the
+  # coord's own zoom matches the scale and crops nothing
+  value_limits_visual <- range(scale_args$breaks)
 
   if (has_sec) {
     opts <- cpb_resolve_sec_opts(
@@ -3079,15 +3079,13 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   p <- cpb_apply_coord(
     p, orientation, x_lim, value_limits_visual,
     x, data, x_lim_follow_data, has_group,
-    skip_x_flush = isTRUE(box_labels) && !has_group,
-    value_crops = value_crops
+    skip_x_flush = isTRUE(box_labels) && !has_group
   )
 
   # value_axis = "top" draws the value scale at the top of the panel
   # (the koopkracht-figure convention). The value is the y aesthetic;
   # under coord_flip() its "right" position renders along the top edge.
   if (value_axis == "top") scale_args$position <- "right"
-  scale_args$value_crops <- NULL
   if (length(scale_args)) {
     p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
   }
@@ -3741,15 +3739,19 @@ cpb_hist <- function(data, x, fill = NULL,
 #'   adding a second `scale_y_continuous()`, which would discard the
 #'   wrapper's flush axis (see `value_breaks`).
 #' @param value_breaks Optional breaks for the value axis (passed to
-#'   [ggplot2::scale_y_continuous()]).
+#'   [ggplot2::scale_y_continuous()]). These choose where the
+#'   ticks sit, not where the axis stops: if the data runs past the
+#'   outermost break, evenly spaced breaks are extended outward in
+#'   their own step until they cover it, so the axis still ends on a
+#'   labelled gridline and no value is hidden.
 #' @param value_limits Optional length-2 numeric vector giving the
-#'   value-axis range, applied through the coordinate system (a
-#'   [ggplot2::coord_cartesian()] zoom), not as the wrapper-built value
-#'   scale's own `limits` -- this is the hard bound the axis is drawn
-#'   flush to, but an estimate outside it is only visually cropped,
-#'   with a warning naming how many, rather than dropped from the data.
-#'   `NULL` (default) flushes to the full lower-upper (and point) range
-#'   instead.
+#'   span the value axis must *at least* cover -- typically to force
+#'   it wider than the data needs, e.g. always showing zero, or a
+#'   fixed range shared across several figures. It is a minimum, not
+#'   a crop: where the data runs past it the axis is widened to fit,
+#'   so no value is ever hidden. `NULL` (default) flushes to
+#'   the full lower-upper (and point) range. For a deliberate zoom that does hide
+#'   values, add [ggplot2::coord_cartesian()] yourself.
 #' @param x_lim Optional length-2 vector zooming the category (`x`)
 #'   axis to a range, without dropping data -- applied as a
 #'   coordinate-system zoom ([ggplot2::coord_cartesian()] /
@@ -3992,10 +3994,9 @@ cpb_dot <- function(data, x, y, lower, upper,
   # the crop cpb_flush_scale_args() no longer applies as a scale limit
   # when it would drop data (see there) -- applied instead, below, as
   # cpb_apply_coord()'s own ylim
-  value_limits_visual <- if (!is.null(value_limits)) value_limits else range(scale_args$breaks)
-  # popped off scale_args below, before it reaches do.call(scale_y_continuous, ...);
-  # see cpb_flush_scale_args()'s own comment on value_crops
-  value_crops <- isTRUE(scale_args$value_crops)
+  # the breaks already span the data (see cpb_flush_scale_args()), so the
+  # coord's own zoom matches the scale and crops nothing
+  value_limits_visual <- range(scale_args$breaks)
 
   if (has_sec) {
     opts <- cpb_resolve_sec_opts(
@@ -4014,11 +4015,9 @@ cpb_dot <- function(data, x, y, lower, upper,
 
   p <- cpb_apply_coord(
     p, orientation, x_lim, value_limits_visual,
-    x, data, x_lim_follow_data, has_group,
-    value_crops = value_crops
+    x, data, x_lim_follow_data, has_group
   )
 
-  scale_args$value_crops <- NULL
   if (length(scale_args)) {
     p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
   }

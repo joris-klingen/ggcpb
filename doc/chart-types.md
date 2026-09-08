@@ -108,9 +108,6 @@ cpb_line(tarieven, x = leeftijd, y = tarief, colour = erfenis,
   value_limits = c(0, 40),
   title = "Voorkeurstarieven erfbelasting naar leeftijd",
   ylab  = "% gemiddeld voorkeurstarief")
-#> Warning: ggcpb: 1 value(s) fall outside the range implied by
-#> `value_limits`/`value_breaks`; cropped for display (via the plot's coordinate
-#> system) rather than dropped from it.
 ```
 
 <img src="chart-types_files/figure-gfm/line-points-1.png" alt="" width="350px" />

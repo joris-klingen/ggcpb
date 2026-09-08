@@ -196,9 +196,6 @@ cpb_box(kk, x = groep,
   width        = 0.35,
   title    = "Koopkracht per inkomensgroep",
   subtitle = "statisch, verandering in %")
-#> Warning: ggcpb: 2 value(s) fall outside the range implied by
-#> `value_limits`/`value_breaks`; cropped for display (via the plot's coordinate
-#> system) rather than dropped from it.
 ```
 
 <img src="boxplots_files/figure-gfm/box-top-1.png" alt="" width="350px" />

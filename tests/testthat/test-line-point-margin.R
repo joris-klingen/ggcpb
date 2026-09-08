@@ -36,25 +36,24 @@ test_that("the point margin (via clip) survives a user-supplied x scale", {
   expect_equal(xr, c(1, 10))
 })
 
-test_that("points do not stop value_limits from cropping", {
+test_that("value_limits narrower than the data widens the axis, it does not crop", {
   d <- data.frame(x = 1:10, y = c(1.2, 2.4, 1.8, 3.1, 2.2, -0.6, 3.4, 2.9, 1.1, 2.6))
-  expect_warning(
-    p <- cpb_line(d, x = x, y = y, points = TRUE, value_limits = c(0, 3)),
-    "cropped for display"
+  # value_limits asks for the span the axis must *at least* cover. The
+  # data runs past it at both ends, so the breaks are extended outward
+  # in their own step rather than the ends being hidden -- nothing is
+  # cropped, so clip stays "off" and the markers sitting on the panel
+  # edge still draw whole.
+  p <- expect_no_warning(
+    cpb_line(d, x = x, y = y, points = TRUE, value_limits = c(0, 3))
   )
   b <- ggplot2::ggplot_build(p)
-  # clip is "on" here: value_limits crops the *view* via
-  # coord_cartesian()'s ylim, not the value scale's own `limits` -- so
-  # the out-of-range observations survive undropped (a stacked total
-  # elsewhere, say, still comes out right) -- but the crop still has to
-  # be a real, visible crop, the same as any other coord_cartesian()
-  # zoom: with clip left "off" the line would run straight past the
-  # panel edge into the page margin instead of stopping at the axis it
-  # was asked to stop at
-  expect_equal(b$layout$coord$clip, "on")
+  expect_equal(b$layout$coord$clip, "off")
+
   line_y <- b$data[[which(vapply(p$layers, function(l) inherits(l$geom, "GeomLine"), TRUE))]]$y
   expect_false(anyNA(line_y))
   expect_equal(line_y, d$y)
+
   yr <- b$layout$panel_params[[1]]$y.range
-  expect_equal(yr, c(0, 3))
+  expect_lte(yr[1], min(d$y))
+  expect_gte(yr[2], max(d$y))
 })
