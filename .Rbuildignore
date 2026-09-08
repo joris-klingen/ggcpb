@@ -10,3 +10,8 @@
 ^tools$
 ^Rplots\.pdf$
 ^PLAN\.md$
+^Meta$
+\.DS_Store$
+\.Rapp\.history$
+^inst/autogenerate_plots/generated$
+^inst/autogenerate_plots/params_log\.txt$
