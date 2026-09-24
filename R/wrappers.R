@@ -2562,7 +2562,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
         q_labels  = TRUE, q_lab_col = "#00a5ff", q_lab_size = 2.2
       )
     )
-    fmt <- label_number_nl(accuracy = label_accuracy)
+    fmt <- label_number_nl(accuracy = label_accuracy, style = style)
 
     # plain whiskers: capless (width = 0) segments p5-p25 and p75-p95;
     # then the borderless box (colour = NA also hides the boxplot's own
@@ -2930,7 +2930,7 @@ cpb_scatter <- function(data, x, y, colour = NULL,
   if (!is.null(forecast_x)) {
     p <- p + cpb_forecast_label(
       cpb_forecast_pos(forecast_x, rlang::eval_tidy(x, data)),
-      rlang::eval_tidy(x, data), forecast_label)
+      rlang::eval_tidy(x, data), forecast_label, style = style)
   }
 
   # a numeric colour column gets the continuous gradient, anything
