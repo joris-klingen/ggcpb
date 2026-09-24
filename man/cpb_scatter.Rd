@@ -21,6 +21,7 @@ cpb_scatter(
   forecast_label = "raming",
   reverse_legend = FALSE,
   legend_ncol = NULL,
+  legend_nrow = NULL,
   facet = NULL,
   facet_ncol = NULL,
   facet_scales = "fixed",
@@ -38,6 +39,7 @@ cpb_scatter(
   xlab = NULL,
   ylab = NULL,
   colourlab = NULL,
+  style = getOption("ggcpb.style", "dutch"),
   ...
 )
 }
@@ -103,6 +105,11 @@ single flush-left column of the house style; \code{2} and up suit a
 legend with many short keys, such as binned classes from
 \code{\link[=cpb_cut]{cpb_cut()}}, which would otherwise run past the panel.}
 
+\item{legend_nrow}{Number of rows to lay the legend keys out in,
+passed to \code{guide_legend(nrow = )}. Combine with \code{legend_ncol} to
+pin both dimensions of the grid at once. \code{NULL} (default) leaves
+the number of rows to ggplot2's own sizing.}
+
 \item{facet}{Optional column (tidy eval) to facet by. Facets follow
 the house (legacy nicerplot) convention: the facet title is a bold
 strip \emph{below} each panel, and every panel is a complete
@@ -133,6 +140,12 @@ house defaults.}
 it is rendered as the plot \emph{subtitle} -- a left-aligned italic
 caption above the panel -- unless an explicit \code{subtitle} is also
 given, in which case it falls back to a rotated y-axis title.}
+
+\item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
+or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).
+Taken from \code{getOption("ggcpb.style")}, so an English report can set
+\code{options(ggcpb.style = "english")} once rather than passing \code{style} to
+every figure and risking a stray Dutch decimal comma.}
 
 \item{...}{Further arguments passed to \code{\link[ggplot2:geom_point]{ggplot2::geom_point()}}.}
 }

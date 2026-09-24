@@ -90,6 +90,74 @@ test_that("save_cpb warns on a title too long for the page, not when wrapped", {
   expect_no_warning(save_cpb(path, cpb_col(df, x = x, y = y), page = "half"))
 })
 
+test_that("save_cpb warns when the category labels are too long to sit side by side", {
+  path <- withr::local_tempfile(fileext = ".png")
+  groepen <- c("tot 120% wml", "120% wml - mod.", "1 - 1,5x mod.",
+               "1,5 - 2x mod.", "2 - 3x mod.", "boven 3x mod.")
+  long <- data.frame(g = factor(groepen, levels = groepen), y = 1:6)
+
+  expect_warning(
+    save_cpb(path, cpb_col(long, x = g, y = y), page = "half"),
+    "too long for the category labels"
+  )
+  # the same labels have room on a full page
+  expect_no_warning(save_cpb(path, cpb_col(long, x = g, y = y), page = "full"))
+  # horizontal puts the categories on the axis that has the room
+  expect_no_warning(
+    save_cpb(path, cpb_col(long, x = g, y = y, orientation = "horizontal"), page = "half")
+  )
+  # breaking a label over two lines is the documented fix, and works:
+  # each label is measured by its longest line, not its total length
+  wrapped <- data.frame(
+    g = factor(c("tot 120%\nwml", "120% wml\n- mod.", "1 - 1,5x\nmod.",
+                 "1,5 - 2x\nmod.", "2 - 3x\nmod.", "boven 3x\nmod."),
+               levels = c("tot 120%\nwml", "120% wml\n- mod.", "1 - 1,5x\nmod.",
+                          "1,5 - 2x\nmod.", "2 - 3x\nmod.", "boven 3x\nmod.")),
+    y = 1:6
+  )
+  expect_no_warning(save_cpb(path, cpb_col(wrapped, x = g, y = y), page = "half"))
+  # short category names, and a numeric axis, are left alone
+  short <- data.frame(g = c("a", "b", "c"), y = 1:3)
+  expect_no_warning(save_cpb(path, cpb_col(short, x = g, y = y), page = "half"))
+  expect_no_warning(
+    save_cpb(path, cpb_line(data.frame(x = 2015:2027, y = 1:13), x = x, y = y), page = "half")
+  )
+})
+
+test_that("save_cpb warns when a plot's own type is not suitable for a half page", {
+  path <- withr::local_tempfile(fileext = ".png")
+
+  d <- data.frame(bron = factor(c("a", "b")), share = c(60, 40))
+  donut <- cpb_donut(d, fill = bron, y = share)
+  expect_warning(
+    save_cpb(path, donut, page = "half"),
+    "not suitable for a half page"
+  )
+  expect_no_warning(save_cpb(path, donut, page = "full"))
+
+  box_df <- data.frame(
+    jaar = rep(2020:2021, each = 2), grp = rep(c("A", "B"), 2),
+    p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5
+  )
+  faceted <- cpb_boxplot_extended(box_df, x = grp, p5 = p5, p25 = p25,
+                                  p50 = p50, p75 = p75, p95 = p95, facet = jaar)
+  expect_warning(
+    save_cpb(path, faceted, page = "half"),
+    "not suitable for a half page"
+  )
+
+  # the same wrapper without a facet, and an ordinary wrapper, are
+  # both unaffected -- this is about the plot's own type, not a
+  # blanket half-page warning
+  single <- cpb_boxplot_extended(
+    data.frame(grp = c("A", "B"), p5 = -1, p25 = 2, p50 = 3, p75 = 4, p95 = 5),
+    x = grp, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95
+  )
+  expect_no_warning(save_cpb(path, single, page = "half"))
+  ordinary <- cpb_col(data.frame(x = c("a", "b"), y = 1:2), x = x, y = y)
+  expect_no_warning(save_cpb(path, ordinary, page = "half"))
+})
+
 test_that("save_cpb keeps sec_y's own colour intact when a layer is inserted ahead of it", {
   # cpb_take_sec_ylab() (removing the wrapper's approximate sec_ylab
   # placeholder layer, so save_cpb()'s own exact one replaces it, see
@@ -254,8 +322,11 @@ test_that("save_cpb() never triggers print.cpb_plot()'s warning, on either its f
   # the fast path (ggplot2::ggsave()) prints the plot internally to
   # render it -- without save_cpb() stripping the "cpb_plot" class
   # first, that internal print() would trigger the same warning on
-  # every ordinary save_cpb() call
-  expect_no_warning(save_cpb(path, p, page = "half"))
+  # every ordinary save_cpb() call. page = "full", not "half": a donut
+  # warns on a half page for an unrelated reason (see test-save.R's
+  # "not suitable for a half page" test), which would otherwise mask
+  # whether this specific warning was also (wrongly) present
+  expect_no_warning(save_cpb(path, p, page = "full"))
 
   # the map aspect fit forces the grob path (cpb_fix_panel_size())
   # whenever height is left auto; an explicit height instead takes the

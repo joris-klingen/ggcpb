@@ -20,7 +20,7 @@ scripts over by hand).}
 Invisibly, \code{dest}.
 }
 \description{
-\code{import_csv()} itself still needs R to be started by hand. This copies
+\code{cpb_import_csv()} itself still needs R to be started by hand. This copies
 a small kit to \code{dest}: an example \code{data.csv} and \code{params.csv}, a
 \code{run_import.R} script that reads them and saves each figure as a PNG
 in a \code{generated} subfolder, and two launchers that run it with a

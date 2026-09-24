@@ -58,7 +58,7 @@ cpb_col(df, x = jaar, y = waarde, fill = groep,
   ylab  = "mld euro")
 ```
 
-The wrappers -- `cpb_line()`, `cpb_col()`, `cpb_area()`, `cpb_box()`,
+The wrappers -- `cpb_line()`, `cpb_col()`, `cpb_box()`,
 `cpb_scatter()`, `cpb_hist()` -- accept a data.frame or data.table
 plus tidy-eval column arguments,
 and apply `theme_cpb()` and a CPB scale: the published-figure look

@@ -20,7 +20,11 @@ knitr::opts_chunk$set(
   fig.height = 2.98,
   dpi = 300,
   out.width = "350px",
-  dev = if (requireNamespace("ragg", quietly = TRUE)) "ragg_png" else "png"
+  dev = if (requireNamespace("ragg", quietly = TRUE)) "ragg_png" else "png",
+  # save_cpb() writes on the CPB background; match it here so a figure
+  # that does not fill its canvas (an aspect-locked donut or map) does
+  # not show white bands down the sides
+  dev.args = list(background = "#eef8ff")
 )
 ```
 
@@ -30,20 +34,6 @@ library(ggplot2)
 library(dplyr)
 library(tidyr)
 set.seed(42)
-```
-
-```{r show-saved-helper, include = FALSE}
-# Displays a file save_cpb() already wrote to a temporary path, at a
-# stable location knitr manages itself -- so the rendered copy of this
-# page (e.g. on GitHub) keeps a working image link rather than one
-# pointing at a temp file that no longer exists. Purely a display
-# detail for this page, not part of any save_cpb() example above it.
-.show_saved <- function(path) {
-  stable <- knitr::fig_path(".png")
-  dir.create(dirname(stable), recursive = TRUE, showWarnings = FALSE)
-  file.copy(path, stable, overwrite = TRUE)
-  knitr::include_graphics(stable)
-}
 ```
 
 One section per CPB chart type, each in its *default* house style:
@@ -290,15 +280,15 @@ axis spans. The line is placed by mapping `sec_limits` linearly onto
 the primary range, so both axes start together and the line cannot
 drift out of step with its own labels.
 
-`sec_ylab`'s caption on the right is placed to line up exactly with
-`ylab`'s own caption on the left, but only `save_cpb()` lines it up
-exactly; knitr's own plotting device shows an approximate placement
-instead (close, not exact, since at print time the plot has not
-actually been rendered yet to measure against). So, like every figure
-with a `sec_y` below, this one is written to a file with `save_cpb()`
-and shown from that file rather than printed directly:
+`sec_ylab`'s caption on the right is placed to line up with `ylab`'s
+own caption on the left. Every figure on this page is printed directly,
+at the house half-page canvas, so that caption sits where knitr's own
+plotting device puts it -- close to, but not exactly, where it lands in
+an exported figure, since at print time the plot has not been rendered
+yet to measure against. Writing the figure out with `save_cpb()` (see
+`vignette("ggcpb")`) is what places it exactly:
 
-```{r col-secaxis, results = "hide", out.width = "700px"}
+```{r col-secaxis, warning = FALSE}
 nalatenschap <- expand_grid(
   soort = factor(c("waarover aangifte", "waarover geen aangifte"),
                  levels = c("waarover geen aangifte", "waarover aangifte")),
@@ -325,12 +315,7 @@ p <- nalatenschap |>
     title = "Belasting over erfenissen, prijzen 2022",
     ylab  = "mld euro")
 
-path <- tempfile(fileext = ".png")
-save_cpb(path, p, page = "full")
-```
-
-```{r col-secaxis-show, echo = FALSE, out.width = "700px"}
-.show_saved(path)
+p
 ```
 
 `sec_ylab` mirrors on the right what `ylab` puts above the panel on
@@ -342,7 +327,7 @@ cannot be read: horizontal bars, grouped categories, and
 `cpb_line()` takes the same arguments, for the figure that puts two
 rates on the left axis and an index on the right:
 
-```{r line-secondary, results = "hide", out.width = "350px"}
+```{r line-secondary, warning = FALSE}
 lonen <- tibble(
   jaar  = 2020:2027,
   cao   = c(3.0, 2.2, 3.2, 5.8, 6.7, 5.1, 4.2, 3.8),
@@ -353,12 +338,12 @@ lonen <- tibble(
 p <- lonen |>
   pivot_longer(c(cao, cpi), names_to = "reeks", values_to = "waarde") |>
   mutate(reeks = recode(reeks,
-    cao = "cao-loon bedrijven (linkeras)",
-    cpi = "inflatie (cpi, linkeras)")) |>
+    cao = "cao-loon bedrijven",
+    cpi = "inflatie (cpi)")) |>
   cpb_line(x = jaar, y = waarde, colour = reeks,
     sec_y      = reeel,
     sec_limits = c(95, 110),
-    sec_label  = "reële cao-loon bedrijven (rechteras)",
+    sec_label  = "reële cao-loon bedrijven",
     sec_ylab   = "geïndexeerd, 2021 = 100",
     value_limits = c(-5, 10),
     value_breaks = seq(-5, 10, 5),
@@ -368,12 +353,7 @@ p <- lonen |>
     ylab  = "mutatie in %") +
   scale_x_continuous(breaks = seq(2020, 2026, 2))
 
-path <- tempfile(fileext = ".png")
-save_cpb(path, p, page = "half")
-```
-
-```{r line-secondary-show, echo = FALSE, out.width = "350px"}
-.show_saved(path)
+p
 ```
 
 The one difference from `cpb_col()`: there the columns key on `fill`
@@ -381,26 +361,6 @@ and the secondary line on `colour`, so they form two legend blocks.
 Here the primary series already key on `colour`, so the secondary line
 joins that same scale, takes the next `index` position and shares a
 single legend -- which is why all three labels name their axis.
-
-# Area charts
-
-`cpb_area()` draws the recurring share-of-total-over-time figure.
-With `pct_axis = TRUE` the y axis gets Dutch percentage labels:
-
-```{r area}
-bronnen <- c("gas", "elektriciteit", "warmte", "overig")
-mix <- expand_grid(jaar = 2018:2027,
-                   bron = factor(bronnen, levels = bronnen)) |>
-  mutate(ruw = runif(n(), 1, 10)) |>
-  mutate(aandeel = 100 * ruw / sum(ruw), .by = jaar)
-
-cpb_area(mix, x = jaar, y = aandeel, fill = bron,
-  pct_axis = TRUE,
-  title    = "Energiemix van huishoudens",
-  ylab     = "aandeel") +
-  scale_x_continuous(breaks = seq(2018, 2027, 3), minor_breaks = 2018:2027,
-                     guide = guide_axis(minor.ticks = TRUE))
-```
 
 # Donut charts
 
@@ -412,26 +372,22 @@ controls how thick the ring is, from a thin ring around a large hole
 up to `2` (no hole at all -- a full pie).
 
 `cpb_donut()`'s ring keeps a fixed physical size regardless of title
-or legend length (see `panel_size`), which knitr's own plotting device
-does not apply on its own -- only `save_cpb()` does. So instead of
-printing the plot directly, every donut here is written to a file with
-`save_cpb()` and shown from that file, exactly as it would look saved
-for a report:
+or legend length (`panel_size`, 1.8 in by default) -- but only when the
+figure is written out with `save_cpb()`, which is what applies it.
+Printed directly, as here, the ring is sized to fit whatever canvas it
+is drawn on instead, so these two fit the same half-page canvas as
+every other figure on this page:
 
-```{r donut, results = "hide"}
+```{r donut, warning = FALSE}
+bronnen <- c("gas", "elektriciteit", "warmte", "overig")
 energie <- tibble(
   bron  = factor(bronnen, levels = bronnen),
   share = c(45, 30, 15, 10)
 )
 
-path <- tempfile(fileext = ".png")
-save_cpb(path, cpb_donut(energie, fill = bron, y = share,
+cpb_donut(energie, fill = bron, y = share,
   index = c(6, 5, 2, 4),
-  title = "Energiemix van huishoudens"), page = "half")
-```
-
-```{r donut-show, echo = FALSE}
-.show_saved(path)
+  title = "Energiemix van huishoudens")
 ```
 
 With more wedges, printing the value on the wedge itself gets cramped
@@ -442,7 +398,7 @@ way out -- and automatically spaces out any wedges whose values would
 otherwise land on top of each other, like the two thinnest slices
 here:
 
-```{r donut-leader, results = "hide"}
+```{r donut-leader, warning = FALSE}
 niveaus <- c("aardgas", "overig", "windenergie op land", "zonne-energie",
              "kernenergie", "windenergie op zee")
 energie2 <- tibble(
@@ -452,15 +408,13 @@ energie2 <- tibble(
   share = c(40, 35, 13, 3, 2, 7)
 )
 
-path <- tempfile(fileext = ".png")
-save_cpb(path, cpb_donut(energie2, fill = bron, y = share,
-  label_style = "leader",
+# leader_length is shortened from its 0.15 default: on this narrower
+# canvas the default lines push their labels past the figure's edge
+cpb_donut(energie2, fill = bron, y = share,
+  label_style   = "leader",
+  leader_length = 0.08,
   index = c(6, 4, 5, 1, 3, 2),
-  title = "Energiemix, met lijnlabels"), page = "half")
-```
-
-```{r donut-leader-show, echo = FALSE}
-.show_saved(path)
+  title = "Energiemix, met lijnlabels")
 ```
 
 # Quantile boxplots
@@ -509,7 +463,7 @@ against a black line at zero. It is horizontal by default, so the
 rows read top to bottom in the order of the factor levels. `group`
 collects the rows under bold headings, exactly as in `cpb_box()`:
 
-```{r dot, fig.width = 5.96, fig.height = 2.98, out.width = "700px"}
+```{r dot}
 termen <- c("Werken ontmoedigd", "Ongelijkheid", "Hard werken loont",
             "Politiek", "Leeftijdscategorie", "Geslacht (v/m)",
             "Heeft kinderen", "Vermogenskwintiel")
@@ -545,7 +499,7 @@ discrete keys, which is easier to read off a dense scatter than a
 gradient. `legend_ncol = 2` lays those keys out in two columns rather
 than one tall column:
 
-```{r scatter, fig.width = 5.96, fig.height = 2.98, out.width = "700px"}
+```{r scatter}
 hh <- tibble(inkomen = round(rlnorm(400, log(2500), 0.35))) |>
   mutate(energierekening = round(90 + 0.04 * inkomen + rnorm(n(), 0, 35)),
          koopkracht      = round(rnorm(n(), (inkomen - 2500) / 1500, 2), 1))

@@ -34,3 +34,7 @@ references/*
 references/code/*
 !references/code/reference_plot_snippets.R
 ggcpb.Rproj
+
+# scratch: stress-test scripts and their output, kept out of git and
+# out of the built package (see .Rbuildignore)
+/temp/

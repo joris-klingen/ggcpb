@@ -1,5 +1,7 @@
 # CI for ggcpb: R CMD check (with tests and vignettes) on Linux and
-# Windows, plus the two rendered-pixel checks -- the visual smoke test
+# Windows, plus a Linux run pinned to ggplot2 3.5 (still on most CPB
+# machines; the package supports both 3.5 and 4.x), plus the two
+# rendered-pixel checks -- the visual smoke test
 # against the reference figures and the legend-position stability
 # sweep. The pixel checks upload their rendered output as artifacts so
 # failures can be inspected visually.
@@ -15,13 +17,14 @@ permissions: read-all
 jobs:
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
-    name: check (${{ matrix.config.os }}, R ${{ matrix.config.r }})
+    name: check (${{ matrix.config.os }}, R ${{ matrix.config.r }}${{ matrix.config.ggplot2 && format(', ggplot2 {0}', matrix.config.ggplot2) || '' }})
     strategy:
       fail-fast: false
       matrix:
         config:
           - {os: ubuntu-latest, r: 'release'}
           - {os: windows-latest, r: 'release'}
+          - {os: ubuntu-latest, r: 'release', ggplot2: '3.5.2'}
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
@@ -37,7 +40,9 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck
+          extra-packages: |
+            any::rcmdcheck
+            ${{ matrix.config.ggplot2 && format('ggplot2@{0}', matrix.config.ggplot2) || '' }}
           needs: check
 
       - uses: r-lib/actions/check-r-package@v2
