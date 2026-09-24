@@ -114,6 +114,25 @@ test_that("theme_cpb uses the tight house margins", {
   expect_equal(as.numeric(th$plot.margin), c(10, 10, 8, 10))
 })
 
+test_that("theme_cpb pins the axis spacing that ggplot2 4.0 changed", {
+  # theme_minimal() gives 2.2 pt in ggplot2 3.5 and 4.95 pt in 4.x; the
+  # house theme spells it out so figures match on either version
+  th <- ggplot2::theme_grey() + theme_cpb()
+  mar <- function(el) as.numeric(ggplot2::calc_element(el, th)$margin)
+  expect_equal(mar("axis.text.x.bottom"), c(4.95, 0, 0, 0))
+  expect_equal(mar("axis.text.x.top"), c(0, 0, 4.95, 0))
+  expect_equal(mar("axis.text.y.left"), c(0, 4.95, 0, 0))
+  expect_equal(mar("axis.text.y.right"), c(0, 0, 0, 4.95))
+  # 3.5 reserves the tick length even on an axis whose ticks are blank
+  expect_equal(as.numeric(ggplot2::calc_element("axis.ticks.length.y.left", th)), 0)
+  expect_equal(as.numeric(ggplot2::calc_element("axis.ticks.length.x.bottom", th)), 2.2)
+})
+
+test_that("the pinned axis text still disappears when a plot blanks it", {
+  th <- ggplot2::theme_grey() + theme_cpb() + ggplot2::theme(axis.text = ggplot2::element_blank())
+  expect_s3_class(ggplot2::calc_element("axis.text.y.left", th), "element_blank")
+})
+
 test_that("cpb_font_family falls back on devices without TTF lookup", {
   skip_if_not_installed("withr")
   # the bundled font is registered in this session

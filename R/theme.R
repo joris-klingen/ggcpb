@@ -138,7 +138,14 @@ theme_cpb <- function(base_family = cpb_font_family(),
     # sec_y axis reading right-aligned (numbers flush on the outside,
     # ragged against the axis they belong to) is the one place that
     # default actually matters.
-    axis.text.y.right = ggplot2::element_text(hjust = 0),
+    #
+    # The gap between an axis and its tick labels is pinned here too,
+    # because theme_minimal() changed it in ggplot2 4.0 (2.2 pt in 3.5,
+    # 4.95 pt in 4.x); spelled out, a figure lays out the same on either.
+    axis.text.x.bottom = ggplot2::element_text(margin = ggplot2::margin(t = 4.95), inherit.blank = TRUE),
+    axis.text.x.top    = ggplot2::element_text(vjust = 1, margin = ggplot2::margin(b = 4.95), inherit.blank = TRUE),
+    axis.text.y.left   = ggplot2::element_text(margin = ggplot2::margin(r = 4.95), inherit.blank = TRUE),
+    axis.text.y.right  = ggplot2::element_text(hjust = 0, margin = ggplot2::margin(l = 4.95), inherit.blank = TRUE),
 
     legend.position   = legend,
     legend.title      = ggplot2::element_text(face = "italic", size = 7),
@@ -187,6 +194,12 @@ theme_cpb <- function(base_family = cpb_font_family(),
       theme_args$axis.line.y  <- axisline
     }
     theme_args$axis.ticks.length <- grid::unit(2.2, "pt")
+    # ggplot2 3.5 still reserves the tick length on an axis whose ticks
+    # are blank (4.x does not), which nudged the panel inward there
+    untick <- if (orientation == "vertical") "axis.ticks.length.y" else "axis.ticks.length.x"
+    theme_args[[untick]] <- grid::unit(0, "pt")
+  } else {
+    theme_args$axis.ticks.length <- grid::unit(0, "pt")
   }
 
   if (isTRUE(flush_legend)) {

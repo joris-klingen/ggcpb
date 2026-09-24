@@ -328,6 +328,20 @@ test_that("cpb_hist bins with house-blue bars, white outlines and flush counts",
   expect_no_error(ggplot2::ggplotGrob(p))
 })
 
+test_that("cpb_hist bins the same way on ggplot2 3.5 and 4.x", {
+  # 4.x anchors the default bins at min(x) - width / 2, 3.5 at width / 2;
+  # cpb_hist passes the 4.x binwidth and boundary explicitly
+  df <- data.frame(waarde = c(8.6, 9.4, 10.1, 11.7, 12.2, 15.6))
+  l <- ggplot2::layer_data(cpb_hist(df, x = waarde, bins = 5), 1)
+  width <- diff(range(df$waarde)) / 4
+  expect_equal(l$xmin[1], min(df$waarde) - width / 2)
+  expect_equal(unique(round(l$xmax - l$xmin, 10)), round(width, 10))
+  # an explicit binwidth or boundary is left to ggplot2
+  expect_null(cpb_hist_bin_args(df$waarde, 1, NULL, list(), "fixed")$boundary)
+  expect_null(cpb_hist_bin_args(df$waarde, NULL, 5, list(boundary = 0), "fixed")$boundary)
+  expect_null(cpb_hist_bin_args(df$waarde, NULL, 5, list(), "free_x")$boundary)
+})
+
 test_that("cpb_hist maps fill for grouped histograms", {
   df <- data.frame(waarde = rnorm(200), grp = rep(c("a", "b"), 100))
   p <- cpb_hist(df, x = waarde, fill = grp, bins = 10, fill_index = c(6, 2))

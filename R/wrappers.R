@@ -3451,6 +3451,31 @@ cpb_scatter <- function(data, x, y, colour = NULL,
 
 # histogram ----
 
+# ggplot2 4.0 changed where the default `bins`-based histogram starts:
+# 3.5 anchors the bin edges at width / 2, 4.x at min(x) - width / 2,
+# so the same data gave different bars depending on the installed
+# version. Spell out the 4.x binwidth and boundary here so both
+# versions draw identical bins. Left to ggplot2 whenever the caller
+# already pins the bins (binwidth, center, boundary, breaks) or a free
+# x facet scale gives every panel its own range.
+cpb_hist_bin_args <- function(xvals, binwidth, bins, dots, facet_scales) {
+  keep <- list(binwidth = binwidth, bins = bins, boundary = NULL)
+  if (!is.null(binwidth) || any(c("center", "boundary", "breaks") %in% names(dots)) ||
+      facet_scales %in% c("free", "free_x") || !is.numeric(xvals)) {
+    return(keep)
+  }
+  x_range <- range(xvals[is.finite(xvals)])
+  if (is.null(bins)) bins <- 30
+  if (length(x_range) != 2 || !all(is.finite(x_range)) ||
+      diff(x_range) == 0 || bins <= 1) {
+    return(keep)
+  }
+  width <- diff(x_range) / (bins - 1)
+  boundary <- x_range[1] - width / 2
+  if (any(x_range %% width == boundary %% width)) width <- diff(x_range) / bins
+  list(binwidth = width, bins = NULL, boundary = boundary)
+}
+
 #' A CPB-styled histogram
 #'
 #' Thin wrapper around [ggplot2::geom_histogram()] with CPB theming
@@ -3593,13 +3618,20 @@ cpb_hist <- function(data, x, fill = NULL,
 
   p <- ggplot2::ggplot(data, mapping)
 
+  bin_args <- cpb_hist_bin_args(rlang::eval_tidy(x, data), binwidth, bins,
+                                list(...), facet_scales)
+  binwidth <- bin_args$binwidth
+  bins <- bin_args$bins
+
   p <- p + if (has_fill) {
     ggplot2::geom_histogram(binwidth = binwidth, bins = bins, position = position,
+                            boundary = bin_args$boundary,
                             colour = outline, linewidth = 0.2,
                             show.legend = TRUE, ...)
   } else {
     single_fill <- cpb_single_colour(fill_colour, 6)
     ggplot2::geom_histogram(binwidth = binwidth, bins = bins, position = position,
+                            boundary = bin_args$boundary,
                             colour = outline, linewidth = 0.2, fill = single_fill, ...)
   }
 
