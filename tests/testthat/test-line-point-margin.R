@@ -67,10 +67,11 @@ test_that("a stacked total a hair over the limit is drawn, not censored", {
   # and oob_censor() compares strictly, so without a tolerance that top
   # point becomes NA -- geom_area() then fails to build a grob at all,
   # and geom_col() silently drops the segment.
+  # Whether a given dataset hits that last-bit mismatch depends on the
+  # platform and ggplot2 version, so the tolerance itself is checked
+  # directly below; this dataset is a smoke test of the full pipeline.
   raw <- c(3.03, 6.10, 8.66)
   shares <- 100 * raw / sum(raw)
-  expect_equal(sum(shares), 100, tolerance = 0) # what the axis is sized from
-  expect_gt(cumsum(rev(shares))[3], 100) # what position_stack() reaches
 
   d <- data.frame(
     jaar  = rep(2020:2021, each = 3),
@@ -98,4 +99,11 @@ test_that("a stacked total a hair over the limit is drawn, not censored", {
   # as flush: the limits are still 0-100 to any visible precision
   lims <- ggplot2::ggplot_build(col)$layout$panel_scales_y[[1]]$get_limits()
   expect_equal(lims, c(0, 100))
+})
+
+test_that("flush limits tolerate a last-bit overshoot but still censor real outliers", {
+  lims <- cpb_flush_scale_args(c(0, 100), pct_axis = TRUE)$limits
+  kept <- scales::oob_censor(c(0, 100 + 1e-14, -1e-14), lims)
+  expect_false(anyNA(kept))
+  expect_true(is.na(scales::oob_censor(100 * (1 + 1e-9), lims)))
 })
