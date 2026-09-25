@@ -37,6 +37,7 @@ cpb_hist(
   xlab = NULL,
   ylab = NULL,
   filllab = NULL,
+  style = c("dutch", "english"),
   ...
 )
 }
@@ -128,6 +129,9 @@ house defaults.}
 \item{ylab}{Label for the count (y) axis, rendered as the plot
 \emph{subtitle} (e.g. \code{"aantal"}) unless an explicit \code{subtitle} is
 also given.}
+
+\item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
+or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).}
 
 \item{...}{Further arguments passed to \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}}.}
 }

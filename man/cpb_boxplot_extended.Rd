@@ -68,6 +68,7 @@ cpb_boxplot_extended(
   zero_indicator = TRUE,
   zero_indicator_linewidth = 2,
   ylab_position = NULL,
+  style = c("dutch", "english"),
   ...
 )
 }
@@ -339,6 +340,9 @@ gives this style. \code{NULL} (default) picks \code{"left"} when \code{facet} is
 set and \code{"middle"} otherwise, matching every reference figure this
 look has been checked against; pass one explicitly to override
 that for a single figure.}
+
+\item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
+or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).}
 
 \item{...}{Further arguments passed to both \code{\link[ggplot2:geom_errorbar]{ggplot2::geom_errorbar()}}
 and \code{\link[ggplot2:geom_boxplot]{ggplot2::geom_boxplot()}}, as in \code{\link[=cpb_box]{cpb_box()}}.}

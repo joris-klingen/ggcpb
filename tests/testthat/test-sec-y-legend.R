@@ -84,3 +84,40 @@ test_that("no sec_ylab still leaves the subtitle row alone with no title and no 
   p <- cpb_line(d, x = x, y = y)
   expect_null(p$labels$subtitle)
 })
+
+test_that("style = 'english' toggles English labels for secondary axis and forecast window", {
+  d <- data.frame(x = 2020:2025, y = 1:6, z = c(10, 20, 30, 40, 50, 60))
+  p_nl <- cpb_line(d, x = x, y = y, sec_y = z, forecast_x = 2023, style = "dutch")
+  p_en <- cpb_line(d, x = x, y = y, sec_y = z, forecast_x = 2023, style = "english")
+
+  # forecast label text check
+  forecast_layer_nl <- p_nl$layers[[which(vapply(p_nl$layers, function(l) inherits(l$geom, "GeomText"), TRUE))]]
+  forecast_layer_en <- p_en$layers[[which(vapply(p_en$layers, function(l) inherits(l$geom, "GeomText"), TRUE))]]
+  expect_equal(forecast_layer_nl$aes_params$label, "raming")
+  expect_equal(forecast_layer_en$aes_params$label, "forecast")
+})
+
+
+test_that("style = 'english' reaches the cpb_scatter forecast label", {
+  d <- data.frame(x = 2020:2025, y = 1:6)
+  labels_of <- function(p) {
+    txt <- Filter(function(l) inherits(l$geom, "GeomText"), p$layers)
+    vapply(txt, function(l) l$aes_params$label, "")
+  }
+  expect_true("raming" %in% labels_of(cpb_scatter(d, x = x, y = y, forecast_x = 2023)))
+  expect_true("forecast" %in% labels_of(cpb_scatter(d, x = x, y = y, forecast_x = 2023,
+                                                    style = "english")))
+})
+
+test_that("style = 'english' reaches the cpb_box value labels", {
+  d <- data.frame(x = c("a", "b"), p5 = 1, p25 = 1.25, p50 = 1.5, p75 = 1.75, p95 = 2)
+  box_labels <- function(style) {
+    p <- cpb_box(d, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+                 box_style = "james", style = style)
+    b <- ggplot2::ggplot_build(p)
+    unlist(lapply(b$data, function(l) if ("label" %in% names(l)) as.character(l$label)))
+  }
+  expect_true("1,5" %in% box_labels("dutch"))
+  expect_true("1.5" %in% box_labels("english"))
+  expect_false("1,5" %in% box_labels("english"))
+})
