@@ -17,12 +17,18 @@
 #'   palette), `"sequential"` (the 6-colour light-to-dark pink ramp), or
 #'   `"blues"` (the 6-colour light-to-dark blue ramp for classed fills).
 #'   Ramps are interpolated to any number of levels.
+#' @details For `"sequential"`, up to six levels take the darkest
+#'   swatches of the ramp: `n` levels get the `n` darkest, still ordered
+#'   light to dark, so the palest pink is only used once all six are
+#'   needed. More than six levels are interpolated along the full ramp.
 #' @param reverse If `TRUE`, reverse the palette order before drawing
 #'   colours from it.
 #' @return A function `function(n)` returning a character vector of
 #'   `n` hex colours. For `"qualitative"` and `"discr"`, colours are
 #'   recycled (with a warning) if `n` exceeds the palette length. For
-#'   `"sequential"`, `n` colours are interpolated along the ramp.
+#'   `"sequential"`, the `n` darkest swatches (see Details), interpolated
+#'   along the full ramp beyond six. For `"blues"`, `n` colours are
+#'   interpolated along the ramp.
 #' @examples
 #' cpb_pal("qualitative")(3)
 #' cpb_pal("sequential")(5)
@@ -39,10 +45,26 @@ cpb_pal <- function(palette = c("qualitative", "discr", "sequential", "blues"), 
   if (identical(palette, "qualitative")) {
     cols <- cols[cpb_series_order[cpb_series_order <= length(cols)]]
   }
+  if (identical(palette, "sequential")) {
+    # the pink ramp's lightest swatches are too pale to stand on their
+    # own in a presentation, so a small number of levels is taken from
+    # the dark end: n levels get the n darkest swatches (kept in
+    # light-to-dark order), and the lightest one only appears once all
+    # six are needed. Beyond six the full ramp is interpolated.
+    return(function(n) {
+      out <- if (n <= length(cols)) {
+        cols[seq.int(length(cols) - n + 1L, length.out = n)]
+      } else {
+        grDevices::colorRampPalette(cols)(n)
+      }
+      out <- unname(out)
+      if (isTRUE(reverse)) rev(out) else out
+    })
+  }
   if (isTRUE(reverse)) cols <- rev(cols)
 
   function(n) {
-    if (palette %in% c("sequential", "blues")) {
+    if (identical(palette, "blues")) {
       grDevices::colorRampPalette(cols)(n)
     } else {
       if (n > length(cols)) {
