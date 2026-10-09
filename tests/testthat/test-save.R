@@ -48,7 +48,7 @@ test_that("preset controls the default height, and an explicit height wins", {
   expect_match(msg2, "2.95 x 4 in", fixed = TRUE)
 })
 
-test_that("save_cpb auto-fits a cpb_map() panel to its geographic aspect ratio", {
+test_that("save_cpb saves a cpb_map() at the page's size, in proportion", {
   skip_if_not_installed("ragg")
   prov <- data.frame(naam = unique(cpb_nl_geo("provincie")$name))
   prov$w <- seq_len(nrow(prov))
@@ -56,12 +56,25 @@ test_that("save_cpb auto-fits a cpb_map() panel to its geographic aspect ratio",
   expect_false(is.null(attr(p, "cpb_map_aspect")))
 
   path <- withr::local_tempfile(fileext = ".png")
+  # a map is saved at the page's size, like any other figure ...
   msg <- testthat::capture_output(save_cpb(path, p, page = "half"))
-  # not the 7.5 cm "report" preset square -- the panel drove the height
-  expect_false(grepl("2.95 x 2.95 in", msg, fixed = TRUE))
-  expect_true(file.exists(path))
+  expect_match(msg, "2.95 x 2.95 in", fixed = TRUE)
+  im <- png::readPNG(path)
+  # ... with the map in proportion: its drawing area has the boundaries'
+  # own height / width, and fits inside the page
+  for (size in list(c(7.5, 7.5), c(15.5, 7.5), c(7.5, 20)) ) {
+    panel <- cpb_map_panel_size(p, attr(p, "cpb_map_aspect"), size[1] / 2.54, size[2] / 2.54)
+    expect_equal(panel[2] / panel[1], attr(p, "cpb_map_aspect"))
+    expect_lt(panel[1], size[1] / 2.54)
+    expect_lt(panel[2], size[2] / 2.54)
+  }
 
-  # an explicit height opts back out, same as an explicit panel_size does
+  # preset = "map": as wide as the page allows, as tall as that takes
+  msg_map <- testthat::capture_output(save_cpb(path, p, page = "half", preset = "map"))
+  expect_false(grepl("2.95 x 2.95 in", msg_map, fixed = TRUE))
+  expect_gt(nrow(png::readPNG(path)), nrow(im))
+
+  # an explicit height is kept, whatever the preset
   msg2 <- testthat::capture_output(save_cpb(path, p, page = "half", height = 3))
   expect_match(msg2, "2.95 x 3 in", fixed = TRUE)
 })
@@ -462,10 +475,8 @@ test_that("save_cpb() never triggers print.cpb_plot()'s warning, on either its f
   # whether this specific warning was also (wrongly) present
   expect_no_warning(save_cpb(path, p, page = "full"))
 
-  # the map aspect fit forces the grob path (cpb_fix_panel_size())
-  # whenever height is left auto; an explicit height instead takes the
-  # plain ggsave() fast path even though cpb_map_aspect is still set,
-  # since the caller explicitly opted out of the aspect fit
+  # a map always takes the grob path (cpb_fix_panel_size()), with or
+  # without an explicit height
   prov <- data.frame(naam = unique(cpb_nl_geo("provincie")$name))
   prov$w <- seq_len(nrow(prov))
   m <- cpb_map(prov, region = naam, value = w, level = "provincie")
@@ -572,6 +583,47 @@ test_that("a default cpb_donut is as tall as the page; a fixed panel_size sets i
   # pinned ring: the fixed top (1.3 cm) + ring + bottom (2.3 cm)
   expect_equal(rows(cpb_donut(d, fill = g, y = v, title = "t", panel_size = 1.8)),
                px(1.3 + 1.8 * 2.54 + 2.3), tolerance = 0.005)
+})
+
+test_that("a printed cpb_map has its title and bottom legend at the figure's left edge", {
+  geo <- cpb_nl_geo("provincie")
+  d <- data.frame(region = unique(geo$name))
+  d$value <- factor(rep_len(c("laag", "hoog"), nrow(d)))
+  p <- cpb_map(d, region = region, value = value, level = "provincie", title = "Kaart", legend = "bottom")
+  first_ink_cm <- function(f) {
+    im <- png::readPNG(f)
+    cols <- apply(im[, , 1:3], 2, function(col) any(abs(col - rep(im[1, 1, 1:3], each = nrow(im))) > 0.3))
+    min(which(cols)) / 300 * 2.54
+  }
+  # also on a page much wider than the map itself
+  for (width in c(7.5, 15.5)) {
+    path <- withr::local_tempfile(fileext = ".png")
+    ragg::agg_png(path, width = width, height = 7.5, units = "cm", res = 300)
+    suppressWarnings(print(p))
+    grDevices::dev.off()
+    expect_lt(abs(first_ink_cm(path) - 0.45), 0.05)
+  }
+})
+
+test_that("cpb_map's legend inside the panel lines up with the title, not with the map", {
+  geo <- cpb_nl_geo("provincie")
+  d <- data.frame(region = unique(geo$name))
+  d$value <- factor(rep_len(c("laag", "hoog"), nrow(d)))
+  p <- cpb_map(d, region = region, value = value, level = "provincie", title = "Kaart")
+  # on a page much wider than the map, where the map itself sits well in
+  path <- withr::local_tempfile(fileext = ".png")
+  ragg::agg_png(path, width = 15.5, height = 7.5, units = "cm", res = 300)
+  suppressWarnings(print(p))
+  grDevices::dev.off()
+  im <- png::readPNG(path)
+  first_ink_cm <- function(rows) {
+    cols <- apply(im[rows, , 1:3], 2, function(col) any(abs(col - rep(im[1, 1, 1:3], each = length(rows))) > 0.25))
+    min(which(cols)) / 300 * 2.54
+  }
+  title <- first_ink_cm(30:80)
+  legend <- first_ink_cm(round(nrow(im) * 0.12):round(nrow(im) * 0.2))
+  expect_lt(abs(title - 0.45), 0.05)
+  expect_lt(abs(legend - title), 0.03)
 })
 
 test_that("save_cpb warns for a title of more than two lines, not for two", {

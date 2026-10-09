@@ -85,11 +85,17 @@ cpb_print_exact <- function(x, newpage = TRUE, vp = NULL) {
   fill_panel <- identical(panel_size, "fill")
   size_in <- c(grid::convertWidth(grid::unit(1, "npc"), "in", valueOnly = TRUE),
                grid::convertHeight(grid::unit(1, "npc"), "in", valueOnly = TRUE))
+  # cpb_map()'s panel has a fixed shape too
+  map_aspect <- attr(x, "cpb_map_aspect")
+  if (is.null(panel_size) && !is.null(map_aspect)) {
+    panel_size <- cpb_map_panel_size(taken$plot, map_aspect, size_in[1], size_in[2])
+  }
   g <- if (is.null(panel_size)) {
     ggplot2::ggplotGrob(taken$plot)
   } else {
     cpb_fix_panel_size(taken$plot, if (fill_panel) 1.8 else panel_size, size_in[1], size_in[2])
   }
+  if (!is.null(map_aspect)) g <- cpb_map_legend_left(g)
   mirrored <- cpb_mirror_sec_axis_margin(g)
   if (!is.null(mirrored)) g <- mirrored
   bottom <- cpb_figure_bottom(g, attr(x, "cpb_legend"), attr(x, "cpb_legend_grid"))
@@ -589,6 +595,32 @@ cpb_figure_top <- function(g, sec_ylab = NULL, position = "left") {
   g
 }
 
+# cpb_map()'s panel has a fixed shape (`aspect`, height / width): the
+# largest one of that shape that fits the room a `width` x `height`
+# (inches) figure has for it. The map is then centred in that room.
+# @return c(width, height), in inches.
+# @noRd
+cpb_map_panel_size <- function(plot, aspect, width, height) {
+  g <- cpb_resolve_gtable_units(ggplot2::ggplotGrob(plot), width, height)
+  panel <- which(g$layout$name == "panel")
+  room_w <- grid::convertWidth(g$widths[g$layout$l[panel]], "in", valueOnly = TRUE)
+  room_h <- grid::convertHeight(g$heights[g$layout$t[panel]], "in", valueOnly = TRUE)
+  panel_w <- min(room_w, room_h / aspect)
+  c(panel_w, panel_w * aspect)
+}
+
+# cpb_map()'s legend inside the panel (legend = "topleft") is anchored
+# to the panel's left edge, which sits in from the figure's edge when
+# the map is narrower than the figure. Anchored to the figure's left
+# margin instead, it lines up with the title, at the same height.
+# @noRd
+cpb_map_legend_left <- function(g) {
+  i <- which(g$layout$name == "guide-box-inside")
+  # column 1 is the left plot margin
+  if (length(i) == 1) g$layout$l[i] <- 2
+  g
+}
+
 # cpb_donut()'s default ring: resizes the (square) panel cpb_fix_panel_size()
 # pinned to fill the height `page_height` (inches) leaves between the
 # fixed figure top and bottom, keeping it centred between the gutter
@@ -782,22 +814,23 @@ cpb_ggsave_grob <- function(filename, grob, dpi, device, bg, width = NULL, heigh
 #' `page = "small"`, which is square too. Pass
 #' `preset = "presentation"` for the 2.5 in presentation height, or set
 #' `height` explicitly for anything else (e.g. a tall stacked-facet
-#' export) -- an explicit `height` always wins over `preset`. A
-#' `cpb_map()` plot is the one exception: left at its default (no
-#' explicit `height`), its panel is instead auto-sized to the
-#' boundaries' true geographic aspect ratio, so the map fills the
-#' figure exactly rather than sitting letterboxed inside a
-#' fixed-height page (pass `height` explicitly to opt back into a
-#' fixed height, e.g. to match a neighbouring figure).
+#' export). An explicit `height` always wins over `preset`. A
+#' `cpb_map()` plot is saved at these sizes too: the map keeps its true
+#' geographic proportions and is drawn as large as fits inside the
+#' figure. `preset = "map"` instead draws the map as wide as the page
+#' allows and makes the figure as tall as that takes (8.7 cm for the
+#' Netherlands on a half page).
 #'
 #' @param filename Path to write to; passed to [ggplot2::ggsave()].
 #' @param plot The plot to save; defaults to [ggplot2::last_plot()].
 #' @param page `"half"` (default, 7.5 cm wide), `"full"` (15.5 cm wide)
 #'   or `"small"` (6.8 cm wide and tall, for a figure in a "kader").
 #'   Ignored if `width` is supplied explicitly.
-#' @param preset Either `"report"` (default, 7.5 cm tall, or 6.8 cm
-#'   for `page = "small"`) or `"presentation"` (2.5 in tall). Ignored
-#'   if `height` is supplied explicitly.
+#' @param preset `"report"` (default, 7.5 cm tall, or 6.8 cm for
+#'   `page = "small"`), `"presentation"` (2.5 in tall), or `"map"`.
+#'   `"map"` makes a [cpb_map()] plot as tall as the map needs at the
+#'   page's full width, and works as `"report"` for any other plot.
+#'   Ignored if `height` is supplied explicitly.
 #' @param height Explicit height in inches. `NULL` (default) uses
 #'   `preset` to determine the height.
 #' @param width Explicit width in inches. Must be `7.5 / 2.54`,
@@ -840,7 +873,7 @@ cpb_ggsave_grob <- function(filename, grob, dpi, device, bg, width = NULL, heigh
 save_cpb <- function(filename,
                       plot = ggplot2::last_plot(),
                       page = c("half", "full", "small"),
-                      preset = c("report", "presentation"),
+                      preset = c("report", "presentation", "map"),
                       height = NULL,
                       width = NULL,
                       dpi = 300,
@@ -917,18 +950,21 @@ save_cpb <- function(filename,
   if (fill_panel) panel_size <- 1.8
 
   # failing that, cpb_map() tags its plot with the boundaries' true
-  # aspect ratio: measure the panel width at this page width (doesn't
-  # depend on height, since title/legend span the full width) and pin
-  # the panel to that width at the matching height, so the map fills it
-  # exactly instead of sitting letterboxed. An explicit height opts
-  # out, like an explicit panel_size does.
-  if (is.null(panel_size) && height_auto) {
+  # aspect ratio. The map is fitted, in proportion, into the room the
+  # page leaves for it, so the figure is the page's size like any
+  # other. preset = "map" instead draws it as wide as the page allows
+  # and lets the figure grow as tall as that takes.
+  if (is.null(panel_size)) {
     map_aspect <- attr(plot, "cpb_map_aspect")
     if (!is.null(map_aspect)) {
-      g0 <- cpb_resolve_gtable_units(ggplot2::ggplotGrob(plot), width, height)
-      panel_col <- unique(g0$layout$l[g0$layout$name == "panel"])
-      panel_w <- grid::convertWidth(g0$widths[panel_col], "in", valueOnly = TRUE)
-      panel_size <- c(panel_w, panel_w * map_aspect)
+      if (preset == "map" && height_auto) {
+        g0 <- cpb_resolve_gtable_units(ggplot2::ggplotGrob(plot), width, height)
+        panel_col <- unique(g0$layout$l[g0$layout$name == "panel"])
+        panel_w <- grid::convertWidth(g0$widths[panel_col], "in", valueOnly = TRUE)
+        panel_size <- c(panel_w, panel_w * map_aspect)
+      } else {
+        panel_size <- cpb_map_panel_size(plot, map_aspect, width, height)
+      }
     }
   }
 
@@ -949,6 +985,7 @@ save_cpb <- function(filename,
   } else {
     cpb_fix_panel_size(plot, panel_size, width, height)
   }
+  if (!is.null(attr(plot, "cpb_map_aspect"))) grob <- cpb_map_legend_left(grob)
   grob_aligned <- cpb_align_value_axis_title(grob)
   title_aligned <- !identical(grob_aligned, grob)
   grob <- grob_aligned

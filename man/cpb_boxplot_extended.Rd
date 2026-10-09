@@ -382,9 +382,7 @@ would otherwise draw one on top of the other.}
 \item{ylab_position}{Where the \code{ylab} caption (the value axis's
 title) is placed.
 \itemize{
-\item \code{"right"}: at the figure's right edge, so it reads as belonging
-to the value axis and not to the title above it, which stays on
-the left. With \code{facet}, every panel gets its own caption, under
+\item \code{"right"}: at the figure's right edge. With \code{facet}, every panel gets its own caption, under
 its facet name.
 \item \code{"left"}: under the title, as in \code{\link[=cpb_box]{cpb_box()}} and \code{\link[=cpb_col]{cpb_col()}}.
 \item \code{"middle"}: at the panel's left edge, with the title centred

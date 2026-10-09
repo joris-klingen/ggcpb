@@ -14,12 +14,12 @@ packages or downloads are needed. Regions are separated by thin
 background-colour seams, and the legend sits inside the panel at
 top-left – in the empty North Sea corner of the country.
 
-A map is taller relative to its width than a chart. Written out with
-`save_cpb()` (see `vignette("ggcpb")`), the panel is auto-fitted to the
-boundaries’ true aspect ratio rather than letterboxed inside a guessed
-height. The maps below are printed directly instead, on the same
-half-page canvas as every other figure in these vignettes, so they are
-fitted to that canvas rather than to the boundaries.
+A map always keeps its true geographic proportions. `save_cpb()` (see
+`vignette("ggcpb")`) writes it at the same size as any other figure,
+with the map drawn as large as fits inside; the maps below are drawn the
+same way. A map is taller relative to its width than a chart, so
+`save_cpb(preset = "map")` instead draws it as wide as the page allows
+and makes the figure as tall as that takes.
 
 # Classed maps
 
