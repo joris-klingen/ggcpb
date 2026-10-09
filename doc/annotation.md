@@ -89,8 +89,6 @@ cpb_line(groeipad_sec, x = jaar, y = groei, ymin = lo, ymax = hi,
                      guide = guide_axis(minor.ticks = TRUE))
 #> Scale for x is already present.
 #> Adding another scale for x, which will replace the existing scale.
-#> Warning: ggcpb: this plot has a secondary-axis caption (sec_ylab), which only render(s) exactly when written out through save_cpb() -- a bare print() (this one included) shows an approximate placement instead.
-#> This warning is displayed once per session.
 ```
 
 <img src="annotation_files/figure-gfm/style-english-1.png" alt="" width="350px" />
