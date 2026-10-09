@@ -605,10 +605,10 @@ test_that("reverse_legend reverses the colour guide in line and scatter", {
   expect_true(p$guides$guides$colour$params$reverse)
   # default stays FALSE: no stacking convention for lines/points
   expect_null(cpb_line(num, x = x, y = y, colour = g)$guides$guides$colour)
-  # a numeric colour column keeps its continuous scale untouched
+  # a numeric colour column has an ordinary legend too, not a colour bar
   numc <- transform(num, g = as.numeric(factor(g)))
   p <- cpb_scatter(numc, x = x, y = y, colour = g, reverse_legend = TRUE)
-  expect_null(p$guides$guides$colour)
+  expect_true(p$guides$guides$colour$params$reverse)
 })
 
 test_that("sec_type controls how sec_y is drawn, sharing one legend key", {
@@ -756,9 +756,9 @@ test_that("legend_ncol lays the legend out in the requested number of columns", 
   expect_equal(cpb_dot(dot_df, x = x, y = y, lower = lower, upper = upper,
                        colour = g, legend_ncol = 3)$guides$guides$colour$params$ncol, 3)
 
-  # a numeric colour column keeps its continuous colourbar untouched
+  # a numeric colour column has an ordinary legend too, not a colour bar
   numc <- transform(num, g = as.numeric(factor(g)))
-  expect_null(cpb_scatter(numc, x = x, y = y, colour = g, legend_ncol = 2)$guides$guides$colour)
+  expect_equal(cpb_scatter(numc, x = x, y = y, colour = g, legend_ncol = 2)$guides$guides$colour$params$ncol, 2)
 
   # NULL (default) is a no-op: no guides() call added at all
   expect_null(cpb_col(cat_df, x = x, y = y, fill = g, reverse_legend = FALSE)$guides$guides$fill)
@@ -1938,4 +1938,31 @@ test_that("cpb_line/cpb_area/cpb_col accept a Date or POSIXct x axis (#49)", {
     cpb_line(d, x = time, y = value, forecast_x = "2024-09-01")))
   expect_no_error(ggplot2::ggplot_build(cpb_area(d, x = date, y = value, fill = grp)))
   expect_no_error(ggplot2::ggplot_build(cpb_col(d, x = date, y = value)))
+})
+
+test_that("a numeric colour legend shows evenly spaced values, both limits included", {
+  d <- data.frame(x = 1:4, y = 1:4, v = c(0, 37, 61, 100))
+  b <- ggplot2::ggplot_build(cpb_scatter(d, x = x, y = y, colour = v))
+  sc <- b$plot$scales$get_scales("colour")
+  expect_equal(sc$get_breaks(), seq(0, 100, length.out = 6))
+  expect_equal(sc$get_labels(), c("0", "20", "40", "60", "80", "100"))
+  # drawn as ordinary legend items, not a colour bar
+  g <- cpb_figure_bottom(ggplot2::ggplotGrob(b$plot), "bottom")
+  expect_true("cpb-legend" %in% g$layout$name)
+})
+
+test_that("legend_title is the legend's first row, with at most 2 rows below", {
+  d <- data.frame(x = rep(1:2, 5), y = 1:10, g = rep(letters[1:5], each = 2))
+  p <- cpb_line(d, x = x, y = y, colour = g, legend_title = "Reeks")
+  expect_equal(p$labels$colour, "Reeks")
+  g <- cpb_figure_bottom(ggplot2::ggplotGrob(p), "bottom")
+  title <- g$grobs[[which(g$layout$name == "cpb-legend-title")]]
+  expect_equal(title$label, "Reeks")
+  # items start one legend line below the title: 5 items in 2 rows, 3 columns
+  items <- g$grobs[[which(g$layout$name == "cpb-legend")]]
+  labels <- Filter(function(k) inherits(k, "text"), items$children)
+  ys <- unique(vapply(labels, function(k) grid::convertY(grid::unit(1, "npc") - k$y, "cm", valueOnly = TRUE), numeric(1)))
+  expect_length(ys, 2)
+  expect_error(cpb_line(d, x = x, y = y, colour = g, legend_title = "Reeks", legend_nrow = 3),
+               "at most 2")
 })

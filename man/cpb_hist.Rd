@@ -36,7 +36,7 @@ cpb_hist(
   subtitle = NULL,
   xlab = NULL,
   ylab = NULL,
-  filllab = NULL,
+  legend_title = NULL,
   style = getOption("ggcpb.style", "dutch"),
   ...
 )
@@ -127,12 +127,17 @@ house defaults.}
 
 \item{title, subtitle}{Plot title/subtitle.}
 
-\item{xlab, filllab}{Axis and legend title overrides; default to
-\code{NULL}, matching CPB house style.}
+\item{xlab}{Axis title override. Defaults to \code{NULL}, matching CPB
+house style.}
 
 \item{ylab}{Label for the count (y) axis, rendered as the plot
 \emph{subtitle} (e.g. \code{"aantal"}) unless an explicit \code{subtitle} is
 also given.}
+
+\item{legend_title}{Legend title, drawn in italic as the first row of
+the legend, with at most 2 rows of legend items below it (title and
+items together take the 3 rows a legend has without a title).
+\code{NULL} (default) draws no title, matching CPB house style.}
 
 \item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
 or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).

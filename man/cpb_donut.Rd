@@ -26,7 +26,7 @@ cpb_donut(
   flush_legend = TRUE,
   title = NULL,
   subtitle = NULL,
-  filllab = NULL,
+  legend_title = NULL,
   style = getOption("ggcpb.style", "dutch"),
   ...
 )
@@ -142,8 +142,10 @@ gridlines for them to affect.}
 
 \item{title, subtitle}{Plot title/subtitle.}
 
-\item{filllab}{Legend title override; defaults to \code{NULL} (no
-title), matching CPB house style.}
+\item{legend_title}{Legend title, drawn in italic as the first row of
+the legend, with at most 2 rows of legend items below it (title and
+items together take the 3 rows a legend has without a title).
+\code{NULL} (default) draws no title, matching CPB house style.}
 
 \item{style}{Formatting style for the percentages: \code{"dutch"}
 (default, \verb{,} decimal) or \code{"english"} (\code{.} decimal). Taken from

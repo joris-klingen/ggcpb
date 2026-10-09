@@ -286,9 +286,10 @@ cpb_mirror_sec_axis_margin <- function(g) {
 
 # The keys and label texts of a bottom guide box, in legend order (guides
 # top to bottom, keys column by column), as one list. A right axis's
-# item goes in the same list as the left axis's. NULL when there is no
+# item goes in the same list as the left axis's. A legend title
+# (legend_title) comes back as attribute "title". NULL when there is no
 # legend. NA when it can't be read as plain key/label pairs (a colour
-# bar, a legend title), which then keeps ggplot2's own layout.
+# bar, two titles), which then keeps ggplot2's own layout.
 # @noRd
 cpb_legend_items <- function(guide_box) {
   if (!inherits(guide_box, "gtable")) return(NULL)
@@ -297,11 +298,17 @@ cpb_legend_items <- function(guide_box) {
   if (!any(is_guide)) return(NULL)
   ord <- order(guide_box$layout$t[is_guide], guide_box$layout$l[is_guide])
   items <- list()
+  title <- NULL
   for (gd in guide_box$grobs[is_guide][ord]) {
     if (!inherits(gd, "gtable")) return(NA)
     lay <- gd$layout
     nonzero <- !vapply(gd$grobs, inherits, logical(1), what = "zeroGrob")
-    if (any(grepl("^title", lay$name) & nonzero)) return(NA)
+    title_i <- which(grepl("^title", lay$name) & nonzero)
+    if (length(title_i)) {
+      if (!is.null(title)) return(NA)
+      title <- cpb_find_grob(gd$grobs[[title_i[1]]], "text")
+      if (is.null(title)) return(NA)
+    }
     is_key <- grepl("^key-", lay$name)
     is_label <- grepl("^label-", lay$name)
     if (!any(is_key) || !any(is_label)) return(NA)
@@ -319,6 +326,7 @@ cpb_legend_items <- function(guide_box) {
       )
     }
   }
+  if (!is.null(title)) attr(items, "title") <- list(label = title$label, gp = title$gp)
   items
 }
 
@@ -429,12 +437,26 @@ cpb_figure_bottom <- function(g, legend, legend_grid = NULL) {
     x <- cm(cpb_labels_margin_cm)
     y <- grid::unit(1, "npc") - cm(cpb_legend_top_cm) - strip_h
     if (is.list(items) && length(items)) {
+      # a legend title takes the first row, leaving at most 2 for the items
+      title <- attr(items, "title")
+      max_rows <- if (is.null(title)) Inf else cpb_legend_per_column - 1
       # legend_nrow, else enough rows for legend_ncol columns, else 3
       rows <- if (!is.null(legend_grid$nrow)) legend_grid$nrow
         else if (!is.null(legend_grid$ncol)) ceiling(length(items) / legend_grid$ncol)
         else cpb_legend_per_column
+      rows <- min(rows, max_rows)
+      if (!is.null(title)) {
+        g <- region(g, grid::textGrob(
+          title$label, x = x, y = y - cm(cpb_legend_line_cm / 2),
+          hjust = 0, vjust = 0.5, gp = title$gp), "cpb-legend-title")
+        y <- y - cm(cpb_legend_line_cm)
+      }
       grid_grob <- cpb_legend_grid(items, rows, x, y)
-      attr(g, "cpb_legend_width") <- attr(grid_grob, "cpb_width")
+      legend_width <- attr(grid_grob, "cpb_width")
+      if (!is.null(title)) {
+        legend_width <- max(legend_width, grid::grobWidth(grid::textGrob(title$label, gp = title$gp)))
+      }
+      attr(g, "cpb_legend_width") <- legend_width
       g <- region(g, grid_grob, "cpb-legend")
     } else if (identical(items, NA)) {
       g <- region(g, grid::gTree(children = grid::gList(box), vp = grid::viewport(

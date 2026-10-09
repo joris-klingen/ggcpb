@@ -90,7 +90,7 @@ cpb_nl_geo <- function(level = c("gemeente", "corop", "provincie")) {
 #'   in the other wrappers. Ignored when `legend = "topleft"`.
 #' @param title,subtitle Plot title/subtitle. As elsewhere, `ylab` does
 #'   not exist here: use `subtitle` for the unit caption.
-#' @param filllab Legend title; defaults to `NULL` (no title).
+#' @param legend_title Legend title. Defaults to `NULL` (no title).
 #' @param ... Further arguments passed to [ggplot2::geom_polygon()].
 #' @return A `ggplot` object.
 #' @examples
@@ -112,7 +112,7 @@ cpb_map <- function(data, region, value,
                     flush_legend = TRUE,
                     title = NULL,
                     subtitle = NULL,
-                    filllab = NULL,
+                    legend_title = NULL,
                     ...) {
   .cpb_idx <- cpb_resolve_index(fill_index, index, palette, !missing(palette), "fill_index")
   index <- .cpb_idx$index
@@ -183,7 +183,7 @@ cpb_map <- function(data, region, value,
   }
 
   p <- p +
-    ggplot2::labs(title = title, subtitle = subtitle, fill = filllab) +
+    ggplot2::labs(title = title, subtitle = subtitle, fill = legend_title) +
     theme_cpb(grid = "none", ticks = FALSE,
               legend = if (inside) "bottom" else legend,
               flush_legend = if (inside) FALSE else flush_legend) +
