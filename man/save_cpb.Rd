@@ -8,7 +8,7 @@ save_cpb(
   filename,
   plot = ggplot2::last_plot(),
   page = c("half", "full", "small"),
-  preset = c("report", "presentation"),
+  preset = c("report", "presentation", "map"),
   height = NULL,
   width = NULL,
   dpi = 300,
@@ -28,9 +28,11 @@ save_cpb(
 or \code{"small"} (6.8 cm wide and tall, for a figure in a "kader").
 Ignored if \code{width} is supplied explicitly.}
 
-\item{preset}{Either \code{"report"} (default, 7.5 cm tall, or 6.8 cm
-for \code{page = "small"}) or \code{"presentation"} (2.5 in tall). Ignored
-if \code{height} is supplied explicitly.}
+\item{preset}{\code{"report"} (default, 7.5 cm tall, or 6.8 cm for
+\code{page = "small"}), \code{"presentation"} (2.5 in tall), or \code{"map"}.
+\code{"map"} makes a \code{\link[=cpb_map]{cpb_map()}} plot as tall as the map needs at the
+page's full width, and works as \code{"report"} for any other plot.
+Ignored if \code{height} is supplied explicitly.}
 
 \item{height}{Explicit height in inches. \code{NULL} (default) uses
 \code{preset} to determine the height.}
@@ -88,13 +90,12 @@ Height defaults to 7.5 cm (the \code{"report"} preset), or 6.8 cm for
 \code{page = "small"}, which is square too. Pass
 \code{preset = "presentation"} for the 2.5 in presentation height, or set
 \code{height} explicitly for anything else (e.g. a tall stacked-facet
-export) -- an explicit \code{height} always wins over \code{preset}. A
-\code{cpb_map()} plot is the one exception: left at its default (no
-explicit \code{height}), its panel is instead auto-sized to the
-boundaries' true geographic aspect ratio, so the map fills the
-figure exactly rather than sitting letterboxed inside a
-fixed-height page (pass \code{height} explicitly to opt back into a
-fixed height, e.g. to match a neighbouring figure).
+export). An explicit \code{height} always wins over \code{preset}. A
+\code{cpb_map()} plot is saved at these sizes too: the map keeps its true
+geographic proportions and is drawn as large as fits inside the
+figure. \code{preset = "map"} instead draws the map as wide as the page
+allows and makes the figure as tall as that takes (8.7 cm for the
+Netherlands on a half page).
 }
 \examples{
 \dontrun{
