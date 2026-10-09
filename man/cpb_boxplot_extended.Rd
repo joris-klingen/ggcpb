@@ -379,16 +379,22 @@ exposed here at all (always off): it draws a black line, which
 reads poorly against \code{panel_fill}'s light background, and the two
 would otherwise draw one on top of the other.}
 
-\item{ylab_position}{Where the title (and, tied to it, the \code{ylab}
-caption -- ggplot2 has no way to place them separately, since both
-read off the same \code{plot.title.position} anchor) are placed:
-\code{"left"}, flush with the full figure width, matching the plain
-\code{\link[=cpb_box]{cpb_box()}}/\code{\link[=cpb_col]{cpb_col()}} house convention, or \code{"middle"}, centred
-over just the panel, matching the boxed-in look \code{panel_fill}
-gives this style. \code{NULL} (default) picks \code{"left"} when \code{facet} is
-set and \code{"middle"} otherwise, matching every reference figure this
-look has been checked against; pass one explicitly to override
-that for a single figure.}
+\item{ylab_position}{Where the \code{ylab} caption (the value axis's
+title) is placed.
+\itemize{
+\item \code{"right"}: at the figure's right edge, so it reads as belonging
+to the value axis and not to the title above it, which stays on
+the left. With \code{facet}, every panel gets its own caption, under
+its facet name.
+\item \code{"left"}: under the title, as in \code{\link[=cpb_box]{cpb_box()}} and \code{\link[=cpb_col]{cpb_col()}}.
+\item \code{"middle"}: at the panel's left edge, with the title centred
+over the panel, matching the boxed-in look \code{panel_fill} gives
+this style.
+}
+
+\code{NULL} (default) picks \code{"right"} when the value axis is at the
+top, and \code{"left"} otherwise (\code{orientation = "vertical"},
+\code{value_axis = "bottom"}).}
 
 \item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
 or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).
