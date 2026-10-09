@@ -162,7 +162,7 @@ theme_cpb <- function(base_family = cpb_font_family(),
     legend.margin        = ggplot2::margin(0, 0, 0, 0),
     legend.box.spacing   = grid::unit(6, "pt"),
 
-    # facet strips follow the legacy nicerplot convention: the panel
+    # facet strips follow the house convention: the panel
     # title sits *below* its panel (the wrappers set
     # strip.position = "bottom"); "outside" places it below the axis
     # text, so the caption reads as a title for the complete mini-figure

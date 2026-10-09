@@ -123,7 +123,7 @@ widths; defaults to \code{0.7}.}
 \item \code{"ggcpb"} (default): the style already used in CPB
 distributional figures -- capped errorbar whiskers plus an
 outlined box with a median line.
-\item \code{"james"}: the legacy \code{nplot()} box -- a borderless filled box,
+\item \code{"james"}: the legacy CPB box, a borderless filled box with
 plain (capless) whiskers in the box colour, a black median line
 extending slightly beyond the box, and the median value printed
 above it.
@@ -226,7 +226,7 @@ sits flush to the data's own range, with no padding on either
 side. A whole-number \code{x} (almost always a year) still only ever
 gets whole-number breaks, never a fractional one. Set to \code{FALSE}
 to restore ggplot2's usual padded, evenly spaced margin instead.
-Matches nicerplot's parameter of the same name. Ignored when
+Ignored when
 \code{x_lim} is set, and when \code{group} is mapped (the grouped layout
 needs its own fixed margin for the heading rows).
 Adding your own \code{scale_x_continuous()}/\code{scale_x_discrete()}
@@ -310,14 +310,14 @@ ggplot2's own axis \code{labels} accepts (a character vector matching
 function such as \code{\link[scales:label_number]{scales::label_number()}}). \code{NULL} (default) uses
 \code{\link[=label_number_nl]{label_number_nl()}}, matching the primary axis's own formatting.}
 
-\item{y_r_scale_auto, y_r_at, y_r_lab, y_r_lim}{nicerplot-style aliases
-for \code{sec_scale_auto}, \code{sec_at}, \code{sec_labels}, and \code{sec_limits}
-respectively, for figures ported over from that convention. Takes
+\item{y_r_scale_auto, y_r_at, y_r_lab, y_r_lim}{Aliases for
+\code{sec_scale_auto}, \code{sec_at}, \code{sec_labels}, and \code{sec_limits}
+respectively. Takes
 precedence over the \verb{sec_*} argument it aliases when both are
 given; \code{NULL} (default) defers to it.}
 
 \item{facet}{Optional column (tidy eval) to facet by. Facets follow
-the house (legacy nicerplot) convention: the facet title is a bold
+the house convention: the facet title is a bold
 strip \emph{below} each panel, and every panel is a complete
 mini-figure with its own axes and axis labels.}
 

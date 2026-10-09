@@ -181,9 +181,9 @@ ggplot2's own axis \code{labels} accepts (a character vector matching
 function such as \code{\link[scales:label_number]{scales::label_number()}}). \code{NULL} (default) uses
 \code{\link[=label_number_nl]{label_number_nl()}}, matching the primary axis's own formatting.}
 
-\item{y_r_scale_auto, y_r_at, y_r_lab, y_r_lim}{nicerplot-style aliases
-for \code{sec_scale_auto}, \code{sec_at}, \code{sec_labels}, and \code{sec_limits}
-respectively, for figures ported over from that convention. Takes
+\item{y_r_scale_auto, y_r_at, y_r_lab, y_r_lim}{Aliases for
+\code{sec_scale_auto}, \code{sec_at}, \code{sec_labels}, and \code{sec_limits}
+respectively. Takes
 precedence over the \verb{sec_*} argument it aliases when both are
 given; \code{NULL} (default) defers to it.}
 
@@ -243,7 +243,7 @@ sits flush to the data's own range, with no padding on either
 side. A whole-number \code{x} (almost always a year) still only ever
 gets whole-number breaks, never a fractional one. Set to \code{FALSE}
 to restore ggplot2's usual padded, evenly spaced margin instead.
-Matches nicerplot's parameter of the same name. Ignored when
+Ignored when
 \code{x_lim} is set, and when \code{group} is mapped (the grouped layout
 needs its own fixed margin for the heading rows).
 Adding your own \code{scale_x_continuous()}/\code{scale_x_discrete()}

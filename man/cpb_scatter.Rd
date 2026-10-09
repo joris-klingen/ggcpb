@@ -86,8 +86,7 @@ fall outside it). \code{NULL} (default) shows the full range.}
 \item{x_lim_follow_data}{If \code{TRUE}, flush the \code{x} axis exactly to
 the data's own range, at the cost of ggplot2 picking its own
 breaks within that (possibly non-round) range instead of the
-usual \code{pretty()} ones. Matches nicerplot's parameter of the same
-name. Defaults to \code{FALSE}. Ignored when \code{x_lim} is set.}
+usual \code{pretty()} ones. Defaults to \code{FALSE}. Ignored when \code{x_lim} is set.}
 
 \item{forecast_x}{Optional x value where the forecast window
 starts; overlaid and labelled as in \code{\link[=cpb_line]{cpb_line()}}.}
@@ -111,7 +110,7 @@ pin both dimensions of the grid at once. \code{NULL} (default) leaves
 the number of rows to ggplot2's own sizing.}
 
 \item{facet}{Optional column (tidy eval) to facet by. Facets follow
-the house (legacy nicerplot) convention: the facet title is a bold
+the house convention: the facet title is a bold
 strip \emph{below} each panel, and every panel is a complete
 mini-figure with its own axes and axis labels.}
 

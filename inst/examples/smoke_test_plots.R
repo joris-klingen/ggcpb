@@ -577,7 +577,7 @@ render(18, "box: modern style",
                                 expand = ggplot2::expansion(mult = c(0, 0))),
   "18_box_modern.png", page = "half")
 
-# faceted dodged columns: facet titles below the panels (nicerplot
+# faceted dodged columns: facet titles below the panels (house
 # convention), every panel a complete mini-figure with its own axes
 facet_dt <- CJ(jaar  = 2019:2025,
                groep = factor(c("laag", "midden", "hoog"),

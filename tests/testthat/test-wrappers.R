@@ -1339,7 +1339,7 @@ test_that("cpb_sec_map()'s primary-range check also uses floating point toleranc
   expect_no_error(cpb_sec_map(c(1, 2), NULL, 0.02, 0.06))
 })
 
-test_that("nicerplot secondary axis auto-scaling and parameter aliases work as expected", {
+test_that("secondary axis auto-scaling and the y_r_* parameter aliases work as expected", {
   prim_breaks <- c(0, 5, 10, 15, 20)
   sec_vals <- c(12, 48)
 

@@ -175,9 +175,9 @@ ggplot2's own axis \code{labels} accepts (a character vector matching
 function such as \code{\link[scales:label_number]{scales::label_number()}}). \code{NULL} (default) uses
 \code{\link[=label_number_nl]{label_number_nl()}}, matching the primary axis's own formatting.}
 
-\item{y_r_scale_auto, y_r_at, y_r_lab, y_r_lim}{nicerplot-style aliases
-for \code{sec_scale_auto}, \code{sec_at}, \code{sec_labels}, and \code{sec_limits}
-respectively, for figures ported over from that convention. Takes
+\item{y_r_scale_auto, y_r_at, y_r_lab, y_r_lim}{Aliases for
+\code{sec_scale_auto}, \code{sec_at}, \code{sec_labels}, and \code{sec_limits}
+respectively. Takes
 precedence over the \verb{sec_*} argument it aliases when both are
 given; \code{NULL} (default) defers to it.}
 
@@ -237,8 +237,7 @@ flush to the data's own range, with no padding on either side. A
 whole-number \code{x} (almost always a year) still only ever gets
 whole-number breaks, never a fractional one. Set to \code{FALSE} to
 restore ggplot2's usual padded, evenly spaced margin instead.
-Matches nicerplot's parameter of the same name. Ignored when
-\code{x_lim} is set.
+Ignored when \code{x_lim} is set.
 Adding your own \code{scale_x_continuous()}/\code{scale_x_discrete()}
 afterward replaces this one entirely (ggplot2 keeps only one
 scale per aesthetic) -- add \code{expand = ggplot2::expansion(mult = 0)}
@@ -274,7 +273,7 @@ pin both dimensions of the grid at once. \code{NULL} (default) leaves
 the number of rows to ggplot2's own sizing.}
 
 \item{facet}{Optional column (tidy eval) to facet by. Facets follow
-the house (legacy nicerplot) convention: the facet title is a bold
+the house convention: the facet title is a bold
 strip \emph{below} each panel, and every panel is a complete
 mini-figure with its own axes and axis labels.}
 
