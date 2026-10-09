@@ -476,6 +476,44 @@ test_that("save_cpb stops on a legend too wide for the page (lock)", {
   expect_no_error(save_cpb(path, p, page = "full"))
 })
 
+test_that("the figure top is fixed: plot area 1.3 cm down, titles at fixed heights", {
+  d <- data.frame(x = 1:5, y = 1:5, z = c(10, 12, 11, 13, 12))
+  top <- function(...) {
+    p <- cpb_line(d, x = x, y = y, sec_y = z, ylab = "links", sec_ylab = "rechts", ...)
+    taken <- cpb_take_sec_ylab(p)
+    g <- cpb_figure_top(cpb_figure_bottom(ggplot2::ggplotGrob(taken$plot), "bottom"), taken$label)
+    panel_t <- min(g$layout$t[grepl("^panel", g$layout$name)])
+    from_top <- function(name) {
+      grob <- g$grobs[[which(g$layout$name == name)]]
+      grid::convertY(grid::unit(1, "npc") - grob$y, "cm", valueOnly = TRUE)
+    }
+    list(g = g, from_top = from_top,
+         north = grid::convertHeight(sum(g$heights[seq_len(panel_t - 1)]), "cm", valueOnly = TRUE))
+  }
+  path <- withr::local_tempfile(fileext = ".png")
+  ragg::agg_png(path, width = 7.5, height = 7.5, units = "cm", res = 72)
+  withr::defer(grDevices::dev.off())
+
+  one <- top(title = "Titel")
+  expect_equal(one$north, 1.3)
+  expect_equal(one$from_top("cpb-title"), 0.5)
+  # both y-axis titles on one line, 0.35 cm above the plot area
+  expect_equal(one$from_top("cpb-subtitle"), 1.3 - 0.35)
+  expect_equal(one$from_top("sec-ylab"), 1.3 - 0.35)
+  expect_equal(one$g$grobs[[which(one$g$layout$name == "sec-ylab")]]$hjust, 1)
+
+  # no title: the plot area starts 0.7 cm down
+  none <- top()
+  expect_equal(none$north, 0.7)
+  expect_false("cpb-title" %in% none$g$layout$name)
+
+  # a second title line moves nothing: the plot area keeps its size
+  two <- top(title = "Titel\nregel twee")
+  expect_equal(two$north, 1.3)
+  expect_equal(two$from_top("cpb-title"), 0.5)
+  expect_equal(two$from_top("sec-ylab"), 1.3 - 0.35)
+})
+
 test_that("page = \"small\" saves a 6.8 x 6.8 cm figure; half stays the default", {
   d <- data.frame(x = 1:5, y = 1:5, g = rep(c("a", "b"), length.out = 5))
   p <- cpb_line(d, x = x, y = y, colour = g, title = "Titel", ylab = "%")
@@ -492,4 +530,12 @@ test_that("page = \"small\" saves a 6.8 x 6.8 cm figure; half stays the default"
   # the tick-label gap follows the width: 1.5% of 6.8 cm
   gap <- cpb_scale_y_lab_gap(p, 6.8)$theme$axis.text.y.left$margin[2]
   expect_equal(as.numeric(grid::convertWidth(gap, "cm", valueOnly = TRUE)), 0.015 * 6.8)
+})
+
+test_that("save_cpb warns for a title of more than two lines, not for two", {
+  d <- data.frame(x = 1:3, y = 1:3)
+  path <- withr::local_tempfile(fileext = ".png")
+  expect_no_warning(save_cpb(path, cpb_line(d, x = x, y = y, title = "een\ntwee")))
+  expect_warning(save_cpb(path, cpb_line(d, x = x, y = y, title = "een\ntwee\ndrie")),
+                 "more than two lines")
 })

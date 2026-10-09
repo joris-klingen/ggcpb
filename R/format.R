@@ -13,6 +13,14 @@ cpb_margin_east_cm   <- 0.635 # figure edge to the plot area, on the right
 # tick labels to the plot area: 1.5% of the figure width
 cpb_y_lab_gap_cm <- function(width_cm) 0.015 * width_cm
 
+# The figure top, in cm: the plot area starts 1.3 cm below the figure's
+# top edge (0.7 cm without a title), with the title centred 0.5 cm
+# below that edge and both y-axis titles 0.35 cm above the plot area
+cpb_margin_north_cm          <- 1.3  # top edge to the plot area
+cpb_margin_north_no_title_cm <- 0.7  # the same, without a title
+cpb_title_cm                 <- 0.5  # top edge to the title's centre
+cpb_y_title_cm               <- 0.35 # y-axis titles' centre above the plot area
+
 # The figure bottom, in cm below the plot area: the x tick labels, the
 # x-title's centre, and the legend grid, whose first row is centred
 # 1.3 cm above the figure's bottom edge
