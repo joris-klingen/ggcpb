@@ -16,7 +16,7 @@ cpb_donut(
   legend_pct = FALSE,
   label_accuracy = 1,
   ring_width = 0.6,
-  panel_size = 1.8,
+  panel_size = NULL,
   palette = "qualitative",
   index = NULL,
   reverse_legend = FALSE,
@@ -105,12 +105,13 @@ Defaults to \code{0.6}.}
 
 \item{panel_size}{The ring's own physical size, in inches (a square
 panel; \code{coord_polar()} is aspect-locked so a single number is
-enough). Fixed regardless of the title or legend length, so the
-same donut always draws the same size -- unlike those, which
-overflow past the figure's edge if they do not fit rather than
-shrinking the ring to make room. Forwarded to \code{\link[=save_cpb]{save_cpb()}} as its
-\code{panel_size} (which can still override it at save time). Defaults
-to \code{1.8}.}
+enough). \code{NULL} (default) fills the room \code{\link[=save_cpb]{save_cpb()}}'s page height
+leaves between the fixed figure top and bottom, so a donut
+is as tall as any other figure: a 3.9 cm ring on the default
+7.5 cm page with a title. A number pins the ring to that size
+instead, and the figure's height then follows from it. Forwarded
+to \code{\link[=save_cpb]{save_cpb()}} as its \code{panel_size} (which can still override it
+at save time).}
 
 \item{palette}{CPB palette to use for \code{fill}; one of
 \code{"qualitative"} (default), \code{"discr"}, \code{"sequential"}

@@ -3730,15 +3730,13 @@ cpb_dot <- function(data, x, y, lower, upper,
 #'   Defaults to `0.6`.
 #' @param panel_size The ring's own physical size, in inches (a square
 #'   panel; `coord_polar()` is aspect-locked so a single number is
-#'   enough). Fixed regardless of the title or legend length, so the
-#'   same donut always draws the same size -- unlike those, which
-#'   overflow past the figure's edge if they do not fit rather than
-#'   shrinking the ring to make room. Forwarded to [save_cpb()] as its
-#'   `panel_size` (which can still override it at save time). Defaults
-#'   to `1.8`.
-#' @param palette CPB palette to use for `fill`; one of
-#'   `"qualitative"` (default), `"discr"`, `"sequential"`
-#'   (pink ramp), or `"blues"` (blue ramp).
+#'   enough). `NULL` (default) fills the room [save_cpb()]'s page height
+#'   leaves between the fixed figure top and bottom, so a donut
+#'   is as tall as any other figure: a 3.9 cm ring on the default
+#'   7.5 cm page with a title. A number pins the ring to that size
+#'   instead, and the figure's height then follows from it. Forwarded
+#'   to [save_cpb()] as its `panel_size` (which can still override it
+#'   at save time).
 #' @inheritParams cpb_col
 #' @param index Optional integer vector of palette positions, forwarded
 #'   to [scale_fill_cpb_manual()] instead of the default
@@ -3785,7 +3783,7 @@ cpb_donut <- function(data, fill, y,
                       legend_pct = FALSE,
                       label_accuracy = 1,
                       ring_width = 0.6,
-                      panel_size = 1.8,
+                      panel_size = NULL,
                       palette = "qualitative",
                       index = NULL,
                       reverse_legend = FALSE,
@@ -3901,6 +3899,23 @@ cpb_donut <- function(data, fill, y,
     # direction a longer tick can actually reach.
     min_row_gap <- 0.6
     push_dir <- ifelse(cos(theta) >= 0, 1, -1)
+
+    # Several thin wedges together at the top (or bottom) of the ring
+    # would all stack their labels on one side, straight out of the
+    # figure. Those are shared out over both sides instead: the half
+    # nearest the other side gets its labels there.
+    for (d in c(1, -1)) {
+      cluster <- which(cos(theta) * d > 0.9)
+      if (length(cluster) > 2 && length(unique(on_right[cluster])) == 1) {
+        # in order across the top (or bottom), from the left to the right
+        cluster <- cluster[order(sin(theta[cluster]))]
+        on_right[cluster] <- seq_along(cluster) > length(cluster) / 2
+      }
+    }
+
+    # the labels stay inside the panel: above it is the title, below it
+    # the legend
+    y_lim <- outer_edge + leader_length + 0.3 + 0.1 - 0.15
     target_y <- natural_y
     for (grp in list(
       which(on_right & push_dir > 0), which(on_right & push_dir < 0),
@@ -3914,6 +3929,19 @@ cpb_donut <- function(data, fill, y,
         prev <- grp[i - 1]
         if ((target_y[cur] - target_y[prev]) * d < min_row_gap) {
           target_y[cur] <- target_y[prev] + min_row_gap * d
+        }
+      }
+      # a stack that runs past the panel's edge is pulled back from that
+      # edge, closing the rows up (to no less than a line of text and a
+      # bit) as far as that takes
+      n <- length(grp)
+      if (target_y[grp[n]] * d > y_lim) {
+        gap <- max(0.35, min(min_row_gap, (y_lim - target_y[grp[1]] * d) / (n - 1)))
+        target_y[grp[n]] <- y_lim * d
+        for (i in rev(seq_len(n - 1))) {
+          if ((target_y[grp[i + 1]] - target_y[grp[i]]) * d < gap) {
+            target_y[grp[i]] <- target_y[grp[i + 1]] - gap * d
+          }
         }
       }
     }
@@ -3967,10 +3995,28 @@ cpb_donut <- function(data, fill, y,
     }
 
     path_rows <- lapply(seq_along(theta), function(i) {
-      xs <- tick_x[i] + step * (horiz_x_end[i] - tick_x[i])
-      ys <- tick_y[i] + step * (target_y[i] - tick_y[i])
-      pos <- to_polar_data(xs, ys)
-      data.frame(grp = i, x = pos$r, y = pos$y)
+      along <- function(t) {
+        list(x = tick_x[i] + t * (horiz_x_end[i] - tick_x[i]),
+             y = tick_y[i] + t * (target_y[i] - tick_y[i]))
+      }
+      piece <- function(t, id) {
+        at <- along(t)
+        pos <- to_polar_data(at$x, at$y)
+        data.frame(grp = id, x = pos$r, y = pos$y)
+      }
+      # A line to the other side of the ring crosses 12 o'clock, where
+      # the angle jumps from the end of its scale back to the start. A
+      # single path would go all the way round the ring, so it is drawn
+      # as two pieces that meet at the crossing.
+      t_top <- tick_x[i] / (tick_x[i] - horiz_x_end[i])
+      if (is.finite(t_top) && t_top > 0 && t_top < 1 && along(t_top)$y > 0) {
+        top <- function(left, id) data.frame(grp = id, x = along(t_top)$y, y = if (left) total else 0)
+        return(rbind(
+          piece(step[step < t_top], paste0(i, "a")), top(tick_x[i] < 0, paste0(i, "a")),
+          top(tick_x[i] > 0, paste0(i, "b")), piece(step[step > t_top], paste0(i, "b"))
+        ))
+      }
+      piece(step, as.character(i))
     })
     path_data <- do.call(rbind, path_rows)
 
@@ -4091,11 +4137,13 @@ cpb_donut <- function(data, fill, y,
         face = "italic", size = cpb_font_pt, margin = ggplot2::margin(l = 1.5)
       )
     )
+  # the fixed legend grid, figure bottom and top, as every other wrapper
+  p <- cpb_wrapper_layout(p)
   # read by save_cpb() so a plain save_cpb(cpb_donut(...)) gets a
   # constant-size ring for free, without the caller having to repeat
   # panel_size at the save call too (though they still can, to
   # override it)
-  attr(p, "cpb_panel_size") <- panel_size
+  attr(p, "cpb_panel_size") <- if (is.null(panel_size)) "fill" else panel_size
   # a donut's legend is often the longest in the house style (see
   # above), and needs the width beside the ring to itself -- save_cpb()
   # warns using this when asked to fit both into a half page

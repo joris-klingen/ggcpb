@@ -1969,3 +1969,36 @@ test_that("legend_title is the legend's first row, with at most 2 rows below", {
   expect_error(cpb_line(d, x = x, y = y, colour = g, legend_title = "Reeks", legend_nrow = 3),
                "at most 2")
 })
+
+test_that("cpb_donut uses the fixed legend grid: 3 keys per column, never one tall column", {
+  d <- data.frame(g = factor(letters[1:6]), v = 1:6)
+  p <- cpb_donut(d, fill = g, y = v, title = "t")
+  expect_identical(attr(p, "cpb_legend"), "bottom")
+  g <- cpb_figure_bottom(ggplot2::ggplotGrob(p), "bottom")
+  labels <- Filter(function(k) inherits(k, "text"), g$grobs[[which(g$layout$name == "cpb-legend")]]$children)
+  rows <- unique(vapply(labels, function(k) {
+    round(grid::convertY(grid::unit(1, "npc") - k$y, "cm", valueOnly = TRUE), 4)
+  }, numeric(1)))
+  expect_length(labels, 6)
+  expect_length(rows, 3)
+})
+
+test_that("cpb_donut leader labels of thin wedges at the top stay in the panel, on both sides", {
+  d <- data.frame(g = factor(letters[1:9], levels = letters[1:9]), v = c(1, 1, 1, 1, 1, 1, 20, 20, 54))
+  p <- cpb_donut(d, fill = g, y = v, label_style = "leader")
+  is_text <- vapply(p$layers, function(l) inherits(l$geom, "GeomText"), logical(1))
+  labels <- p$layers[[which(is_text)]]$data
+  # the six 1% labels are shared out: three left-aligned, three right-aligned
+  small <- labels[labels$wedge_label == "1%", ]
+  expect_equal(sort(unname(c(table(small$hjust)))), c(3L, 3L))
+  # no label is placed beyond the radial scale's own limit, i.e. outside the panel
+  x_max <- p$scales$get_scales("x")$limits[2]
+  total <- sum(d$v)
+  height <- labels$x_text * cos(labels$y_text / total * 2 * pi)
+  expect_true(all(abs(height) <= x_max))
+  # a line across 12 o'clock is two pieces, never one path round the ring
+  is_path <- vapply(p$layers, function(l) inherits(l$geom, "GeomPath") && !inherits(l$geom, "GeomSegment"), logical(1))
+  paths <- p$layers[[which(is_path)[1]]]$data
+  jumps <- tapply(paths$y, paths$grp, function(y) max(abs(diff(y))))
+  expect_true(all(jumps < total / 2))
+})

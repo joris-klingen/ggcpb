@@ -25,7 +25,9 @@ print.cpb_plot <- function(x, newpage = is.null(vp), vp = NULL, ...) {
   ))
 
   features <- c(
-    if (!is.null(attr(x, "cpb_panel_size"))) "a fixed panel size (cpb_donut())",
+    # A ring that fills the figure is drawn exactly. A pinned ring may
+    # not fit the size print() happens to land on.
+    if (is.numeric(attr(x, "cpb_panel_size"))) "a fixed panel size (cpb_donut())",
     if (!drawn && !is.null(attr(x, "cpb_sec_ylab"))) "a secondary-axis caption (sec_ylab)",
     if (!is.null(attr(x, "cpb_map_aspect"))) "a geographic aspect fit (cpb_map())"
   )
@@ -76,13 +78,25 @@ cpb_print_exact <- function(x, newpage = TRUE, vp = NULL) {
   }
   x <- cpb_scale_y_lab_gap(x, grid::convertWidth(grid::unit(1, "npc"), "cm", valueOnly = TRUE))
   taken <- cpb_take_sec_ylab(x)
-  g <- ggplot2::ggplotGrob(taken$plot)
+  # cpb_donut()'s square panel, sized as save_cpb() does: left to
+  # ggplot2, the title and legend would be centred around it instead
+  # of sitting at the figure's edges
+  panel_size <- attr(x, "cpb_panel_size")
+  fill_panel <- identical(panel_size, "fill")
+  size_in <- c(grid::convertWidth(grid::unit(1, "npc"), "in", valueOnly = TRUE),
+               grid::convertHeight(grid::unit(1, "npc"), "in", valueOnly = TRUE))
+  g <- if (is.null(panel_size)) {
+    ggplot2::ggplotGrob(taken$plot)
+  } else {
+    cpb_fix_panel_size(taken$plot, if (fill_panel) 1.8 else panel_size, size_in[1], size_in[2])
+  }
   mirrored <- cpb_mirror_sec_axis_margin(g)
   if (!is.null(mirrored)) g <- mirrored
   bottom <- cpb_figure_bottom(g, attr(x, "cpb_legend"), attr(x, "cpb_legend_grid"))
   if (!is.null(bottom)) {
     # the fixed top places sec_ylab itself
     g <- cpb_figure_top(bottom, taken$label, attr(x, "cpb_ylab_position"))
+    if (fill_panel) g <- cpb_fill_panel(g, size_in[2])
   } else if (!is.null(taken$label)) {
     g <- cpb_place_sec_ylab(g, taken$label)
     if (is.null(g)) return(FALSE)
@@ -158,6 +172,19 @@ cpb_resolve_gtable_units <- function(g, page_width, page_height) {
     grid::convertHeight(grid::unit(1, "npc"), "in", valueOnly = TRUE)
   }, numeric(1)), "in")
   grid::popViewport()
+  # the measuring device is a whole number of pixels, a fraction short
+  # of the page: the panel (the elastic cell) takes that back, so the
+  # table is exactly page-sized again
+  panel <- which(grepl("^panel", g$layout$name))[1]
+  if (!is.na(panel)) {
+    inches <- function(u, convert) convert(u, "in", valueOnly = TRUE)
+    col <- g$layout$l[panel]
+    row <- g$layout$t[panel]
+    g$widths[col] <- g$widths[col] +
+      grid::unit(page_width - sum(inches(g$widths, grid::convertWidth)), "in")
+    g$heights[row] <- g$heights[row] +
+      grid::unit(page_height - sum(inches(g$heights, grid::convertHeight)), "in")
+  }
   g
 }
 
@@ -562,6 +589,29 @@ cpb_figure_top <- function(g, sec_ylab = NULL, position = "left") {
   g
 }
 
+# cpb_donut()'s default ring: resizes the (square) panel cpb_fix_panel_size()
+# pinned to fill the height `page_height` (inches) leaves between the
+# fixed figure top and bottom, keeping it centred between the gutter
+# columns either side.
+# @noRd
+cpb_fill_panel <- function(g, page_height) {
+  inches <- function(u, convert) convert(u, "in", valueOnly = TRUE)
+  panel <- which(g$layout$name == "panel")
+  row <- g$layout$t[panel]
+  col <- g$layout$l[panel]
+  size <- page_height - (sum(inches(g$heights, grid::convertHeight)) - inches(g$heights[row], grid::convertHeight))
+  delta <- (inches(g$widths[col], grid::convertWidth) - size) / 2
+  g$heights[row] <- grid::unit(size, "in")
+  g$widths[col] <- grid::unit(size, "in")
+  for (name in c("axis-l", "axis-r")) {
+    i <- g$layout$l[g$layout$name == name]
+    if (length(i) == 1) {
+      g$widths[i] <- grid::unit(max(inches(g$widths[i], grid::convertWidth) + delta, 0), "in")
+    }
+  }
+  g
+}
+
 # save_cpb()'s way into cpb_place_sec_ylab(). It first resolves `g` to
 # the fixed output size, which cpb_fix_panel_size() and the final save
 # need anyway. A missing subtitle row is an error here, where print()
@@ -860,6 +910,11 @@ save_cpb <- function(filename,
   if (is.null(panel_size)) {
     panel_size <- attr(plot, "cpb_panel_size")
   }
+  # cpb_donut()'s default ring is sized below, once the fixed top and
+  # bottom are known. Until then, and for a plot without them, it is
+  # 1.8 in.
+  fill_panel <- identical(panel_size, "fill")
+  if (fill_panel) panel_size <- 1.8
 
   # failing that, cpb_map() tags its plot with the boundaries' true
   # aspect ratio: measure the panel width at this page width (doesn't
@@ -908,6 +963,7 @@ save_cpb <- function(filename,
     # the fixed top places sec_ylab itself
     grob <- cpb_figure_top(bottom, sec_ylab$label, attr(plot, "cpb_ylab_position"))
     sec_ylab$label <- NULL
+    if (fill_panel) grob <- cpb_fill_panel(grob, height)
   }
 
   if (is.null(panel_size) && is.null(sec_ylab$label) && !title_aligned &&

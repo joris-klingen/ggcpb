@@ -420,8 +420,33 @@ test_that("print.cpb_plot() warns that a bare print shows an approximate placeme
   d <- data.frame(
     bron = factor(paste0("bron_", sample.int(1e6, 1))), share = 100
   )
-  p <- cpb_donut(d, fill = bron, y = share)
+  path <- withr::local_tempfile(fileext = ".png")
+  ragg::agg_png(path, width = 7.5, height = 7.5, units = "cm", res = 72)
+  withr::defer(grDevices::dev.off())
+  # a ring left to fill the figure is drawn exactly, as save_cpb() does
+  expect_no_warning(print(cpb_donut(d, fill = bron, y = share)))
+  # a pinned ring may not fit the size print() lands on
+  p <- cpb_donut(d, fill = bron, y = share, panel_size = 1.8)
   expect_warning(print(p), "only render\\(s\\) exactly when written out through save_cpb\\(\\)")
+})
+
+test_that("a printed cpb_donut has its title and legend at the figure's edges, like a saved one", {
+  d <- data.frame(bron = factor(letters[1:4]), share = c(40, 30, 20, 10))
+  p <- cpb_donut(d, fill = bron, y = share, title = "Titel")
+  printed <- withr::local_tempfile(fileext = ".png")
+  saved <- withr::local_tempfile(fileext = ".png")
+  ragg::agg_png(printed, width = 15.5, height = 7.5, units = "cm", res = 300)
+  print(p)
+  grDevices::dev.off()
+  suppressWarnings(save_cpb(saved, p, page = "full"))
+  # first inked column: the title's left edge, 0.45 cm in, on both
+  first_ink <- function(f) {
+    im <- png::readPNG(f)
+    min(which(apply(im[, , 1:3], 2, function(col) any(abs(col - rep(im[1, 1, 1:3], each = nrow(im))) > 0.3))))
+  }
+  expect_equal(first_ink(printed), first_ink(saved), tolerance = 1)
+  expect_lt(first_ink(printed) / 300 * 2.54, 0.55)
+  expect_equal(dim(png::readPNG(saved))[2], floor(15.5 / 2.54 * 300))
 })
 
 test_that("save_cpb() never triggers print.cpb_plot()'s warning, on either its fast or grob path", {
@@ -530,6 +555,23 @@ test_that("page = \"small\" saves a 6.8 x 6.8 cm figure; half stays the default"
   # the tick-label gap follows the width: 1.5% of 6.8 cm
   gap <- cpb_scale_y_lab_gap(p, 6.8)$theme$axis.text.y.left$margin[2]
   expect_equal(as.numeric(grid::convertWidth(gap, "cm", valueOnly = TRUE)), 0.015 * 6.8)
+})
+
+test_that("a default cpb_donut is as tall as the page; a fixed panel_size sets its own height", {
+  d <- data.frame(g = factor(letters[1:6]), v = 1:6)
+  path <- withr::local_tempfile(fileext = ".png")
+  rows <- function(p, ...) {
+    suppressWarnings(save_cpb(path, p, ...))
+    nrow(png::readPNG(path))
+  }
+  px <- function(cm) cm / 2.54 * 300
+  # with or without a title, on any page: the ring fills what is left
+  expect_equal(rows(cpb_donut(d, fill = g, y = v, title = "t")), px(7.5), tolerance = 0.005)
+  expect_equal(rows(cpb_donut(d, fill = g, y = v)), px(7.5), tolerance = 0.005)
+  expect_equal(rows(cpb_donut(d, fill = g, y = v, title = "t"), page = "small"), px(6.8), tolerance = 0.005)
+  # pinned ring: the fixed top (1.3 cm) + ring + bottom (2.3 cm)
+  expect_equal(rows(cpb_donut(d, fill = g, y = v, title = "t", panel_size = 1.8)),
+               px(1.3 + 1.8 * 2.54 + 2.3), tolerance = 0.005)
 })
 
 test_that("save_cpb warns for a title of more than two lines, not for two", {
