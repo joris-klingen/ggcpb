@@ -77,12 +77,12 @@ labels:
 # English style: decimal point (1.5), forecast label ("forecast") and dual axis ("(left axis)" / "(right axis)")
 groeipad_sec <- dplyr::mutate(
   groeipad,
-  inflatie = round(c(1.2, 1.4, 1.8, 1.5, 2.1, 2.7, 3.8, 4.2, 2.8, 2.1, 1.9, 1.8, 1.7), 1)
+  inflatie = c(1.2, 1.4, 1.8, 1.5, 2.1, 2.7, 3.8, 4.2, 2.8, 2.1, 1.9, 1.8, 1.7)
 )
 
 cpb_line(groeipad_sec, x = jaar, y = groei, ymin = lo, ymax = hi,
   sec_y = inflatie, forecast_x = 2023.5,
-  value_accuracy = 0.1, style = "english",
+  value_accuracy = 0.1, sec_accuracy = 0.1, style = "english",
   title = "Economic growth and inflation forecast",
   ylab = "%", sec_ylab = "%") +
   scale_x_continuous(breaks = seq(2015, 2027, 3), minor_breaks = 2015:2027,
