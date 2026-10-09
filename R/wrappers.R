@@ -69,6 +69,27 @@ cpb_group_positions <- function(cats, groups, gap = 0.8) {
   list(map = map, centres = centres[unique(as.character(map$grp))])
 }
 
+# The bold group names under a grouped category axis, centred 0.5 cm
+# below the tick marks the category labels hang from. That keeps them
+# clear of the legend, whose first row is centred 1 cm below the axis.
+# Category labels wrapped over more lines push the names down by those
+# lines' height.
+# @noRd
+cpb_group_labels <- function(centres, cats) {
+  lines <- max(lengths(strsplit(cpb_label_wrap()(cats), "\n", fixed = TRUE)))
+  pt <- 2.54 / 72.27
+  y_cm <- cpb_x_lab_group_cm + 2.2 * pt + (lines - 1) * cpb_font_pt * 0.9 * pt
+  lapply(seq_along(centres), function(i) {
+    ggplot2::annotation_custom(
+      grid::textGrob(
+        names(centres)[i], y = grid::unit(0, "npc") - grid::unit(y_cm, "cm"), vjust = 0.5,
+        gp = grid::gpar(fontface = "bold", fontsize = cpb_font_pt, fontfamily = cpb_font_family())
+      ),
+      xmin = centres[[i]], xmax = centres[[i]], ymin = -Inf, ymax = Inf
+    )
+  })
+}
+
 # Grouped category slots with a heading row per group (the vertical
 # grouping of the published distributional figures: a bold group name
 # on its own row above its categories, all sharing one value axis).
@@ -1533,14 +1554,9 @@ cpb_col <- function(data, x, y, fill = NULL,
         labels = cpb_label_wrap()(as.character(grp$map$cat)),
         expand = ggplot2::expansion(add = 0.7)
       ) +
-      # the group names sit in bold under the category labels, on the
-      # line the x-axis title would otherwise use; clip is off so the
-      # text can be drawn below the panel
-      ggplot2::annotate("text",
-        x = unname(grp$centres), y = -Inf, label = names(grp$centres),
-        vjust = 5.1, fontface = "bold", size = 7 / ggplot2::.pt,
-        family = cpb_font_family()
-      ) +
+      # The group names sit in bold under the category labels. Clip is
+      # off so the text can be drawn below the panel.
+      cpb_group_labels(grp$centres, as.character(grp$map$cat)) +
       ggplot2::coord_cartesian(xlim = x_lim, ylim = value_limits_visual, clip = "off")
   } else if (orientation == "horizontal") {
     p <- p + if (!is.null(value_limits) || !is.null(xlim_final)) {

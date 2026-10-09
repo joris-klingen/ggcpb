@@ -28,6 +28,7 @@ cpb_margin_south_cm           <- 2.3   # plot area to the bottom edge
 cpb_margin_south_no_legend_cm <- 1.25  # the same, without a legend
 cpb_x_lab_gap_cm              <- 0.15  # plot area to the x tick labels
 cpb_x_title_cm                <- 0.6   # plot area to the x-title's centre
+cpb_x_lab_group_cm            <- 0.5   # tick marks to the group names' centre
 cpb_legend_line_cm            <- 0.315 # height of one legend row
 cpb_legend_top_cm <- cpb_margin_south_cm - 1.3 - cpb_legend_line_cm / 2
 cpb_legend_symbol_cm <- c(width = 0.3, height = 0.8 * cpb_legend_line_cm)
