@@ -84,7 +84,7 @@ cpb_group_heading_positions <- function(cats, groups, gap = 0.7) {
 }
 
 # Faceting in house style: the facet title is a bold strip *below*
-# its panel (the legacy nicerplot placement) and every panel is a
+# its panel and every panel is a
 # complete mini-figure with its own axes and axis labels.
 cpb_add_facet <- function(p, facet, facet_ncol = NULL, facet_scales = "fixed") {
   if (rlang::quo_is_null(facet)) return(p)
@@ -1111,9 +1111,9 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   `sec_at`/the auto-computed breaks one-for-one, or a labelling
 #'   function such as [scales::label_number()]). `NULL` (default) uses
 #'   [label_number_nl()], matching the primary axis's own formatting.
-#' @param y_r_scale_auto,y_r_at,y_r_lab,y_r_lim nicerplot-style aliases
-#'   for `sec_scale_auto`, `sec_at`, `sec_labels`, and `sec_limits`
-#'   respectively, for figures ported over from that convention. Takes
+#' @param y_r_scale_auto,y_r_at,y_r_lab,y_r_lim Aliases for
+#'   `sec_scale_auto`, `sec_at`, `sec_labels`, and `sec_limits`
+#'   respectively. Takes
 #'   precedence over the `sec_*` argument it aliases when both are
 #'   given; `NULL` (default) defers to it.
 #' @param value_limits Optional length-2 numeric vector giving the
@@ -1139,9 +1139,8 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   Defaults to `FALSE`: unlike a thin line, a bar's solid fill runs
 #'   edge-to-edge, so a flush axis leaves no visual cue for where the
 #'   data actually starts and ends -- ggplot2's usual padded, evenly
-#'   spaced margin (the default here) keeps that visible. Matches
-#'   nicerplot's parameter of the same name. Ignored when `x_lim` is
-#'   set. Adding your own `scale_x_continuous()`/`scale_x_discrete()`
+#'   spaced margin (the default here) keeps that visible. Ignored when
+#'   `x_lim` is set. Adding your own `scale_x_continuous()`/`scale_x_discrete()`
 #'   afterward replaces this one entirely (ggplot2 keeps only one
 #'   scale per aesthetic) -- add `expand = ggplot2::expansion(mult = 0)`
 #'   to it to keep the flush behaviour when this is `TRUE`.
@@ -1198,7 +1197,7 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   pin both dimensions of the grid at once. `NULL` (default) leaves
 #'   the number of rows to ggplot2's own sizing.
 #' @param facet Optional column (tidy eval) to facet by. Facets follow
-#'   the house (legacy nicerplot) convention: the facet title is a bold
+#'   the house convention: the facet title is a bold
 #'   strip *below* each panel, and every panel is a complete
 #'   mini-figure with its own axes and axis labels.
 #' @param facet_ncol Number of facet columns, passed to
@@ -1611,8 +1610,7 @@ cpb_col <- function(data, x, y, fill = NULL,
 #'   thin line, an area's solid fill runs edge-to-edge, so a flush
 #'   axis leaves no visual cue for where the data actually starts and
 #'   ends -- ggplot2's usual padded, evenly spaced margin (the default
-#'   here) keeps that visible. Matches nicerplot's parameter of the
-#'   same name. Ignored when `x_lim` is set. Adding your own
+#'   here) keeps that visible. Ignored when `x_lim` is set. Adding your own
 #'   `scale_x_continuous()`/`scale_x_discrete()` afterward replaces
 #'   this one entirely (ggplot2 keeps only one scale per aesthetic) --
 #'   add `expand = ggplot2::expansion(mult = 0)` to it to keep the
@@ -1874,8 +1872,7 @@ cpb_area <- function(data, x, y, fill,
 #'   whole-number `x` (almost always a year) still only ever gets
 #'   whole-number breaks, never a fractional one. Set to `FALSE` to
 #'   restore ggplot2's usual padded, evenly spaced margin instead.
-#'   Matches nicerplot's parameter of the same name. Ignored when
-#'   `x_lim` is set.
+#'   Ignored when `x_lim` is set.
 #'   Adding your own `scale_x_continuous()`/`scale_x_discrete()`
 #'   afterward replaces this one entirely (ggplot2 keeps only one
 #'   scale per aesthetic) -- add `expand = ggplot2::expansion(mult = 0)`
@@ -2267,7 +2264,7 @@ cpb_line <- function(data, x, y, colour = NULL,
 #'   * `"ggcpb"` (default): the style already used in CPB
 #'     distributional figures -- capped errorbar whiskers plus an
 #'     outlined box with a median line.
-#'   * `"james"`: the legacy `nplot()` box -- a borderless filled box,
+#'   * `"james"`: the legacy CPB box, a borderless filled box with
 #'     plain (capless) whiskers in the box colour, a black median line
 #'     extending slightly beyond the box, and the median value printed
 #'     above it.
@@ -2328,7 +2325,7 @@ cpb_line <- function(data, x, y, colour = NULL,
 #'   side. A whole-number `x` (almost always a year) still only ever
 #'   gets whole-number breaks, never a fractional one. Set to `FALSE`
 #'   to restore ggplot2's usual padded, evenly spaced margin instead.
-#'   Matches nicerplot's parameter of the same name. Ignored when
+#'   Ignored when
 #'   `x_lim` is set, and when `group` is mapped (the grouped layout
 #'   needs its own fixed margin for the heading rows).
 #'   Adding your own `scale_x_continuous()`/`scale_x_discrete()`
@@ -2666,7 +2663,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                              linewidth = linewidth, ...) +
       do.call(ggplot2::geom_boxplot, box_args)
   } else {
-    # "james" (the legacy nplot() box) and "modern" (its designer
+    # "james" (the legacy CPB box) and "modern" (its designer
     # variant) share one construction: a borderless filled box over
     # p25-p75, plain capless whiskers in the box colour, and a median
     # line extending slightly beyond the box. They differ in colours,
@@ -2886,8 +2883,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
 #' @param x_lim_follow_data If `TRUE`, flush the `x` axis exactly to
 #'   the data's own range, at the cost of ggplot2 picking its own
 #'   breaks within that (possibly non-round) range instead of the
-#'   usual `pretty()` ones. Matches nicerplot's parameter of the same
-#'   name. Defaults to `FALSE`. Ignored when `x_lim` is set.
+#'   usual `pretty()` ones. Defaults to `FALSE`. Ignored when `x_lim` is set.
 #' @param forecast_x Optional x value where the forecast window
 #'   starts; overlaid and labelled as in [cpb_line()].
 #' @param reverse_legend If `TRUE`, reverse the colour legend order
@@ -3107,7 +3103,7 @@ cpb_hist_bin_args <- function(xvals, binwidth, bins, dots, facet_scales) {
 #'   either side of the `x` axis so it sits flush to the data's actual
 #'   range, at the cost of ggplot2 picking its own breaks within that
 #'   (possibly non-round) range instead of the usual padded, evenly
-#'   spaced ones. Matches nicerplot's parameter of the same name.
+#'   spaced ones.
 #'   Defaults to `FALSE`. Ignored when `x_lim` is set.
 #' @param reverse_legend If `TRUE` (default), reverse the fill legend
 #'   order via `guide_legend(reverse = TRUE)`.
@@ -3327,7 +3323,7 @@ cpb_hist <- function(data, x, fill = NULL,
 #'   side. A whole-number `x` (almost always a year) still only ever
 #'   gets whole-number breaks, never a fractional one. Set to `FALSE`
 #'   to restore ggplot2's usual padded, evenly spaced margin instead.
-#'   Matches nicerplot's parameter of the same name. Ignored when
+#'   Ignored when
 #'   `x_lim` is set, and when `group` is mapped (the grouped layout
 #'   needs its own fixed margin for the heading rows).
 #'   Adding your own `scale_x_continuous()`/`scale_x_discrete()`

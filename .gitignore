@@ -38,3 +38,6 @@ ggcpb.Rproj
 # scratch: stress-test scripts and their output, kept out of git and
 # out of the built package (see .Rbuildignore)
 /temp/
+
+# testthat writes failing tests here during a run
+/tests/testthat/_problems/

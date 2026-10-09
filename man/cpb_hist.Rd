@@ -90,7 +90,7 @@ binning itself. \code{NULL} (default) shows the full range.}
 either side of the \code{x} axis so it sits flush to the data's actual
 range, at the cost of ggplot2 picking its own breaks within that
 (possibly non-round) range instead of the usual padded, evenly
-spaced ones. Matches nicerplot's parameter of the same name.
+spaced ones.
 Defaults to \code{FALSE}. Ignored when \code{x_lim} is set.}
 
 \item{reverse_legend}{If \code{TRUE} (default), reverse the fill legend
@@ -108,7 +108,7 @@ pin both dimensions of the grid at once. \code{NULL} (default) leaves
 the number of rows to ggplot2's own sizing.}
 
 \item{facet}{Optional column (tidy eval) to facet by. Facets follow
-the house (legacy nicerplot) convention: the facet title is a bold
+the house convention: the facet title is a bold
 strip \emph{below} each panel, and every panel is a complete
 mini-figure with its own axes and axis labels.}
 

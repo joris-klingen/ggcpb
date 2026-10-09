@@ -285,7 +285,7 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
   if (has_facet) {
     # strip.position is a facet_wrap() construction argument, not a
     # theme setting -- cpb_add_facet() (see wrappers.R) always draws
-    # it at the bottom (the legacy nicerplot convention every other
+    # it at the bottom (the house convention every other
     # wrapper follows), so it is moved here instead of adding a
     # second, conflicting facet_wrap() layer just to change one of its
     # own arguments
