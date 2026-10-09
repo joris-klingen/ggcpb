@@ -4,27 +4,29 @@
 # (half or full page); height defaults to the CPB report height but has
 # a "presentation" preset and can always be overridden explicitly.
 
-# cpb_donut()'s panel_size, cpb_add_sec_ylab()'s sec_ylab caption, and
-# cpb_map()'s aspect fit (see cpb_fix_panel_size()/
-# cpb_add_sec_ylab_grob() below, and cpb_map_aspect handling in
-# save_cpb() itself) are only ever exact through save_cpb() -- a bare
-# print(), a knitr chunk that never calls save_cpb(), a Shiny render,
-# all fall back to an approximate placement instead, with nothing to
-# say so. Every wrapper that sets one of these three attributes also
-# tags its plot with the "cpb_plot" class so this fires; save_cpb()
-# itself never triggers it, since it never calls print() on the plot.
+# Draws a wrapper's plot the way save_cpb() lays it out (see
+# cpb_print_exact()). Two things can only be exact in a saved file,
+# because they set the size of the figure itself: a cpb_donut() ring
+# pinned with panel_size, and the height of a cpb_map(). For those a
+# warning says the printed figure is an approximation.
 #
-# Warned once per distinct feature combination per session
-# (rlang::warn()'s own .frequency_id mechanism), not on every print --
-# cpb_donut()/cpb_map() set their attribute unconditionally, so an
-# every-time warning would fire on every single donut/map a caller
-# glances at in the console, which is normal, expected use, not a
-# mistake to flag.
+# The warning is given once per session for each such feature. Those
+# attributes are set on every donut and map, so warning on every print
+# would fire on normal use.
 #' @export
-print.cpb_plot <- function(x, ...) {
+print.cpb_plot <- function(x, newpage = is.null(vp), vp = NULL, ...) {
+  draw_error <- NULL
+  drawn <- isTRUE(tryCatch(
+    cpb_print_exact(x, newpage, vp),
+    error = function(e) {
+      draw_error <<- conditionMessage(e)
+      FALSE
+    }
+  ))
+
   features <- c(
     if (!is.null(attr(x, "cpb_panel_size"))) "a fixed panel size (cpb_donut())",
-    if (!is.null(attr(x, "cpb_sec_ylab"))) "a secondary-axis caption (sec_ylab)",
+    if (!drawn && !is.null(attr(x, "cpb_sec_ylab"))) "a secondary-axis caption (sec_ylab)",
     if (!is.null(attr(x, "cpb_map_aspect"))) "a geographic aspect fit (cpb_map())"
   )
   if (length(features)) {
@@ -39,7 +41,50 @@ print.cpb_plot <- function(x, ...) {
       .frequency_id = paste("cpb_plot_approx_print", paste(features, collapse = "|"))
     )
   }
+  # An error here means print() and save_cpb() may disagree. It gets
+  # its own warning, so it reads as a bug to report and not as the
+  # expected limitation described above.
+  if (!is.null(draw_error)) {
+    rlang::warn(
+      paste0(
+        "ggcpb: drawing this plot's fixed figure layout failed unexpectedly (",
+        draw_error, "); this looks like a bug, not the usual ",
+        "save_cpb()-only-exact limitation -- please report it."
+      ),
+      .frequency = "once",
+      .frequency_id = "cpb_print_exact_error"
+    )
+  }
+  if (drawn) {
+    ggplot2::set_last_plot(x)
+    return(invisible(x))
+  }
   NextMethod()
+}
+
+# Draws x the way save_cpb() does (tick-label gap, right axis margin,
+# sec_ylab), at whatever size print() lands on. `newpage` and `vp` work
+# as in ggplot2's print().
+# @return TRUE if drawn. FALSE if sec_ylab had no row to go on, in
+#   which case the caller falls back to the approximate placeholder.
+# @noRd
+cpb_print_exact <- function(x, newpage = TRUE, vp = NULL) {
+  if (newpage) grid::grid.newpage()
+  if (!is.null(vp)) {
+    if (is.character(vp)) grid::seekViewport(vp) else grid::pushViewport(vp)
+    on.exit(grid::upViewport())
+  }
+  x <- cpb_scale_y_lab_gap(x, grid::convertWidth(grid::unit(1, "npc"), "cm", valueOnly = TRUE))
+  taken <- cpb_take_sec_ylab(x)
+  g <- ggplot2::ggplotGrob(taken$plot)
+  mirrored <- cpb_mirror_sec_axis_margin(g)
+  if (!is.null(mirrored)) g <- mirrored
+  if (!is.null(taken$label)) {
+    g <- cpb_place_sec_ylab(g, taken$label)
+    if (is.null(g)) return(FALSE)
+  }
+  grid::grid.draw(g)
+  TRUE
 }
 
 # The tick-label gap is 1.5% of the figure width. theme_cpb() sets the

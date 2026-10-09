@@ -248,6 +248,37 @@ test_that("save_cpb draws sec_ylab on ylab's row, 0.45 cm from the figure's righ
   expect_equal(grob$vjust, 1)
 })
 
+test_that("a bare print() also draws sec_ylab exactly, not the approximate placeholder", {
+  # print.cpb_plot() (see save.R) places sec_ylab itself now, so no
+  # "approximate placement" warning either.
+  d <- data.frame(x = 1:5, y = 1:5, z = c(10, 12, 11, 13, 12))
+  p <- cpb_line(d, x = x, y = y, sec_y = z, sec_ylab = "%")
+
+  path <- withr::local_tempfile(fileext = ".png")
+  ragg::agg_png(path, width = 4, height = 4, units = "in", res = 72)
+  expect_no_warning(print(p))
+  grDevices::dev.off()
+})
+
+test_that("print.cpb_plot warns distinctly when the exact draw errors unexpectedly", {
+  # An unexpected error (a real bug) must not look like the ordinary
+  # "only exact through save_cpb()" case. Otherwise print() and
+  # save_cpb() could silently disagree with no visible sign why.
+  local_mocked_bindings(
+    cpb_print_exact = function(x, newpage, vp) stop("simulated bug")
+  )
+  d <- data.frame(x = 1:5, y = 1:5, z = c(10, 12, 11, 13, 12))
+  p <- cpb_line(d, x = x, y = y, sec_y = z, sec_ylab = "%")
+
+  path <- withr::local_tempfile(fileext = ".png")
+  ragg::agg_png(path, width = 4, height = 4, units = "in", res = 72)
+  withr::defer(grDevices::dev.off())
+  warnings <- testthat::capture_warnings(print(p))
+
+  expect_true(any(grepl("looks like a bug", warnings, fixed = TRUE)))
+  expect_true(any(grepl("approximate placement", warnings, fixed = TRUE)))
+})
+
 test_that("the tick-label gap follows the figure width, only with theme_cpb()'s gap", {
   gap <- function(p) {
     as.numeric(grid::convertWidth(p$theme$axis.text.y.left$margin[2], "cm", valueOnly = TRUE))

@@ -213,5 +213,6 @@ cpb_map <- function(data, region, value,
   # shows this approximately rather than exactly -- only save_cpb()
   # reads the attribute above
   class(p) <- union("cpb_plot", class(p))
+  ggplot2::set_last_plot(p)
   p
 }
