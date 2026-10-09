@@ -25,6 +25,13 @@ cpb_col(
   sec_point_size = 1.6,
   sec_col_width = 0.3,
   sec_accuracy = NULL,
+  sec_scale_auto = TRUE,
+  sec_at = NULL,
+  sec_labels = NULL,
+  y_r_scale_auto = NULL,
+  y_r_at = NULL,
+  y_r_lab = NULL,
+  y_r_lim = NULL,
   palette = "qualitative",
   fill_index = NULL,
   index = NULL,
@@ -39,6 +46,7 @@ cpb_col(
   forecast_label = "raming",
   reverse_legend = TRUE,
   legend_ncol = NULL,
+  legend_nrow = NULL,
   facet = NULL,
   facet_ncol = NULL,
   facet_scales = "fixed",
@@ -48,15 +56,14 @@ cpb_col(
   ticks = TRUE,
   flush_legend = TRUE,
   axis_text_size = 7,
-  legend_key_size = NULL,
   grid_colour = "black",
   grid_linewidth = 0.1,
   title = NULL,
   subtitle = NULL,
   xlab = NULL,
   ylab = NULL,
-  filllab = NULL,
-  style = c("dutch", "english"),
+  legend_title = NULL,
+  style = getOption("ggcpb.style", "dutch"),
   ...
 )
 }
@@ -110,9 +117,11 @@ distinct). All three read off the same secondary axis and share
 one legend key with the primary fill.}
 
 \item{sec_limits}{Length-2 numeric vector giving the range the
-secondary axis spans. \code{NULL} (default) uses zero to the maximum of
-\code{sec_y}. \code{sec_y} is placed by mapping this range linearly onto
-the primary range, so the two axes always start together.}
+secondary axis spans. \code{NULL} (default) uses the range of \code{sec_y}
+itself, minimum to maximum. \code{sec_y} is placed by mapping this
+range linearly onto the primary range, so the two axes always
+start together. Giving this explicitly also spaces the breaks
+evenly across it, overriding \code{sec_scale_auto}.}
 
 \item{sec_label}{Legend label for \code{sec_y}. \code{NULL} (default) uses
 the \code{sec_y} column name. Automatically suffixed \code{"(rechteras)"}
@@ -148,6 +157,34 @@ function's own automatic rounding -- set this when \code{sec_y} needs
 a different precision than its default (e.g. whole numbers for a
 count alongside a one-decimal percentage share).}
 
+\item{sec_scale_auto}{If \code{TRUE} (default), auto-scale the secondary
+axis's breaks to "nice" numbers via \code{\link[=pretty]{pretty()}}, matching the
+primary axis's own break count. Set to \code{FALSE} to instead space
+breaks evenly across \code{sec_limits} (or the \code{sec_y} data range)
+without rounding them to nice numbers. Only takes effect when
+\code{sec_limits} is left at its default: an explicit \code{sec_limits} is
+always spaced evenly, whatever this is set to, since breaks
+rounded to nice numbers would not land on the endpoints asked
+for.}
+
+\item{sec_at}{Explicit secondary-axis break values, in \code{sec_y}'s own
+units. Must have exactly as many values as the primary axis has
+breaks, since each secondary break is drawn level with one
+primary gridline. \code{NULL} (default) auto-computes them; see
+\code{sec_scale_auto}.}
+
+\item{sec_labels}{Labels for the secondary axis's breaks; anything
+ggplot2's own axis \code{labels} accepts (a character vector matching
+\code{sec_at}/the auto-computed breaks one-for-one, or a labelling
+function such as \code{\link[scales:label_number]{scales::label_number()}}). \code{NULL} (default) uses
+\code{\link[=label_number_nl]{label_number_nl()}}, matching the primary axis's own formatting.}
+
+\item{y_r_scale_auto, y_r_at, y_r_lab, y_r_lim}{Aliases for
+\code{sec_scale_auto}, \code{sec_at}, \code{sec_labels}, and \code{sec_limits}
+respectively. Takes
+precedence over the \verb{sec_*} argument it aliases when both are
+given; \code{NULL} (default) defers to it.}
+
 \item{palette}{CPB palette to use for \code{fill}; one of
 \code{"qualitative"} (default), \code{"discr"}, \code{"sequential"}
 (pink ramp), or \code{"blues"} (blue ramp).}
@@ -179,17 +216,21 @@ wrapper's flush axis (see \code{value_breaks}).}
 \item{value_breaks}{Optional breaks for the value axis (passed to
 the wrapper-built \code{\link[ggplot2:scale_y_continuous]{ggplot2::scale_y_continuous()}}). Use this
 instead of adding a second y scale, which would discard the
-wrapper's axis formatting and expansion.}
+wrapper's axis formatting and expansion. These choose where the
+ticks sit, not where the axis stops: if the data runs past the
+outermost break, evenly spaced breaks are extended outward in
+their own step until they cover it, so the axis still ends on a
+labelled gridline and no value is hidden.}
 
 \item{value_limits}{Optional length-2 numeric vector giving the
-value-axis range (the \code{y} axis, or the flipped axis when
-\code{orientation = "horizontal"}). Applied as the wrapper-built value
-scale's own \code{limits} (not a coordinate-system zoom), so this is
-the hard bound the axis is drawn flush to; a bar/segment that
-falls outside it is genuinely dropped, with a warning, the same
-as setting \code{limits} on any ggplot2 scale. \code{NULL} (default) flushes
-to the full data range instead (see \code{x_lim}/\code{x_lim_follow_data}
-for the category axis's equivalent).}
+span the value axis must \emph{at least} cover -- typically to force
+it wider than the data needs, e.g. always showing zero, or a
+fixed range shared across several figures. It is a minimum, not
+a crop: where the data runs past it the axis is widened to fit,
+so no value is ever hidden. \code{NULL} (default) flushes to
+the full data range (see \code{x_lim}/\code{x_lim_follow_data} for
+the category axis's equivalent). For a deliberate zoom that does hide
+values, add \code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} yourself.}
 
 \item{value_labels}{If \code{TRUE}, add \code{\link[ggplot2:geom_text]{ggplot2::geom_text()}} value
 labels using \code{y}, positioned to match \code{position}.}
@@ -209,9 +250,8 @@ still only ever gets whole-number breaks, never a fractional one.
 Defaults to \code{FALSE}: unlike a thin line, a bar's solid fill runs
 edge-to-edge, so a flush axis leaves no visual cue for where the
 data actually starts and ends -- ggplot2's usual padded, evenly
-spaced margin (the default here) keeps that visible. Matches
-nicerplot's parameter of the same name. Ignored when \code{x_lim} is
-set. Adding your own \code{scale_x_continuous()}/\code{scale_x_discrete()}
+spaced margin (the default here) keeps that visible. Ignored when
+\code{x_lim} is set. Adding your own \code{scale_x_continuous()}/\code{scale_x_discrete()}
 afterward replaces this one entirely (ggplot2 keeps only one
 scale per aesthetic) -- add \code{expand = ggplot2::expansion(mult = 0)}
 to it to keep the flush behaviour when this is \code{TRUE}.}
@@ -230,13 +270,17 @@ order via \code{guide_legend(reverse = TRUE)} -- stacking otherwise
 makes the legend order counter-intuitive.}
 
 \item{legend_ncol}{Number of columns to lay the legend keys out in,
-passed to \code{guide_legend(ncol = )}. \code{NULL} (default) leaves the
-single flush-left column of the house style; \code{2} and up suit a
-legend with many short keys, such as binned classes from
-\code{\link[=cpb_cut]{cpb_cut()}}, which would otherwise run past the panel.}
+passed to \code{guide_legend(ncol = )}. \code{NULL} (default) keeps
+the house 3 keys per column, filled column by column. A set
+number spreads the keys over that many columns instead.}
+
+\item{legend_nrow}{Number of rows to lay the legend keys out in,
+passed to \code{guide_legend(nrow = )}. Combine with \code{legend_ncol} to
+pin both dimensions of the grid at once. \code{NULL} (default) keeps
+the house 3 rows.}
 
 \item{facet}{Optional column (tidy eval) to facet by. Facets follow
-the house (legacy nicerplot) convention: the facet title is a bold
+the house convention: the facet title is a bold
 strip \emph{below} each panel, and every panel is a complete
 mini-figure with its own axes and axis labels.}
 
@@ -255,7 +299,7 @@ a two-element numeric vector of plot-relative coordinates.}
 value axis on top of the bars, as the CPB house style does.
 Defaults to \code{TRUE} (bars are anchored at zero).}
 
-\item{minor, ticks, flush_legend, axis_text_size, legend_key_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}} for per-figure deviations from the
+\item{minor, ticks, flush_legend, axis_text_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}} for per-figure deviations from the
 house defaults.}
 
 \item{title, subtitle}{Plot title/subtitle. \code{subtitle} is normally
@@ -276,11 +320,16 @@ italic caption at the top -- not as a rotated axis title. In a
 horizontal bar chart (\code{orientation = "horizontal"}) the vertical
 axis is the category axis; in a vertical one it is the value axis.}
 
-\item{filllab}{Legend title override; defaults to \code{NULL} (no legend
-title), matching CPB house style.}
+\item{legend_title}{Legend title, drawn in italic as the first row of
+the legend, with at most 2 rows of legend items below it (title and
+items together take the 3 rows a legend has without a title).
+\code{NULL} (default) draws no title, matching CPB house style.}
 
 \item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
-or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).}
+or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).
+Taken from \code{getOption("ggcpb.style")}, so an English report can set
+\code{options(ggcpb.style = "english")} once rather than passing \code{style} to
+every figure and risking a stray Dutch decimal comma.}
 
 \item{...}{Further arguments passed to \code{\link[ggplot2:geom_col]{ggplot2::geom_col()}}.}
 }

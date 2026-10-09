@@ -20,6 +20,7 @@ cpb_hist(
   x_lim_follow_data = FALSE,
   reverse_legend = TRUE,
   legend_ncol = NULL,
+  legend_nrow = NULL,
   facet = NULL,
   facet_ncol = NULL,
   facet_scales = "fixed",
@@ -29,15 +30,14 @@ cpb_hist(
   ticks = TRUE,
   flush_legend = TRUE,
   axis_text_size = 7,
-  legend_key_size = NULL,
   grid_colour = "black",
   grid_linewidth = 0.1,
   title = NULL,
   subtitle = NULL,
   xlab = NULL,
   ylab = NULL,
-  filllab = NULL,
-  style = c("dutch", "english"),
+  legend_title = NULL,
+  style = getOption("ggcpb.style", "dutch"),
   ...
 )
 }
@@ -89,20 +89,24 @@ binning itself. \code{NULL} (default) shows the full range.}
 either side of the \code{x} axis so it sits flush to the data's actual
 range, at the cost of ggplot2 picking its own breaks within that
 (possibly non-round) range instead of the usual padded, evenly
-spaced ones. Matches nicerplot's parameter of the same name.
+spaced ones.
 Defaults to \code{FALSE}. Ignored when \code{x_lim} is set.}
 
 \item{reverse_legend}{If \code{TRUE} (default), reverse the fill legend
 order via \code{guide_legend(reverse = TRUE)}.}
 
 \item{legend_ncol}{Number of columns to lay the legend keys out in,
-passed to \code{guide_legend(ncol = )}. \code{NULL} (default) leaves the
-single flush-left column of the house style; \code{2} and up suit a
-legend with many short keys, such as binned classes from
-\code{\link[=cpb_cut]{cpb_cut()}}, which would otherwise run past the panel.}
+passed to \code{guide_legend(ncol = )}. \code{NULL} (default) keeps
+the house 3 keys per column, filled column by column. A set
+number spreads the keys over that many columns instead.}
+
+\item{legend_nrow}{Number of rows to lay the legend keys out in,
+passed to \code{guide_legend(nrow = )}. Combine with \code{legend_ncol} to
+pin both dimensions of the grid at once. \code{NULL} (default) keeps
+the house 3 rows.}
 
 \item{facet}{Optional column (tidy eval) to facet by. Facets follow
-the house (legacy nicerplot) convention: the facet title is a bold
+the house convention: the facet title is a bold
 strip \emph{below} each panel, and every panel is a complete
 mini-figure with its own axes and axis labels.}
 
@@ -118,20 +122,28 @@ mini-figure with its own axes and axis labels.}
 \item{zeroline}{If \code{TRUE} (default), draw a solid black line at
 zero on the count axis on top of the bars.}
 
-\item{minor, ticks, flush_legend, axis_text_size, legend_key_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}} for per-figure deviations from the
+\item{minor, ticks, flush_legend, axis_text_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}} for per-figure deviations from the
 house defaults.}
 
 \item{title, subtitle}{Plot title/subtitle.}
 
-\item{xlab, filllab}{Axis and legend title overrides; default to
-\code{NULL}, matching CPB house style.}
+\item{xlab}{Axis title override. Defaults to \code{NULL}, matching CPB
+house style.}
 
 \item{ylab}{Label for the count (y) axis, rendered as the plot
 \emph{subtitle} (e.g. \code{"aantal"}) unless an explicit \code{subtitle} is
 also given.}
 
+\item{legend_title}{Legend title, drawn in italic as the first row of
+the legend, with at most 2 rows of legend items below it (title and
+items together take the 3 rows a legend has without a title).
+\code{NULL} (default) draws no title, matching CPB house style.}
+
 \item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
-or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).}
+or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).
+Taken from \code{getOption("ggcpb.style")}, so an English report can set
+\code{options(ggcpb.style = "english")} once rather than passing \code{style} to
+every figure and risking a stray Dutch decimal comma.}
 
 \item{...}{Further arguments passed to \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}}.}
 }

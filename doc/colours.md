@@ -16,7 +16,7 @@ the argument name, which follows the aesthetic being coloured:
 - `colour_index` on the wrappers that map `colour` – `cpb_line()`,
   `cpb_scatter()`, `cpb_dot()`
 - `fill_index` on the wrappers that map `fill` – `cpb_col()`,
-  `cpb_area()`, `cpb_box()`, `cpb_hist()`, `cpb_map()`
+  `cpb_box()`, `cpb_hist()`, `cpb_map()`
 
 `color_index` is accepted wherever `colour_index` is.
 
@@ -127,7 +127,8 @@ publication needs that publication’s colours, not the current default.
 For ordered classes – income bands, intensity classes – the discrete
 palette is the wrong tool: its colours are meant to be *distinct*, not
 ranked. Pass `"continuous"` to switch to the sequential ramp, which runs
-light to dark:
+light to dark. Fewer than six classes take the darkest shades, so the
+palest pink only appears when all six are needed:
 
 ``` r
 klassen <- c("0-5%", "5-10%", "10-20%", "20-30%", "meer dan 30%")

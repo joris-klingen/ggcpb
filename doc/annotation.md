@@ -36,7 +36,7 @@ auto <- tibble(
 
 Time-series figures mark the forecast part of the axis with a
 translucent window and a label – pass `forecast_x` (the x value where
-the forecast starts) to `cpb_line()`, `cpb_col()` or `cpb_area()`, and
+the forecast starts) to `cpb_line()` or `cpb_col()`, and
 `forecast_label` to override the default `"raming"`. `cpb_line()` can
 additionally draw an uncertainty band from `ymin`/`ymax` columns:
 
@@ -77,20 +77,18 @@ labels:
 # English style: decimal point (1.5), forecast label ("forecast") and dual axis ("(left axis)" / "(right axis)")
 groeipad_sec <- dplyr::mutate(
   groeipad,
-  inflatie = round(c(1.2, 1.4, 1.8, 1.5, 2.1, 2.7, 3.8, 4.2, 2.8, 2.1, 1.9, 1.8, 1.7), 1)
+  inflatie = c(1.2, 1.4, 1.8, 1.5, 2.1, 2.7, 3.8, 4.2, 2.8, 2.1, 1.9, 1.8, 1.7)
 )
 
 cpb_line(groeipad_sec, x = jaar, y = groei, ymin = lo, ymax = hi,
   sec_y = inflatie, forecast_x = 2023.5,
-  value_accuracy = 0.1, style = "english",
+  value_accuracy = 0.1, sec_accuracy = 0.1, style = "english",
   title = "Economic growth and inflation forecast",
   ylab = "%", sec_ylab = "%") +
   scale_x_continuous(breaks = seq(2015, 2027, 3), minor_breaks = 2015:2027,
                      guide = guide_axis(minor.ticks = TRUE))
 #> Scale for x is already present.
 #> Adding another scale for x, which will replace the existing scale.
-#> Warning: ggcpb: this plot has a secondary-axis caption (sec_ylab), which only render(s) exactly when written out through save_cpb() -- a bare print() (this one included) shows an approximate placement instead.
-#> This warning is displayed once per session.
 ```
 
 <img src="annotation_files/figure-gfm/style-english-1.png" alt="" width="350px" />

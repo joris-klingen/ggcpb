@@ -28,7 +28,7 @@ test_that("save_cpb accepts an explicit width matching a CPB page preset", {
   path <- tempfile(fileext = ".png")
   on.exit(unlink(path), add = TRUE)
 
-  expect_no_error(save_cpb(path, p, width = 5.96, height = 3))
+  expect_no_error(save_cpb(path, p, width = 15.5 / 2.54, height = 3))
   expect_true(file.exists(path))
 })
 
@@ -40,12 +40,12 @@ test_that("preset controls the default height, and an explicit height wins", {
   msg <- testthat::capture_output(
     save_cpb(path, p, page = "full", preset = "presentation")
   )
-  expect_match(msg, "5.96 x 2.5 in", fixed = TRUE)
+  expect_match(msg, "6.1 x 2.5 in", fixed = TRUE)
 
   msg2 <- testthat::capture_output(
     save_cpb(path, p, page = "half", preset = "presentation", height = 4)
   )
-  expect_match(msg2, "2.98 x 4 in", fixed = TRUE)
+  expect_match(msg2, "2.95 x 4 in", fixed = TRUE)
 })
 
 test_that("save_cpb auto-fits a cpb_map() panel to its geographic aspect ratio", {
@@ -57,24 +57,29 @@ test_that("save_cpb auto-fits a cpb_map() panel to its geographic aspect ratio",
 
   path <- withr::local_tempfile(fileext = ".png")
   msg <- testthat::capture_output(save_cpb(path, p, page = "half"))
-  # not the 2.98 in "report" preset square -- the panel drove the height
-  expect_false(grepl("2.98 x 2.98 in", msg, fixed = TRUE))
+  # not the 7.5 cm "report" preset square -- the panel drove the height
+  expect_false(grepl("2.95 x 2.95 in", msg, fixed = TRUE))
   expect_true(file.exists(path))
 
   # an explicit height opts back out, same as an explicit panel_size does
   msg2 <- testthat::capture_output(save_cpb(path, p, page = "half", height = 3))
-  expect_match(msg2, "2.98 x 3 in", fixed = TRUE)
+  expect_match(msg2, "2.95 x 3 in", fixed = TRUE)
 })
 
-test_that("save_cpb warns on a title too long for the page, not when wrapped", {
+test_that("save_cpb stops on a title too long for the page (lock), not when wrapped", {
   skip_if_not_installed("ragg")
   df <- data.frame(x = c("a", "b"), y = 1:2)
   path <- withr::local_tempfile(fileext = ".png")
   long <- "Een uitzonderlijk lange titel die zeker niet op een halve pagina past"
 
-  # long single-line title on a half page -> warning suggesting \n
-  expect_warning(
+  # A long single-line title on a half page is an error with lock (the
+  # default) and a warning without. Both suggest \n.
+  expect_error(
     save_cpb(path, cpb_col(df, x = x, y = y, title = long), page = "half"),
+    "\\\\n"
+  )
+  expect_warning(
+    save_cpb(path, cpb_col(df, x = x, y = y, title = long), page = "half", lock = FALSE),
     "\\\\n"
   )
   # the same length split over two lines fits -> no warning
@@ -88,6 +93,74 @@ test_that("save_cpb warns on a title too long for the page, not when wrapped", {
   )
   # no title, no warning
   expect_no_warning(save_cpb(path, cpb_col(df, x = x, y = y), page = "half"))
+})
+
+test_that("save_cpb warns when the category labels are too long to sit side by side", {
+  path <- withr::local_tempfile(fileext = ".png")
+  groepen <- c("tot 120% wml", "120% wml - mod.", "1 - 1,5x mod.",
+               "1,5 - 2x mod.", "2 - 3x mod.", "boven 3x mod.")
+  long <- data.frame(g = factor(groepen, levels = groepen), y = 1:6)
+
+  expect_warning(
+    save_cpb(path, cpb_col(long, x = g, y = y), page = "half"),
+    "too long for the category labels"
+  )
+  # the same labels have room on a full page
+  expect_no_warning(save_cpb(path, cpb_col(long, x = g, y = y), page = "full"))
+  # horizontal puts the categories on the axis that has the room
+  expect_no_warning(
+    save_cpb(path, cpb_col(long, x = g, y = y, orientation = "horizontal"), page = "half")
+  )
+  # breaking a label over two lines is the documented fix, and works:
+  # each label is measured by its longest line, not its total length
+  wrapped <- data.frame(
+    g = factor(c("tot 120%\nwml", "120% wml\n- mod.", "1 - 1,5x\nmod.",
+                 "1,5 - 2x\nmod.", "2 - 3x\nmod.", "boven 3x\nmod."),
+               levels = c("tot 120%\nwml", "120% wml\n- mod.", "1 - 1,5x\nmod.",
+                          "1,5 - 2x\nmod.", "2 - 3x\nmod.", "boven 3x\nmod.")),
+    y = 1:6
+  )
+  expect_no_warning(save_cpb(path, cpb_col(wrapped, x = g, y = y), page = "half"))
+  # short category names, and a numeric axis, are left alone
+  short <- data.frame(g = c("a", "b", "c"), y = 1:3)
+  expect_no_warning(save_cpb(path, cpb_col(short, x = g, y = y), page = "half"))
+  expect_no_warning(
+    save_cpb(path, cpb_line(data.frame(x = 2015:2027, y = 1:13), x = x, y = y), page = "half")
+  )
+})
+
+test_that("save_cpb warns when a plot's own type is not suitable for a half page", {
+  path <- withr::local_tempfile(fileext = ".png")
+
+  d <- data.frame(bron = factor(c("a", "b")), share = c(60, 40))
+  donut <- cpb_donut(d, fill = bron, y = share)
+  expect_warning(
+    save_cpb(path, donut, page = "half"),
+    "not suitable for a half page"
+  )
+  expect_no_warning(save_cpb(path, donut, page = "full"))
+
+  box_df <- data.frame(
+    jaar = rep(2020:2021, each = 2), grp = rep(c("A", "B"), 2),
+    p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5
+  )
+  faceted <- cpb_boxplot_extended(box_df, x = grp, p5 = p5, p25 = p25,
+                                  p50 = p50, p75 = p75, p95 = p95, facet = jaar)
+  expect_warning(
+    save_cpb(path, faceted, page = "half"),
+    "not suitable for a half page"
+  )
+
+  # the same wrapper without a facet, and an ordinary wrapper, are
+  # both unaffected -- this is about the plot's own type, not a
+  # blanket half-page warning
+  single <- cpb_boxplot_extended(
+    data.frame(grp = c("A", "B"), p5 = -1, p25 = 2, p50 = 3, p75 = 4, p95 = 5),
+    x = grp, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95
+  )
+  expect_no_warning(save_cpb(path, single, page = "half"))
+  ordinary <- cpb_col(data.frame(x = c("a", "b"), y = 1:2), x = x, y = y)
+  expect_no_warning(save_cpb(path, ordinary, page = "half"))
 })
 
 test_that("save_cpb keeps sec_y's own colour intact when a layer is inserted ahead of it", {
@@ -122,35 +195,139 @@ test_that("save_cpb keeps sec_y's own colour intact when a layer is inserted ahe
   expect_false(anyNA(b$data[[sec_line_idx]]$colour))
 })
 
-test_that("save_cpb draws sec_ylab flush with the right edge of the secondary axis, and top-anchored like the subtitle", {
-  # cpb_add_sec_ylab_grob() (see save.R) used to centre the caption's
-  # last character over the tick text's own midpoint, which reads as
-  # stopping short of the axis rather than aligned with it; it is now
-  # anchored flush against the "axis-r" cell's own right edge instead,
-  # matching the published look.
-  #
-  # It also used to centre the caption vertically in the shared
-  # subtitle row (vjust = 0.5), while theme_cpb()'s own plot.subtitle
-  # is top-anchored there instead (vjust = 1, a bottom-only margin),
-  # so a centred caption drew visibly lower than ylab()'s own subtitle
-  # on the left. Top-anchored here too now, to match.
+test_that("a right axis mirrors the left margin", {
+  side_cm <- function(g) {
+    g <- cpb_resolve_gtable_units(g, 7.5 / 2.54, 7.5 / 2.54)
+    w <- grid::convertWidth(g$widths, "cm", valueOnly = TRUE)
+    panel <- grepl("^panel", g$layout$name)
+    c(left = sum(w[seq_len(min(g$layout$l[panel]) - 1)]),
+      right = sum(w[(max(g$layout$r[panel]) + 1):length(w)]))
+  }
+  ragg::agg_png(withr::local_tempfile(fileext = ".png"))
+  withr::defer(grDevices::dev.off())
+  d <- data.frame(x = 2016:2022, y = c(18, 20, 19, 18, 17, 17, 19), z = c(1.9, 1.8, 1.6, 1.7, 1.6, 1.5, 1.6))
+
+  # no right axis: nothing to mirror, the panel ends margin_east from the edge
+  g <- ggplot2::ggplotGrob(cpb_col(d, x = x, y = y, title = "t", ylab = "l"))
+  expect_null(cpb_mirror_sec_axis_margin(g))
+  expect_equal(side_cm(g)[["right"]], 0.635, tolerance = 1e-6)
+
+  # a right axis, also with much wider right labels than left ones
+  for (z_scale in c(1, 1000)) {
+    p <- cpb_col(transform(d, z = z * z_scale), x = x, y = y, sec_y = z,
+                 title = "t", ylab = "l", sec_ylab = "r")
+    sides <- side_cm(cpb_mirror_sec_axis_margin(ggplot2::ggplotGrob(p)))
+    expect_equal(sides[["right"]], sides[["left"]], tolerance = 1e-6)
+  }
+})
+
+test_that("save_cpb draws sec_ylab on ylab's row, 0.45 cm from the figure's right edge", {
+  # cpb_place_sec_ylab() (see save.R): right-aligned 0.45 cm from the
+  # figure edge, not on the "axis-r" labels.
   d <- data.frame(x = 1:5, y = 1:5, z = c(10, 12, 11, 13, 12))
-  p <- cpb_line(d, x = x, y = y, sec_y = z, sec_ylab = "%")
+  p <- cpb_line(d, x = x, y = y, sec_y = z, ylab = "primary", sec_ylab = "%")
 
   path <- withr::local_tempfile(fileext = ".png")
   save_cpb(path, p, page = "half")
 
   sec_ylab <- cpb_take_sec_ylab(p)
   g <- ggplot2::ggplotGrob(sec_ylab$plot)
-  g <- cpb_add_sec_ylab_grob(g, sec_ylab$label, 2.98, 2.98)
-  grob <- g$grobs[[which(g$layout$name == "sec-ylab")]]
+  subtitle_idx <- which(g$layout$name == "subtitle")
+  g <- cpb_add_sec_ylab_grob(g, sec_ylab$label, 7.5 / 2.54, 7.5 / 2.54)
+  sec_idx <- which(g$layout$name == "sec-ylab")
+  grob <- g$grobs[[sec_idx]]
 
-  expect_equal(as.numeric(grob$x), 1)
-  expect_equal(grid::unitType(grob$x), "npc")
+  # ylab's own row, spanning the whole figure width
+  expect_equal(g$layout$t[sec_idx], g$layout$t[subtitle_idx])
+  expect_equal(g$layout$l[sec_idx], 1)
+  expect_equal(g$layout$r[sec_idx], ncol(g))
+
+  grDevices::pdf(NULL)
+  withr::defer(grDevices::dev.off())
+  grid::pushViewport(grid::viewport(width = grid::unit(10, "cm")))
+  expect_equal(grid::convertX(grob$x, "cm", valueOnly = TRUE), 10 - 0.45)
+  grid::popViewport()
   expect_equal(grob$hjust, 1)
   expect_equal(as.numeric(grob$y), 1)
   expect_equal(grid::unitType(grob$y), "npc")
   expect_equal(grob$vjust, 1)
+})
+
+test_that("a bare print() also draws sec_ylab exactly, not the approximate placeholder", {
+  # print.cpb_plot() (see save.R) places sec_ylab itself now, so no
+  # "approximate placement" warning either.
+  d <- data.frame(x = 1:5, y = 1:5, z = c(10, 12, 11, 13, 12))
+  p <- cpb_line(d, x = x, y = y, sec_y = z, sec_ylab = "%")
+
+  path <- withr::local_tempfile(fileext = ".png")
+  ragg::agg_png(path, width = 4, height = 4, units = "in", res = 72)
+  expect_no_warning(print(p))
+  grDevices::dev.off()
+})
+
+test_that("print.cpb_plot warns distinctly when the exact draw errors unexpectedly", {
+  # An unexpected error (a real bug) must not look like the ordinary
+  # "only exact through save_cpb()" case. Otherwise print() and
+  # save_cpb() could silently disagree with no visible sign why.
+  local_mocked_bindings(
+    cpb_print_exact = function(x, newpage, vp) stop("simulated bug")
+  )
+  d <- data.frame(x = 1:5, y = 1:5, z = c(10, 12, 11, 13, 12))
+  p <- cpb_line(d, x = x, y = y, sec_y = z, sec_ylab = "%")
+
+  path <- withr::local_tempfile(fileext = ".png")
+  ragg::agg_png(path, width = 4, height = 4, units = "in", res = 72)
+  withr::defer(grDevices::dev.off())
+  warnings <- testthat::capture_warnings(print(p))
+
+  expect_true(any(grepl("looks like a bug", warnings, fixed = TRUE)))
+  expect_true(any(grepl("approximate placement", warnings, fixed = TRUE)))
+})
+
+test_that("save_cpb() without a plot saves the wrapper's own, marked plot", {
+  d <- data.frame(x = rep(1:3, 2), y = 1:6, g = rep(c("a", "b"), each = 3))
+  for (p in list(cpb_line(d, x = x, y = y, colour = g), cpb_col(d, x = x, y = y, fill = g))) {
+    expect_identical(attr(ggplot2::last_plot(), "cpb_legend"), "bottom")
+  }
+})
+
+test_that("print() sets last_plot() and honours newpage/vp like ggplot2", {
+  d <- data.frame(x = rep(1:3, 2), y = 1:6, g = rep(c("a", "b"), each = 3))
+  p <- cpb_line(d, x = x, y = y, colour = g)
+  ggplot2::set_last_plot(NULL)
+  path <- withr::local_tempfile(fileext = ".png")
+  ragg::agg_png(path, width = 6, height = 3, units = "in", res = 72)
+  withr::defer(grDevices::dev.off())
+  grid::grid.newpage()
+  grid::grid.rect(name = "keep-me")
+  print(p, vp = grid::viewport(x = 0.25, width = 0.5))
+  expect_identical(ggplot2::last_plot(), p)
+  # drawn next to what was already on the page, not over a new page
+  expect_true("keep-me" %in% grid::grid.ls(print = FALSE)$name)
+})
+
+test_that("a caption is drawn as a footnote at the bottom right, not under the axis", {
+  d <- data.frame(x = rep(1:3, 2), y = 1:6, g = rep(c("a", "b"), each = 3))
+  p <- cpb_line(d, x = x, y = y, colour = g, xlab = "jaar") + ggplot2::labs(caption = "Bron: CPB")
+  g <- cpb_figure_bottom(ggplot2::ggplotGrob(p), "bottom")
+  expect_s3_class(g$grobs[[which(g$layout$name == "caption")]], "zeroGrob")
+  foot <- g$grobs[[which(g$layout$name == "cpb-caption")]]
+  expect_equal(foot$label, "Bron: CPB")
+  expect_equal(grid::convertY(foot$y, "cm", valueOnly = TRUE), 0.15)
+  expect_equal(foot$gp$fontsize, 7 * 0.85)
+})
+
+test_that("the tick-label gap follows the figure width, only with theme_cpb()'s gap", {
+  gap <- function(p) {
+    as.numeric(grid::convertWidth(p$theme$axis.text.y.left$margin[2], "cm", valueOnly = TRUE))
+  }
+  d <- data.frame(x = 1:3, y = 1:3)
+  p <- cpb_line(d, x = x, y = y)
+  expect_equal(gap(cpb_scale_y_lab_gap(p, 15.5)), 0.015 * 15.5)
+  plain <- ggplot2::ggplot(d, ggplot2::aes(x, y)) + ggplot2::geom_point()
+  expect_identical(cpb_scale_y_lab_gap(plain, 15.5), plain)
+  own <- p + ggplot2::theme(axis.text.y.left = ggplot2::element_text(margin = ggplot2::margin(r = 0.5, unit = "cm")))
+  expect_equal(gap(cpb_scale_y_lab_gap(own, 15.5)), 0.5)
 })
 
 test_that("cpb_align_value_axis_title nudges a flush-right value-axis title to match the outermost tick label", {
@@ -254,8 +431,11 @@ test_that("save_cpb() never triggers print.cpb_plot()'s warning, on either its f
   # the fast path (ggplot2::ggsave()) prints the plot internally to
   # render it -- without save_cpb() stripping the "cpb_plot" class
   # first, that internal print() would trigger the same warning on
-  # every ordinary save_cpb() call
-  expect_no_warning(save_cpb(path, p, page = "half"))
+  # every ordinary save_cpb() call. page = "full", not "half": a donut
+  # warns on a half page for an unrelated reason (see test-save.R's
+  # "not suitable for a half page" test), which would otherwise mask
+  # whether this specific warning was also (wrongly) present
+  expect_no_warning(save_cpb(path, p, page = "full"))
 
   # the map aspect fit forces the grob path (cpb_fix_panel_size())
   # whenever height is left auto; an explicit height instead takes the
@@ -266,4 +446,96 @@ test_that("save_cpb() never triggers print.cpb_plot()'s warning, on either its f
   m <- cpb_map(prov, region = naam, value = w, level = "provincie")
   path2 <- withr::local_tempfile(fileext = ".png")
   expect_no_warning(save_cpb(path2, m, page = "half", height = 3))
+})
+
+test_that("the plot area ends a fixed 2.3 cm (1.25 cm without a legend) above the figure bottom", {
+  ragg::agg_png(withr::local_tempfile(fileext = ".png"))
+  withr::defer(grDevices::dev.off())
+  below_cm <- function(p) {
+    g <- cpb_figure_bottom(ggplot2::ggplotGrob(p), attr(p, "cpb_legend"), attr(p, "cpb_legend_grid"))
+    g <- cpb_resolve_gtable_units(g, 7.5 / 2.54, 7.5 / 2.54)
+    h <- grid::convertHeight(g$heights, "cm", valueOnly = TRUE)
+    sum(h[(max(g$layout$b[grepl("^panel", g$layout$name)]) + 1):length(h)])
+  }
+  d <- data.frame(x = rep(1:4, 2), y = 1:8, g = rep(c("a", "b"), each = 4))
+  expect_equal(below_cm(cpb_line(d, x = x, y = y, colour = g)), 2.3, tolerance = 1e-6)
+  expect_equal(below_cm(cpb_line(d, x = x, y = y, colour = g, legend = "filled-empty")), 2.3,
+               tolerance = 1e-6)
+  expect_equal(below_cm(cpb_line(d, x = x, y = y, colour = g, legend = "none")), 1.25,
+               tolerance = 1e-6)
+})
+
+test_that("save_cpb stops on a legend too wide for the page (lock)", {
+  skip_if_not_installed("ragg")
+  path <- withr::local_tempfile(fileext = ".png")
+  labs <- paste("een uitzonderlijk lang legenda-label nummer", 1:4)
+  d <- data.frame(x = rep(1:3, 4), y = 1:12, g = rep(labs, each = 3))
+  p <- cpb_line(d, x = x, y = y, colour = g)
+  expect_error(save_cpb(path, p, page = "half"), "legend")
+  expect_warning(save_cpb(path, p, page = "half", lock = FALSE), "legend")
+  expect_no_error(save_cpb(path, p, page = "full"))
+})
+
+test_that("the figure top is fixed: plot area 1.3 cm down, titles at fixed heights", {
+  d <- data.frame(x = 1:5, y = 1:5, z = c(10, 12, 11, 13, 12))
+  top <- function(...) {
+    p <- cpb_line(d, x = x, y = y, sec_y = z, ylab = "links", sec_ylab = "rechts", ...)
+    taken <- cpb_take_sec_ylab(p)
+    g <- cpb_figure_top(cpb_figure_bottom(ggplot2::ggplotGrob(taken$plot), "bottom"), taken$label)
+    panel_t <- min(g$layout$t[grepl("^panel", g$layout$name)])
+    from_top <- function(name) {
+      grob <- g$grobs[[which(g$layout$name == name)]]
+      grid::convertY(grid::unit(1, "npc") - grob$y, "cm", valueOnly = TRUE)
+    }
+    list(g = g, from_top = from_top,
+         north = grid::convertHeight(sum(g$heights[seq_len(panel_t - 1)]), "cm", valueOnly = TRUE))
+  }
+  path <- withr::local_tempfile(fileext = ".png")
+  ragg::agg_png(path, width = 7.5, height = 7.5, units = "cm", res = 72)
+  withr::defer(grDevices::dev.off())
+
+  one <- top(title = "Titel")
+  expect_equal(one$north, 1.3)
+  expect_equal(one$from_top("cpb-title"), 0.5)
+  # both y-axis titles on one line, 0.35 cm above the plot area
+  expect_equal(one$from_top("cpb-subtitle"), 1.3 - 0.35)
+  expect_equal(one$from_top("sec-ylab"), 1.3 - 0.35)
+  expect_equal(one$g$grobs[[which(one$g$layout$name == "sec-ylab")]]$hjust, 1)
+
+  # no title: the plot area starts 0.7 cm down
+  none <- top()
+  expect_equal(none$north, 0.7)
+  expect_false("cpb-title" %in% none$g$layout$name)
+
+  # a second title line moves nothing: the plot area keeps its size
+  two <- top(title = "Titel\nregel twee")
+  expect_equal(two$north, 1.3)
+  expect_equal(two$from_top("cpb-title"), 0.5)
+  expect_equal(two$from_top("sec-ylab"), 1.3 - 0.35)
+})
+
+test_that("page = \"small\" saves a 6.8 x 6.8 cm figure; half stays the default", {
+  d <- data.frame(x = 1:5, y = 1:5, g = rep(c("a", "b"), length.out = 5))
+  p <- cpb_line(d, x = x, y = y, colour = g, title = "Titel", ylab = "%")
+  path <- withr::local_tempfile(fileext = ".png")
+  px <- function(cm) floor(cm / 2.54 * 300)
+
+  save_cpb(path, p)
+  expect_equal(dim(png::readPNG(path))[2:1], c(px(7.5), px(7.5)))
+  save_cpb(path, p, page = "small")
+  expect_equal(dim(png::readPNG(path))[2:1], c(px(6.8), px(6.8)))
+  # an explicit small width gets the small height too
+  save_cpb(path, p, width = 6.8 / 2.54)
+  expect_equal(dim(png::readPNG(path))[2:1], c(px(6.8), px(6.8)))
+  # the tick-label gap follows the width: 1.5% of 6.8 cm
+  gap <- cpb_scale_y_lab_gap(p, 6.8)$theme$axis.text.y.left$margin[2]
+  expect_equal(as.numeric(grid::convertWidth(gap, "cm", valueOnly = TRUE)), 0.015 * 6.8)
+})
+
+test_that("save_cpb warns for a title of more than two lines, not for two", {
+  d <- data.frame(x = 1:3, y = 1:3)
+  path <- withr::local_tempfile(fileext = ".png")
+  expect_no_warning(save_cpb(path, cpb_line(d, x = x, y = y, title = "een\ntwee")))
+  expect_warning(save_cpb(path, cpb_line(d, x = x, y = y, title = "een\ntwee\ndrie")),
+                 "more than two lines")
 })

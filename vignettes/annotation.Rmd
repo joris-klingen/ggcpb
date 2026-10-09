@@ -8,16 +8,16 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-# Figures are drawn on the REAL CPB canvas (page = "half" is 2.98 in,
-# "full" is 5.96 in; text sizes in theme_cpb() are absolute points, so
+# Figures are drawn on the REAL CPB canvas (page = "half" is 7.5 cm,
+# "full" is 15.5 cm; text sizes in theme_cpb() are absolute points, so
 # any other canvas distorts the text-to-figure proportion) and only
 # *displayed* smaller via out.width, at a consistent 2:1 scale:
 # half-page figures at 350px, full-page figures at 700px.
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.width = 2.98,
-  fig.height = 2.98,
+  fig.width = 7.5 / 2.54,
+  fig.height = 7.5 / 2.54,
   dpi = 300,
   out.width = "350px",
   dev = if (requireNamespace("ragg", quietly = TRUE)) "ragg_png" else "png"
@@ -59,7 +59,7 @@ auto <- tibble(
 
 Time-series figures mark the forecast part of the axis with a
 translucent window and a label -- pass `forecast_x` (the x value where
-the forecast starts) to `cpb_line()`, `cpb_col()` or `cpb_area()`, and
+the forecast starts) to `cpb_line()` or `cpb_col()`, and
 `forecast_label` to override the default `"raming"`. `cpb_line()` can
 additionally draw an uncertainty band from `ymin`/`ymax` columns:
 
@@ -92,12 +92,12 @@ All plot wrappers accept `style = "english"` (default `"dutch"`). Passing `style
 # English style: decimal point (1.5), forecast label ("forecast") and dual axis ("(left axis)" / "(right axis)")
 groeipad_sec <- dplyr::mutate(
   groeipad,
-  inflatie = round(c(1.2, 1.4, 1.8, 1.5, 2.1, 2.7, 3.8, 4.2, 2.8, 2.1, 1.9, 1.8, 1.7), 1)
+  inflatie = c(1.2, 1.4, 1.8, 1.5, 2.1, 2.7, 3.8, 4.2, 2.8, 2.1, 1.9, 1.8, 1.7)
 )
 
 cpb_line(groeipad_sec, x = jaar, y = groei, ymin = lo, ymax = hi,
   sec_y = inflatie, forecast_x = 2023.5,
-  value_accuracy = 0.1, style = "english",
+  value_accuracy = 0.1, sec_accuracy = 0.1, style = "english",
   title = "Economic growth and inflation forecast",
   ylab = "%", sec_ylab = "%") +
   scale_x_continuous(breaks = seq(2015, 2027, 3), minor_breaks = 2015:2027,

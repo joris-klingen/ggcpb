@@ -519,7 +519,7 @@ render(14, "scatter: continuous colour",
     title = "Energierekening naar inkomen",
     ylab  = "energierekening (euro per maand)",
     xlab  = "besteedbaar inkomen (euro per maand)",
-    colourlab = "koopkracht (%)") +
+    legend_title = "koopkracht (%)") +
     # breaks repeat cpb_scatter()'s own pretty()-computed flush breaks
     # for this data -- the panel stays flush via coord regardless, but
     # without matching breaks here the replaced scale would pick its own
@@ -577,7 +577,7 @@ render(18, "box: modern style",
                                 expand = ggplot2::expansion(mult = c(0, 0))),
   "18_box_modern.png", page = "half")
 
-# faceted dodged columns: facet titles below the panels (nicerplot
+# faceted dodged columns: facet titles below the panels (house
 # convention), every panel a complete mini-figure with its own axes
 facet_dt <- CJ(jaar  = 2019:2025,
                groep = factor(c("laag", "midden", "hoog"),
@@ -695,7 +695,7 @@ render(25, "classed choropleth (cpb_cut + blues)",
   cpb_map(map_dt, region = code, value = klasse,
     palette = "blues",
     title    = "Aandeel huishoudens met zonnepanelen",
-    filllab  = "aandeel"),
+    legend_title = "aandeel"),
   "25_map_classed.png", page = "half", height = 5.2)
 
 # donut: single "share of total" breakdown
@@ -708,7 +708,7 @@ render(26, "donut: energiemix",
   cpb_donut(energie_dt, fill = bron, y = share,
     index = c(6, 2, 5, 1),
     title = "Energiemix",
-    filllab = "bron"),
+    legend_title = "bron"),
   "26_donut.png", page = "half")
 
 # Summary ----

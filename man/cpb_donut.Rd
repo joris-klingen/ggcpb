@@ -21,12 +21,13 @@ cpb_donut(
   index = NULL,
   reverse_legend = FALSE,
   legend_ncol = NULL,
+  legend_nrow = NULL,
   legend = "bottom",
   flush_legend = TRUE,
-  legend_key_size = NULL,
   title = NULL,
   subtitle = NULL,
-  filllab = NULL,
+  legend_title = NULL,
+  style = getOption("ggcpb.style", "dutch"),
   ...
 )
 }
@@ -126,9 +127,14 @@ to \code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} instead of the 
 passed to \code{guide_legend(ncol = ...)}. \code{NULL} (default) keeps
 ggplot2's own single-row/column layout.}
 
+\item{legend_nrow}{Number of rows to lay the legend keys out in,
+passed to \code{guide_legend(nrow = ...)}. Combine with \code{legend_ncol}
+to pin both dimensions of the grid at once. \code{NULL} (default) keeps
+ggplot2's own sizing.}
+
 \item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}.}
 
-\item{flush_legend, legend_key_size}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}} for
+\item{flush_legend}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}} for
 per-figure deviations from the house defaults. Unlike the other
 wrappers, \code{minor}, \code{ticks}, \code{axis_text_size}, \code{grid_colour} and
 \code{grid_linewidth} are not exposed here: a donut draws no axis or
@@ -136,8 +142,16 @@ gridlines for them to affect.}
 
 \item{title, subtitle}{Plot title/subtitle.}
 
-\item{filllab}{Legend title override; defaults to \code{NULL} (no
-title), matching CPB house style.}
+\item{legend_title}{Legend title, drawn in italic as the first row of
+the legend, with at most 2 rows of legend items below it (title and
+items together take the 3 rows a legend has without a title).
+\code{NULL} (default) draws no title, matching CPB house style.}
+
+\item{style}{Formatting style for the percentages: \code{"dutch"}
+(default, \verb{,} decimal) or \code{"english"} (\code{.} decimal). Taken from
+\code{getOption("ggcpb.style")}, so an English report can set
+\code{options(ggcpb.style = "english")} once rather than passing \code{style} to
+every figure and risking a stray Dutch decimal comma.}
 
 \item{...}{Further arguments passed to \code{\link[ggplot2:geom_col]{ggplot2::geom_col()}}.}
 }

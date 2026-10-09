@@ -11,16 +11,16 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-# Figures are drawn on the REAL CPB canvas (page = "half" is 2.98 in,
-# "full" is 5.96 in; text sizes in theme_cpb() are absolute points, so
+# Figures are drawn on the REAL CPB canvas (page = "half" is 7.5 cm,
+# "full" is 15.5 cm; text sizes in theme_cpb() are absolute points, so
 # any other canvas distorts the text-to-figure proportion) and only
 # *displayed* smaller via out.width, at a consistent 2:1 scale:
 # half-page figures at 350px, full-page figures at 700px.
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.width = 2.98,
-  fig.height = 2.98,
+  fig.width = 7.5 / 2.54,
+  fig.height = 7.5 / 2.54,
   dpi = 300,
   out.width = "350px",
   dev = if (requireNamespace("ragg", quietly = TRUE)) "ragg_png" else "png"
@@ -53,7 +53,7 @@ based on two CSV files, a data file and a parameter file.
 
 The data file contains the data used in the figures. The parameter
 file specifies which figures to create and how they should be
-configured. The `import_csv()` function reads both files and creates
+configured. The `cpb_import_csv()` function reads both files and creates
 the figures.
 
 This approach is useful when figure specifications need to be kept
@@ -82,7 +82,7 @@ read.csv(data_csv)
 
 The important point for the import method is that the parameter file
 refers to variables by their column names. For example, if a
-parameter contains `jaar`, `import_csv()` looks for a column named
+parameter contains `jaar`, `cpb_import_csv()` looks for a column named
 `jaar` in the data file.
 
 # The parameter file
@@ -126,16 +126,16 @@ variable should be taken from the `koopkracht` column, while
 
 # Creating the figures
 
-Once the two files are available, pass them to `import_csv()`:
+Once the two files are available, pass them to `cpb_import_csv()`:
 
 ```{r build, results = "hide"}
 tmp_params <- tempfile(fileext = ".csv")
 file.copy(params_csv, tmp_params, overwrite = TRUE)
 
-figs <- import_csv(data_csv, tmp_params)
+figs <- cpb_import_csv(data_csv, tmp_params)
 ```
 
-When the parameter file contains multiple figures, `import_csv()`
+When the parameter file contains multiple figures, `cpb_import_csv()`
 returns a named list. The names come from the `id` parameter.
 
 The `koopkracht` figure has a second value axis (`sec_y`), and its
@@ -213,11 +213,11 @@ werkloosheid
 This layout can be convenient when a figure has many parameters,
 because each setting has its own row.
 
-When the parameter file describes one figure, `import_csv()` returns
+When the parameter file describes one figure, `cpb_import_csv()` returns
 that figure directly rather than a named list.
 
 ```{r vertical-build, results = "hide"}
-fig_vertical <- import_csv(data_csv, params_vertical)
+fig_vertical <- cpb_import_csv(data_csv, params_vertical)
 ```
 
 ```{r vertical-build-show, echo = FALSE}
@@ -237,7 +237,7 @@ referenced by a parameter does not exist in the data file, that
 figure is skipped. Other figures in the same parameter file are still
 created.
 
-Each call to `import_csv()` also writes a log file next to the
+Each call to `cpb_import_csv()` also writes a log file next to the
 parameter file. The log records figures that were created or skipped
 and any parameter problems.
 

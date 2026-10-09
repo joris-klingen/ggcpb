@@ -15,10 +15,12 @@
 # inst/examples/output/legend_stability/ for visual inspection.
 #
 # How the measurement works: every variant maps a series to CPB primary
-# blue (cpb_cols(6), #005faf) that is the *bottom* legend entry. The
-# legend key sits at the plot margin while in-panel marks are indented
-# past the axis labels, so the leftmost blue pixel IS the key's left
-# edge and the lowest blue pixel marks the bottom key. Glyphs differ:
+# blue (cpb_cols(6), #005faf) that is the *first* (top-left) legend
+# entry, which the fixed legend grid anchors (see cpb_figure_bottom()).
+# The legend key sits at the plot margin while in-panel marks are
+# indented past the axis labels and sit above the legend, so the
+# leftmost blue pixel IS the key's left edge and the lowest blue pixel
+# is that key's bottom edge. Glyphs differ:
 # rect keys (col/area/box/hist fills) paint their key box corner, line
 # keys draw a stroke centred vertically in the box, point keys centre a
 # dot in both directions -- so positions are judged per glyph family.
@@ -49,7 +51,7 @@ for (pkg in c("ragg", "png")) {
 set.seed(42)
 
 DPI <- 96
-margin_px <- 10 / 72 * DPI        # left plot margin: 10 pt
+margin_px <- 0.45 / 2.54 * DPI   # left plot margin: 0.45 cm
 key_h_px  <- 0.25 / 2.54 * DPI    # legend key height: 0.25 cm
 key_w_px  <- 0.30 / 2.54 * DPI    # legend key width: 0.30 cm
 
@@ -97,7 +99,7 @@ box_df <- data.frame(x = c("a", "b"), g = c("s1", "s2"),
 
 col2 <- function(df, ...) {
   cpb_col(df, x = x, y = y, fill = g, position = "dodge",
-          fill_index = c(6, 2), title = "t", ...)
+          reverse_legend = FALSE, fill_index = c(6, 2), title = "t", ...)
 }
 # each variant: name, glyph family, plot and canvas size (inches)
 variant <- function(name, family, plot, width = 4, height = 4) {
@@ -107,7 +109,7 @@ variant <- function(name, family, plot, width = 4, height = 4) {
 variants <- list()
 
 # 1) legend-label lengths, 1 character up to wider-than-the-panel and a
-#    multi-line label (blue bottom entry keeps a one-line label)
+#    multi-line label (blue first entry keeps a one-line label)
 lab_sets <- list(
   lab_tiny      = c("a", "b"),
   lab_short     = c("s1", "s2"),
@@ -142,7 +144,7 @@ for (n in c(1, 2, 3, 5, 8)) {
   variants[[length(variants) + 1]] <- variant(
     paste0("items_", n), "rect",
     cpb_col(df, x = x, y = y, fill = g, position = "dodge",
-            fill_index = c(6, 2, 3, 4, 5, 1, 7, 8)[seq_len(n)], title = "t")
+            reverse_legend = FALSE, fill_index = c(6, 2, 3, 4, 5, 1, 7, 8)[seq_len(n)], title = "t")
   )
 }
 
@@ -150,43 +152,43 @@ for (n in c(1, 2, 3, 5, 8)) {
 variants <- c(variants, list(
   variant("type_col_stack", "rect",
           cpb_col(dodge_df(c("s1", "s2")), x = x, y = y, fill = g,
-                  fill_index = c(6, 2), title = "t")),
+                  reverse_legend = FALSE, fill_index = c(6, 2), title = "t")),
   variant("type_area", "rect",
-          cpb_area(num_df, x = x, y = y, fill = g, fill_index = c(6, 2), title = "t")),
+          cpb_area(num_df, x = x, y = y, fill = g, reverse_legend = FALSE, fill_index = c(6, 2), title = "t")),
   variant("type_hist", "rect",
           cpb_hist(hist_df, x = v, fill = g, binwidth = 1,
-                   fill_index = c(6, 2), title = "t")),
+                   reverse_legend = FALSE, fill_index = c(6, 2), title = "t")),
   variant("type_box", "rect",
           cpb_box(box_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-                  fill = g, reverse_legend = TRUE, fill_index = c(6, 2), title = "t")),
+                  fill = g, reverse_legend = FALSE, fill_index = c(6, 2), title = "t")),
   variant("type_col_grouped", "rect",
           cpb_col(transform(dodge_df(c("s1", "s2")),
                             grp = factor(rep(c("blok A", "blok B"), each = 2))),
                   x = x, y = y, fill = g, position = "dodge", group = grp,
-                  fill_index = c(6, 2), title = "t")),
+                  reverse_legend = FALSE, fill_index = c(6, 2), title = "t")),
   variant("type_col_facet", "rect",
           cpb_col(transform(dodge_df(c("s1", "s2")),
                             f = rep(c("paneel 1", "paneel 2"), 2)),
                   x = x, y = y, fill = g, position = "dodge", facet = f,
-                  fill_index = c(6, 2), title = "t")),
+                  reverse_legend = FALSE, fill_index = c(6, 2), title = "t")),
   variant("type_line_short", "line",
           cpb_line(num_df, x = x, y = y, colour = g,
-                   colour_index = c(6, 2), reverse_legend = TRUE, title = "t")),
+                   colour_index = c(6, 2), reverse_legend = FALSE, title = "t")),
   variant("type_line_long", "line",
           cpb_line(transform(num_df,
                              g = factor(g, labels = c("mediane koopkrachtontwikkeling",
                                                       "gemiddelde contractloonstijging"))),
                    x = x, y = y, colour = g, colour_index = c(6, 2),
-                   reverse_legend = TRUE, title = "t")),
+                   reverse_legend = FALSE, title = "t")),
   variant("type_scatter_short", "point",
           cpb_scatter(num_df, x = x, y = y, colour = g,
-                      colour_index = c(6, 2), reverse_legend = TRUE, title = "t")),
+                      colour_index = c(6, 2), reverse_legend = FALSE, title = "t")),
   variant("type_scatter_long", "point",
           cpb_scatter(transform(num_df,
                                 g = factor(g, labels = c("huishoudens met kinderen",
                                                          "huishoudens zonder kinderen"))),
                       x = x, y = y, colour = g, colour_index = c(6, 2),
-                      reverse_legend = TRUE, title = "t"))
+                      reverse_legend = FALSE, title = "t"))
 ))
 
 # 5) canvas sizes (CPB half/full page and off-grid sizes)
@@ -202,7 +204,7 @@ for (nm in names(sizes)) {
 # 6) titles and axis titles around the panel
 base_df <- dodge_df(c("s1", "s2"))
 mk <- function(...) cpb_col(base_df, x = x, y = y, fill = g, position = "dodge",
-                            fill_index = c(6, 2), ...)
+                            reverse_legend = FALSE, fill_index = c(6, 2), ...)
 variants <- c(variants, list(
   variant("ann_plain", "rect", mk()),
   variant("ann_title", "rect", mk(title = "titel")),

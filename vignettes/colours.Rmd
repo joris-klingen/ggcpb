@@ -11,8 +11,8 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.width = 2.98,
-  fig.height = 2.98,
+  fig.width = 7.5 / 2.54,
+  fig.height = 7.5 / 2.54,
   dpi = 300,
   out.width = "350px",
   dev = if (requireNamespace("ragg", quietly = TRUE)) "ragg_png" else "png"
@@ -35,7 +35,7 @@ coloured:
 * `colour_index` on the wrappers that map `colour` -- `cpb_line()`,
   `cpb_scatter()`, `cpb_dot()`
 * `fill_index` on the wrappers that map `fill` -- `cpb_col()`,
-  `cpb_area()`, `cpb_box()`, `cpb_hist()`, `cpb_map()`
+  `cpb_box()`, `cpb_hist()`, `cpb_map()`
 
 `color_index` is accepted wherever `colour_index` is.
 

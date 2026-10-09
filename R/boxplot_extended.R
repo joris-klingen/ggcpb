@@ -51,7 +51,7 @@
 #'   here (CPB legends show plain colour squares, not miniature
 #'   boxplots) to read against `panel_fill`'s light background instead
 #'   of the usual white one.
-#' @param minor,ticks,flush_legend,axis_text_size,legend_key_size,grid_linewidth
+#' @param minor,ticks,flush_legend,axis_text_size,grid_linewidth
 #'   Forwarded to [theme_cpb()] for per-figure deviations from the
 #'   house defaults -- documented here rather than left to
 #'   `@inheritParams cpb_box` above, since that tag shares a single
@@ -89,6 +89,9 @@
 #'   that for a single figure.
 #' @param style Formatting style: `"dutch"` (default, `.` thousands, `,` decimal)
 #'   or `"english"` (`,` thousands, `.` decimal, English forecast / axis labels).
+#'   Taken from `getOption("ggcpb.style")`, so an English report can set
+#'   `options(ggcpb.style = "english")` once rather than passing `style` to
+#'   every figure and risking a stray Dutch decimal comma.
 #' @param ... Further arguments passed to both [ggplot2::geom_errorbar()]
 #'   and [ggplot2::geom_boxplot()], as in [cpb_box()].
 #' @return A `ggplot` object.
@@ -135,32 +138,39 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
                                   sec_point_size = 1.6,
                                   sec_col_width = 0.3,
                                   sec_accuracy = NULL,
+                                  sec_scale_auto = TRUE,
+                                  sec_at = NULL,
+                                  sec_labels = NULL,
+                                  y_r_scale_auto = NULL,
+                                  y_r_at = NULL,
+                                  y_r_lab = NULL,
+                                  y_r_lim = NULL,
                                   facet = NULL,
                                   facet_ncol = NULL,
                                   facet_scales = "fixed",
                                   legend = "bottom",
                                   reverse_legend = FALSE,
                                   legend_ncol = NULL,
+                                  legend_nrow = NULL,
                                   minor = FALSE,
                                   ticks = FALSE,
                                   flush_legend = TRUE,
                                   axis_text_size = 7,
-                                  legend_key_size = NULL,
                                   grid_colour = "white",
                                   grid_linewidth = 0.8,
                                   title = NULL,
                                   subtitle = NULL,
                                   xlab = NULL,
                                   ylab = NULL,
-                                  filllab = NULL,
+                                  legend_title = NULL,
                                   panel_fill = "#eef8ff",
                                   value_axis_linewidth = 0.7,
                                   zero_indicator = TRUE,
                                   zero_indicator_linewidth = 2,
                                   ylab_position = NULL,
-                                  style = c("dutch", "english"),
+                                  style = getOption("ggcpb.style", "dutch"),
                                   ...) {
-  style <- match.arg(style)
+  style <- match.arg(style, c("dutch", "english"))
   box_style <- match.arg(box_style)
   orientation <- match.arg(orientation)
   has_facet <- !rlang::quo_is_null(rlang::enquo(facet))
@@ -195,17 +205,20 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
     sec_label = sec_label, sec_ylab = sec_ylab, sec_colour = sec_colour,
     sec_linewidth = sec_linewidth, sec_points = sec_points,
     sec_point_size = sec_point_size, sec_col_width = sec_col_width,
-    sec_accuracy = sec_accuracy,
+    sec_accuracy = sec_accuracy, sec_scale_auto = sec_scale_auto,
+    sec_at = sec_at, sec_labels = sec_labels, y_r_scale_auto = y_r_scale_auto,
+    y_r_at = y_r_at, y_r_lab = y_r_lab, y_r_lim = y_r_lim,
     facet = {{ facet }}, facet_ncol = facet_ncol, facet_scales = facet_scales,
     legend = legend, reverse_legend = reverse_legend, legend_ncol = legend_ncol,
+    legend_nrow = legend_nrow,
     # cpb_box()'s own zeroline is always off: zero_indicator below
     # replaces it, see the `zero_indicator_linewidth` @param for why
     zeroline = FALSE,
     minor = minor, ticks = ticks, flush_legend = flush_legend,
-    axis_text_size = axis_text_size, legend_key_size = legend_key_size,
+    axis_text_size = axis_text_size,
     grid_colour = grid_colour, grid_linewidth = grid_linewidth,
     title = title, subtitle = subtitle, xlab = xlab, ylab = ylab,
-    filllab = filllab, style = style, ...
+    legend_title = legend_title, style = style, ...
   )
 
   # the value axis is x post-coord_flip() when horizontal, y when not
@@ -256,6 +269,7 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
   # change if that default ever does); `"middle"` centres the title
   # over just the panel, which reads better once the panel is visually
   # boxed in by panel_fill.
+  attr(p, "cpb_ylab_position") <- ylab_position
   p <- p + if (ylab_position == "left") {
     ggplot2::theme(
       plot.title.position = "plot",
@@ -271,11 +285,16 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
   if (has_facet) {
     # strip.position is a facet_wrap() construction argument, not a
     # theme setting -- cpb_add_facet() (see wrappers.R) always draws
-    # it at the bottom (the legacy nicerplot convention every other
+    # it at the bottom (the house convention every other
     # wrapper follows), so it is moved here instead of adding a
     # second, conflicting facet_wrap() layer just to change one of its
     # own arguments
     p$facet$params$strip.position <- "top"
+    # One column's worth of panels (each still needing its own
+    # category labels and, per box, a full whisker-to-whisker span) is
+    # rarely legible split across a half page's 7.5 cm. save_cpb()
+    # warns using this when asked to.
+    attr(p, "cpb_half_page_unsuitable") <- "an extended boxplot faceted into multiple panels"
   }
 
   if (isTRUE(zero_indicator)) {
@@ -287,5 +306,6 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
     )
   }
 
+  ggplot2::set_last_plot(p)
   p
 }

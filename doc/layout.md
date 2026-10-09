@@ -17,11 +17,11 @@ vertically grouped boxplot layout.
 
 # Facets
 
-Every wrapper accepts a `facet` column. Facets follow the house (legacy
-nicerplot) convention: the facet title is a bold strip *below* each
-panel, and every panel is a complete mini-figure with its own axes.
-Control the grid with `facet_ncol` and shared-versus-free axis ranges
-with `facet_scales` (`"fixed"` by default, so panels are directly
+Every wrapper accepts a `facet` column. Facets follow the house
+convention: the facet title is a bold strip *below* each panel, and
+every panel is a complete mini-figure with its own axes. Control the
+grid with `facet_ncol` and shared-versus-free axis ranges with
+`facet_scales` (`"fixed"` by default, so panels are directly
 comparable):
 
 ``` r

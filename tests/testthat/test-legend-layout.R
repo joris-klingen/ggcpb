@@ -11,11 +11,15 @@
 # move. These tests render real PNGs and check the pixels.
 
 # Every plot below maps a series to CPB primary blue (cpb_cols(6),
-# #005faf) that ends up as the *bottom* legend entry. In-panel marks
-# are always indented past the category/axis labels, while the legend
-# key sits at the plot margin, so the leftmost blue pixel in the
-# rendered image IS the legend key's left edge, and the lowest blue
-# pixel marks the bottom key of the bottom-justified legend block.
+# #005faf) that ends up as the *first* (top-left) legend entry. The
+# legend is the fixed legend grid (see cpb_figure_bottom()): its first row is
+# centred 1.3 cm above the figure's bottom edge, further
+# entries go below it (3 per column) and then into new columns to the
+# right. In-panel marks are always indented past the category/axis
+# labels and sit above the legend, while the legend key sits at the
+# plot margin, so the leftmost blue pixel in the rendered image IS the
+# legend key's left edge, and the lowest blue pixel is that key's
+# bottom edge.
 legend_key_px <- function(p, width = 4, height = 4, dpi = 96) {
   f <- withr::local_tempfile(fileext = ".png", .local_envir = parent.frame())
   ragg::agg_png(f, width = width, height = height, units = "in", res = dpi)
@@ -33,11 +37,14 @@ legend_key_px <- function(p, width = 4, height = 4, dpi = 96) {
   )
 }
 
-# left plot margin (10 pt) and legend key height/width (0.25/0.30 cm) in
-# pixels at the 96 dpi the tests render at
-margin_px <- 10 / 72 * 96
+# left plot margin (0.45 cm) and legend key height/width
+# (0.25/0.30 cm) in pixels at the 96 dpi the tests render at
+margin_px <- 0.45 / 2.54 * 96
 key_h_px  <- 0.25 / 2.54 * 96
 key_w_px  <- 0.30 / 2.54 * 96
+# bottom edge of a first-row rect key: row centre 1.3 cm above the
+# figure's bottom edge, key 0.8 x 0.315 cm tall
+key_bottom_px <- (1.3 - 0.8 * 0.315 / 2) / 2.54 * 96
 
 test_that("flush legend lands on the same pixel across chart types and label lengths", {
   skip_if_not_installed("ragg")
@@ -65,19 +72,19 @@ test_that("flush legend lands on the same pixel across chart types and label len
   box_df <- data.frame(x = c("a", "b"), g = c("s1", "s2"),
                        p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5)
 
-  # reverse_legend = TRUE puts the blue first level at the *bottom* of
-  # the legend in every variant, so the lowest blue pixel is comparable
+  # reverse_legend = FALSE keeps the blue first level as the *first*
+  # legend entry in every variant, so the lowest blue pixel is comparable
   rect_variants <- list(
     col_vertical   = cpb_col(short2, x = x, y = y, fill = g, position = "dodge",
-                             fill_index = c(6, 2), title = "t"),
+                             reverse_legend = FALSE, fill_index = c(6, 2), title = "t"),
     col_horizontal = cpb_col(long_cats, x = x, y = y, fill = g, position = "dodge",
-                             orientation = "horizontal",
+                             orientation = "horizontal", reverse_legend = FALSE,
                              fill_index = c(6, 2), title = "t"),
     col_five       = cpb_col(five, x = x, y = y, fill = g, position = "dodge",
-                             fill_index = c(6, 2, 3, 4, 5), title = "t"),
+                             reverse_legend = FALSE, fill_index = c(6, 2, 3, 4, 5), title = "t"),
     box            = cpb_box(box_df,
                              x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-                             fill = g, reverse_legend = TRUE,
+                             fill = g, reverse_legend = FALSE,
                              fill_index = c(6, 2), title = "t")
   )
   # line keys draw a stroke centred in the key, so their lowest blue
@@ -85,9 +92,9 @@ test_that("flush legend lands on the same pixel across chart types and label len
   # within their own family
   line_variants <- list(
     line_short = cpb_line(short2, x = as.integer(factor(x)), y = y, colour = g,
-                          colour_index = c(6, 2), reverse_legend = TRUE, title = "t"),
+                          colour_index = c(6, 2), reverse_legend = FALSE, title = "t"),
     line_long  = cpb_line(long_cats, x = as.integer(factor(x)), y = y, colour = g,
-                          colour_index = c(6, 2), reverse_legend = TRUE, title = "t")
+                          colour_index = c(6, 2), reverse_legend = FALSE, title = "t")
   )
 
   rect_pos <- lapply(rect_variants, legend_key_px)
@@ -108,9 +115,10 @@ test_that("flush legend lands on the same pixel across chart types and label len
   expect_gte(min(line_lefts), min(rect_lefts) - 1)
   expect_lte(max(line_lefts), max(rect_lefts) + 2)
 
-  # one solid bottom-justified spot: the bottom key row is identical
-  # whether the legend holds 2 or 5 items, per glyph family ...
+  # one solid spot: the first key row is identical whether the legend
+  # holds 2 or 5 items, per glyph family ...
   expect_lte(diff(range(rect_bottoms)), 2)
+  expect_lte(abs(mean(vapply(rect_pos, `[[`, numeric(1), "bottom_off")) - key_bottom_px), 2)
   expect_lte(diff(range(line_bottoms)), 2)
   # ... and the families differ by at most half a key (the stroke
   # centring), i.e. the legend *block* itself is anchored
@@ -123,7 +131,7 @@ test_that("legend key pixel is invariant to legend-label length and item count",
   skip_if_not_installed("withr")
 
   # label-length sweep: 1-character labels up to labels longer than the
-  # panel is wide, plus a multi-line label (the blue *bottom* entry
+  # panel is wide, plus a multi-line label (the blue *first* entry
   # keeps a single-line label so its key row stays the reference point)
   lab_sets <- list(
     tiny      = c("a", "b"),
@@ -139,11 +147,11 @@ test_that("legend key pixel is invariant to legend-label length and item count",
       y = 1:4
     )
     cpb_col(df, x = x, y = y, fill = g, position = "dodge",
-            fill_index = c(6, 2), title = "t")
+            reverse_legend = FALSE, fill_index = c(6, 2), title = "t")
   })
 
   # item-count sweep: 1 up to 8 legend entries; blue stays the first
-  # level, i.e. the bottom entry of the reversed legend
+  # level, i.e. the first (top-left) legend entry
   counts <- c(1, 2, 3, 5, 8)
   count_variants <- lapply(counts, function(n) {
     labs <- paste("serie", seq_len(n))
@@ -152,7 +160,7 @@ test_that("legend key pixel is invariant to legend-label length and item count",
       g = factor(rep(labs, 2), levels = labs),
       y = rep(seq_len(n), 2)
     )
-    cpb_col(df, x = x, y = y, fill = g, position = "dodge",
+    cpb_col(df, x = x, y = y, fill = g, position = "dodge", reverse_legend = FALSE,
             fill_index = c(6, 2, 3, 4, 5, 1, 7, 8)[seq_len(n)], title = "t")
   })
   names(count_variants) <- paste0("n", counts)
@@ -163,9 +171,10 @@ test_that("legend key pixel is invariant to legend-label length and item count",
 
   expect_lte(diff(range(lefts)), 1)
   expect_lte(abs(mean(lefts) - margin_px), 2)
-  # the bottom key row must not move when labels grow or entries are
-  # added: added entries stack *upwards* from the anchored bottom row
+  # the first key row must not move when labels grow or entries are
+  # added: added entries go below it (3 per column), then right
   expect_lte(diff(range(bottoms)), 2)
+  expect_lte(abs(mean(bottoms) - key_bottom_px), 2)
 })
 
 test_that("legend key pixel is invariant to chart type", {
@@ -308,7 +317,7 @@ test_that("legend_ncol lays the keys out in columns and keeps reverse_legend", {
   expect_equal(params(cpb_dot(d, x, y, lower = y, upper = y, colour = g,
                               legend_ncol = 2), "colour")$ncol, 2)
 
-  # the default is untouched: one flush-left column
+  # the default sets no ncol: cpb_figure_bottom() lays it out 3 per column
   expect_null(params(cpb_line(d, x, y, colour = g), "colour")$ncol)
 
   # the two settings share a guide, so neither drops the other

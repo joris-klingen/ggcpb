@@ -8,14 +8,14 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-# Figures are drawn on the REAL CPB canvas (page = "half" is 2.98 in,
-# "full" is 5.96 in) and displayed at a consistent 2:1 scale: half-page
+# Figures are drawn on the REAL CPB canvas (page = "half" is 7.5 cm,
+# "full" is 15.5 cm) and displayed at a consistent 2:1 scale: half-page
 # figures at 350px, full-page figures at 700px.
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.width = 2.98,
-  fig.height = 2.98,
+  fig.width = 7.5 / 2.54,
+  fig.height = 7.5 / 2.54,
   dpi = 300,
   out.width = "350px",
   dev = if (requireNamespace("ragg", quietly = TRUE)) "ragg_png" else "png"
@@ -125,7 +125,7 @@ leaving a label with no swatch beside it. The wrappers set
 `show.legend = TRUE` on their layers already, so this only needs
 saying when you build the layer yourself.
 
-```{r heatmap, fig.width = 5.96, fig.height = 2.4, out.width = "700px"}
+```{r heatmap, fig.width = 15.5 / 2.54, fig.height = 2.4, out.width = "700px"}
 raster <- expand.grid(groep = factor(groepen, levels = rev(groepen)),
                       jaar  = 2024:2027) |>
   mutate(mediaan = round(rnorm(n(), 0.5, 1), 1))
@@ -150,7 +150,7 @@ do not cover.
 # Export
 
 `save_cpb()` writes the figure at the strict CPB page widths --
-`page = "half"` (2.98 in) or `page = "full"` (5.96 in) -- through the
+`page = "half"` (7.5 cm) or `page = "full"` (15.5 cm) -- through the
 `ragg` device, which consults `systemfonts` -- so the bundled
 Rijksoverheid font (registered automatically on load; see
 `cpb_register_fonts()`) renders correctly with no further setup, and
@@ -164,7 +164,7 @@ save_cpb("koopkracht_breed.png", p, page = "full", height = 3.2)
 The half/full widths are the only ones `save_cpb()` accepts: a stray
 `width = 8` fails loudly instead of silently producing an off-spec
 figure. Text sizes in `theme_cpb()` are absolute points, so the
-canvas size is part of the design -- draw at 2.98/5.96 in and scale
+canvas size is part of the design -- draw at 7.5/15.5 cm and scale
 the *display*, never the figure. Height defaults to the report
 height; pass `height` for taller figures (grouped boxes, facets) or
 `preset = "presentation"`.
