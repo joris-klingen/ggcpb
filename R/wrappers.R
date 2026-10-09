@@ -795,13 +795,20 @@ cpb_add_sec_y <- function(p, scale_args, env = parent.frame()) {
 # save.R), which is why this layer is recorded as an attribute here
 # rather than by position.
 cpb_add_sec_ylab <- function(p, has_sec, sec_ylab) {
-  if (!has_sec || is.null(sec_ylab)) {
+  if (!has_sec) {
+    return(p)
+  }
+  # the right margin mirrors the left one,
+  # which save_cpb()/print.cpb_plot() set on the built gtable
+  attr(p, "cpb_sec_axis") <- TRUE
+  class(p) <- union("cpb_plot", class(p))
+  if (is.null(sec_ylab)) {
     return(p)
   }
   p <- p + ggplot2::annotate(
     "text", x = Inf, y = Inf, label = sec_ylab,
     hjust = 1, vjust = -0.9, fontface = "italic",
-    size = 7 / ggplot2::.pt, family = cpb_font_family()
+    size = cpb_font_pt / ggplot2::.pt, family = cpb_font_family()
   )
   # recorded by object, not position: a caller reordering plot$layers
   # afterward (e.g. p$layers <- c(new, p$layers), to draw something
@@ -2815,11 +2822,11 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
       p <- p + if (orientation == "horizontal") {
         ggplot2::annotate("text", x = head_rows$pos, y = -Inf,
           label = head_rows$label, hjust = 1.03, vjust = 0.5,
-          fontface = "bold", size = 7 / ggplot2::.pt, family = cpb_font_family())
+          fontface = "bold", size = cpb_font_pt / ggplot2::.pt, family = cpb_font_family())
       } else {
         ggplot2::annotate("text", x = head_rows$pos, y = -Inf,
           label = head_rows$label, hjust = 0.5, vjust = 2.6,
-          fontface = "bold", size = 7 / ggplot2::.pt, family = cpb_font_family())
+          fontface = "bold", size = cpb_font_pt / ggplot2::.pt, family = cpb_font_family())
       }
     }
   }
@@ -3563,11 +3570,11 @@ cpb_dot <- function(data, x, y, lower, upper,
       p <- p + if (orientation == "horizontal") {
         ggplot2::annotate("text", x = head_rows$pos, y = -Inf,
           label = head_rows$label, hjust = 1.03, vjust = 0.5,
-          fontface = "bold", size = 7 / ggplot2::.pt, family = cpb_font_family())
+          fontface = "bold", size = cpb_font_pt / ggplot2::.pt, family = cpb_font_family())
       } else {
         ggplot2::annotate("text", x = head_rows$pos, y = -Inf,
           label = head_rows$label, hjust = 0.5, vjust = 2.6,
-          fontface = "bold", size = 7 / ggplot2::.pt, family = cpb_font_family())
+          fontface = "bold", size = cpb_font_pt / ggplot2::.pt, family = cpb_font_family())
       }
     }
   }
@@ -3975,7 +3982,7 @@ cpb_donut <- function(data, fill, y,
     p <- p + ggplot2::geom_text(
       ggplot2::aes(x = x_pos, y = !!y, label = .data[["cpb__wedge_label"]]),
       position = ggplot2::position_stack(vjust = 0.5),
-      colour = label_colour, size = 7 / ggplot2::.pt,
+      colour = label_colour, size = cpb_font_pt / ggplot2::.pt,
       family = cpb_font_family()
     )
   } else if (!is.null(leader_data)) {
@@ -3999,7 +4006,7 @@ cpb_donut <- function(data, fill, y,
           x = .data[["x_text"]], y = .data[["y_text"]],
           label = .data[["wedge_label"]], hjust = .data[["hjust"]]
         ),
-        inherit.aes = FALSE, colour = label_colour, size = 7 / ggplot2::.pt,
+        inherit.aes = FALSE, colour = label_colour, size = cpb_font_pt / ggplot2::.pt,
         family = cpb_font_family()
       )
   }
@@ -4037,7 +4044,7 @@ cpb_donut <- function(data, fill, y,
       # gap is tightened from theme_cpb()'s usual 3.5 pt to fit more
       # rows in the same fixed panel_size before running out of room
       legend.text = ggplot2::element_text(
-        face = "italic", size = 7, margin = ggplot2::margin(l = 1.5)
+        face = "italic", size = cpb_font_pt, margin = ggplot2::margin(l = 1.5)
       )
     )
   # read by save_cpb() so a plain save_cpb(cpb_donut(...)) gets a

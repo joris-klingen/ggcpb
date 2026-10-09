@@ -33,9 +33,9 @@ legend_key_px <- function(p, width = 4, height = 4, dpi = 96) {
   )
 }
 
-# left plot margin (10 pt) and legend key height/width (0.25/0.30 cm) in
-# pixels at the 96 dpi the tests render at
-margin_px <- 10 / 72 * 96
+# left plot margin (0.45 cm) and legend key height/width
+# (0.25/0.30 cm) in pixels at the 96 dpi the tests render at
+margin_px <- 0.45 / 2.54 * 96
 key_h_px  <- 0.25 / 2.54 * 96
 key_w_px  <- 0.30 / 2.54 * 96
 

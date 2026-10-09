@@ -8,16 +8,16 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-# Figures are drawn on the REAL CPB canvas (page = "half" is 2.98 in,
-# "full" is 5.96 in; text sizes in theme_cpb() are absolute points, so
+# Figures are drawn on the REAL CPB canvas (page = "half" is 7.5 cm,
+# "full" is 15.5 cm; text sizes in theme_cpb() are absolute points, so
 # any other canvas distorts the text-to-figure proportion) and only
 # *displayed* smaller via out.width, at a consistent 2:1 scale:
 # half-page figures at 350px, full-page figures at 700px.
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.width = 2.98,
-  fig.height = 2.98,
+  fig.width = 7.5 / 2.54,
+  fig.height = 7.5 / 2.54,
   dpi = 300,
   out.width = "350px",
   dev = if (requireNamespace("ragg", quietly = TRUE)) "ragg_png" else "png"
@@ -239,7 +239,7 @@ With `facet`, the same call splits into one panel per level -- here,
 the title switches from centred over the single panel above to the
 ordinary full-width, left-aligned house title spanning all of them:
 
-```{r box-extended-facet, fig.width = 5.96, fig.height = 2.98, out.width = "700px"}
+```{r box-extended-facet, fig.width = 15.5 / 2.54, fig.height = 7.5 / 2.54, out.width = "700px"}
 cpb_boxplot_extended(kk2, x = groep,
   p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
   facet      = jaar,
@@ -255,7 +255,7 @@ ordinary text weight -- so the two read apart from each other without
 needing a legend. A taller figure with three groups, a mix of income
 brackets and income sources:
 
-```{r box-extended-groups, fig.width = 5.96, fig.height = 6.5, out.width = "700px"}
+```{r box-extended-groups, fig.width = 15.5 / 2.54, fig.height = 6.5, out.width = "700px"}
 groepen2 <- c("tot 120% wml", "120% wml - mod.", "1 - 1,5x mod.",
              "1,5 - 2x mod.", "2 - 3x mod.", "boven 3x mod.", "nog extra boven",
              "groep 8", "groep 9")
