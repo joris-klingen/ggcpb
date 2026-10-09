@@ -306,5 +306,6 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
     )
   }
 
+  ggplot2::set_last_plot(p)
   p
 }

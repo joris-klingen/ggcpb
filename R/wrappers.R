@@ -802,6 +802,7 @@ cpb_add_sec_ylab <- function(p, has_sec, sec_ylab) {
   # which save_cpb()/print.cpb_plot() set on the built gtable
   attr(p, "cpb_sec_axis") <- TRUE
   class(p) <- union("cpb_plot", class(p))
+  ggplot2::set_last_plot(p)
   if (is.null(sec_ylab)) {
     return(p)
   }
@@ -820,6 +821,7 @@ cpb_add_sec_ylab <- function(p, has_sec, sec_ylab) {
   # shows this approximately rather than exactly -- only save_cpb()
   # reads the attribute above
   class(p) <- union("cpb_plot", class(p))
+  ggplot2::set_last_plot(p)
   p
 }
 
@@ -4060,5 +4062,6 @@ cpb_donut <- function(data, fill, y,
   # shows this approximately rather than exactly -- only save_cpb()
   # reads the attribute above
   class(p) <- union("cpb_plot", class(p))
+  ggplot2::set_last_plot(p)
   p
 }
