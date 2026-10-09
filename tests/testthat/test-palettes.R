@@ -39,11 +39,22 @@ test_that("cpb_pal reverses the palette when requested", {
   expect_false(identical(qual, qual_rev))
 })
 
-test_that("cpb_pal interpolates the sequential ramp and anchors low/high", {
-  ramp <- cpb_pal("sequential")(2)
-  expect_length(ramp, 2)
+test_that("cpb_pal sequential takes the darkest swatches first (#48)", {
+  sw <- unname(cpb_palette_colours("sequential"))
+  expect_equal(cpb_pal("sequential")(1), sw[6])
+  expect_equal(cpb_pal("sequential")(2), sw[5:6])
+  expect_equal(cpb_pal("sequential")(4), sw[3:6])
+  # the lightest swatch only once all six are needed
+  expect_false(sw[1] %in% cpb_pal("sequential")(5))
+  expect_equal(cpb_pal("sequential")(6), sw)
+  expect_equal(cpb_pal("sequential", reverse = TRUE)(3), sw[6:4])
+})
+
+test_that("cpb_pal interpolates the full sequential ramp beyond six levels", {
+  ramp <- cpb_pal("sequential")(8)
+  expect_length(ramp, 8)
   expect_equal(tolower(ramp[1]), "#fff1f8")
-  expect_equal(tolower(ramp[2]), "#4f0a2a")
+  expect_equal(tolower(ramp[8]), "#4f0a2a")
 })
 
 test_that("cpb_pal recycles qualitative colours with a warning beyond palette length", {

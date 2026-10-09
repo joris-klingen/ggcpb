@@ -1913,3 +1913,30 @@ test_that("cpb_dot()'s x-axis tick labels respect a manual '\\n'", {
   labs <- ggplot2::ggplot_build(p)$layout$panel_params[[1]]$y$get_labels()
   expect_setequal(labs, manual_cats)
 })
+
+test_that("cpb_line/cpb_area/cpb_col accept a Date or POSIXct x axis (#49)", {
+  d <- data.frame(date = seq(as.Date("2024-01-01"), by = "month", length.out = 12),
+                  value = 1:12, grp = "a")
+  d$time <- as.POSIXct(d$date, tz = "UTC")
+
+  b <- ggplot2::ggplot_build(cpb_line(d, x = date, y = value))
+  expect_s3_class(b$layout$panel_scales_x[[1]], "ScaleContinuousDate")
+  # flush to the data range, as for a numeric x
+  expect_equal(b$layout$panel_params[[1]]$x.range, as.numeric(range(d$date)))
+
+  b <- ggplot2::ggplot_build(cpb_line(d, x = time, y = value))
+  expect_s3_class(b$layout$panel_scales_x[[1]], "ScaleContinuousDatetime")
+
+  if (requireNamespace("data.table", quietly = TRUE)) {
+    d$idate <- data.table::as.IDate(d$date)
+    b <- ggplot2::ggplot_build(cpb_line(d, x = idate, y = value))
+    expect_s3_class(b$layout$panel_scales_x[[1]], "ScaleContinuousDate")
+  }
+
+  expect_no_warning(ggplot2::ggplot_build(
+    cpb_line(d, x = date, y = value, forecast_x = "2024-09-01")))
+  expect_no_warning(ggplot2::ggplot_build(
+    cpb_line(d, x = time, y = value, forecast_x = "2024-09-01")))
+  expect_no_error(ggplot2::ggplot_build(cpb_area(d, x = date, y = value, fill = grp)))
+  expect_no_error(ggplot2::ggplot_build(cpb_col(d, x = date, y = value)))
+})

@@ -132,7 +132,8 @@ publication needs that publication's colours, not the current default.
 For ordered classes -- income bands, intensity classes -- the discrete
 palette is the wrong tool: its colours are meant to be *distinct*, not
 ranked. Pass `"continuous"` to switch to the sequential ramp, which
-runs light to dark:
+runs light to dark. Fewer than six classes take the darkest shades, so
+the palest pink only appears when all six are needed:
 
 ```{r continuous-col}
 klassen <- c("0-5%", "5-10%", "10-20%", "20-30%", "meer dan 30%")

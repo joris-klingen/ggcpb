@@ -193,7 +193,15 @@ cpb_discrete_scale <- function(aesthetic = c("fill", "colour"), index = NULL,
 # more limited, collision-prone scale-based flush instead.
 cpb_x_scale <- function(p, x, data, flush) {
   xvals <- rlang::eval_tidy(x, data)
-  if (is.numeric(xvals)) {
+  # a Date/POSIXct x is continuous, not categorical: is.numeric() is
+  # FALSE for both, so without these branches it fell through to
+  # scale_x_discrete(), which cannot map it at all. Its flush already
+  # comes from the coord (cpb_x_flush_xlim()), as for a numeric x.
+  if (inherits(xvals, "Date")) {
+    p + ggplot2::scale_x_date()
+  } else if (inherits(xvals, "POSIXt")) {
+    p + ggplot2::scale_x_datetime()
+  } else if (is.numeric(xvals)) {
     if (!all(xvals == round(xvals))) return(p)
     p + ggplot2::scale_x_continuous(breaks = function(range) {
       br <- pretty(range)
@@ -288,8 +296,14 @@ cpb_wrap_capped <- function(text, width = cpb_wrap_width_default, max_lines = 3)
 cpb_x_flush_xlim <- function(x, data, flush, pad = 0) {
   if (!isTRUE(flush)) return(NULL)
   xvals <- rlang::eval_tidy(x, data)
-  if (!is.numeric(xvals)) return(NULL)
+  if (!is.numeric(xvals) && !cpb_is_datetime(xvals)) return(NULL)
   range(xvals, na.rm = TRUE) + c(-pad, pad)
+}
+
+# Date/POSIXct (incl. data.table's IDate, which inherits from Date):
+# continuous on the x axis, but is.numeric() is FALSE for them.
+cpb_is_datetime <- function(x) {
+  inherits(x, c("Date", "POSIXt"))
 }
 
 # cpb_box() and cpb_dot() share the same orientation-aware coord +
@@ -879,6 +893,14 @@ cpb_extend_breaks <- function(breaks, needed, max_breaks = 25) {
 #' through.
 #' @noRd
 cpb_forecast_pos <- function(forecast_x, xvals) {
+  if (cpb_is_datetime(xvals)) {
+    # kept in the axis's own class so it maps onto the date scale
+    if (inherits(xvals, "POSIXt")) {
+      tz <- attr(xvals, "tzone")
+      return(as.POSIXct(forecast_x, tz = if (is.null(tz)) "" else tz[[1]]))
+    }
+    return(as.Date(forecast_x))
+  }
   if (is.numeric(forecast_x)) return(forecast_x)
   levs <- if (is.factor(xvals)) levels(xvals) else sort(unique(as.character(xvals)))
   pos <- match(as.character(forecast_x), levs)
@@ -891,7 +913,13 @@ cpb_forecast_pos <- function(forecast_x, xvals) {
 
 #' @noRd
 cpb_forecast_rect <- function(forecast_x) {
-  ggplot2::annotate("rect", xmin = forecast_x, xmax = Inf,
+  # Inf kept in forecast_x's own class, so a date scale accepts it
+  x_end <- Inf
+  if (cpb_is_datetime(forecast_x)) {
+    x_end <- structure(Inf, class = class(forecast_x),
+                       tzone = attr(forecast_x, "tzone"))
+  }
+  ggplot2::annotate("rect", xmin = forecast_x, xmax = x_end,
                     ymin = -Inf, ymax = Inf, fill = "white", alpha = 0.45)
 }
 
@@ -900,9 +928,14 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
   if (is.null(label) || !nzchar(label)) return(NULL)
   if (identical(label, "raming") && style == "english") label <- "forecast"
   x_max <- suppressWarnings(max(as.numeric(xvals), na.rm = TRUE))
-  if (is.finite(x_max) && x_max > forecast_x) {
-    # centred in the window, as the legacy plotter does
-    label_x <- (forecast_x + x_max) / 2
+  if (is.finite(x_max) && x_max > as.numeric(forecast_x)) {
+    # centred in the window, as the legacy plotter does; on a date
+    # axis the midpoint is taken numerically and restored to its class
+    label_x <- (as.numeric(forecast_x) + x_max) / 2
+    if (cpb_is_datetime(forecast_x)) {
+      label_x <- structure(label_x, class = class(forecast_x),
+                           tzone = attr(forecast_x, "tzone"))
+    }
     hjust <- 0.5
   } else {
     label_x <- forecast_x
@@ -1386,7 +1419,7 @@ cpb_col <- function(data, x, y, fill = NULL,
   bar_width <- list(...)$width
   if (is.null(bar_width)) {
     xvals_for_width <- rlang::eval_tidy(x, data)
-    bar_width <- if (is.numeric(xvals_for_width)) {
+    bar_width <- if (is.numeric(xvals_for_width) || cpb_is_datetime(xvals_for_width)) {
       0.9 * ggplot2::resolution(xvals_for_width, zero = FALSE)
     } else {
       0.9
@@ -3379,7 +3412,7 @@ cpb_scatter <- function(data, x, y, colour = NULL,
   if (!is.null(forecast_x)) {
     p <- p + cpb_forecast_label(
       cpb_forecast_pos(forecast_x, rlang::eval_tidy(x, data)),
-      rlang::eval_tidy(x, data), forecast_label)
+      rlang::eval_tidy(x, data), forecast_label, style = style)
   }
 
   # a numeric colour column gets the continuous gradient, anything

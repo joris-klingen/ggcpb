@@ -23,7 +23,9 @@ colours from it.}
 A function \verb{function(n)} returning a character vector of
 \code{n} hex colours. For \code{"qualitative"} and \code{"discr"}, colours are
 recycled (with a warning) if \code{n} exceeds the palette length. For
-\code{"sequential"}, \code{n} colours are interpolated along the ramp.
+\code{"sequential"}, the \code{n} darkest swatches (see Details), interpolated
+along the full ramp beyond six. For \code{"blues"}, \code{n} colours are
+interpolated along the ramp.
 }
 \description{
 Returns a function of \code{n} that produces \code{n} colours from one of the
@@ -31,6 +33,12 @@ three CPB palettes, for use as the \code{palette} argument of a ggplot2
 discrete scale. The trailing NA colour (\code{"lightgrey"}) is always
 excluded from the cycled colours; use \code{na.value} on the scale
 functions to set it instead.
+}
+\details{
+For \code{"sequential"}, up to six levels take the darkest
+swatches of the ramp: \code{n} levels get the \code{n} darkest, still ordered
+light to dark, so the palest pink is only used once all six are
+needed. More than six levels are interpolated along the full ramp.
 }
 \examples{
 cpb_pal("qualitative")(3)
