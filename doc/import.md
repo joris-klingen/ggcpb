@@ -266,7 +266,6 @@ to, so a table for one `plot_type` does not necessarily match another.
 | flush_legend | literal | TRUE | TRUE |
 | index | literal |  | gebruik colour_index of fill_index in plaats hiervan |
 | legend | literal | bottom | bottom |
-| legend_key_size | literal |  | 0.3 |
 | legend_ncol | literal |  | 2 |
 | legend_nrow | literal |  |  |
 | palette | literal | qualitative | qualitative |
