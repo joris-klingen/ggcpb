@@ -910,12 +910,15 @@ test_that("cpb_col group lays out gapped blocks with bold group labels", {
   sc <- p$scales$get_scales("x")
   expect_equal(sc$breaks, c(1, 2, 3.8, 4.8))
   expect_equal(sc$labels, c("jongen", "meisje", "laag", "hoog"))
-  # the bold group labels are a text annotation at the group centres
-  txt <- p$layers[[length(p$layers)]]
-  expect_s3_class(txt$geom, "GeomText")
-  expect_equal(txt$data$x, c(1.5, 4.3))
-  expect_equal(txt$aes_params$label, c("geslacht", "opleiding"))
-  expect_equal(txt$aes_params$fontface, "bold")
+  # the bold group labels are drawn at the group centres, 0.5 cm
+  # below the 2.2 pt tick marks
+  txt <- unname(utils::tail(p$layers, 2))
+  expect_equal(vapply(txt, function(l) l$geom_params$xmin, numeric(1)), c(1.5, 4.3))
+  grobs <- lapply(txt, function(l) l$geom_params$grob)
+  expect_equal(vapply(grobs, function(g) g$label, character(1)), c("geslacht", "opleiding"))
+  expect_equal(grobs[[1]]$gp$font, c(bold = 2L))
+  expect_equal(grid::convertY(grid::unit(0, "npc") - grobs[[1]]$y, "cm", valueOnly = TRUE),
+               0.5 + 2.2 * 2.54 / 72.27)
   # clip is off so the labels can render under the panel
   expect_equal(p$coordinates$clip, "off")
   # the axis-title line is reserved for the group labels
