@@ -63,8 +63,8 @@ print.cpb_plot <- function(x, newpage = is.null(vp), vp = NULL, ...) {
 }
 
 # Draws x the way save_cpb() does (tick-label gap, right axis margin,
-# fixed figure bottom, sec_ylab), at whatever size print() lands on.
-# `newpage` and `vp` work as in ggplot2's print().
+# fixed figure top and bottom, sec_ylab), at whatever size print()
+# lands on. `newpage` and `vp` work as in ggplot2's print().
 # @return TRUE if drawn. FALSE if sec_ylab had no row to go on, in
 #   which case the caller falls back to the approximate placeholder.
 # @noRd
@@ -80,8 +80,10 @@ cpb_print_exact <- function(x, newpage = TRUE, vp = NULL) {
   mirrored <- cpb_mirror_sec_axis_margin(g)
   if (!is.null(mirrored)) g <- mirrored
   bottom <- cpb_figure_bottom(g, attr(x, "cpb_legend"), attr(x, "cpb_legend_grid"))
-  if (!is.null(bottom)) g <- bottom
-  if (!is.null(taken$label)) {
+  if (!is.null(bottom)) {
+    # the fixed top places sec_ylab itself
+    g <- cpb_figure_top(bottom, taken$label, attr(x, "cpb_ylab_position"))
+  } else if (!is.null(taken$label)) {
     g <- cpb_place_sec_ylab(g, taken$label)
     if (is.null(g)) return(FALSE)
   }
@@ -237,7 +239,9 @@ cpb_take_sec_ylab <- function(plot) {
   list(plot = plot, label = info$label)
 }
 
-# Places sec_ylab on the subtitle row, the row of ylab's caption,
+# Places sec_ylab on a plot without the fixed figure top, which is a
+# plot whose legend is not at the bottom (cpb_figure_top() places it
+# otherwise). It goes on the subtitle row, the row of ylab's caption,
 # right-aligned 0.45 cm from the figure's right edge and top-anchored
 # like theme_cpb()'s plot.subtitle.
 #
@@ -438,6 +442,79 @@ cpb_figure_bottom <- function(g, legend, legend_grid = NULL) {
         just = c("left", "top"))), "cpb-legend")
       attr(g, "cpb_legend_width") <- grid::grobWidth(box)
     }
+  }
+  g
+}
+
+# The fixed figure top. The plot area starts 1.3 cm (0.7 cm without a
+# title) below the figure's top edge, whatever sits above it. The title
+# is centred 0.5 cm below that edge. ylab's caption (the subtitle) and
+# `sec_ylab`, the right axis's, are centred 0.35 cm above the plot
+# area, 0.45 cm from the figure's left and right edges. Facet strips
+# and a top axis stay directly above the plot area. A title of two
+# lines is centred on the same spot, so nothing below it moves and the
+# plot area keeps its size. Two lines just fit above the y-axis titles,
+# a third runs into them.
+# `position` is cpb_boxplot_extended()'s ylab_position. "middle" puts
+# ylab's caption at the panel's left edge, with the title centred over
+# the panel.
+# @noRd
+cpb_figure_top <- function(g, sec_ylab = NULL, position = "left") {
+  if (is.null(position)) position <- "left"
+  cm <- function(v) grid::unit(v, "cm")
+  zero <- vapply(g$grobs, inherits, logical(1), what = "zeroGrob")
+  above <- seq_len(min(g$layout$t[grepl("^panel", g$layout$name)]) - 1)
+
+  # the title's and subtitle's own text (and style), lifted off the table
+  take <- function(name) {
+    i <- which(g$layout$name == name)
+    if (length(i) != 1 || zero[i]) return(NULL)
+    text <- cpb_find_grob(g$grobs[[i]], "text")
+    g$grobs[[i]] <<- ggplot2::zeroGrob()
+    text
+  }
+  title <- take("title")
+  subtitle <- take("subtitle")
+  has_title <- !is.null(title) && any(nzchar(title$label))
+
+  north <- if (has_title) cpb_margin_north_cm else cpb_margin_north_no_title_cm
+
+  # keep only the rows holding facet strips or a top axis
+  single_row <- g$layout$t == g$layout$b
+  kept <- vapply(above, function(r) {
+    any(single_row & g$layout$t == r & !zero & grepl("^(axis-t|strip-t)", g$layout$name))
+  }, logical(1))
+  for (r in above[!kept]) g$heights[r] <- cm(0)
+  g$heights[1] <- cm(north)
+
+  # `cols` are the table columns `x` is measured in, by default the
+  # whole figure
+  add <- function(g, label, gp, x, y_cm, hjust, name, cols = c(1, ncol(g))) {
+    gtable::gtable_add_grob(g, grid::textGrob(
+      label, x = x, y = grid::unit(1, "npc") - cm(y_cm), hjust = hjust, vjust = 0.5, gp = gp
+    ), t = 1, b = 1, l = cols[1], r = cols[2], clip = "off", name = name)
+  }
+  left <- cm(cpb_labels_margin_cm)
+  right <- grid::unit(1, "npc") - cm(cpb_labels_margin_cm)
+  y_title <- north - cpb_y_title_cm
+  is_panel <- grepl("^panel", g$layout$name)
+  panel <- c(min(g$layout$l[is_panel]), max(g$layout$r[is_panel]))
+  middle <- identical(position, "middle")
+  if (has_title) {
+    g <- if (middle) {
+      add(g, title$label, title$gp, grid::unit(0.5, "npc"), cpb_title_cm, 0.5, "cpb-title", panel)
+    } else {
+      add(g, title$label, title$gp, left, cpb_title_cm, 0, "cpb-title")
+    }
+  }
+  if (!is.null(subtitle)) {
+    g <- if (middle) {
+      add(g, subtitle$label, subtitle$gp, grid::unit(0, "npc"), y_title, 0, "cpb-subtitle", panel)
+    } else {
+      add(g, subtitle$label, subtitle$gp, left, y_title, 0, "cpb-subtitle")
+    }
+    # sec_ylab is styled like the subtitle (ylab's caption) it mirrors
+    if (!is.null(sec_ylab)) g <- add(g, sec_ylab, subtitle$gp, right, y_title, 1, "sec-ylab")
   }
   g
 }
@@ -784,8 +861,10 @@ save_cpb <- function(filename,
 
   bottom <- cpb_figure_bottom(grob, attr(plot, "cpb_legend"), attr(plot, "cpb_legend_grid"))
   if (!is.null(bottom)) {
-    grob <- bottom
-    cpb_check_legend(attr(grob, "cpb_legend_width"), width, lock)
+    cpb_check_legend(attr(bottom, "cpb_legend_width"), width, lock)
+    # the fixed top places sec_ylab itself
+    grob <- cpb_figure_top(bottom, sec_ylab$label, attr(plot, "cpb_ylab_position"))
+    sec_ylab$label <- NULL
   }
 
   if (is.null(panel_size) && is.null(sec_ylab$label) && !title_aligned &&
@@ -844,10 +923,10 @@ save_cpb <- function(filename,
 #' Stop (or warn) when a title is too long for the page width
 #'
 #' The title is drawn on one line unless it contains explicit `"\n"`
-#' breaks, and is never shrunk to fit. Its widest line is measured as
-#' drawn and must fit the figure's width minus 0.45 cm on each side.
-#' Otherwise it is an error with `lock = TRUE` and a warning with
-#' `lock = FALSE`.
+#' breaks, and is never shrunk to fit. Two lines fit, and more than
+#' two is a warning. Its widest line is measured as drawn and must fit
+#' the figure's width minus 0.45 cm on each side. Otherwise it is an
+#' error with `lock = TRUE` and a warning with `lock = FALSE`.
 #'
 #' @param g The plot's gtable.
 #' @param width Figure width in inches.
@@ -858,6 +937,13 @@ cpb_check_title <- function(g, width, lock = TRUE) {
   title_i <- which(g$layout$name == "title")
   title <- if (length(title_i)) cpb_find_grob(g$grobs[[title_i[1]]], "text")
   if (is.null(title) || !any(nzchar(title$label))) return(invisible(TRUE))
+  # Two lines fit above the y-axis titles. The plot area does not move
+  # down to make room for more.
+  if (is.character(title$label) &&
+      max(lengths(strsplit(title$label, "\n", fixed = TRUE))) > 2) {
+    warning("ggcpb: the title has more than two lines and runs into the ",
+            "axis titles below it. Shorten it to at most two lines.", call. = FALSE)
+  }
   # The widest line, measured as drawn, must fit the figure width
   # minus the 0.45 cm margin on both sides.
   title_cm <- grid::convertWidth(grid::grobWidth(grid::textGrob(

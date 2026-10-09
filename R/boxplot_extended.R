@@ -269,6 +269,7 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
   # change if that default ever does); `"middle"` centres the title
   # over just the panel, which reads better once the panel is visually
   # boxed in by panel_fill.
+  attr(p, "cpb_ylab_position") <- ylab_position
   p <- p + if (ylab_position == "left") {
     ggplot2::theme(
       plot.title.position = "plot",

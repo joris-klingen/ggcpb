@@ -478,7 +478,7 @@ schatting <- tibble(
 
 cpb_dot(schatting, x = term, y = coef, lower = lo, upper = hi,
   group = blok,
-  title = "Samenhang voorkeurstarieven, percepties en kenmerken",
+  title = "Samenhang voorkeurstarieven, percepties \nen kenmerken",
   xlab  = "%-punt verandering in voorkeurstarief")
 ```
 
