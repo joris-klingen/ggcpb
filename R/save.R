@@ -477,9 +477,11 @@ cpb_figure_bottom <- function(g, legend, legend_grid = NULL) {
 # lines is centred on the same spot, so nothing below it moves and the
 # plot area keeps its size. Two lines just fit above the y-axis titles,
 # a third runs into them.
-# `position` is cpb_boxplot_extended()'s ylab_position. "middle" puts
-# ylab's caption at the panel's left edge, with the title centred over
-# the panel.
+# `position` is cpb_boxplot_extended()'s ylab_position. "right" puts
+# ylab's caption at the right edge. "middle" puts it at the panel's
+# left edge, with the title centred over the panel. With facet strips
+# above the panels, "right" gives every panel its own caption, on a
+# line between its strip and its axis.
 # @noRd
 cpb_figure_top <- function(g, sec_ylab = NULL, position = "left") {
   if (is.null(position)) position <- "left"
@@ -521,6 +523,7 @@ cpb_figure_top <- function(g, sec_ylab = NULL, position = "left") {
   y_title <- north - cpb_y_title_cm
   is_panel <- grepl("^panel", g$layout$name)
   panel <- c(min(g$layout$l[is_panel]), max(g$layout$r[is_panel]))
+  strips <- which(grepl("^strip-t", g$layout$name) & !zero)
   middle <- identical(position, "middle")
   if (has_title) {
     g <- if (middle) {
@@ -530,8 +533,26 @@ cpb_figure_top <- function(g, sec_ylab = NULL, position = "left") {
     }
   }
   if (!is.null(subtitle)) {
+    # on the right only when sec_ylab doesn't need that place itself
+    on_right <- identical(position, "right") && is.null(sec_ylab)
     g <- if (middle) {
       add(g, subtitle$label, subtitle$gp, grid::unit(0, "npc"), y_title, 0, "cpb-subtitle", panel)
+    } else if (on_right && length(strips)) {
+      # one caption per panel: a new line under each row of strips,
+      # right-aligned with the panel below it (bottom row first, so the
+      # rows still to do keep their place)
+      cells <- g$layout[strips, c("t", "l", "r")]
+      for (row in sort(unique(cells$t), decreasing = TRUE)) {
+        g <- gtable::gtable_add_rows(g, cm(cpb_y_title_cm), pos = row)
+        for (i in which(cells$t == row)) {
+          g <- gtable::gtable_add_grob(g, grid::textGrob(
+            subtitle$label, x = grid::unit(1, "npc"), hjust = 1, vjust = 0.5, gp = subtitle$gp
+          ), t = row + 1, l = cells$l[i], r = cells$r[i], clip = "off", name = paste0("cpb-subtitle-", i))
+        }
+      }
+      g
+    } else if (on_right) {
+      add(g, subtitle$label, subtitle$gp, right, y_title, 1, "cpb-subtitle")
     } else {
       add(g, subtitle$label, subtitle$gp, left, y_title, 0, "cpb-subtitle")
     }
