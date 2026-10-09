@@ -15,6 +15,7 @@ save_cpb(
   device = ragg::agg_png,
   bg = cpb_bg,
   panel_size = NULL,
+  lock = TRUE,
   ...
 )
 }
@@ -58,6 +59,11 @@ whatever size \code{plot} already asks for (some wrappers, currently
 it). Anything that does not fit around a fixed-size panel -- a
 long title, a legend entry -- overflows past the figure's edge
 instead of shrinking the panel to make room.}
+
+\item{lock}{If \code{TRUE} (default), a title or
+legend wider than the page allows (its width minus 0.45 cm on each
+side) is an error. If \code{FALSE}, it is only a warning. Text is
+never shrunk to fit either way.}
 
 \item{...}{Further arguments passed to \code{\link[ggplot2:ggsave]{ggplot2::ggsave()}} (or, when
 \code{panel_size} applies, to \code{device} instead).}

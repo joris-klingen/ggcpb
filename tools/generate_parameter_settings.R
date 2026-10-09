@@ -66,7 +66,6 @@ literal_examples <- c(
   forecast_x       = "2025",
   legend_ncol      = "2",
   facet_ncol       = "2",
-  legend_key_size  = "0.3",
   bins             = "30",
   binwidth         = "5",
   box_labels       = "TRUE",

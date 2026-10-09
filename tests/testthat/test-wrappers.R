@@ -132,13 +132,12 @@ test_that("wrappers forward the theme knobs to theme_cpb", {
   df <- data.frame(x = c("a", "b"), y = c(1, 2))
   p <- cpb_col(df, x = x, y = y,
                minor = TRUE, ticks = FALSE, axis_text_size = 6,
-               legend_key_size = 0.45, grid_colour = "grey50")
+               grid_colour = "grey50")
   th <- p$theme
   expect_s3_class(th$panel.grid.minor.y, "element_line")
   expect_null(th$axis.ticks.x)
   expect_equal(th$axis.text$size, 6)
   expect_equal(th$panel.grid.major.y$colour, "grey50")
-  expect_equal(as.numeric(th$legend.key.height), 0.45)
 })
 
 test_that("cpb_box errorbars dodge by group without a fill warning", {
