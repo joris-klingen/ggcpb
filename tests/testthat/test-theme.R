@@ -97,16 +97,11 @@ test_that("theme_cpb anchors the legend flush left at the bottom", {
   expect_null(th_off$legend.location)
 })
 
-test_that("theme_cpb axis_text_size and legend_key_size are applied", {
-  th <- theme_cpb(axis_text_size = 6, legend_key_size = 0.45)
+test_that("theme_cpb applies axis_text_size and fixed 0.25 x 0.30 cm keys", {
+  th <- theme_cpb(axis_text_size = 6)
   expect_equal(th$axis.text$size, 6)
-  expect_equal(as.numeric(th$legend.key.height), 0.45)
-  expect_equal(as.numeric(th$legend.key.width), 0.45)
-
-  # default keeps the house 0.25 x 0.30 cm keys
-  th_def <- theme_cpb()
-  expect_equal(as.numeric(th_def$legend.key.height), 0.25)
-  expect_equal(as.numeric(th_def$legend.key.width), 0.30)
+  expect_equal(as.numeric(th$legend.key.height), 0.25)
+  expect_equal(as.numeric(th$legend.key.width), 0.30)
 })
 
 test_that("theme_cpb sets the fixed left and right margins", {
@@ -121,8 +116,9 @@ test_that("theme_cpb pins the axis spacing that ggplot2 4.0 changed", {
   # house theme spells it out so figures match on either version
   th <- ggplot2::theme_grey() + theme_cpb()
   mar <- function(el) as.numeric(ggplot2::calc_element(el, th)$margin)
-  expect_equal(mar("axis.text.x.bottom"), c(4.95, 0, 0, 0))
-  expect_equal(mar("axis.text.x.top"), c(0, 0, 4.95, 0))
+  # x tick labels: 0.15 cm from the panel
+  expect_equal(mar("axis.text.x.bottom"), c(0.15, 0, 0, 0))
+  expect_equal(mar("axis.text.x.top"), c(0, 0, 0.15, 0))
   # y tick labels: 1.5% of the (half-page, 7.5 cm) width, in cm
   expect_equal(mar("axis.text.y.left"), c(0, 0.015 * 7.5, 0, 0))
   expect_equal(mar("axis.text.y.right"), c(0, 0, 0, 0.015 * 7.5))

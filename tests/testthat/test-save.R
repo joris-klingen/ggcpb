@@ -66,15 +66,20 @@ test_that("save_cpb auto-fits a cpb_map() panel to its geographic aspect ratio",
   expect_match(msg2, "2.95 x 3 in", fixed = TRUE)
 })
 
-test_that("save_cpb warns on a title too long for the page, not when wrapped", {
+test_that("save_cpb stops on a title too long for the page (lock), not when wrapped", {
   skip_if_not_installed("ragg")
   df <- data.frame(x = c("a", "b"), y = 1:2)
   path <- withr::local_tempfile(fileext = ".png")
   long <- "Een uitzonderlijk lange titel die zeker niet op een halve pagina past"
 
-  # long single-line title on a half page -> warning suggesting \n
-  expect_warning(
+  # A long single-line title on a half page is an error with lock (the
+  # default) and a warning without. Both suggest \n.
+  expect_error(
     save_cpb(path, cpb_col(df, x = x, y = y, title = long), page = "half"),
+    "\\\\n"
+  )
+  expect_warning(
+    save_cpb(path, cpb_col(df, x = x, y = y, title = long), page = "half", lock = FALSE),
     "\\\\n"
   )
   # the same length split over two lines fits -> no warning
@@ -279,6 +284,39 @@ test_that("print.cpb_plot warns distinctly when the exact draw errors unexpected
   expect_true(any(grepl("approximate placement", warnings, fixed = TRUE)))
 })
 
+test_that("save_cpb() without a plot saves the wrapper's own, marked plot", {
+  d <- data.frame(x = rep(1:3, 2), y = 1:6, g = rep(c("a", "b"), each = 3))
+  for (p in list(cpb_line(d, x = x, y = y, colour = g), cpb_col(d, x = x, y = y, fill = g))) {
+    expect_identical(attr(ggplot2::last_plot(), "cpb_legend"), "bottom")
+  }
+})
+
+test_that("print() sets last_plot() and honours newpage/vp like ggplot2", {
+  d <- data.frame(x = rep(1:3, 2), y = 1:6, g = rep(c("a", "b"), each = 3))
+  p <- cpb_line(d, x = x, y = y, colour = g)
+  ggplot2::set_last_plot(NULL)
+  path <- withr::local_tempfile(fileext = ".png")
+  ragg::agg_png(path, width = 6, height = 3, units = "in", res = 72)
+  withr::defer(grDevices::dev.off())
+  grid::grid.newpage()
+  grid::grid.rect(name = "keep-me")
+  print(p, vp = grid::viewport(x = 0.25, width = 0.5))
+  expect_identical(ggplot2::last_plot(), p)
+  # drawn next to what was already on the page, not over a new page
+  expect_true("keep-me" %in% grid::grid.ls(print = FALSE)$name)
+})
+
+test_that("a caption is drawn as a footnote at the bottom right, not under the axis", {
+  d <- data.frame(x = rep(1:3, 2), y = 1:6, g = rep(c("a", "b"), each = 3))
+  p <- cpb_line(d, x = x, y = y, colour = g, xlab = "jaar") + ggplot2::labs(caption = "Bron: CPB")
+  g <- cpb_figure_bottom(ggplot2::ggplotGrob(p), "bottom")
+  expect_s3_class(g$grobs[[which(g$layout$name == "caption")]], "zeroGrob")
+  foot <- g$grobs[[which(g$layout$name == "cpb-caption")]]
+  expect_equal(foot$label, "Bron: CPB")
+  expect_equal(grid::convertY(foot$y, "cm", valueOnly = TRUE), 0.15)
+  expect_equal(foot$gp$fontsize, 7 * 0.85)
+})
+
 test_that("the tick-label gap follows the figure width, only with theme_cpb()'s gap", {
   gap <- function(p) {
     as.numeric(grid::convertWidth(p$theme$axis.text.y.left$margin[2], "cm", valueOnly = TRUE))
@@ -408,6 +446,34 @@ test_that("save_cpb() never triggers print.cpb_plot()'s warning, on either its f
   m <- cpb_map(prov, region = naam, value = w, level = "provincie")
   path2 <- withr::local_tempfile(fileext = ".png")
   expect_no_warning(save_cpb(path2, m, page = "half", height = 3))
+})
+
+test_that("the plot area ends a fixed 2.3 cm (1.25 cm without a legend) above the figure bottom", {
+  ragg::agg_png(withr::local_tempfile(fileext = ".png"))
+  withr::defer(grDevices::dev.off())
+  below_cm <- function(p) {
+    g <- cpb_figure_bottom(ggplot2::ggplotGrob(p), attr(p, "cpb_legend"), attr(p, "cpb_legend_grid"))
+    g <- cpb_resolve_gtable_units(g, 7.5 / 2.54, 7.5 / 2.54)
+    h <- grid::convertHeight(g$heights, "cm", valueOnly = TRUE)
+    sum(h[(max(g$layout$b[grepl("^panel", g$layout$name)]) + 1):length(h)])
+  }
+  d <- data.frame(x = rep(1:4, 2), y = 1:8, g = rep(c("a", "b"), each = 4))
+  expect_equal(below_cm(cpb_line(d, x = x, y = y, colour = g)), 2.3, tolerance = 1e-6)
+  expect_equal(below_cm(cpb_line(d, x = x, y = y, colour = g, legend = "filled-empty")), 2.3,
+               tolerance = 1e-6)
+  expect_equal(below_cm(cpb_line(d, x = x, y = y, colour = g, legend = "none")), 1.25,
+               tolerance = 1e-6)
+})
+
+test_that("save_cpb stops on a legend too wide for the page (lock)", {
+  skip_if_not_installed("ragg")
+  path <- withr::local_tempfile(fileext = ".png")
+  labs <- paste("een uitzonderlijk lang legenda-label nummer", 1:4)
+  d <- data.frame(x = rep(1:3, 4), y = 1:12, g = rep(labs, each = 3))
+  p <- cpb_line(d, x = x, y = y, colour = g)
+  expect_error(save_cpb(path, p, page = "half"), "legend")
+  expect_warning(save_cpb(path, p, page = "half", lock = FALSE), "legend")
+  expect_no_error(save_cpb(path, p, page = "full"))
 })
 
 test_that("page = \"small\" saves a 6.8 x 6.8 cm figure; half stays the default", {

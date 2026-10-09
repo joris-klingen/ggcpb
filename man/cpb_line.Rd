@@ -57,7 +57,6 @@ cpb_line(
   ticks = TRUE,
   flush_legend = TRUE,
   axis_text_size = 7,
-  legend_key_size = NULL,
   grid_colour = "black",
   grid_linewidth = 0.1,
   title = NULL,
@@ -262,15 +261,14 @@ via \code{guide_legend(reverse = TRUE)}. Defaults to \code{FALSE}: unlike
 the stacked wrappers, line order carries no stacking convention.}
 
 \item{legend_ncol}{Number of columns to lay the legend keys out in,
-passed to \code{guide_legend(ncol = )}. \code{NULL} (default) leaves the
-single flush-left column of the house style; \code{2} and up suit a
-legend with many short keys, such as binned classes from
-\code{\link[=cpb_cut]{cpb_cut()}}, which would otherwise run past the panel.}
+passed to \code{guide_legend(ncol = )}. \code{NULL} (default) keeps
+the house 3 keys per column, filled column by column. A set
+number spreads the keys over that many columns instead.}
 
 \item{legend_nrow}{Number of rows to lay the legend keys out in,
 passed to \code{guide_legend(nrow = )}. Combine with \code{legend_ncol} to
-pin both dimensions of the grid at once. \code{NULL} (default) leaves
-the number of rows to ggplot2's own sizing.}
+pin both dimensions of the grid at once. \code{NULL} (default) keeps
+the house 3 rows.}
 
 \item{facet}{Optional column (tidy eval) to facet by. Facets follow
 the house convention: the facet title is a bold
@@ -291,7 +289,7 @@ value axis underneath the data lines. \code{NULL} (default) draws it
 automatically when the \code{y} data spans (or touches) zero, the
 house bold-axis-if-zero convention.}
 
-\item{minor, ticks, flush_legend, axis_text_size, legend_key_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}} for per-figure deviations from the
+\item{minor, ticks, flush_legend, axis_text_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}} for per-figure deviations from the
 house defaults.}
 
 \item{title, subtitle}{Plot title/subtitle.}

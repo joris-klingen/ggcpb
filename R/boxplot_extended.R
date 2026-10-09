@@ -51,7 +51,7 @@
 #'   here (CPB legends show plain colour squares, not miniature
 #'   boxplots) to read against `panel_fill`'s light background instead
 #'   of the usual white one.
-#' @param minor,ticks,flush_legend,axis_text_size,legend_key_size,grid_linewidth
+#' @param minor,ticks,flush_legend,axis_text_size,grid_linewidth
 #'   Forwarded to [theme_cpb()] for per-figure deviations from the
 #'   house defaults -- documented here rather than left to
 #'   `@inheritParams cpb_box` above, since that tag shares a single
@@ -156,7 +156,6 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
                                   ticks = FALSE,
                                   flush_legend = TRUE,
                                   axis_text_size = 7,
-                                  legend_key_size = NULL,
                                   grid_colour = "white",
                                   grid_linewidth = 0.8,
                                   title = NULL,
@@ -216,7 +215,7 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
     # replaces it, see the `zero_indicator_linewidth` @param for why
     zeroline = FALSE,
     minor = minor, ticks = ticks, flush_legend = flush_legend,
-    axis_text_size = axis_text_size, legend_key_size = legend_key_size,
+    axis_text_size = axis_text_size,
     grid_colour = grid_colour, grid_linewidth = grid_linewidth,
     title = title, subtitle = subtitle, xlab = xlab, ylab = ylab,
     filllab = filllab, style = style, ...

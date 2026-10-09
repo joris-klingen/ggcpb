@@ -19,12 +19,27 @@
 cpb_wrapper_theme <- function(env = parent.frame()) {
   args <- mget(
     c("legend", "minor", "ticks", "flush_legend", "axis_text_size",
-      "legend_key_size", "grid_colour", "grid_linewidth"),
+      "grid_colour", "grid_linewidth"),
     envir = env
   )
   args$orientation <- mget("orientation", envir = env,
                            ifnotfound = list("vertical"))[[1]]
   do.call(theme_cpb, args)
+}
+
+# Marks a wrapper's plot for the fixed figure top and bottom, with the
+# legend on its grid. save_cpb() and print.cpb_plot() apply them to the
+# built gtable. A legend that is not flush keeps ggplot2's own layout.
+cpb_wrapper_layout <- function(p, env = parent.frame()) {
+  if (isTRUE(get0("flush_legend", envir = env, ifnotfound = TRUE))) {
+    attr(p, "cpb_legend") <- get("legend", envir = env)
+    attr(p, "cpb_legend_grid") <- list(ncol = get0("legend_ncol", envir = env),
+                                       nrow = get0("legend_nrow", envir = env))
+    class(p) <- union("cpb_plot", class(p))
+    # so save_cpb()'s default last_plot() is this marked plot
+    ggplot2::set_last_plot(p)
+  }
+  p
 }
 
 # Two-level category axis without facets: categories keep one shared
@@ -1197,14 +1212,13 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   order via `guide_legend(reverse = TRUE)` -- stacking otherwise
 #'   makes the legend order counter-intuitive.
 #' @param legend_ncol Number of columns to lay the legend keys out in,
-#'   passed to `guide_legend(ncol = )`. `NULL` (default) leaves the
-#'   single flush-left column of the house style; `2` and up suit a
-#'   legend with many short keys, such as binned classes from
-#'   [cpb_cut()], which would otherwise run past the panel.
+#'   passed to `guide_legend(ncol = )`. `NULL` (default) keeps
+#'   the house 3 keys per column, filled column by column. A set
+#'   number spreads the keys over that many columns instead.
 #' @param legend_nrow Number of rows to lay the legend keys out in,
 #'   passed to `guide_legend(nrow = )`. Combine with `legend_ncol` to
-#'   pin both dimensions of the grid at once. `NULL` (default) leaves
-#'   the number of rows to ggplot2's own sizing.
+#'   pin both dimensions of the grid at once. `NULL` (default) keeps
+#'   the house 3 rows.
 #' @param facet Optional column (tidy eval) to facet by. Facets follow
 #'   the house convention: the facet title is a bold
 #'   strip *below* each panel, and every panel is a complete
@@ -1220,7 +1234,7 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #' @param zeroline If `TRUE`, draw a solid black line at zero on the
 #'   value axis on top of the bars, as the CPB house style does.
 #'   Defaults to `TRUE` (bars are anchored at zero).
-#' @param minor,ticks,flush_legend,axis_text_size,legend_key_size,grid_colour,grid_linewidth
+#' @param minor,ticks,flush_legend,axis_text_size,grid_colour,grid_linewidth
 #'   Forwarded to [theme_cpb()] for per-figure deviations from the
 #'   house defaults.
 #' @param title,subtitle Plot title/subtitle. `subtitle` is normally
@@ -1304,7 +1318,6 @@ cpb_col <- function(data, x, y, fill = NULL,
                      ticks = TRUE,
                      flush_legend = TRUE,
                      axis_text_size = 7,
-                     legend_key_size = NULL,
                      grid_colour = "black",
                      grid_linewidth = 0.1,
                      title = NULL,
@@ -1566,6 +1579,7 @@ cpb_col <- function(data, x, y, fill = NULL,
   p <- p +
     ggplot2::labs(title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y, fill = filllab) +
     cpb_wrapper_theme()
+  p <- cpb_wrapper_layout(p)
 
   cpb_add_sec_guides(p, has_sec, reverse_legend, legend_ncol, legend_nrow)
 }
@@ -1692,7 +1706,6 @@ cpb_area <- function(data, x, y, fill,
                       ticks = TRUE,
                       flush_legend = TRUE,
                       axis_text_size = 7,
-                      legend_key_size = NULL,
                       grid_colour = "black",
                       grid_linewidth = 0.1,
                       title = NULL,
@@ -1799,6 +1812,7 @@ cpb_area <- function(data, x, y, fill,
   p <- p +
     ggplot2::labs(title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y, fill = filllab) +
     cpb_wrapper_theme()
+  p <- cpb_wrapper_layout(p)
 
   cpb_add_sec_guides(p, has_sec, reverse_legend, legend_ncol, legend_nrow)
 }
@@ -1971,7 +1985,6 @@ cpb_line <- function(data, x, y, colour = NULL,
                       ticks = TRUE,
                       flush_legend = TRUE,
                       axis_text_size = 7,
-                      legend_key_size = NULL,
                       grid_colour = "black",
                       grid_linewidth = 0.1,
                       title = NULL,
@@ -2220,9 +2233,9 @@ cpb_line <- function(data, x, y, colour = NULL,
   # ylab goes on the subtitle line (see cpb_axis_labs())
   labs <- cpb_axis_labs(title, subtitle, xlab, ylab, force = has_sec && !is.null(sec_ylab))
 
-  p +
+  cpb_wrapper_layout(p +
     ggplot2::labs(title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y, colour = colourlab) +
-    cpb_wrapper_theme()
+    cpb_wrapper_theme())
 }
 
 # quantile box/errorbar combo ----
@@ -2445,7 +2458,6 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                      ticks = TRUE,
                      flush_legend = TRUE,
                      axis_text_size = 7,
-                     legend_key_size = NULL,
                      grid_colour = "black",
                      grid_linewidth = 0.1,
                      title = NULL,
@@ -2857,6 +2869,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   p <- p +
     ggplot2::labs(title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y, fill = filllab) +
     cpb_wrapper_theme()
+  p <- cpb_wrapper_layout(p)
 
   cpb_add_sec_guides(p, has_sec, reverse_legend, legend_ncol, legend_nrow)
 }
@@ -2943,7 +2956,6 @@ cpb_scatter <- function(data, x, y, colour = NULL,
                          ticks = TRUE,
                          flush_legend = TRUE,
                          axis_text_size = 7,
-                         legend_key_size = NULL,
                          grid_colour = "black",
                          grid_linewidth = 0.1,
                          title = NULL,
@@ -3049,9 +3061,9 @@ cpb_scatter <- function(data, x, y, colour = NULL,
   # ylab goes on the subtitle line (see cpb_axis_labs())
   labs <- cpb_axis_labs(title, subtitle, xlab, ylab)
 
-  p +
+  cpb_wrapper_layout(p +
     ggplot2::labs(title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y, colour = colourlab) +
-    cpb_wrapper_theme()
+    cpb_wrapper_theme())
 }
 
 # histogram ----
@@ -3158,7 +3170,6 @@ cpb_hist <- function(data, x, fill = NULL,
                       ticks = TRUE,
                       flush_legend = TRUE,
                       axis_text_size = 7,
-                      legend_key_size = NULL,
                       grid_colour = "black",
                       grid_linewidth = 0.1,
                       title = NULL,
@@ -3227,9 +3238,9 @@ cpb_hist <- function(data, x, fill = NULL,
   # ylab goes on the subtitle line (see cpb_axis_labs())
   labs <- cpb_axis_labs(title, subtitle, xlab, ylab)
 
-  p +
+  cpb_wrapper_layout(p +
     ggplot2::labs(title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y, fill = filllab) +
-    cpb_wrapper_theme()
+    cpb_wrapper_theme())
 }
 
 # dot-and-interval ----
@@ -3348,7 +3359,7 @@ cpb_hist <- function(data, x, fill = NULL,
 #' @param facet_scales Whether facet axis ranges are shared; passed to
 #'   [ggplot2::facet_wrap()].
 #' @param legend Legend position, forwarded to [theme_cpb()].
-#' @param minor,ticks,flush_legend,axis_text_size,legend_key_size,grid_colour,grid_linewidth
+#' @param minor,ticks,flush_legend,axis_text_size,grid_colour,grid_linewidth
 #'   Passed through to [theme_cpb()].
 #' @param title,subtitle Plot title/subtitle.
 #' @param xlab Label for the value axis (drawn at the bottom, where the
@@ -3418,7 +3429,6 @@ cpb_dot <- function(data, x, y, lower, upper,
                      ticks = TRUE,
                      flush_legend = TRUE,
                      axis_text_size = 7,
-                     legend_key_size = NULL,
                      grid_colour = "black",
                      grid_linewidth = 0.1,
                      title = NULL,
@@ -3605,6 +3615,7 @@ cpb_dot <- function(data, x, y, lower, upper,
     ggplot2::labs(title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y,
                   colour = colourlab) +
     cpb_wrapper_theme()
+  p <- cpb_wrapper_layout(p)
 
   # stack the primary fill key and sec_y's colour key into one block --
   # applied after the theme so its legend.box override survives, as in
@@ -3708,7 +3719,7 @@ cpb_dot <- function(data, x, y, lower, upper,
 #'   to pin both dimensions of the grid at once. `NULL` (default) keeps
 #'   ggplot2's own sizing.
 #' @param legend Legend position, forwarded to [theme_cpb()].
-#' @param flush_legend,legend_key_size Forwarded to [theme_cpb()] for
+#' @param flush_legend Forwarded to [theme_cpb()] for
 #'   per-figure deviations from the house defaults. Unlike the other
 #'   wrappers, `minor`, `ticks`, `axis_text_size`, `grid_colour` and
 #'   `grid_linewidth` are not exposed here: a donut draws no axis or
@@ -3750,7 +3761,6 @@ cpb_donut <- function(data, fill, y,
                       legend_nrow = NULL,
                       legend = "bottom",
                       flush_legend = TRUE,
-                      legend_key_size = NULL,
                       title = NULL,
                       subtitle = NULL,
                       filllab = NULL,
@@ -4033,7 +4043,7 @@ cpb_donut <- function(data, fill, y,
     ggplot2::labs(title = title, subtitle = subtitle, fill = filllab) +
     theme_cpb(
       legend = legend, flush_legend = flush_legend,
-      legend_key_size = legend_key_size, grid = "none", ticks = FALSE
+      grid = "none", ticks = FALSE
     ) +
     ggplot2::theme(
       axis.text  = ggplot2::element_blank(),

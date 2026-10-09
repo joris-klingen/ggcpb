@@ -24,7 +24,6 @@ cpb_donut(
   legend_nrow = NULL,
   legend = "bottom",
   flush_legend = TRUE,
-  legend_key_size = NULL,
   title = NULL,
   subtitle = NULL,
   filllab = NULL,
@@ -135,7 +134,7 @@ ggplot2's own sizing.}
 
 \item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}.}
 
-\item{flush_legend, legend_key_size}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}} for
+\item{flush_legend}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}} for
 per-figure deviations from the house defaults. Unlike the other
 wrappers, \code{minor}, \code{ticks}, \code{axis_text_size}, \code{grid_colour} and
 \code{grid_linewidth} are not exposed here: a donut draws no axis or

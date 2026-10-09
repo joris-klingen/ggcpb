@@ -63,8 +63,8 @@ print.cpb_plot <- function(x, newpage = is.null(vp), vp = NULL, ...) {
 }
 
 # Draws x the way save_cpb() does (tick-label gap, right axis margin,
-# sec_ylab), at whatever size print() lands on. `newpage` and `vp` work
-# as in ggplot2's print().
+# fixed figure bottom, sec_ylab), at whatever size print() lands on.
+# `newpage` and `vp` work as in ggplot2's print().
 # @return TRUE if drawn. FALSE if sec_ylab had no row to go on, in
 #   which case the caller falls back to the approximate placeholder.
 # @noRd
@@ -79,6 +79,8 @@ cpb_print_exact <- function(x, newpage = TRUE, vp = NULL) {
   g <- ggplot2::ggplotGrob(taken$plot)
   mirrored <- cpb_mirror_sec_axis_margin(g)
   if (!is.null(mirrored)) g <- mirrored
+  bottom <- cpb_figure_bottom(g, attr(x, "cpb_legend"), attr(x, "cpb_legend_grid"))
+  if (!is.null(bottom)) g <- bottom
   if (!is.null(taken$label)) {
     g <- cpb_place_sec_ylab(g, taken$label)
     if (is.null(g)) return(FALSE)
@@ -275,6 +277,168 @@ cpb_mirror_sec_axis_margin <- function(g) {
   last <- max(g$layout$r[is_panel])
   n <- ncol(g)
   g$widths[n] <- sum(g$widths[seq_len(first - 1)]) - sum(g$widths[(last + 1):(n - 1)])
+  g
+}
+
+# The keys and label texts of a bottom guide box, in legend order (guides
+# top to bottom, keys column by column), as one list. A right axis's
+# item goes in the same list as the left axis's. NULL when there is no
+# legend. NA when it can't be read as plain key/label pairs (a colour
+# bar, a legend title), which then keeps ggplot2's own layout.
+# @noRd
+cpb_legend_items <- function(guide_box) {
+  if (!inherits(guide_box, "gtable")) return(NULL)
+  is_guide <- guide_box$layout$name == "guides" &
+    !vapply(guide_box$grobs, inherits, logical(1), what = "zeroGrob")
+  if (!any(is_guide)) return(NULL)
+  ord <- order(guide_box$layout$t[is_guide], guide_box$layout$l[is_guide])
+  items <- list()
+  for (gd in guide_box$grobs[is_guide][ord]) {
+    if (!inherits(gd, "gtable")) return(NA)
+    lay <- gd$layout
+    nonzero <- !vapply(gd$grobs, inherits, logical(1), what = "zeroGrob")
+    if (any(grepl("^title", lay$name) & nonzero)) return(NA)
+    is_key <- grepl("^key-", lay$name)
+    is_label <- grepl("^label-", lay$name)
+    if (!any(is_key) || !any(is_label)) return(NA)
+    cells <- unique(lay[is_key, c("t", "l")])
+    cells <- cells[order(cells$l, cells$t), , drop = FALSE]
+    for (i in seq_len(nrow(cells))) {
+      in_cell <- which(is_key & lay$t == cells$t[i] & lay$l == cells$l[i])
+      label_i <- which(is_label & lay$t == cells$t[i] & lay$l > cells$l[i])
+      if (!length(label_i)) return(NA)
+      text <- cpb_find_grob(gd$grobs[[label_i[which.min(lay$l[label_i])]]], "text")
+      if (is.null(text)) return(NA)
+      items[[length(items) + 1]] <- list(
+        key = grid::gTree(children = do.call(grid::gList, gd$grobs[in_cell[order(lay$z[in_cell])]])),
+        label = text$label, gp = text$gp
+      )
+    }
+  }
+  items
+}
+
+# The legend grid: `rows` items per column, filled column by column, from the top-left corner (`x`, `y`): symbol, a gap,
+# the label, and a fixed gap before the next column. Returns the grob
+# with its total width as attribute "cpb_width".
+# @noRd
+cpb_legend_grid <- function(items, rows, x, y) {
+  cm <- function(v) grid::unit(v, "cm")
+  sym <- cpb_legend_symbol_cm
+  col_of <- (seq_along(items) - 1) %/% rows
+  label_w <- lapply(items, function(it) grid::grobWidth(grid::textGrob(it$label, gp = it$gp)))
+  col_w <- lapply(sort(unique(col_of)), function(k) {
+    cm(sym[["width"]] + cpb_legend_symbol_txt_cm) + max(do.call(grid::unit.c, label_w[col_of == k]))
+  })
+  col_x <- list(x)
+  for (k in seq_along(col_w)[-1]) col_x[[k]] <- col_x[[k - 1]] + col_w[[k - 1]] + cm(cpb_legend_column_cm)
+  children <- list()
+  for (i in seq_along(items)) {
+    cx <- col_x[[col_of[i] + 1]]
+    cy <- y - cm(((i - 1) %% rows + 0.5) * cpb_legend_line_cm)
+    children <- c(children, list(
+      grid::gTree(children = grid::gList(items[[i]]$key), vp = grid::viewport(
+        x = cx, y = cy, width = cm(sym[["width"]]), height = cm(sym[["height"]]),
+        just = c("left", "centre"))),
+      grid::textGrob(items[[i]]$label, x = cx + cm(sym[["width"]] + cpb_legend_symbol_txt_cm),
+                     y = cy, hjust = 0, vjust = 0.5, gp = items[[i]]$gp)
+    ))
+  }
+  grob <- grid::gTree(children = do.call(grid::gList, children), name = "cpb-legend")
+  attr(grob, "cpb_width") <- sum(do.call(grid::unit.c, col_w)) + cm((length(col_w) - 1) * cpb_legend_column_cm)
+  grob
+}
+
+# The fixed figure bottom. The plot area ends 2.3 cm (1.25 cm without a
+# legend) above the figure's bottom edge, whatever sits below it. The
+# x-title is centred 0.6 cm below the plot area and right-aligned
+# 0.45 cm from the figure's right edge. The legend is laid out on the
+# legend grid (cpb_legend_grid()) with its first row centred 1.3 cm
+# above the bottom edge. A caption is drawn as a footnote, bottom
+# right. `legend` is the wrapper's legend argument: "bottom", "none",
+# or "filled-empty" (the legend's space kept, but empty). Facet strips
+# below the plot area push all of it down by their own height. NULL for
+# any other legend position, which keeps ggplot2's own layout.
+# @return The gtable, with the legend's width as attribute
+#   "cpb_legend_width" (a unit) when a legend was drawn.
+# @noRd
+cpb_figure_bottom <- function(g, legend, legend_grid = NULL) {
+  if (!is.character(legend) || !legend %in% c("bottom", "none", "filled-empty")) return(NULL)
+  cm <- function(v) grid::unit(v, "cm")
+  zero <- vapply(g$grobs, inherits, logical(1), what = "zeroGrob")
+  panel_b <- max(g$layout$b[grepl("^panel", g$layout$name)])
+  below <- (panel_b + 1):nrow(g)
+
+  box_i <- which(g$layout$name == "guide-box-bottom")
+  items <- if (identical(legend, "bottom") && length(box_i)) cpb_legend_items(g$grobs[[box_i]]) else NULL
+  has_legend <- !is.null(items) || identical(legend, "filled-empty")
+  total <- cm(if (has_legend) cpb_margin_south_cm else cpb_margin_south_no_legend_cm)
+
+  # Keep only the rows holding tick labels or facet strips. The
+  # x-title, legend and caption are redrawn at fixed positions below.
+  single_row <- g$layout$t == g$layout$b
+  kept <- vapply(below, function(r) {
+    any(single_row & g$layout$t == r & !zero & grepl("^(axis-b|strip-b)", g$layout$name))
+  }, logical(1))
+  strips <- vapply(below, function(r) {
+    any(single_row & g$layout$t == r & !zero & grepl("^strip-b", g$layout$name))
+  }, logical(1))
+  strip_h <- if (any(strips)) sum(g$heights[below[strips]]) else cm(0)
+  last <- nrow(g)
+  for (r in below[!kept & below != last]) g$heights[r] <- cm(0)
+  kept_h <- if (any(kept[below != last])) sum(g$heights[below[kept & below != last]]) else cm(0)
+  g$heights[last] <- max(cm(0), total + strip_h - kept_h)
+
+  region <- function(g, grob, name) {
+    gtable::gtable_add_grob(g, grob, t = panel_b + 1, b = last, l = 1, r = ncol(g),
+                            clip = "off", name = name)
+  }
+
+  xlab_i <- which(g$layout$name == "xlab-b")
+  if (length(xlab_i) && !zero[xlab_i]) {
+    text <- cpb_find_grob(g$grobs[[xlab_i]], "text")
+    g$grobs[[xlab_i]] <- ggplot2::zeroGrob()
+    if (!is.null(text)) {
+      g <- region(g, grid::textGrob(
+        text$label, x = grid::unit(1, "npc") - cm(cpb_labels_margin_cm),
+        y = grid::unit(1, "npc") - cm(cpb_x_title_cm) - strip_h,
+        hjust = 1, vjust = 0.5, gp = text$gp), "cpb-xlab")
+    }
+  }
+
+  caption_i <- which(g$layout$name == "caption")
+  if (length(caption_i) && !zero[caption_i]) {
+    text <- cpb_find_grob(g$grobs[[caption_i]], "text")
+    g$grobs[[caption_i]] <- ggplot2::zeroGrob()
+    if (!is.null(text)) {
+      g <- region(g, grid::textGrob(
+        text$label, x = grid::unit(1, "npc") - cm(cpb_footnote_cm[["x"]]),
+        y = cm(cpb_footnote_cm[["y"]]), hjust = 1, vjust = 0.5,
+        gp = grid::gpar(fontface = "italic", fontsize = cpb_font_pt * cpb_footnote_size,
+                        col = "black", fontfamily = cpb_font_family())), "cpb-caption")
+    }
+  }
+
+  if (length(box_i)) {
+    box <- g$grobs[[box_i]]
+    g$grobs[[box_i]] <- ggplot2::zeroGrob()
+    x <- cm(cpb_labels_margin_cm)
+    y <- grid::unit(1, "npc") - cm(cpb_legend_top_cm) - strip_h
+    if (is.list(items) && length(items)) {
+      # legend_nrow, else enough rows for legend_ncol columns, else 3
+      rows <- if (!is.null(legend_grid$nrow)) legend_grid$nrow
+        else if (!is.null(legend_grid$ncol)) ceiling(length(items) / legend_grid$ncol)
+        else cpb_legend_per_column
+      grid_grob <- cpb_legend_grid(items, rows, x, y)
+      attr(g, "cpb_legend_width") <- attr(grid_grob, "cpb_width")
+      g <- region(g, grid_grob, "cpb-legend")
+    } else if (identical(items, NA)) {
+      g <- region(g, grid::gTree(children = grid::gList(box), vp = grid::viewport(
+        x = x, y = y, width = grid::grobWidth(box), height = grid::grobHeight(box),
+        just = c("left", "top"))), "cpb-legend")
+      attr(g, "cpb_legend_width") <- grid::grobWidth(box)
+    }
+  }
   g
 }
 
@@ -486,6 +650,10 @@ cpb_ggsave_grob <- function(filename, grob, dpi, device, bg, width = NULL, heigh
 #'   it). Anything that does not fit around a fixed-size panel -- a
 #'   long title, a legend entry -- overflows past the figure's edge
 #'   instead of shrinking the panel to make room.
+#' @param lock If `TRUE` (default), a title or
+#'   legend wider than the page allows (its width minus 0.45 cm on each
+#'   side) is an error. If `FALSE`, it is only a warning. Text is
+#'   never shrunk to fit either way.
 #' @param ... Further arguments passed to [ggplot2::ggsave()] (or, when
 #'   `panel_size` applies, to `device` instead).
 #' @return Invisibly, the `filename` that was written.
@@ -509,6 +677,7 @@ save_cpb <- function(filename,
                       device = ragg::agg_png,
                       bg = cpb_bg,
                       panel_size = NULL,
+                      lock = TRUE,
                       ...) {
   # print.cpb_plot() (above) only exists to catch a bare print()
   # skipping the exact positioning below -- ggplot2::ggsave() itself
@@ -563,7 +732,6 @@ save_cpb <- function(filename,
 
   plot <- cpb_scale_y_lab_gap(plot, cpb_in_to_cm(width))
 
-  cpb_check_title(plot$labels$title, width)
   cpb_check_half_page(plot, width)
   cpb_check_category_labels(plot, width)
 
@@ -609,12 +777,19 @@ save_cpb <- function(filename,
   grob_aligned <- cpb_align_value_axis_title(grob)
   title_aligned <- !identical(grob_aligned, grob)
   grob <- grob_aligned
+  cpb_check_title(grob, width, lock)
 
   mirrored <- cpb_mirror_sec_axis_margin(grob)
   if (!is.null(mirrored)) grob <- mirrored
 
+  bottom <- cpb_figure_bottom(grob, attr(plot, "cpb_legend"), attr(plot, "cpb_legend_grid"))
+  if (!is.null(bottom)) {
+    grob <- bottom
+    cpb_check_legend(attr(grob, "cpb_legend_width"), width, lock)
+  }
+
   if (is.null(panel_size) && is.null(sec_ylab$label) && !title_aligned &&
-      is.null(mirrored)) {
+      is.null(mirrored) && is.null(bottom)) {
     ggplot2::ggsave(
       filename = filename,
       plot     = plot,
@@ -666,37 +841,56 @@ save_cpb <- function(filename,
   invisible(filename)
 }
 
-#' Warn when a title is too long for the page width
+#' Stop (or warn) when a title is too long for the page width
 #'
-#' The bold 9 pt title is drawn on one line unless it contains explicit
-#' `"\n"` breaks. A single line that runs wider than the panel is
-#' clipped or shrinks the figure, so this estimates the per-line
-#' character budget for the given width (9 pt bold within the house
-#' margins) and warns -- once -- when the longest title line exceeds it,
-#' suggesting a manual `"\n"` break. Multi-line titles are checked line
-#' by line, so a title already broken with `"\n"` passes.
+#' The title is drawn on one line unless it contains explicit `"\n"`
+#' breaks, and is never shrunk to fit. Its widest line is measured as
+#' drawn and must fit the figure's width minus 0.45 cm on each side.
+#' Otherwise it is an error with `lock = TRUE` and a warning with
+#' `lock = FALSE`.
 #'
-#' @param title The plot title (may be `NULL`, `""`, or contain `"\n"`).
+#' @param g The plot's gtable.
 #' @param width Figure width in inches.
+#' @param lock See [save_cpb()].
 #' @return Invisibly `TRUE` if every line fits, `FALSE` otherwise.
 #' @noRd
-cpb_check_title <- function(title, width) {
-  if (is.null(title) || !any(nzchar(title))) return(invisible(TRUE))
-  # usable text width: figure width minus the 10 pt left + 10 pt right
-  # plot margins, in points; ~5 pt per 9 pt bold glyph on average
-  budget <- floor((width * 72 - 20) / 5.0)
-  lines <- strsplit(as.character(title), "\n", fixed = TRUE)[[1]]
-  longest <- max(nchar(lines))
-  if (longest > budget) {
-    warning(
-      "ggcpb: the title's longest line is ", longest, " characters, which ",
-      "is likely too wide for a ", round(width, 2), " in figure (about ",
-      budget, " fit). Break it over two lines with \"\\n\".",
-      call. = FALSE
-    )
-    return(invisible(FALSE))
-  }
-  invisible(TRUE)
+cpb_check_title <- function(g, width, lock = TRUE) {
+  title_i <- which(g$layout$name == "title")
+  title <- if (length(title_i)) cpb_find_grob(g$grobs[[title_i[1]]], "text")
+  if (is.null(title) || !any(nzchar(title$label))) return(invisible(TRUE))
+  # The widest line, measured as drawn, must fit the figure width
+  # minus the 0.45 cm margin on both sides.
+  title_cm <- grid::convertWidth(grid::grobWidth(grid::textGrob(
+    title$label, gp = title$gp
+  )), "cm", valueOnly = TRUE)
+  cpb_check_fits("title", title_cm, width, lock,
+                 "Break it over two lines with \"\\n\", or shorten it.")
+}
+
+# Errors (lock = TRUE) or warns (lock = FALSE) when `what`, `width_cm`
+# wide, exceeds the figure `width` (inches) minus the 0.45 cm margin on
+# both sides.
+# @return Invisibly `TRUE` if it fits, `FALSE` otherwise.
+# @noRd
+cpb_check_fits <- function(what, width_cm, width, lock, advice) {
+  available_cm <- cpb_in_to_cm(width) - 2 * cpb_labels_margin_cm
+  if (width_cm <= available_cm + 1e-6) return(invisible(TRUE))
+  msg <- paste0(
+    "ggcpb: the ", what, " is ", round(width_cm, 2), " cm wide, but a ",
+    round(cpb_in_to_cm(width), 2), " cm figure leaves ", round(available_cm, 2),
+    " cm for it. ", advice
+  )
+  if (isTRUE(lock)) stop(msg, call. = FALSE)
+  warning(msg, call. = FALSE)
+  invisible(FALSE)
+}
+
+# cpb_check_fits() for the legend cpb_figure_bottom() drew, if any.
+# @noRd
+cpb_check_legend <- function(legend_width, width, lock) {
+  if (is.null(legend_width)) return(invisible(TRUE))
+  cpb_check_fits("legend", grid::convertWidth(legend_width, "cm", valueOnly = TRUE),
+                 width, lock, "Shorten the legend labels, or set legend_ncol/legend_nrow.")
 }
 
 #' Warn when the category labels are too long to sit side by side
@@ -705,11 +899,11 @@ cpb_check_title <- function(title, width) {
 #' width, so a handful of long names ("120% wml - mod.") run into each
 #' other rather than wrapping or rotating -- the house style keeps them
 #' horizontal. The fix is always the label, not the figure: shorten it,
-#' or break it over two lines with `"\n"`. Estimated the same way
-#' `cpb_check_title()` estimates a title's width (7 pt regular within
-#' the house margins), and deliberately generous about how much room a
-#' slot has, so this flags labels that genuinely collide rather than
-#' ones that merely come close.
+#' or break it over two lines with `"\n"`. Measured as drawn, like
+#' `cpb_check_title()` measures a title, and deliberately generous about
+#' how much room a slot has (the whole figure within the house margins),
+#' so this flags labels that genuinely collide rather than ones that
+#' merely come close.
 #'
 #' @param plot The plot passed to `save_cpb()`.
 #' @param width Figure width in inches, already resolved from `page`/
@@ -726,21 +920,22 @@ cpb_check_category_labels <- function(plot, width) {
   labels <- labels[!is.na(labels)]
   if (length(labels) < 2 || !is.character(labels)) return(invisible(TRUE))
 
-  # a label already broken with "\n" is measured by its longest line,
-  # the same way cpb_check_title() measures a title
-  widest <- max(vapply(
-    strsplit(labels, "\n", fixed = TRUE),
-    function(lines) max(nchar(lines)), integer(1)
-  ))
-  # usable width in points, minus the house left+right plot margins;
-  # ~3.5 pt per 7 pt glyph on average
-  slot <- (width * 72 - 20) / length(labels)
-  if (widest * 3.5 > slot) {
+  # Measured as drawn. A label broken with "\n" counts by its longest
+  # line.
+  el <- ggplot2::calc_element("axis.text.x.bottom", ggplot2::theme_get() + plot$theme)
+  if (!inherits(el, "element_text")) return(invisible(TRUE))
+  gp <- grid::gpar(fontsize = el$size, fontface = el$face, fontfamily = el$family)
+  widest <- max(vapply(labels, function(l) {
+    grid::convertWidth(grid::grobWidth(grid::textGrob(l, gp = gp)), "cm", valueOnly = TRUE)
+  }, numeric(1)))
+  # the figure's width within the house left and right margins, shared
+  slot <- (cpb_in_to_cm(width) - cpb_labels_margin_cm - cpb_margin_east_cm) / length(labels)
+  if (widest > slot) {
     warning(
-      "ggcpb: the longest category label is ", widest, " characters, which ",
-      "is too long for ", length(labels), " labels side by side on a ",
-      round(width, 2), " in figure (about ", max(floor(slot / 3.5), 1),
-      " fit). Text is too long for the category labels -- please shorten ",
+      "ggcpb: the longest category label is ", round(widest, 2), " cm wide, ",
+      "but ", length(labels), " labels side by side on a ",
+      round(cpb_in_to_cm(width), 2), " cm figure get about ", round(slot, 2),
+      " cm each. Text is too long for the category labels -- please shorten ",
       "them, or break them over two lines with \"\\n\".",
       call. = FALSE
     )
