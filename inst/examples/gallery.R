@@ -79,7 +79,7 @@ print(
     title = "Energierekening naar inkomen",
     ylab  = "energierekening (euro per maand)",
     xlab  = "besteedbaar inkomen (euro per maand)",
-    colourlab = "koopkracht (%)")
+    legend_title = "koopkracht (%)")
 )
 
 # Histogram ----

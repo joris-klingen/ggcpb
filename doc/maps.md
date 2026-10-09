@@ -41,7 +41,7 @@ gemeenten <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
 cpb_map(gemeenten, region = code, value = klasse,
   palette = "blues",
   title   = "Aandeel huishoudens met zonnepanelen",
-  filllab = "aandeel")
+  legend_title = "aandeel")
 ```
 
 <img src="maps_files/figure-gfm/map-classed-1.png" alt="" width="350px" />

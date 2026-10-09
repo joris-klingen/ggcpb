@@ -68,7 +68,7 @@ gemeenten <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
 cpb_map(gemeenten, region = code, value = klasse,
   palette = "blues",
   title   = "Aandeel huishoudens met zonnepanelen",
-  filllab = "aandeel")
+  legend_title = "aandeel")
 ```
 
 `cpb_cut()` is a house-styled wrapper around `cut()`: give it the

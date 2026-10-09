@@ -69,7 +69,7 @@ cpb_boxplot_extended(
   subtitle = NULL,
   xlab = NULL,
   ylab = NULL,
-  filllab = NULL,
+  legend_title = NULL,
   panel_fill = "#eef8ff",
   value_axis_linewidth = 0.7,
   zero_indicator = TRUE,
@@ -344,14 +344,19 @@ of the usual white one.}
 
 \item{title, subtitle}{Plot title/subtitle.}
 
-\item{xlab, filllab}{Axis and legend title overrides; default
-to \code{NULL} (no axis title), matching CPB house style.}
+\item{xlab}{Axis title override. Defaults to \code{NULL} (no axis
+title), matching CPB house style.}
 
 \item{ylab}{Label for the value axis (the \code{y} aesthetic). When
 \code{orientation = "horizontal"} it is drawn as the bottom axis title
 (after \code{coord_flip()}). When \code{"vertical"}, CPB house style renders
 it as the plot \emph{subtitle} -- unless an explicit \code{subtitle} is also
 given, in which case it falls back to a rotated y-axis title.}
+
+\item{legend_title}{Legend title, drawn in italic as the first row of
+the legend, with at most 2 rows of legend items below it (title and
+items together take the 3 rows a legend has without a title).
+\code{NULL} (default) draws no title, matching CPB house style.}
 
 \item{panel_fill}{Panel background colour. Defaults to \code{"#eef8ff"},
 the light blue this look is built around.}

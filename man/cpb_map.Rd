@@ -20,7 +20,7 @@ cpb_map(
   flush_legend = TRUE,
   title = NULL,
   subtitle = NULL,
-  filllab = NULL,
+  legend_title = NULL,
   ...
 )
 }
@@ -78,7 +78,7 @@ in the other wrappers. Ignored when \code{legend = "topleft"}.}
 \item{title, subtitle}{Plot title/subtitle. As elsewhere, \code{ylab} does
 not exist here: use \code{subtitle} for the unit caption.}
 
-\item{filllab}{Legend title; defaults to \code{NULL} (no title).}
+\item{legend_title}{Legend title. Defaults to \code{NULL} (no title).}
 
 \item{...}{Further arguments passed to \code{\link[ggplot2:geom_polygon]{ggplot2::geom_polygon()}}.}
 }

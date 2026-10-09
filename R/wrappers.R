@@ -32,6 +32,11 @@ cpb_wrapper_theme <- function(env = parent.frame()) {
 # built gtable. A legend that is not flush keeps ggplot2's own layout.
 cpb_wrapper_layout <- function(p, env = parent.frame()) {
   if (isTRUE(get0("flush_legend", envir = env, ifnotfound = TRUE))) {
+    nrow <- get0("legend_nrow", envir = env)
+    if (!is.null(get0("legend_title", envir = env)) && !is.null(nrow) && nrow > 2) {
+      stop("`legend_nrow` can be at most 2 with a `legend_title`: the title ",
+           "takes the first of the legend's 3 rows.", call. = FALSE)
+    }
     attr(p, "cpb_legend") <- get("legend", envir = env)
     attr(p, "cpb_legend_grid") <- list(ncol = get0("legend_ncol", envir = env),
                                        nrow = get0("legend_nrow", envir = env))
@@ -208,6 +213,21 @@ cpb_discrete_scale <- function(aesthetic = c("fill", "colour"), index = NULL,
       scale_colour_cpb_d(palette = palette, labels = labels)
     }
   }
+}
+
+# A numeric colour's legend: ordinary legend items rather than a colour
+# bar, one per palette colour, at evenly spaced values from the lowest
+# to the highest, so both limits are shown. Labels keep two significant digits of the step between them.
+# @noRd
+cpb_numeric_legend_scale <- function(values, style = "dutch") {
+  lims <- range(values, na.rm = TRUE)
+  n <- length(cpb_palette_colours("sequential"))
+  breaks <- unique(c(utils::head(seq(lims[1], lims[2], length.out = n), -1), lims[2]))
+  step <- diff(lims) / (n - 1)
+  # two significant digits of the step, without decimals that are always 0
+  accuracy <- if (step > 0) cpb_accuracy(round(breaks, 1 - floor(log10(step)))) else NULL
+  scale_colour_cpb_c(breaks = breaks, labels = label_number_nl(accuracy = accuracy, style = style),
+                     guide = "legend")
 }
 
 # A whole-number x axis (almost always a year) must never get a
@@ -1252,8 +1272,10 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   automatically: the value (`y`) aesthetic when
 #'   `orientation = "horizontal"` (after `coord_flip()`), the category
 #'   (`x`) aesthetic otherwise.
-#' @param filllab Legend title override; defaults to `NULL` (no legend
-#'   title), matching CPB house style.
+#' @param legend_title Legend title, drawn in italic as the first row of
+#'   the legend, with at most 2 rows of legend items below it (title and
+#'   items together take the 3 rows a legend has without a title).
+#'   `NULL` (default) draws no title, matching CPB house style.
 #' @param style Formatting style: `"dutch"` (default, `.` thousands, `,` decimal)
 #'   or `"english"` (`,` thousands, `.` decimal, English forecast / axis labels).
 #'   Taken from `getOption("ggcpb.style")`, so an English report can set
@@ -1324,7 +1346,7 @@ cpb_col <- function(data, x, y, fill = NULL,
                      subtitle = NULL,
                      xlab = NULL,
                      ylab = NULL,
-                     filllab = NULL,
+                     legend_title = NULL,
                     style = getOption("ggcpb.style", "dutch"),
                     ...) {
   style <- match.arg(style, c("dutch", "english"))
@@ -1577,7 +1599,7 @@ cpb_col <- function(data, x, y, fill = NULL,
   p <- cpb_add_facet(p, facet, facet_ncol, facet_scales)
 
   p <- p +
-    ggplot2::labs(title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y, fill = filllab) +
+    ggplot2::labs(title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y, fill = legend_title) +
     cpb_wrapper_theme()
   p <- cpb_wrapper_layout(p)
 
@@ -1647,8 +1669,8 @@ cpb_col <- function(data, x, y, fill = NULL,
 #'   zero on the value axis on top of the areas, as the CPB house
 #'   style does.
 #' @param title,subtitle Plot title/subtitle.
-#' @param xlab,filllab Axis and legend title overrides; default
-#'   to `NULL` (no axis title), matching CPB house style.
+#' @param xlab Axis title override. Defaults to `NULL` (no axis
+#'   title), matching CPB house style.
 #' @param ylab Label for the value (y) axis. Following CPB house style
 #'   it is rendered as the plot *subtitle* -- a left-aligned italic
 #'   caption above the panel -- unless an explicit `subtitle` is also
@@ -1712,7 +1734,7 @@ cpb_area <- function(data, x, y, fill,
                       subtitle = NULL,
                       xlab = NULL,
                       ylab = NULL,
-                      filllab = NULL,
+                      legend_title = NULL,
                      style = getOption("ggcpb.style", "dutch"),
                      ...) {
   style <- match.arg(style, c("dutch", "english"))
@@ -1810,7 +1832,7 @@ cpb_area <- function(data, x, y, fill,
   labs <- cpb_axis_labs(title, subtitle, xlab, ylab, force = has_sec && !is.null(sec_ylab))
 
   p <- p +
-    ggplot2::labs(title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y, fill = filllab) +
+    ggplot2::labs(title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y, fill = legend_title) +
     cpb_wrapper_theme()
   p <- cpb_wrapper_layout(p)
 
@@ -1918,8 +1940,8 @@ cpb_area <- function(data, x, y, fill,
 #'   automatically when the `y` data spans (or touches) zero, the
 #'   house bold-axis-if-zero convention.
 #' @param title,subtitle Plot title/subtitle.
-#' @param xlab,colourlab Axis and legend title overrides; default
-#'   to `NULL` (no axis title), matching CPB house style.
+#' @param xlab Axis title override. Defaults to `NULL` (no axis
+#'   title), matching CPB house style.
 #' @param ylab Label for the value (y) axis. Following CPB house style
 #'   it is rendered as the plot *subtitle* -- a left-aligned italic
 #'   caption above the panel (e.g. the unit, `"%"`) -- unless an
@@ -1991,7 +2013,7 @@ cpb_line <- function(data, x, y, colour = NULL,
                       subtitle = NULL,
                       xlab = NULL,
                       ylab = NULL,
-                      colourlab = NULL,
+                      legend_title = NULL,
                      style = getOption("ggcpb.style", "dutch"),
                      ...) {
   style <- match.arg(style, c("dutch", "english"))
@@ -2234,7 +2256,7 @@ cpb_line <- function(data, x, y, colour = NULL,
   labs <- cpb_axis_labs(title, subtitle, xlab, ylab, force = has_sec && !is.null(sec_ylab))
 
   cpb_wrapper_layout(p +
-    ggplot2::labs(title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y, colour = colourlab) +
+    ggplot2::labs(title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y, colour = legend_title) +
     cpb_wrapper_theme())
 }
 
@@ -2383,8 +2405,8 @@ cpb_line <- function(data, x, y, colour = NULL,
 #'   automatically when the p5-p95 data spans (or touches) zero, the
 #'   house bold-axis-if-zero convention.
 #' @param title,subtitle Plot title/subtitle.
-#' @param xlab,filllab Axis and legend title overrides; default
-#'   to `NULL` (no axis title), matching CPB house style.
+#' @param xlab Axis title override. Defaults to `NULL` (no axis
+#'   title), matching CPB house style.
 #' @param ylab Label for the value axis (the `y` aesthetic). When
 #'   `orientation = "horizontal"` it is drawn as the bottom axis title
 #'   (after `coord_flip()`). When `"vertical"`, CPB house style renders
@@ -2464,7 +2486,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                      subtitle = NULL,
                      xlab = NULL,
                      ylab = NULL,
-                     filllab = NULL,
+                     legend_title = NULL,
                     style = getOption("ggcpb.style", "dutch"),
                     ...) {
   style <- match.arg(style, c("dutch", "english"))
@@ -2867,7 +2889,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   labs <- cpb_axis_labs(title, subtitle, xlab, ylab, orientation, force = has_sec && !is.null(sec_ylab))
 
   p <- p +
-    ggplot2::labs(title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y, fill = filllab) +
+    ggplot2::labs(title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y, fill = legend_title) +
     cpb_wrapper_theme()
   p <- cpb_wrapper_layout(p)
 
@@ -2916,8 +2938,8 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
 #'   value axis underneath the points. `NULL` (default) draws it
 #'   automatically when the `y` data spans (or touches) zero.
 #' @param title,subtitle Plot title/subtitle.
-#' @param xlab,colourlab Axis and legend title overrides; default to
-#'   `NULL`, matching CPB house style.
+#' @param xlab Axis title override. Defaults to `NULL`, matching CPB
+#'   house style.
 #' @param ylab Label for the value (y) axis. Following CPB house style
 #'   it is rendered as the plot *subtitle* -- a left-aligned italic
 #'   caption above the panel -- unless an explicit `subtitle` is also
@@ -2962,7 +2984,7 @@ cpb_scatter <- function(data, x, y, colour = NULL,
                          subtitle = NULL,
                          xlab = NULL,
                          ylab = NULL,
-                         colourlab = NULL,
+                         legend_title = NULL,
                          style = getOption("ggcpb.style", "dutch"),
                          ...) {
   style <- match.arg(style, c("dutch", "english"))
@@ -3010,14 +3032,11 @@ cpb_scatter <- function(data, x, y, colour = NULL,
   if (has_colour) {
     colvals <- rlang::eval_tidy(colour, data)
     p <- p + if (is.numeric(colvals)) {
-      scale_colour_cpb_c()
+      cpb_numeric_legend_scale(colvals, style)
     } else {
       cpb_discrete_scale("colour", index, palette)
     }
-    if (!is.numeric(colvals)) {
-      # a numeric colour draws a colourbar, which takes neither setting
-      p <- cpb_add_legend_guide(p, "colour", reverse_legend, legend_ncol, legend_nrow)
-    }
+    p <- cpb_add_legend_guide(p, "colour", reverse_legend, legend_ncol, legend_nrow)
   }
 
   # both axes are drawn flush at both ends via pretty() breaks -- kept
@@ -3062,7 +3081,7 @@ cpb_scatter <- function(data, x, y, colour = NULL,
   labs <- cpb_axis_labs(title, subtitle, xlab, ylab)
 
   cpb_wrapper_layout(p +
-    ggplot2::labs(title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y, colour = colourlab) +
+    ggplot2::labs(title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y, colour = legend_title) +
     cpb_wrapper_theme())
 }
 
@@ -3132,8 +3151,8 @@ cpb_hist_bin_args <- function(xvals, binwidth, bins, dots, facet_scales) {
 #' @param zeroline If `TRUE` (default), draw a solid black line at
 #'   zero on the count axis on top of the bars.
 #' @param title,subtitle Plot title/subtitle.
-#' @param xlab,filllab Axis and legend title overrides; default to
-#'   `NULL`, matching CPB house style.
+#' @param xlab Axis title override. Defaults to `NULL`, matching CPB
+#'   house style.
 #' @param ylab Label for the count (y) axis, rendered as the plot
 #'   *subtitle* (e.g. `"aantal"`) unless an explicit `subtitle` is
 #'   also given.
@@ -3176,7 +3195,7 @@ cpb_hist <- function(data, x, fill = NULL,
                       subtitle = NULL,
                       xlab = NULL,
                       ylab = NULL,
-                      filllab = NULL,
+                      legend_title = NULL,
                       style = getOption("ggcpb.style", "dutch"),
                       ...) {
   style <- match.arg(style, c("dutch", "english"))
@@ -3239,7 +3258,7 @@ cpb_hist <- function(data, x, fill = NULL,
   labs <- cpb_axis_labs(title, subtitle, xlab, ylab)
 
   cpb_wrapper_layout(p +
-    ggplot2::labs(title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y, fill = filllab) +
+    ggplot2::labs(title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y, fill = legend_title) +
     cpb_wrapper_theme())
 }
 
@@ -3366,7 +3385,6 @@ cpb_hist <- function(data, x, fill = NULL,
 #'   value axis lands after `coord_flip()`).
 #' @param ylab Label for the category axis. Following CPB house style
 #'   this is normally left `NULL`.
-#' @param colourlab Legend title override; defaults to `NULL`.
 #' @param ... Further arguments passed to [ggplot2::geom_point()].
 #' @return A `ggplot` object.
 #' @examples
@@ -3435,7 +3453,7 @@ cpb_dot <- function(data, x, y, lower, upper,
                      subtitle = NULL,
                      xlab = NULL,
                      ylab = NULL,
-                     colourlab = NULL,
+                     legend_title = NULL,
                     style = getOption("ggcpb.style", "dutch"),
                     ...) {
   style <- match.arg(style, c("dutch", "english"))
@@ -3613,7 +3631,7 @@ cpb_dot <- function(data, x, y, lower, upper,
 
   p <- p +
     ggplot2::labs(title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y,
-                  colour = colourlab) +
+                  colour = legend_title) +
     cpb_wrapper_theme()
   p <- cpb_wrapper_layout(p)
 
@@ -3725,8 +3743,6 @@ cpb_dot <- function(data, x, y, lower, upper,
 #'   `grid_linewidth` are not exposed here: a donut draws no axis or
 #'   gridlines for them to affect.
 #' @param title,subtitle Plot title/subtitle.
-#' @param filllab Legend title override; defaults to `NULL` (no
-#'   title), matching CPB house style.
 #' @param style Formatting style for the percentages: `"dutch"`
 #'   (default, `,` decimal) or `"english"` (`.` decimal). Taken from
 #'   `getOption("ggcpb.style")`, so an English report can set
@@ -3763,7 +3779,7 @@ cpb_donut <- function(data, fill, y,
                       flush_legend = TRUE,
                       title = NULL,
                       subtitle = NULL,
-                      filllab = NULL,
+                      legend_title = NULL,
                       style = getOption("ggcpb.style", "dutch"),
                       ...) {
   fill <- rlang::enquo(fill)
@@ -4040,7 +4056,7 @@ cpb_donut <- function(data, fill, y,
   subtitle <- cpb_reserve_subtitle(title, subtitle)
 
   p <- p +
-    ggplot2::labs(title = title, subtitle = subtitle, fill = filllab) +
+    ggplot2::labs(title = title, subtitle = subtitle, fill = legend_title) +
     theme_cpb(
       legend = legend, flush_legend = flush_legend,
       grid = "none", ticks = FALSE

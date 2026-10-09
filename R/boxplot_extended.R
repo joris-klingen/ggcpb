@@ -162,7 +162,7 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
                                   subtitle = NULL,
                                   xlab = NULL,
                                   ylab = NULL,
-                                  filllab = NULL,
+                                  legend_title = NULL,
                                   panel_fill = "#eef8ff",
                                   value_axis_linewidth = 0.7,
                                   zero_indicator = TRUE,
@@ -218,7 +218,7 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
     axis_text_size = axis_text_size,
     grid_colour = grid_colour, grid_linewidth = grid_linewidth,
     title = title, subtitle = subtitle, xlab = xlab, ylab = ylab,
-    filllab = filllab, style = style, ...
+    legend_title = legend_title, style = style, ...
   )
 
   # the value axis is x post-coord_flip() when horizontal, y when not

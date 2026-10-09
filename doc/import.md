@@ -264,26 +264,26 @@ to, so a table for one `plot_type` does not necessarily match another.
 | setting | kind | default | example |
 |:---|:---|:---|:---|
 | flush_legend | literal | TRUE | TRUE |
-| index | literal |  | gebruik colour_index of fill_index in plaats hiervan |
+| index | literal |  | use colour_index or fill_index instead |
 | legend | literal | bottom | bottom |
 | legend_ncol | literal |  | 2 |
 | legend_nrow | literal |  |  |
+| legend_title | literal |  | title of the legend |
 | palette | literal | qualitative | qualitative |
-| subtitle | literal |  | ondertitel (vervangt de standaard eenheid boven de figuur) |
-| title | literal |  | Titel van de figuur |
+| subtitle | literal |  | subtitle (replaces the default unit above the figure) |
+| title | literal |  | Title of the figure |
 
 **Table A2. Parameters specific to `col`**
 
 | setting | kind | default | example |
 |:---|:---|:---|:---|
 | axis_text_size | literal | 7 | 7 |
-| facet | column (from data_csv) |  | regio |
+| facet | column (from data_csv) |  | region |
 | facet_ncol | literal |  | 2 |
 | facet_scales | literal | fixed | fixed |
-| fill | column (from data_csv) |  | groep |
+| fill | column (from data_csv) |  | group |
 | fill_colour | literal |  | \#005faf |
 | fill_index | literal |  | 2;6 |
-| filllab | literal |  | titel van de vullingslegenda |
 | forecast_label | literal | raming | raming |
 | forecast_x | literal |  | 2025 |
 | grid_colour | literal | black | black |
@@ -299,7 +299,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_at | literal |  |  |
 | sec_col_width | literal | 0.3 | 0.3 |
 | sec_colour | literal |  | \#e6006e |
-| sec_label | literal |  | naam van de tweede reeks |
+| sec_label | literal |  | name of the second series |
 | sec_labels | literal |  |  |
 | sec_limits | literal |  | 0;100 |
 | sec_linewidth | literal | 0.55 | 0.55 |
@@ -307,24 +307,24 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_points | literal | FALSE | FALSE |
 | sec_scale_auto | literal | TRUE | TRUE |
 | sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
-| sec_y | column (from data_csv) |  | werkloosheid |
-| sec_ylab | literal |  | eenheid van de rechteras |
+| sec_y | column (from data_csv) |  | unemployment |
+| sec_ylab | literal |  | unit of the right axis |
 | style | literal | dutch/english (default: dutch) | dutch/english (default: dutch) |
 | ticks | literal | TRUE | TRUE |
 | value_accuracy | literal |  | 0.1 |
 | value_breaks | literal |  | 0;25;50;75;100 |
 | value_labels | literal | FALSE | FALSE |
 | value_limits | literal |  | 0;100 |
-| x | column (from data_csv) | (required) | jaar |
+| x | column (from data_csv) | (required) | year |
 | x_lim | literal |  | 2015;2025 |
 | x_lim_follow_data | literal | FALSE | FALSE |
-| xlab | literal |  | eenheid onderaan de x-as |
-| y | column (from data_csv) | (required) | koopkracht |
+| xlab | literal |  | unit below the x axis |
+| y | column (from data_csv) | (required) | purchasing_power |
 | y_r_at | literal |  |  |
 | y_r_lab | literal |  |  |
 | y_r_lim | literal |  |  |
 | y_r_scale_auto | literal |  |  |
-| ylab | literal |  | % mutatie |
+| ylab | literal |  | % change |
 | zeroline | literal | TRUE | TRUE |
 
 **Table A3. Parameters specific to `area`**
@@ -332,12 +332,11 @@ to, so a table for one `plot_type` does not necessarily match another.
 | setting | kind | default | example |
 |:---|:---|:---|:---|
 | axis_text_size | literal | 7 | 7 |
-| facet | column (from data_csv) |  | regio |
+| facet | column (from data_csv) |  | region |
 | facet_ncol | literal |  | 2 |
 | facet_scales | literal | fixed | fixed |
-| fill | column (from data_csv) | (required) | groep |
+| fill | column (from data_csv) | (required) | group |
 | fill_index | literal |  | 2;6 |
-| filllab | literal |  | titel van de vullingslegenda |
 | forecast_label | literal | raming | raming |
 | forecast_x | literal |  | 2025 |
 | grid_colour | literal | black | black |
@@ -349,7 +348,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_at | literal |  |  |
 | sec_col_width | literal | 0.3 | 0.3 |
 | sec_colour | literal |  | \#e6006e |
-| sec_label | literal |  | naam van de tweede reeks |
+| sec_label | literal |  | name of the second series |
 | sec_labels | literal |  |  |
 | sec_limits | literal |  | 0;100 |
 | sec_linewidth | literal | 0.55 | 0.55 |
@@ -357,23 +356,23 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_points | literal | FALSE | FALSE |
 | sec_scale_auto | literal | TRUE | TRUE |
 | sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
-| sec_y | column (from data_csv) |  | werkloosheid |
-| sec_ylab | literal |  | eenheid van de rechteras |
+| sec_y | column (from data_csv) |  | unemployment |
+| sec_ylab | literal |  | unit of the right axis |
 | style | literal | dutch/english (default: dutch) | dutch/english (default: dutch) |
 | ticks | literal | TRUE | TRUE |
 | value_accuracy | literal |  | 0.1 |
 | value_breaks | literal |  | 0;25;50;75;100 |
 | value_limits | literal |  | 0;100 |
-| x | column (from data_csv) | (required) | jaar |
+| x | column (from data_csv) | (required) | year |
 | x_lim | literal |  | 2015;2025 |
 | x_lim_follow_data | literal | FALSE | FALSE |
-| xlab | literal |  | eenheid onderaan de x-as |
-| y | column (from data_csv) | (required) | koopkracht |
+| xlab | literal |  | unit below the x axis |
+| y | column (from data_csv) | (required) | purchasing_power |
 | y_r_at | literal |  |  |
 | y_r_lab | literal |  |  |
 | y_r_lim | literal |  |  |
 | y_r_scale_auto | literal |  |  |
-| ylab | literal |  | % mutatie |
+| ylab | literal |  | % change |
 | zeroline | literal | TRUE | TRUE |
 
 **Table A4. Parameters specific to `line`**
@@ -382,10 +381,9 @@ to, so a table for one `plot_type` does not necessarily match another.
 |:---|:---|:---|:---|
 | axis_text_size | literal | 7 | 7 |
 | color_index | literal |  | 2;6 |
-| colour | column (from data_csv) |  | groep |
+| colour | column (from data_csv) |  | group |
 | colour_index | literal |  | 2;6 |
-| colourlab | literal |  | titel van de kleurenlegenda |
-| facet | column (from data_csv) |  | regio |
+| facet | column (from data_csv) |  | region |
 | facet_ncol | literal |  | 2 |
 | facet_scales | literal | fixed | fixed |
 | forecast_label | literal | raming | raming |
@@ -403,7 +401,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_at | literal |  |  |
 | sec_col_width | literal | 0.3 | 0.3 |
 | sec_colour | literal |  | \#e6006e |
-| sec_label | literal |  | naam van de tweede reeks |
+| sec_label | literal |  | name of the second series |
 | sec_labels | literal |  |  |
 | sec_limits | literal |  | 0;100 |
 | sec_linewidth | literal |  | 0.55 |
@@ -411,25 +409,25 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_points | literal | FALSE | FALSE |
 | sec_scale_auto | literal | TRUE | TRUE |
 | sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
-| sec_y | column (from data_csv) |  | werkloosheid |
-| sec_ylab | literal |  | eenheid van de rechteras |
+| sec_y | column (from data_csv) |  | unemployment |
+| sec_ylab | literal |  | unit of the right axis |
 | style | literal | dutch/english (default: dutch) | dutch/english (default: dutch) |
 | ticks | literal | TRUE | TRUE |
 | value_accuracy | literal |  | 0.1 |
 | value_breaks | literal |  | 0;25;50;75;100 |
 | value_limits | literal |  | 0;100 |
-| x | column (from data_csv) | (required) | jaar |
+| x | column (from data_csv) | (required) | year |
 | x_lim | literal |  | 2015;2025 |
 | x_lim_follow_data | literal | TRUE | TRUE |
-| xlab | literal |  | eenheid onderaan de x-as |
-| y | column (from data_csv) | (required) | koopkracht |
+| xlab | literal |  | unit below the x axis |
+| y | column (from data_csv) | (required) | purchasing_power |
 | y_r_at | literal |  |  |
 | y_r_lab | literal |  |  |
 | y_r_lim | literal |  |  |
 | y_r_scale_auto | literal |  |  |
-| ylab | literal |  | % mutatie |
-| ymax | column (from data_csv) |  | bovengrens |
-| ymin | column (from data_csv) |  | ondergrens |
+| ylab | literal |  | % change |
+| ymax | column (from data_csv) |  | upper_bound |
+| ymin | column (from data_csv) |  | lower_bound |
 | zeroline | literal |  | TRUE |
 
 **Table A5. Parameters specific to `box`**
@@ -439,21 +437,20 @@ to, so a table for one `plot_type` does not necessarily match another.
 | axis_text_size | literal | 7 | 7 |
 | box_labels | literal |  | TRUE |
 | box_style | literal | ggcpb/james/modern/dot (default: ggcpb) | ggcpb/james/modern/dot (default: ggcpb) |
-| dot_labels | literal |  | p5:onderste 5%;p95:bovenste 5% |
-| facet | column (from data_csv) |  | regio |
+| dot_labels | literal |  | p5:bottom 5%;p95:top 5% |
+| facet | column (from data_csv) |  | region |
 | facet_ncol | literal |  | 2 |
 | facet_scales | literal | fixed | fixed |
-| fill | column (from data_csv) |  | groep |
+| fill | column (from data_csv) |  | group |
 | fill_colour | literal |  | \#005faf |
 | fill_index | literal |  | 2;6 |
-| filllab | literal |  | titel van de vullingslegenda |
 | grid_colour | literal | black | black |
 | grid_linewidth | literal | 0.1 | 0.1 |
 | group | column (from data_csv) |  | sector |
 | group_gap | literal | 0.7 | 0.7 |
 | label_accuracy | literal | 0.1 | 0.1 |
 | linewidth | literal | 0.25 | 0.25 |
-| mean | column (from data_csv) |  | gemiddelde |
+| mean | column (from data_csv) |  | mean |
 | minor | literal | FALSE | FALSE |
 | orientation | literal | vertical/horizontal (default: vertical) | vertical/horizontal (default: vertical) |
 | p25 | column (from data_csv) | (required) | p25 |
@@ -467,7 +464,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_at | literal |  |  |
 | sec_col_width | literal | 0.3 | 0.3 |
 | sec_colour | literal |  | \#e6006e |
-| sec_label | literal |  | naam van de tweede reeks |
+| sec_label | literal |  | name of the second series |
 | sec_labels | literal |  |  |
 | sec_limits | literal |  | 0;100 |
 | sec_linewidth | literal | 0.55 | 0.55 |
@@ -475,8 +472,8 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_points | literal | FALSE | FALSE |
 | sec_scale_auto | literal | TRUE | TRUE |
 | sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
-| sec_y | column (from data_csv) |  | werkloosheid |
-| sec_ylab | literal |  | eenheid van de rechteras |
+| sec_y | column (from data_csv) |  | unemployment |
+| sec_ylab | literal |  | unit of the right axis |
 | style | literal | dutch/english (default: dutch) | dutch/english (default: dutch) |
 | ticks | literal | TRUE | TRUE |
 | value_accuracy | literal |  | 0.1 |
@@ -484,15 +481,15 @@ to, so a table for one `plot_type` does not necessarily match another.
 | value_breaks | literal |  | 0;25;50;75;100 |
 | value_limits | literal |  | 0;100 |
 | width | literal | 0.5 | 0.5 |
-| x | column (from data_csv) | (required) | jaar |
+| x | column (from data_csv) | (required) | year |
 | x_lim | literal |  | 2015;2025 |
 | x_lim_follow_data | literal | TRUE | TRUE |
-| xlab | literal |  | eenheid onderaan de x-as |
+| xlab | literal |  | unit below the x axis |
 | y_r_at | literal |  |  |
 | y_r_lab | literal |  |  |
 | y_r_lim | literal |  |  |
 | y_r_scale_auto | literal |  |  |
-| ylab | literal |  | % mutatie |
+| ylab | literal |  | % change |
 | zeroline | literal |  | TRUE |
 
 **Table A6. Parameters specific to `dot`**
@@ -502,10 +499,9 @@ to, so a table for one `plot_type` does not necessarily match another.
 | axis_text_size | literal | 7 | 7 |
 | cap_width | literal | 0.25 | 0.25 |
 | color_index | literal |  | 2;6 |
-| colour | column (from data_csv) |  | groep |
+| colour | column (from data_csv) |  | group |
 | colour_index | literal |  | 2;6 |
-| colourlab | literal |  | titel van de kleurenlegenda |
-| facet | column (from data_csv) |  | regio |
+| facet | column (from data_csv) |  | region |
 | facet_ncol | literal |  | 2 |
 | facet_scales | literal | fixed | fixed |
 | grid_colour | literal | black | black |
@@ -513,7 +509,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | group | column (from data_csv) |  | sector |
 | group_gap | literal | 0.7 | 0.7 |
 | linewidth | literal | 0.4 | 0.4 |
-| lower | column (from data_csv) | (required) | ondergrens |
+| lower | column (from data_csv) | (required) | lower_bound |
 | minor | literal | FALSE | FALSE |
 | orientation | literal | horizontal/vertical (default: horizontal) | horizontal/vertical (default: horizontal) |
 | pct_axis | literal | FALSE | FALSE |
@@ -523,7 +519,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_at | literal |  |  |
 | sec_col_width | literal | 0.3 | 0.3 |
 | sec_colour | literal |  | \#e6006e |
-| sec_label | literal |  | naam van de tweede reeks |
+| sec_label | literal |  | name of the second series |
 | sec_labels | literal |  |  |
 | sec_limits | literal |  | 0;100 |
 | sec_linewidth | literal | 0.55 | 0.55 |
@@ -531,25 +527,25 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_points | literal | FALSE | FALSE |
 | sec_scale_auto | literal | TRUE | TRUE |
 | sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
-| sec_y | column (from data_csv) |  | werkloosheid |
-| sec_ylab | literal |  | eenheid van de rechteras |
+| sec_y | column (from data_csv) |  | unemployment |
+| sec_ylab | literal |  | unit of the right axis |
 | size | literal | 1.4 | 1.4 |
 | style | literal | dutch/english (default: dutch) | dutch/english (default: dutch) |
 | ticks | literal | TRUE | TRUE |
-| upper | column (from data_csv) | (required) | bovengrens |
+| upper | column (from data_csv) | (required) | upper_bound |
 | value_accuracy | literal |  | 0.1 |
 | value_breaks | literal |  | 0;25;50;75;100 |
 | value_limits | literal |  | 0;100 |
-| x | column (from data_csv) | (required) | jaar |
+| x | column (from data_csv) | (required) | year |
 | x_lim | literal |  | 2015;2025 |
 | x_lim_follow_data | literal | TRUE | TRUE |
-| xlab | literal |  | eenheid onderaan de x-as |
-| y | column (from data_csv) | (required) | koopkracht |
+| xlab | literal |  | unit below the x axis |
+| y | column (from data_csv) | (required) | purchasing_power |
 | y_r_at | literal |  |  |
 | y_r_lab | literal |  |  |
 | y_r_lim | literal |  |  |
 | y_r_scale_auto | literal |  |  |
-| ylab | literal |  | % mutatie |
+| ylab | literal |  | % change |
 | zeroline | literal | TRUE | TRUE |
 
 **Table A7. Parameters specific to `scatter`**
@@ -558,10 +554,9 @@ to, so a table for one `plot_type` does not necessarily match another.
 |:---|:---|:---|:---|
 | axis_text_size | literal | 7 | 7 |
 | color_index | literal |  | 2;6 |
-| colour | column (from data_csv) |  | groep |
+| colour | column (from data_csv) |  | group |
 | colour_index | literal |  | 2;6 |
-| colourlab | literal |  | titel van de kleurenlegenda |
-| facet | column (from data_csv) |  | regio |
+| facet | column (from data_csv) |  | region |
 | facet_ncol | literal |  | 2 |
 | facet_scales | literal | fixed | fixed |
 | forecast_label | literal | raming | raming |
@@ -574,12 +569,12 @@ to, so a table for one `plot_type` does not necessarily match another.
 | size | literal | 0.8 | 0.8 |
 | style | literal | dutch/english (default: dutch) | dutch/english (default: dutch) |
 | ticks | literal | TRUE | TRUE |
-| x | column (from data_csv) | (required) | jaar |
+| x | column (from data_csv) | (required) | year |
 | x_lim | literal |  | 2015;2025 |
 | x_lim_follow_data | literal | FALSE | FALSE |
-| xlab | literal |  | eenheid onderaan de x-as |
-| y | column (from data_csv) | (required) | koopkracht |
-| ylab | literal |  | % mutatie |
+| xlab | literal |  | unit below the x axis |
+| y | column (from data_csv) | (required) | purchasing_power |
+| ylab | literal |  | % change |
 | zeroline | literal |  | TRUE |
 
 **Table A8. Parameters specific to `hist`**
@@ -589,13 +584,12 @@ to, so a table for one `plot_type` does not necessarily match another.
 | axis_text_size | literal | 7 | 7 |
 | bins | literal |  | 30 |
 | binwidth | literal |  | 5 |
-| facet | column (from data_csv) |  | regio |
+| facet | column (from data_csv) |  | region |
 | facet_ncol | literal |  | 2 |
 | facet_scales | literal | fixed | fixed |
-| fill | column (from data_csv) |  | groep |
+| fill | column (from data_csv) |  | group |
 | fill_colour | literal |  | \#005faf |
 | fill_index | literal |  | 2;6 |
-| filllab | literal |  | titel van de vullingslegenda |
 | grid_colour | literal | black | black |
 | grid_linewidth | literal | 0.1 | 0.1 |
 | minor | literal | FALSE | FALSE |
@@ -604,20 +598,19 @@ to, so a table for one `plot_type` does not necessarily match another.
 | reverse_legend | literal | TRUE | TRUE |
 | style | literal | dutch/english (default: dutch) | dutch/english (default: dutch) |
 | ticks | literal | TRUE | TRUE |
-| x | column (from data_csv) | (required) | jaar |
+| x | column (from data_csv) | (required) | year |
 | x_lim | literal |  | 2015;2025 |
 | x_lim_follow_data | literal | FALSE | FALSE |
-| xlab | literal |  | eenheid onderaan de x-as |
-| ylab | literal |  | % mutatie |
+| xlab | literal |  | unit below the x axis |
+| ylab | literal |  | % change |
 | zeroline | literal | TRUE | TRUE |
 
 **Table A9. Parameters specific to `donut`**
 
 | setting | kind | default | example |
 |:---|:---|:---|:---|
-| fill | column (from data_csv) | (required) | groep |
-| filllab | literal |  | titel van de vullingslegenda |
-| label | column (from data_csv) |  | naam |
+| fill | column (from data_csv) | (required) | group |
+| label | column (from data_csv) |  | name |
 | label_accuracy | literal | 1 | 1 |
 | label_colour | literal | black | black |
 | label_style | literal | wedge/leader (default: wedge) | wedge/leader (default: wedge) |
@@ -627,7 +620,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | reverse_legend | literal | FALSE | FALSE |
 | ring_width | literal | 0.6 | 0.6 |
 | wedge_labels | literal | TRUE | TRUE |
-| y | column (from data_csv) | (required) | koopkracht |
+| y | column (from data_csv) | (required) | purchasing_power |
 
 A parameter of kind `column` takes a column name from the data file. A
 parameter of kind `literal` takes a value directly from the parameter

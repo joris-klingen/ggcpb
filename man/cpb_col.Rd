@@ -62,7 +62,7 @@ cpb_col(
   subtitle = NULL,
   xlab = NULL,
   ylab = NULL,
-  filllab = NULL,
+  legend_title = NULL,
   style = getOption("ggcpb.style", "dutch"),
   ...
 )
@@ -320,8 +320,10 @@ italic caption at the top -- not as a rotated axis title. In a
 horizontal bar chart (\code{orientation = "horizontal"}) the vertical
 axis is the category axis; in a vertical one it is the value axis.}
 
-\item{filllab}{Legend title override; defaults to \code{NULL} (no legend
-title), matching CPB house style.}
+\item{legend_title}{Legend title, drawn in italic as the first row of
+the legend, with at most 2 rows of legend items below it (title and
+items together take the 3 rows a legend has without a title).
+\code{NULL} (default) draws no title, matching CPB house style.}
 
 \item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
 or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).
