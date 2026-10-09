@@ -7,7 +7,7 @@
 save_cpb(
   filename,
   plot = ggplot2::last_plot(),
-  page = c("half", "full"),
+  page = c("half", "full", "small"),
   preset = c("report", "presentation"),
   height = NULL,
   width = NULL,
@@ -23,17 +23,19 @@ save_cpb(
 
 \item{plot}{The plot to save; defaults to \code{\link[ggplot2:last_plot]{ggplot2::last_plot()}}.}
 
-\item{page}{Either \code{"half"} (default, 2.98 in wide) or \code{"full"}
-(5.96 in wide). Ignored if \code{width} is supplied explicitly.}
+\item{page}{\code{"half"} (default, 7.5 cm wide), \code{"full"} (15.5 cm wide)
+or \code{"small"} (6.8 cm wide and tall, for a figure in a "kader").
+Ignored if \code{width} is supplied explicitly.}
 
-\item{preset}{Either \code{"report"} (default, 2.98 in tall) or
-\code{"presentation"} (2.5 in tall). Ignored if \code{height} is supplied
-explicitly.}
+\item{preset}{Either \code{"report"} (default, 7.5 cm tall, or 6.8 cm
+for \code{page = "small"}) or \code{"presentation"} (2.5 in tall). Ignored
+if \code{height} is supplied explicitly.}
 
 \item{height}{Explicit height in inches. \code{NULL} (default) uses
 \code{preset} to determine the height.}
 
-\item{width}{Explicit width in inches; must be \code{2.98} or \code{5.96}.
+\item{width}{Explicit width in inches. Must be \code{7.5 / 2.54},
+\code{15.5 / 2.54} or \code{6.8 / 2.54}.
 \code{NULL} (default) uses \code{page} to determine the width.}
 
 \item{dpi}{Resolution in dots per inch; defaults to \code{300}. CPB tall
@@ -70,12 +72,14 @@ bundled \code{RijksoverheidSansText} font to render correctly).
 }
 \details{
 Width is strict: it is set by \code{page}, not free-form. \code{page = "half"}
-gives a width of 2.98 in; \code{page = "full"} gives 5.96 in. An explicit
-\code{width} is only an escape hatch and is validated against these two
+gives a width of 7.5 cm, \code{page = "full"} 15.5 cm and \code{page = "small"}
+6.8 cm (the size for a figure in a "kader"). An explicit
+\code{width} is only an escape hatch and is validated against these
 values -- any other width errors, so a stray \code{width = 8} fails
 loudly rather than silently producing an off-spec figure.
 
-Height defaults to 2.98 in (the \code{"report"} preset). Pass
+Height defaults to 7.5 cm (the \code{"report"} preset), or 6.8 cm for
+\code{page = "small"}, which is square too. Pass
 \code{preset = "presentation"} for the 2.5 in presentation height, or set
 \code{height} explicitly for anything else (e.g. a tall stacked-facet
 export) -- an explicit \code{height} always wins over \code{preset}. A

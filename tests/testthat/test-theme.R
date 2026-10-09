@@ -109,9 +109,11 @@ test_that("theme_cpb axis_text_size and legend_key_size are applied", {
   expect_equal(as.numeric(th_def$legend.key.width), 0.30)
 })
 
-test_that("theme_cpb uses the tight house margins", {
+test_that("theme_cpb sets the fixed left and right margins", {
   th <- theme_cpb()
-  expect_equal(as.numeric(th$plot.margin), c(10, 10, 8, 10))
+  cm <- function(u) grid::convertUnit(u, "cm", valueOnly = TRUE)
+  # top and bottom in pt, right 0.635 cm, left 0.45 cm
+  expect_equal(cm(th$plot.margin), c(10 / 72.27 * 2.54, 0.635, 8 / 72.27 * 2.54, 0.45))
 })
 
 test_that("theme_cpb pins the axis spacing that ggplot2 4.0 changed", {
@@ -121,8 +123,9 @@ test_that("theme_cpb pins the axis spacing that ggplot2 4.0 changed", {
   mar <- function(el) as.numeric(ggplot2::calc_element(el, th)$margin)
   expect_equal(mar("axis.text.x.bottom"), c(4.95, 0, 0, 0))
   expect_equal(mar("axis.text.x.top"), c(0, 0, 4.95, 0))
-  expect_equal(mar("axis.text.y.left"), c(0, 4.95, 0, 0))
-  expect_equal(mar("axis.text.y.right"), c(0, 0, 0, 4.95))
+  # y tick labels: 1.5% of the (half-page, 7.5 cm) width, in cm
+  expect_equal(mar("axis.text.y.left"), c(0, 0.015 * 7.5, 0, 0))
+  expect_equal(mar("axis.text.y.right"), c(0, 0, 0, 0.015 * 7.5))
   # 3.5 reserves the tick length even on an axis whose ticks are blank
   expect_equal(as.numeric(ggplot2::calc_element("axis.ticks.length.y.left", th)), 0)
   expect_equal(as.numeric(ggplot2::calc_element("axis.ticks.length.x.bottom", th)), 2.2)

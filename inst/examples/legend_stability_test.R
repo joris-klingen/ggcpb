@@ -49,7 +49,7 @@ for (pkg in c("ragg", "png")) {
 set.seed(42)
 
 DPI <- 96
-margin_px <- 10 / 72 * DPI        # left plot margin: 10 pt
+margin_px <- 0.45 / 2.54 * DPI   # left plot margin: 0.45 cm
 key_h_px  <- 0.25 / 2.54 * DPI    # legend key height: 0.25 cm
 key_w_px  <- 0.30 / 2.54 * DPI    # legend key width: 0.30 cm
 

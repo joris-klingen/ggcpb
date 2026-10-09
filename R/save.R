@@ -42,6 +42,25 @@ print.cpb_plot <- function(x, ...) {
   NextMethod()
 }
 
+# The tick-label gap is 1.5% of the figure width. theme_cpb() sets the
+# half-page gap. It is rescaled to `width_cm` only on a plot that still
+# has that gap, so a plot without theme_cpb() keeps its own.
+# @noRd
+cpb_scale_y_lab_gap <- function(plot, width_cm) {
+  el <- plot$theme$axis.text.y.left
+  half <- grid::unit(cpb_y_lab_gap_cm(cpb_page_width_cm[["half"]]), "cm")
+  if (!inherits(el, "element_text") || length(el$margin) != 4 ||
+      !isTRUE(all.equal(grid::convertWidth(el$margin[2], "cm", valueOnly = TRUE),
+                        grid::convertWidth(half, "cm", valueOnly = TRUE)))) {
+    return(plot)
+  }
+  gap_cm <- cpb_y_lab_gap_cm(width_cm)
+  plot + ggplot2::theme(
+    axis.text.y.left  = ggplot2::element_text(margin = ggplot2::margin(r = gap_cm, unit = "cm"), inherit.blank = TRUE),
+    axis.text.y.right = ggplot2::element_text(margin = ggplot2::margin(l = gap_cm, unit = "cm"), inherit.blank = TRUE)
+  )
+}
+
 # ggplot2 sizes the panel from whatever room is left after title and
 # legend take what they need -- usually right, but it makes the data
 # area grow or shrink with title/legend length. cpb_donut() instead
@@ -171,44 +190,65 @@ cpb_take_sec_ylab <- function(plot) {
   list(plot = plot, label = info$label)
 }
 
-# Places `label` in gtable `g` on the subtitle row (same height as
-# ylab()'s own left-hand caption) and flush right against the "axis-r"
-# cell (both always exist once a wrapper's sec_y has produced a right
-# axis, even empty -- ggplot2 always reserves a "subtitle" row).
+# Places sec_ylab on the subtitle row, the row of ylab's caption,
+# right-aligned 0.45 cm from the figure's right edge and top-anchored
+# like theme_cpb()'s plot.subtitle.
 #
-# Top-anchored (vjust = 1), not centred: theme_cpb()'s plot.subtitle is
-# itself vjust = 1 with a bottom-only margin, so centring here would
-# sit visibly lower than it.
-#
-# Flush against the cell, not centred on the tick text's own width: an
-# earlier version did the latter and read as stopping short of the
-# axis rather than aligned with it; flush is simpler and matches the
-# published look.
-#
-# `page_width`/`page_height` resolve the gtable's elastic "null" units
-# (see cpb_resolve_gtable_units()) for the row/column lookup below,
-# even though the anchor itself no longer needs them.
+# It spans the whole table, so it works before the gtable's elastic
+# units are resolved to an output size.
+# @return The gtable with the caption added, or NULL if there's no
+#   "subtitle" row.
+# @noRd
+cpb_place_sec_ylab <- function(g, label) {
+  subtitle_idx <- which(g$layout$name == "subtitle")
+  if (length(subtitle_idx) != 1) return(NULL)
+  row <- g$layout$t[subtitle_idx]
+  # styled like the subtitle (ylab's caption) it sits next to
+  subtitle <- cpb_find_grob(g$grobs[[subtitle_idx]], "text")
+  if (is.null(subtitle)) return(NULL)
+
+  grob <- grid::textGrob(
+    label, x = grid::unit(1, "npc") - grid::unit(cpb_labels_margin_cm, "cm"),
+    y = grid::unit(1, "npc"), hjust = 1, vjust = 1, gp = subtitle$gp
+  )
+  gtable::gtable_add_grob(g, grob, t = row, l = 1, r = ncol(g), clip = "off", name = "sec-ylab")
+}
+
+# With a right axis the right margin is as wide as the left one, so the
+# panel ends as far from the right edge as it starts from the left,
+# whatever width the right tick labels need (wider ones run into the
+# 0.45 cm edge margin).
+# @return The gtable with its outer right margin set to mirror the left
+#   side, or NULL when it has no right axis.
+# @noRd
+cpb_mirror_sec_axis_margin <- function(g) {
+  is_axis_r <- grepl("^axis-r", g$layout$name) &
+    !vapply(g$grobs, inherits, logical(1), what = "zeroGrob")
+  if (!any(is_axis_r)) return(NULL)
+  is_panel <- grepl("^panel", g$layout$name)
+  first <- min(g$layout$l[is_panel])
+  last <- max(g$layout$r[is_panel])
+  n <- ncol(g)
+  g$widths[n] <- sum(g$widths[seq_len(first - 1)]) - sum(g$widths[(last + 1):(n - 1)])
+  g
+}
+
+# save_cpb()'s way into cpb_place_sec_ylab(). It first resolves `g` to
+# the fixed output size, which cpb_fix_panel_size() and the final save
+# need anyway. A missing subtitle row is an error here, where print()
+# falls back to an approximation: an explicit save should fail clearly.
 # @noRd
 cpb_add_sec_ylab_grob <- function(g, label, page_width, page_height) {
-  row <- g$layout$t[g$layout$name == "subtitle"]
-  axis_idx <- which(g$layout$name == "axis-r")
-  if (length(row) != 1 || length(axis_idx) != 1) {
-    stop("save_cpb(): could not find the \"subtitle\" row and/or the ",
-      "\"axis-r\" column to align sec_ylab against; is `plot` a sec_y ",
-      "chart built by one of the ggcpb wrappers?",
+  g <- cpb_resolve_gtable_units(g, page_width, page_height)
+  placed <- cpb_place_sec_ylab(g, label)
+  if (is.null(placed)) {
+    stop("save_cpb(): could not find the \"subtitle\" row to align ",
+      "sec_ylab against; is `plot` a sec_y chart built by one of the ",
+      "ggcpb wrappers?",
       call. = FALSE
     )
   }
-  col <- g$layout$l[axis_idx]
-
-  g <- cpb_resolve_gtable_units(g, page_width, page_height)
-
-  grob <- grid::textGrob(
-    label, x = grid::unit(1, "npc"), y = grid::unit(1, "npc"),
-    hjust = 1, vjust = 1,
-    gp = grid::gpar(fontface = "italic", fontsize = 7, fontfamily = cpb_font_family())
-  )
-  gtable::gtable_add_grob(g, grob, t = row, l = col, clip = "off", name = "sec-ylab")
+  placed
 }
 
 # Depth-first search through a grob's `children` (gTree) and/or
@@ -353,12 +393,14 @@ cpb_ggsave_grob <- function(filename, grob, dpi, device, bg, width = NULL, heigh
 #' bundled `RijksoverheidSansText` font to render correctly).
 #'
 #' Width is strict: it is set by `page`, not free-form. `page = "half"`
-#' gives a width of 2.98 in; `page = "full"` gives 5.96 in. An explicit
-#' `width` is only an escape hatch and is validated against these two
+#' gives a width of 7.5 cm, `page = "full"` 15.5 cm and `page = "small"`
+#' 6.8 cm (the size for a figure in a "kader"). An explicit
+#' `width` is only an escape hatch and is validated against these
 #' values -- any other width errors, so a stray `width = 8` fails
 #' loudly rather than silently producing an off-spec figure.
 #'
-#' Height defaults to 2.98 in (the `"report"` preset). Pass
+#' Height defaults to 7.5 cm (the `"report"` preset), or 6.8 cm for
+#' `page = "small"`, which is square too. Pass
 #' `preset = "presentation"` for the 2.5 in presentation height, or set
 #' `height` explicitly for anything else (e.g. a tall stacked-facet
 #' export) -- an explicit `height` always wins over `preset`. A
@@ -371,14 +413,16 @@ cpb_ggsave_grob <- function(filename, grob, dpi, device, bg, width = NULL, heigh
 #'
 #' @param filename Path to write to; passed to [ggplot2::ggsave()].
 #' @param plot The plot to save; defaults to [ggplot2::last_plot()].
-#' @param page Either `"half"` (default, 2.98 in wide) or `"full"`
-#'   (5.96 in wide). Ignored if `width` is supplied explicitly.
-#' @param preset Either `"report"` (default, 2.98 in tall) or
-#'   `"presentation"` (2.5 in tall). Ignored if `height` is supplied
-#'   explicitly.
+#' @param page `"half"` (default, 7.5 cm wide), `"full"` (15.5 cm wide)
+#'   or `"small"` (6.8 cm wide and tall, for a figure in a "kader").
+#'   Ignored if `width` is supplied explicitly.
+#' @param preset Either `"report"` (default, 7.5 cm tall, or 6.8 cm
+#'   for `page = "small"`) or `"presentation"` (2.5 in tall). Ignored
+#'   if `height` is supplied explicitly.
 #' @param height Explicit height in inches. `NULL` (default) uses
 #'   `preset` to determine the height.
-#' @param width Explicit width in inches; must be `2.98` or `5.96`.
+#' @param width Explicit width in inches. Must be `7.5 / 2.54`,
+#'   `15.5 / 2.54` or `6.8 / 2.54`.
 #'   `NULL` (default) uses `page` to determine the width.
 #' @param dpi Resolution in dots per inch; defaults to `300`. CPB tall
 #'   exports commonly use `dpi = 800`.
@@ -412,7 +456,7 @@ cpb_ggsave_grob <- function(filename, grob, dpi, device, bg, width = NULL, heigh
 #' @export
 save_cpb <- function(filename,
                       plot = ggplot2::last_plot(),
-                      page = c("half", "full"),
+                      page = c("half", "full", "small"),
                       preset = c("report", "presentation"),
                       height = NULL,
                       width = NULL,
@@ -445,19 +489,23 @@ save_cpb <- function(filename,
   page <- match.arg(page)
   preset <- match.arg(preset)
 
-  page_widths <- c(half = 2.98, full = 5.96)
+  page_widths <- cpb_cm_to_in(cpb_page_width_cm)
   allowed_widths <- unname(page_widths)
 
   if (is.null(width)) {
     width <- unname(page_widths[[page]])
   } else if (!any(abs(width - allowed_widths) < 1e-6)) {
     stop(
-      "save_cpb(): `width` must be one of the CPB page widths (2.98 or ",
-      "5.96 inches); got ", width, ". Use `page = \"half\"` or ",
-      "`page = \"full\"` instead, or pass an explicit width matching one ",
-      "of these two values.",
+      "save_cpb(): `width` must be one of the CPB page widths (",
+      paste(signif(allowed_widths, 6), collapse = " or "),
+      " inches); got ", width, ". Use `page = \"half\"`, ",
+      "`page = \"full\"` or `page = \"small\"` instead, or pass an ",
+      "explicit width matching one of these values.",
       call. = FALSE
     )
+  } else {
+    # an explicit width decides which page it is, and so its height
+    page <- names(page_widths)[which.min(abs(width - allowed_widths))]
   }
 
   # NULL means height was left to us; decides below whether cpb_map()'s
@@ -465,8 +513,10 @@ save_cpb <- function(filename,
   # wins outright, like an explicit panel_size does
   height_auto <- is.null(height)
   if (is.null(height)) {
-    height <- if (preset == "presentation") 2.5 else 2.98
+    height <- if (preset == "presentation") 2.5 else cpb_cm_to_in(cpb_page_height_cm[[page]])
   }
+
+  plot <- cpb_scale_y_lab_gap(plot, cpb_in_to_cm(width))
 
   cpb_check_title(plot$labels$title, width)
   cpb_check_half_page(plot, width)
@@ -515,7 +565,11 @@ save_cpb <- function(filename,
   title_aligned <- !identical(grob_aligned, grob)
   grob <- grob_aligned
 
-  if (is.null(panel_size) && is.null(sec_ylab$label) && !title_aligned) {
+  mirrored <- cpb_mirror_sec_axis_margin(grob)
+  if (!is.null(mirrored)) grob <- mirrored
+
+  if (is.null(panel_size) && is.null(sec_ylab$label) && !title_aligned &&
+      is.null(mirrored)) {
     ggplot2::ggsave(
       filename = filename,
       plot     = plot,
@@ -670,7 +724,8 @@ cpb_check_category_labels <- function(plot, width) {
 #' @noRd
 cpb_check_half_page <- function(plot, width) {
   reason <- attr(plot, "cpb_half_page_unsuitable")
-  if (is.null(reason) || !isTRUE(abs(width - 2.98) < 1e-6)) {
+  # a half page, or the still narrower small figure
+  if (is.null(reason) || !isTRUE(width < cpb_cm_to_in(cpb_page_width_cm[["half"]]) + 1e-6)) {
     return(invisible(TRUE))
   }
   # phrased so `reason` sits as the object of "room for", not the

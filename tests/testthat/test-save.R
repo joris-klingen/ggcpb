@@ -28,7 +28,7 @@ test_that("save_cpb accepts an explicit width matching a CPB page preset", {
   path <- tempfile(fileext = ".png")
   on.exit(unlink(path), add = TRUE)
 
-  expect_no_error(save_cpb(path, p, width = 5.96, height = 3))
+  expect_no_error(save_cpb(path, p, width = 15.5 / 2.54, height = 3))
   expect_true(file.exists(path))
 })
 
@@ -40,12 +40,12 @@ test_that("preset controls the default height, and an explicit height wins", {
   msg <- testthat::capture_output(
     save_cpb(path, p, page = "full", preset = "presentation")
   )
-  expect_match(msg, "5.96 x 2.5 in", fixed = TRUE)
+  expect_match(msg, "6.1 x 2.5 in", fixed = TRUE)
 
   msg2 <- testthat::capture_output(
     save_cpb(path, p, page = "half", preset = "presentation", height = 4)
   )
-  expect_match(msg2, "2.98 x 4 in", fixed = TRUE)
+  expect_match(msg2, "2.95 x 4 in", fixed = TRUE)
 })
 
 test_that("save_cpb auto-fits a cpb_map() panel to its geographic aspect ratio", {
@@ -57,13 +57,13 @@ test_that("save_cpb auto-fits a cpb_map() panel to its geographic aspect ratio",
 
   path <- withr::local_tempfile(fileext = ".png")
   msg <- testthat::capture_output(save_cpb(path, p, page = "half"))
-  # not the 2.98 in "report" preset square -- the panel drove the height
-  expect_false(grepl("2.98 x 2.98 in", msg, fixed = TRUE))
+  # not the 7.5 cm "report" preset square -- the panel drove the height
+  expect_false(grepl("2.95 x 2.95 in", msg, fixed = TRUE))
   expect_true(file.exists(path))
 
   # an explicit height opts back out, same as an explicit panel_size does
   msg2 <- testthat::capture_output(save_cpb(path, p, page = "half", height = 3))
-  expect_match(msg2, "2.98 x 3 in", fixed = TRUE)
+  expect_match(msg2, "2.95 x 3 in", fixed = TRUE)
 })
 
 test_that("save_cpb warns on a title too long for the page, not when wrapped", {
@@ -190,35 +190,75 @@ test_that("save_cpb keeps sec_y's own colour intact when a layer is inserted ahe
   expect_false(anyNA(b$data[[sec_line_idx]]$colour))
 })
 
-test_that("save_cpb draws sec_ylab flush with the right edge of the secondary axis, and top-anchored like the subtitle", {
-  # cpb_add_sec_ylab_grob() (see save.R) used to centre the caption's
-  # last character over the tick text's own midpoint, which reads as
-  # stopping short of the axis rather than aligned with it; it is now
-  # anchored flush against the "axis-r" cell's own right edge instead,
-  # matching the published look.
-  #
-  # It also used to centre the caption vertically in the shared
-  # subtitle row (vjust = 0.5), while theme_cpb()'s own plot.subtitle
-  # is top-anchored there instead (vjust = 1, a bottom-only margin),
-  # so a centred caption drew visibly lower than ylab()'s own subtitle
-  # on the left. Top-anchored here too now, to match.
+test_that("a right axis mirrors the left margin", {
+  side_cm <- function(g) {
+    g <- cpb_resolve_gtable_units(g, 7.5 / 2.54, 7.5 / 2.54)
+    w <- grid::convertWidth(g$widths, "cm", valueOnly = TRUE)
+    panel <- grepl("^panel", g$layout$name)
+    c(left = sum(w[seq_len(min(g$layout$l[panel]) - 1)]),
+      right = sum(w[(max(g$layout$r[panel]) + 1):length(w)]))
+  }
+  ragg::agg_png(withr::local_tempfile(fileext = ".png"))
+  withr::defer(grDevices::dev.off())
+  d <- data.frame(x = 2016:2022, y = c(18, 20, 19, 18, 17, 17, 19), z = c(1.9, 1.8, 1.6, 1.7, 1.6, 1.5, 1.6))
+
+  # no right axis: nothing to mirror, the panel ends margin_east from the edge
+  g <- ggplot2::ggplotGrob(cpb_col(d, x = x, y = y, title = "t", ylab = "l"))
+  expect_null(cpb_mirror_sec_axis_margin(g))
+  expect_equal(side_cm(g)[["right"]], 0.635, tolerance = 1e-6)
+
+  # a right axis, also with much wider right labels than left ones
+  for (z_scale in c(1, 1000)) {
+    p <- cpb_col(transform(d, z = z * z_scale), x = x, y = y, sec_y = z,
+                 title = "t", ylab = "l", sec_ylab = "r")
+    sides <- side_cm(cpb_mirror_sec_axis_margin(ggplot2::ggplotGrob(p)))
+    expect_equal(sides[["right"]], sides[["left"]], tolerance = 1e-6)
+  }
+})
+
+test_that("save_cpb draws sec_ylab on ylab's row, 0.45 cm from the figure's right edge", {
+  # cpb_place_sec_ylab() (see save.R): right-aligned 0.45 cm from the
+  # figure edge, not on the "axis-r" labels.
   d <- data.frame(x = 1:5, y = 1:5, z = c(10, 12, 11, 13, 12))
-  p <- cpb_line(d, x = x, y = y, sec_y = z, sec_ylab = "%")
+  p <- cpb_line(d, x = x, y = y, sec_y = z, ylab = "primary", sec_ylab = "%")
 
   path <- withr::local_tempfile(fileext = ".png")
   save_cpb(path, p, page = "half")
 
   sec_ylab <- cpb_take_sec_ylab(p)
   g <- ggplot2::ggplotGrob(sec_ylab$plot)
-  g <- cpb_add_sec_ylab_grob(g, sec_ylab$label, 2.98, 2.98)
-  grob <- g$grobs[[which(g$layout$name == "sec-ylab")]]
+  subtitle_idx <- which(g$layout$name == "subtitle")
+  g <- cpb_add_sec_ylab_grob(g, sec_ylab$label, 7.5 / 2.54, 7.5 / 2.54)
+  sec_idx <- which(g$layout$name == "sec-ylab")
+  grob <- g$grobs[[sec_idx]]
 
-  expect_equal(as.numeric(grob$x), 1)
-  expect_equal(grid::unitType(grob$x), "npc")
+  # ylab's own row, spanning the whole figure width
+  expect_equal(g$layout$t[sec_idx], g$layout$t[subtitle_idx])
+  expect_equal(g$layout$l[sec_idx], 1)
+  expect_equal(g$layout$r[sec_idx], ncol(g))
+
+  grDevices::pdf(NULL)
+  withr::defer(grDevices::dev.off())
+  grid::pushViewport(grid::viewport(width = grid::unit(10, "cm")))
+  expect_equal(grid::convertX(grob$x, "cm", valueOnly = TRUE), 10 - 0.45)
+  grid::popViewport()
   expect_equal(grob$hjust, 1)
   expect_equal(as.numeric(grob$y), 1)
   expect_equal(grid::unitType(grob$y), "npc")
   expect_equal(grob$vjust, 1)
+})
+
+test_that("the tick-label gap follows the figure width, only with theme_cpb()'s gap", {
+  gap <- function(p) {
+    as.numeric(grid::convertWidth(p$theme$axis.text.y.left$margin[2], "cm", valueOnly = TRUE))
+  }
+  d <- data.frame(x = 1:3, y = 1:3)
+  p <- cpb_line(d, x = x, y = y)
+  expect_equal(gap(cpb_scale_y_lab_gap(p, 15.5)), 0.015 * 15.5)
+  plain <- ggplot2::ggplot(d, ggplot2::aes(x, y)) + ggplot2::geom_point()
+  expect_identical(cpb_scale_y_lab_gap(plain, 15.5), plain)
+  own <- p + ggplot2::theme(axis.text.y.left = ggplot2::element_text(margin = ggplot2::margin(r = 0.5, unit = "cm")))
+  expect_equal(gap(cpb_scale_y_lab_gap(own, 15.5)), 0.5)
 })
 
 test_that("cpb_align_value_axis_title nudges a flush-right value-axis title to match the outermost tick label", {
@@ -337,4 +377,22 @@ test_that("save_cpb() never triggers print.cpb_plot()'s warning, on either its f
   m <- cpb_map(prov, region = naam, value = w, level = "provincie")
   path2 <- withr::local_tempfile(fileext = ".png")
   expect_no_warning(save_cpb(path2, m, page = "half", height = 3))
+})
+
+test_that("page = \"small\" saves a 6.8 x 6.8 cm figure; half stays the default", {
+  d <- data.frame(x = 1:5, y = 1:5, g = rep(c("a", "b"), length.out = 5))
+  p <- cpb_line(d, x = x, y = y, colour = g, title = "Titel", ylab = "%")
+  path <- withr::local_tempfile(fileext = ".png")
+  px <- function(cm) floor(cm / 2.54 * 300)
+
+  save_cpb(path, p)
+  expect_equal(dim(png::readPNG(path))[2:1], c(px(7.5), px(7.5)))
+  save_cpb(path, p, page = "small")
+  expect_equal(dim(png::readPNG(path))[2:1], c(px(6.8), px(6.8)))
+  # an explicit small width gets the small height too
+  save_cpb(path, p, width = 6.8 / 2.54)
+  expect_equal(dim(png::readPNG(path))[2:1], c(px(6.8), px(6.8)))
+  # the tick-label gap follows the width: 1.5% of 6.8 cm
+  gap <- cpb_scale_y_lab_gap(p, 6.8)$theme$axis.text.y.left$margin[2]
+  expect_equal(as.numeric(grid::convertWidth(gap, "cm", valueOnly = TRUE)), 0.015 * 6.8)
 })
