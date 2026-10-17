@@ -39,7 +39,7 @@ of that wrapper's own arguments the figure needs. Column-referencing
 arguments (\code{x}, \code{y}, \code{fill}, \code{colour}, \code{p5}..\code{p95}, \code{sec_y}, ...) take
 a column name from \code{data_csv}; everything else (\code{title}, \code{ylab},
 \code{palette}, \code{pct_axis}, \code{sec_type}, ...) is a literal value. A cell
-containing \verb{;} becomes a vector (e.g. \code{index} = \code{"6;2"} becomes
+containing \verb{;} becomes a vector (e.g. \code{colour_index} = \code{"6;2"} becomes
 \code{c(6, 2)}). Blank
 cells, and any parameter name that isn't a real argument of the
 chosen wrapper, are simply skipped -- the wrapper's own default

@@ -46,7 +46,7 @@ cpb_dot(
   value_limits = NULL,
   x_lim = NULL,
   x_lim_follow_data = TRUE,
-  zeroline = TRUE,
+  zeroline = NULL,
   reverse_legend = FALSE,
   legend_ncol = NULL,
   legend_nrow = NULL,
@@ -250,9 +250,10 @@ afterward replaces this one entirely (ggplot2 keeps only one
 scale per aesthetic) -- add \code{expand = ggplot2::expansion(mult = 0)}
 to it to keep the flush behaviour.}
 
-\item{zeroline}{If \code{TRUE} (default), draw a solid black reference
+\item{zeroline}{Draw a solid black reference
 line at zero on the value axis -- the line the intervals are read
-against.}
+against. \code{NULL} (default) draws it only when zero is on the axis.
+\code{TRUE} or \code{FALSE} turns it on or off.}
 
 \item{reverse_legend}{If \code{TRUE}, reverse the colour legend order.
 Defaults to \code{FALSE}.}

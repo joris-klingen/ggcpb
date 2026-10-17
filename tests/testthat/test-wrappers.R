@@ -1222,6 +1222,23 @@ test_that("cpb_dot draws estimates with intervals and a zero line", {
   expect_false(inherits(pv$coordinates, "CoordFlip"))
 })
 
+test_that("cpb_dot draws the zero line only when zero is on the value axis", {
+  has_hline <- function(p) "GeomHline" %in% vapply(p$layers, geom_class1, character(1))
+  pos <- data.frame(term = c("a", "b"), est = c(2, 3), lo = c(1, 2), hi = c(3, 4))
+  p <- cpb_dot(pos, x = term, y = est, lower = lo, upper = hi)
+  expect_false(has_hline(p))
+  expect_no_warning(ggplot2::ggplot_build(p))
+  # value_limits can bring zero onto the axis
+  expect_true(has_hline(cpb_dot(pos, x = term, y = est, lower = lo, upper = hi,
+                                value_limits = c(0, 4))))
+  expect_true(has_hline(cpb_dot(pos, x = term, y = est, lower = lo, upper = hi,
+                                zeroline = TRUE)))
+
+  neg <- data.frame(term = c("a", "b"), est = c(-1, 2), lo = c(-2, 1), hi = c(0, 3))
+  p_neg <- cpb_dot(neg, x = term, y = est, lower = lo, upper = hi)
+  expect_equal(geom_class1(p_neg$layers[[1]]), "GeomHline")
+})
+
 test_that("cpb_dot's ylab/xlab follow cpb_col()'s convention in both orientations", {
   # ylab always describes whichever axis ends up vertical and is
   # promoted to the subtitle; xlab always describes whichever axis

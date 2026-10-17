@@ -66,12 +66,13 @@
 #'   (`axis.line.x.top`/`axis.line.x.bottom` when `orientation` is
 #'   `"horizontal"`, `axis.line.y` when `"vertical"`); defaults to
 #'   `0.7`.
-#' @param zero_indicator If `TRUE` (default), draw a thick white
+#' @param zero_indicator Draw a thick white
 #'   reference line at zero underneath every other layer, standing in
 #'   for [cpb_box()]'s own black `zeroline` (forced off here, see
 #'   `zeroline` below) -- a black line reads poorly against
 #'   `panel_fill`'s light background, and this is drawn first so nothing
-#'   else is covered by it.
+#'   else is covered by it. `NULL` (default) draws it only when zero is
+#'   on the value axis. `TRUE` or `FALSE` turns it on or off.
 #' @param zero_indicator_linewidth Line width of the `zero_indicator`
 #'   line; defaults to `2`. [cpb_box()]'s own `zeroline` is not
 #'   exposed here at all (always off): it draws a black line, which
@@ -166,7 +167,7 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
                                   legend_title = NULL,
                                   panel_fill = "#eef8ff",
                                   value_axis_linewidth = 0.7,
-                                  zero_indicator = TRUE,
+                                  zero_indicator = NULL,
                                   zero_indicator_linewidth = 2,
                                   ylab_position = NULL,
                                   style = getOption("ggcpb.style", "dutch"),
@@ -296,6 +297,11 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
     attr(p, "cpb_half_page_unsuitable") <- "an extended boxplot faceted into multiple panels"
   }
 
+  if (is.null(zero_indicator)) {
+    # the value axis range cpb_box() set on the coord
+    value_lims <- p$coordinates$limits$y
+    zero_indicator <- cpb_zeroline_auto(value_lims[1], value_lims[2])
+  }
   if (isTRUE(zero_indicator)) {
     p$layers <- c(
       ggplot2::geom_hline(

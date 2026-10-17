@@ -79,7 +79,7 @@ test_that("cpb_import_csv splits a semicolon-delimited value into a vector", {
     "x,jaar",
     "y,mld",
     "colour,soort",
-    "index,6;2"
+    "colour_index,6;2"
   ))
 
   expect_no_error(cpb_import_csv(data_csv, params_csv))

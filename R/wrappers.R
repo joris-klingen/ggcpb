@@ -3385,9 +3385,10 @@ cpb_hist <- function(data, x, fill = NULL,
 #'   afterward replaces this one entirely (ggplot2 keeps only one
 #'   scale per aesthetic) -- add `expand = ggplot2::expansion(mult = 0)`
 #'   to it to keep the flush behaviour.
-#' @param zeroline If `TRUE` (default), draw a solid black reference
+#' @param zeroline Draw a solid black reference
 #'   line at zero on the value axis -- the line the intervals are read
-#'   against.
+#'   against. `NULL` (default) draws it only when zero is on the axis.
+#'   `TRUE` or `FALSE` turns it on or off.
 #' @param reverse_legend If `TRUE`, reverse the colour legend order.
 #'   Defaults to `FALSE`.
 #' @param facet Optional column (tidy eval) to facet by.
@@ -3451,7 +3452,7 @@ cpb_dot <- function(data, x, y, lower, upper,
                      value_limits = NULL,
                      x_lim = NULL,
                      x_lim_follow_data = TRUE,
-                     zeroline = TRUE,
+                     zeroline = NULL,
                      reverse_legend = FALSE,
                      legend_ncol = NULL,
                     legend_nrow = NULL,
@@ -3552,12 +3553,6 @@ cpb_dot <- function(data, x, y, lower, upper,
 
   p <- ggplot2::ggplot(data)
 
-  # the reference line sits underneath the estimates
-  if (isTRUE(zeroline)) {
-    p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black",
-                                 linewidth = 0.25)
-  }
-
   interval_args <- list(mapping = mapping_interval, width = cap_width,
                         linewidth = linewidth)
   # With sec_y the point layer names the primary series on its `fill`
@@ -3586,6 +3581,17 @@ cpb_dot <- function(data, x, y, lower, upper,
   )
   scale_args <- cpb_value_scale(axis_values)
   value_limits_visual <- range(scale_args$breaks)
+
+  if (is.null(zeroline)) {
+    zeroline <- cpb_zeroline_auto(value_limits_visual[1], value_limits_visual[2])
+  }
+  # first layer, so it sits underneath the estimates
+  if (isTRUE(zeroline)) {
+    p$layers <- c(
+      ggplot2::geom_hline(yintercept = 0, colour = "black", linewidth = 0.25),
+      p$layers
+    )
+  }
 
   if (has_sec) {
     sec <- cpb_add_sec_y(p, scale_args)

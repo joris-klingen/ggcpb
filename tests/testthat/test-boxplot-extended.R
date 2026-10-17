@@ -76,6 +76,22 @@ test_that("cpb_boxplot_extended adds a white zero_indicator line underneath ever
   expect_false(any(vapply(p2$layers, function(l) inherits(l$geom, "GeomHline"), TRUE)))
 })
 
+test_that("cpb_boxplot_extended draws zero_indicator only when zero is on the value axis", {
+  has_hline <- function(p) any(vapply(p$layers, function(l) inherits(l$geom, "GeomHline"), TRUE))
+  pos <- data.frame(cat = c("A", "B"), p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5)
+  p <- cpb_boxplot_extended(pos, x = cat, p5 = p5, p25 = p25, p50 = p50,
+                            p75 = p75, p95 = p95)
+  expect_false(has_hline(p))
+  expect_no_warning(ggplot2::ggplot_build(p))
+  # value_limits can bring zero onto the axis
+  expect_true(has_hline(cpb_boxplot_extended(pos, x = cat, p5 = p5, p25 = p25,
+                                             p50 = p50, p75 = p75, p95 = p95,
+                                             value_limits = c(0, 5))))
+  expect_true(has_hline(cpb_boxplot_extended(pos, x = cat, p5 = p5, p25 = p25,
+                                             p50 = p50, p75 = p75, p95 = p95,
+                                             zero_indicator = TRUE)))
+})
+
 test_that("cpb_boxplot_extended keeps the title on the left by default, caption on the right", {
   d <- local_boxplot_extended_data()
   p <- cpb_boxplot_extended(d, x = cat, p5 = p5, p25 = p25, p50 = p50,

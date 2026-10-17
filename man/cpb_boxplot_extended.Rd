@@ -72,7 +72,7 @@ cpb_boxplot_extended(
   legend_title = NULL,
   panel_fill = "#eef8ff",
   value_axis_linewidth = 0.7,
-  zero_indicator = TRUE,
+  zero_indicator = NULL,
   zero_indicator_linewidth = 2,
   ylab_position = NULL,
   style = getOption("ggcpb.style", "dutch"),
@@ -366,12 +366,13 @@ the light blue this look is built around.}
 \code{"horizontal"}, \code{axis.line.y} when \code{"vertical"}); defaults to
 \code{0.7}.}
 
-\item{zero_indicator}{If \code{TRUE} (default), draw a thick white
+\item{zero_indicator}{Draw a thick white
 reference line at zero underneath every other layer, standing in
 for \code{\link[=cpb_box]{cpb_box()}}'s own black \code{zeroline} (forced off here, see
 \code{zeroline} below) -- a black line reads poorly against
 \code{panel_fill}'s light background, and this is drawn first so nothing
-else is covered by it.}
+else is covered by it. \code{NULL} (default) draws it only when zero is
+on the value axis. \code{TRUE} or \code{FALSE} turns it on or off.}
 
 \item{zero_indicator_linewidth}{Line width of the \code{zero_indicator}
 line; defaults to \code{2}. \code{\link[=cpb_box]{cpb_box()}}'s own \code{zeroline} is not
