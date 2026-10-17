@@ -105,7 +105,7 @@ tarieven <- expand_grid(
 
 cpb_line(tarieven, x = leeftijd, y = tarief, colour = erfenis,
   points       = TRUE,
-  value_limits = c(0, 40),
+  value_limits = c(0, 50),
   title = "Voorkeurstarieven erfbelasting naar leeftijd",
   ylab  = "% gemiddeld voorkeurstarief")
 ```

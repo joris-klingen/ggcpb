@@ -147,10 +147,10 @@ written out through `save_cpb()` first and shown from that file:
 
 ```{r fig-koopkracht, results = "hide"}
 path <- tempfile(fileext = ".png")
-save_cpb(path, figs$koopkracht, page = "full")
+save_cpb(path, figs$koopkracht, page = "half")
 ```
 
-```{r fig-koopkracht-show, echo = FALSE, out.width = "700px"}
+```{r fig-koopkracht-show, echo = FALSE}
 .show_saved(path)
 ```
 

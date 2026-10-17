@@ -226,11 +226,15 @@ labelled gridline and no value is hidden.}
 span the value axis must \emph{at least} cover -- typically to force
 it wider than the data needs, e.g. always showing zero, or a
 fixed range shared across several figures. It is a minimum, not
-a crop: where the data runs past it the axis is widened to fit,
-so no value is ever hidden. \code{NULL} (default) flushes to
-the full data range (see \code{x_lim}/\code{x_lim_follow_data} for
-the category axis's equivalent). For a deliberate zoom that does hide
-values, add \code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} yourself.}
+a crop: where the data runs past it the axis is widened to fit
+(with a message), so no value is ever hidden. \code{NULL} (default) flushes to
+the full data range (for boxes p5 to p95, for the dot chart the
+interval bounds; see \code{x_lim}/\code{x_lim_follow_data} for the category
+axis's equivalent). For a deliberate zoom that does hide
+values, add \code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} yourself, or
+\code{\link[ggplot2:coord_flip]{ggplot2::coord_flip()}} for a horizontal chart. That replaces the
+chart's own coordinate system, so text outside the plot area, such
+as group names, can be cut off.}
 
 \item{value_labels}{If \code{TRUE}, add \code{\link[ggplot2:geom_text]{ggplot2::geom_text()}} value
 labels using \code{y}, positioned to match \code{position}.}

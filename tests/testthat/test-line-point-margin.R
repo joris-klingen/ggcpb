@@ -58,6 +58,21 @@ test_that("value_limits narrower than the data widens the axis, it does not crop
   expect_gte(yr[2], max(d$y))
 })
 
+test_that("widening the axis past value_limits gives a message", {
+  d <- data.frame(x = 1:3, y = c(1, 2, 4))
+  expect_message(cpb_line(d, x = x, y = y, value_limits = c(0, 3)),
+                 "runs past `value_limits`, so the axis is widened to 0 to 4")
+  expect_message(cpb_line(d, x = x, y = y, value_limits = c(0, 3)),
+                 "add `+ coord_cartesian(ylim = c(0, 3))`", fixed = TRUE)
+  expect_message(cpb_col(d, x = x, y = y, value_limits = c(0, 3),
+                         orientation = "horizontal"),
+                 "add `+ coord_flip(ylim = c(0, 3))`", fixed = TRUE)
+  expect_no_message(cpb_line(d, x = x, y = y, value_limits = c(0, 5)))
+  # a rounding error over the limit is not worth a message
+  d$y[3] <- 3 + 1e-12
+  expect_no_message(cpb_line(d, x = x, y = y, value_limits = c(0, 3)))
+})
+
 test_that("a stacked total a hair over the limit is drawn, not censored", {
   # The axis is sized from tapply(..., sum) -- a forward sum -- while
   # position_stack() reaches its top by cumsum()ing the same numbers in

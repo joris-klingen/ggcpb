@@ -894,7 +894,9 @@ cpb_value_scale <- function(axis_values, pct_scale = 1, env = parent.frame()) {
   cpb_flush_scale_args(
     axis_values = axis_values, pct_axis = a$pct_axis, pct_scale = pct_scale,
     value_accuracy = a$value_accuracy, value_breaks = a$value_breaks,
-    value_limits = a$value_limits, style = a$style
+    value_limits = a$value_limits, style = a$style,
+    orientation = get0("orientation", envir = env, inherits = FALSE,
+                       ifnotfound = "vertical")
   )
 }
 
@@ -915,7 +917,7 @@ cpb_value_scale <- function(axis_values, pct_scale = 1, env = parent.frame()) {
 cpb_flush_scale_args <- function(axis_values, pct_axis = FALSE, pct_scale = 1,
                                  value_accuracy = NULL,
                                  value_breaks = NULL, value_limits = NULL,
-                                 style = "dutch") {
+                                 style = "dutch", orientation = "vertical") {
   if (isTRUE(pct_axis) && !is.null(value_accuracy)) {
     stop("`pct_axis` and `value_accuracy` cannot be combined: `pct_axis` ",
       "already controls the value-axis label format.",
@@ -961,6 +963,21 @@ cpb_flush_scale_args <- function(axis_values, pct_axis = FALSE, pct_scale = 1,
       "data without needing hundreds of them.",
       call. = FALSE
     )
+  }
+  # tol ignores rounding noise, as cpb_extend_breaks() does
+  if (!is.null(value_limits)) {
+    tol <- diff(range(value_limits)) * 1e-6
+    if (data_range[1] < min(value_limits) - tol ||
+        data_range[2] > max(value_limits) + tol) {
+      coord <- if (identical(orientation, "horizontal")) "coord_flip" else "coord_cartesian"
+      message(
+        "ggcpb: the data (", paste(signif(data_range, 4), collapse = " to "),
+        ") runs past `value_limits`, so the axis is widened to ",
+        paste(signif(args$limits, 4), collapse = " to "), ". To crop it to ",
+        "`value_limits` instead, add `+ ", coord, "(ylim = c(",
+        paste(value_limits, collapse = ", "), "))`."
+      )
+    }
   }
   # position_stack() accumulates a stacked total in a different order
   # than the sum this axis was sized from, so the two can disagree in
@@ -1185,11 +1202,15 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   span the value axis must *at least* cover -- typically to force
 #'   it wider than the data needs, e.g. always showing zero, or a
 #'   fixed range shared across several figures. It is a minimum, not
-#'   a crop: where the data runs past it the axis is widened to fit,
-#'   so no value is ever hidden. `NULL` (default) flushes to
-#'   the full data range (see `x_lim`/`x_lim_follow_data` for
-#'   the category axis's equivalent). For a deliberate zoom that does hide
-#'   values, add [ggplot2::coord_cartesian()] yourself.
+#'   a crop: where the data runs past it the axis is widened to fit
+#'   (with a message), so no value is ever hidden. `NULL` (default) flushes to
+#'   the full data range (for boxes p5 to p95, for the dot chart the
+#'   interval bounds; see `x_lim`/`x_lim_follow_data` for the category
+#'   axis's equivalent). For a deliberate zoom that does hide
+#'   values, add [ggplot2::coord_cartesian()] yourself, or
+#'   [ggplot2::coord_flip()] for a horizontal chart. That replaces the
+#'   chart's own coordinate system, so text outside the plot area, such
+#'   as group names, can be cut off.
 #' @param x_lim Optional length-2 vector zooming the category (`x`)
 #'   axis to a range, without dropping data -- applied as a
 #'   coordinate-system zoom ([ggplot2::coord_cartesian()] /
@@ -1652,14 +1673,6 @@ cpb_col <- function(data, x, y, fill = NULL,
 #'   resolves to the CPB pink (`cpb_cols(2)`, `"#e6006e"`) that sets it
 #'   apart from the blue-led area fills.
 #' @param pct_axis If `TRUE`, format the y axis with [label_pct_nl()].
-#' @param value_limits Optional length-2 numeric vector giving the
-#'   span the value axis must *at least* cover -- typically to force
-#'   it wider than the data needs, e.g. always showing zero, or a
-#'   fixed range shared across several figures. It is a minimum, not
-#'   a crop: where the data runs past it the axis is widened to fit,
-#'   so no value is ever hidden. `NULL` (default) flushes to
-#'   the full data range. For a deliberate zoom that does hide
-#'   values, add [ggplot2::coord_cartesian()] yourself.
 #' @param x_lim Optional length-2 vector zooming the `x` axis to a
 #'   range, without dropping data -- applied as a coordinate-system
 #'   zoom ([ggplot2::coord_cartesian()] `xlim`). `NULL` (default) shows
@@ -1916,14 +1929,6 @@ cpb_area <- function(data, x, y, fill,
 #' @param index Deprecated. Former name of
 #'   `colour_index`. Still accepted, with a warning.
 #' @param pct_axis If `TRUE`, format the y axis with [label_pct_nl()].
-#' @param value_limits Optional length-2 numeric vector giving the
-#'   span the value axis must *at least* cover -- typically to force
-#'   it wider than the data needs, e.g. always showing zero, or a
-#'   fixed range shared across several figures. It is a minimum, not
-#'   a crop: where the data runs past it the axis is widened to fit,
-#'   so no value is ever hidden. `NULL` (default) flushes to
-#'   the full data range. For a deliberate zoom that does hide
-#'   values, add [ggplot2::coord_cartesian()] yourself.
 #' @param x_lim Optional length-2 vector zooming the `x` axis to a
 #'   range, without dropping data -- applied as a coordinate-system
 #'   zoom ([ggplot2::coord_cartesian()] `xlim`). `NULL` (default) shows
@@ -2362,14 +2367,6 @@ cpb_line <- function(data, x, y, colour = NULL,
 #' @inheritParams cpb_col
 #' @param pct_axis If `TRUE`, format the value axis with
 #'   [label_pct_nl()].
-#' @param value_limits Optional length-2 numeric vector giving the
-#'   span the value axis must *at least* cover -- typically to force
-#'   it wider than the data needs, e.g. always showing zero, or a
-#'   fixed range shared across several figures. It is a minimum, not
-#'   a crop: where the data runs past it the axis is widened to fit,
-#'   so no value is ever hidden. `NULL` (default) flushes to
-#'   the full p5-p95 (and `mean`) range. For a deliberate zoom that does hide
-#'   values, add [ggplot2::coord_cartesian()] yourself.
 #' @param value_axis Where the value axis is drawn: `"bottom"`
 #'   (default) or `"top"`. `"top"` places the numeric scale along the
 #'   top of the panel, the convention of the CPB koopkracht figures;
@@ -3360,14 +3357,6 @@ cpb_hist <- function(data, x, fill = NULL,
 #'   outermost break, evenly spaced breaks are extended outward in
 #'   their own step until they cover it, so the axis still ends on a
 #'   labelled gridline and no value is hidden.
-#' @param value_limits Optional length-2 numeric vector giving the
-#'   span the value axis must *at least* cover -- typically to force
-#'   it wider than the data needs, e.g. always showing zero, or a
-#'   fixed range shared across several figures. It is a minimum, not
-#'   a crop: where the data runs past it the axis is widened to fit,
-#'   so no value is ever hidden. `NULL` (default) flushes to
-#'   the full lower-upper (and point) range. For a deliberate zoom that does hide
-#'   values, add [ggplot2::coord_cartesian()] yourself.
 #' @param x_lim Optional length-2 vector zooming the category (`x`)
 #'   axis to a range, without dropping data -- applied as a
 #'   coordinate-system zoom ([ggplot2::coord_cartesian()] /
