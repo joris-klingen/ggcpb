@@ -15,9 +15,8 @@ background-colour seams, and the legend sits inside the panel at
 top-left – in the empty North Sea corner of the country.
 
 A map always keeps its true geographic proportions. `save_cpb()` (see
-`vignette("ggcpb")`) writes it at the same size as any other figure,
-with the map drawn as large as fits inside; the maps below are drawn the
-same way. A map is taller relative to its width than a chart, so
+`vignette("ggcpb")`) writes it at the same size as any other figure. A
+map is taller relative to its width than a chart, so
 `save_cpb(preset = "map")` instead draws it as wide as the page allows
 and makes the figure as tall as that takes.
 

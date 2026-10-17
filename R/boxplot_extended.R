@@ -79,14 +79,11 @@
 #'   would otherwise draw one on top of the other.
 #' @param ylab_position Where the `ylab` caption (the value axis's
 #'   title) is placed.
-#'   * `"right"`: at the figure's right edge, so it reads as belonging
-#'     to the value axis and not to the title above it, which stays on
-#'     the left. With `facet`, every panel gets its own caption, under
-#'     its facet name.
+#'   * `"right"`: at the figure's right edge. With `facet`, every panel
+#'     gets its own caption, under its facet name.
 #'   * `"left"`: under the title, as in [cpb_box()] and [cpb_col()].
 #'   * `"middle"`: at the panel's left edge, with the title centred
-#'     over the panel, matching the boxed-in look `panel_fill` gives
-#'     this style.
+#'     over the panel.
 #'
 #'   `NULL` (default) picks `"right"` when the value axis is at the
 #'   top, and `"left"` otherwise (`orientation = "vertical"`,
