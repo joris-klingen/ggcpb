@@ -1370,12 +1370,15 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   behaviour.
 #' @param palette CPB palette to use for `fill`; one of
 #'   `"qualitative"` (default), `"discr"`, `"sequential"`
-#'   (pink ramp), or `"blues"` (blue ramp).
+#'   (pink ramp), `\"blues\"` (blue ramp) or `\"extended\"`
+#'   (20 categorical colours).
 #' @param fill_index Which house colours the series get. Either a vector
 #'   of palette positions -- `c(2, 5, 6)`, forwarded to
 #'   [scale_fill_cpb_manual()] -- or a keyword naming a palette:
 #'   `"discrete"` for the qualitative house palette (blue, magenta,
-#'   taupe, ...) and `"continuous"` for the sequential ramp. `NULL`
+#'   taupe, ...) and `"continuous"` for the sequential ramp; the palette
+#'   names (such as `"extended"`, 20 colours for charts with more than
+#'   nine series) work as keywords too. `NULL`
 #'   (default) uses `palette`, which is `"discrete"` for every wrapper
 #'   except [cpb_map()]. A keyword and a non-matching `palette` are a
 #'   conflict and raise an error, since both set the same thing.
@@ -2004,12 +2007,15 @@ cpb_area <- function(data, x, y, fill,
 #'   Defaults to `0.55`.
 #' @param palette CPB palette to use for `colour`; one of
 #'   `"qualitative"` (default), `"discr"`, `"sequential"`
-#'   (pink ramp), or `"blues"` (blue ramp).
+#'   (pink ramp), `\"blues\"` (blue ramp) or `\"extended\"`
+#'   (20 categorical colours).
 #' @param colour_index Which house colours the series get. Either a vector
 #'   of palette positions -- `c(2, 5, 6)`, forwarded to
 #'   [scale_colour_cpb_manual()] -- or a keyword naming a palette:
 #'   `"discrete"` for the qualitative house palette (blue, magenta,
-#'   taupe, ...) and `"continuous"` for the sequential ramp. `NULL`
+#'   taupe, ...) and `"continuous"` for the sequential ramp; the palette
+#'   names (such as `"extended"`, 20 colours for charts with more than
+#'   nine series) work as keywords too. `NULL`
 #'   (default) uses `palette`, which is `"discrete"` for every wrapper
 #'   except [cpb_map()]. A keyword and a non-matching `palette` are a
 #'   conflict and raise an error, since both set the same thing.
@@ -2976,7 +2982,8 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
 #' @param symbol_size Symbol size; defaults to `0.8`.
 #' @param palette CPB palette used for a *discrete* `colour` column;
 #'   one of `"qualitative"` (default), `"discr"`, `"sequential"`
-#'   (pink ramp), or `"blues"` (blue ramp).
+#'   (pink ramp), `\"blues\"` (blue ramp) or `\"extended\"`
+#'   (20 categorical colours).
 #' @param x_lim Optional length-2 vector zooming the `x` axis to a
 #'   range, without dropping data. Also recomputes the flush breaks
 #'   for that window, rather than the full data's (which would mostly
@@ -3440,7 +3447,8 @@ cpb_hist <- function(data, x, fill = NULL,
 #'   marks. Defaults to `0.3`.
 #' @param palette CPB palette to use for `colour`; one of
 #'   `"qualitative"` (default), `"discr"`, `"sequential"`
-#'   (pink ramp), or `"blues"` (blue ramp).
+#'   (pink ramp), `\"blues\"` (blue ramp) or `\"extended\"`
+#'   (20 categorical colours).
 #' @param x_lim Optional length-2 vector zooming the category (`x`)
 #'   axis to a range, without dropping data -- applied as a
 #'   coordinate-system zoom ([ggplot2::coord_cartesian()] /

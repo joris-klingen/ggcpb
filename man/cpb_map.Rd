@@ -50,7 +50,8 @@ thin seam that keeps adjacent regions legible without outlines.}
 
 \item{palette}{CPB palette for a \emph{discrete} \code{value} column; one of
 \code{"qualitative"}, \code{"discr"}, \code{"sequential"} (pink ramp), or
-\code{"blues"} (blue ramp -- the usual choice for classed maps).}
+\code{"blues"} (blue ramp -- the usual choice for classed maps), or
+\code{"extended"} (20 categorical colours).}
 
 \item{fill_index}{Which house colours the series get. Either a vector
 of palette positions -- \code{c(2, 5, 6)}, forwarded to

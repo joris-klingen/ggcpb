@@ -6,22 +6,24 @@
 \usage{
 cpb_cols(
   ...,
-  palette = c("qualitative", "discr", "sequential"),
+  palette = c("qualitative", "discr", "sequential", "extended"),
   reverse = FALSE
 )
 }
 \arguments{
-\item{...}{One or more integer positions into \code{palette}. If empty,
-the full palette is returned in its original order.}
+\item{...}{One or more integer positions into \code{palette}, or for
+\code{"extended"} colour names such as \code{"apple"}. If empty, the full
+palette is returned in its original order.}
 
 \item{palette}{One of \code{"qualitative"} (default), \code{"discr"},
-\code{"sequential"} (pink ramp), or \code{"blues"} (blue ramp).}
+\code{"sequential"} (pink ramp), \code{"blues"} (blue ramp) or \code{"extended"}
+(20 categorical colours).}
 
 \item{reverse}{If \code{TRUE}, reverse the palette before indexing.}
 }
 \value{
 A character vector of hex colours, named by the position
-they were drawn from.
+(or colour name) they were drawn from.
 }
 \description{
 A convenience accessor for pulling one or more hex colours out of a
@@ -34,4 +36,5 @@ object names.
 \examples{
 cpb_cols(6, 2)
 cpb_cols(1:3, palette = "discr")
+cpb_cols("apple", "sun", palette = "extended")
 }

@@ -144,13 +144,16 @@ labelling function such as \code{\link[scales:label_number]{scales::label_number
 
 \item{palette}{CPB palette to use for \code{fill}; one of
 \code{"qualitative"} (default), \code{"discr"}, \code{"sequential"}
-(pink ramp), or \code{"blues"} (blue ramp).}
+(pink ramp), \verb{\\"blues\\"} (blue ramp) or \verb{\\"extended\\"}
+(20 categorical colours).}
 
 \item{fill_index}{Which house colours the series get. Either a vector
 of palette positions -- \code{c(2, 5, 6)}, forwarded to
 \code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} -- or a keyword naming a palette:
 \code{"discrete"} for the qualitative house palette (blue, magenta,
-taupe, ...) and \code{"continuous"} for the sequential ramp. \code{NULL}
+taupe, ...) and \code{"continuous"} for the sequential ramp; the palette
+names (such as \code{"extended"}, 20 colours for charts with more than
+nine series) work as keywords too. \code{NULL}
 (default) uses \code{palette}, which is \code{"discrete"} for every wrapper
 except \code{\link[=cpb_map]{cpb_map()}}. A keyword and a non-matching \code{palette} are a
 conflict and raise an error, since both set the same thing.}

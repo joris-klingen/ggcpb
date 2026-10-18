@@ -67,7 +67,8 @@ cpb_nl_geo <- function(level = c("gemeente", "corop", "provincie")) {
 #'   thin seam that keeps adjacent regions legible without outlines.
 #' @param palette CPB palette for a *discrete* `value` column; one of
 #'   `"qualitative"`, `"discr"`, `"sequential"` (pink ramp), or
-#'   `"blues"` (blue ramp -- the usual choice for classed maps).
+#'   `"blues"` (blue ramp -- the usual choice for classed maps), or
+#'   `"extended"` (20 categorical colours).
 #' @param fill_index Which house colours the series get. Either a vector
 #'   of palette positions -- `c(2, 5, 6)`, forwarded to
 #'   [scale_fill_cpb_manual()] -- or a keyword naming a palette:
