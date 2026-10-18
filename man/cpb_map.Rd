@@ -12,7 +12,7 @@ cpb_map(
   border_colour = NULL,
   border_linewidth = 0.15,
   palette = "sequential",
-  fill_index = NULL,
+  colour_index = NULL,
   reverse = FALSE,
   na_fill = NULL,
   legend = "topleft",
@@ -53,7 +53,7 @@ thin seam that keeps adjacent regions legible without outlines.}
 \code{"blues"} (blue ramp -- the usual choice for classed maps), or
 \code{"extended"} (20 categorical colours).}
 
-\item{fill_index}{Which house colours the series get. Either a vector
+\item{colour_index}{Which house colours the series get. Either a vector
 of palette positions -- \code{c(2, 5, 6)}, forwarded to
 \code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} -- or a keyword naming a palette:
 \code{"discrete"} for the qualitative house palette (blue, magenta,

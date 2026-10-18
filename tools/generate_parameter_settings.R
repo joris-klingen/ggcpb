@@ -71,7 +71,7 @@ literal_examples <- c(
   dot_labels       = "p5:bottom 5%;p95:top 5%",
   zeroline         = "TRUE",
   colour_index     = "2;6",
-  fill_index       = "2;6"
+  colour_index       = "2;6"
 )
 
 fmt_default <- function(val) {

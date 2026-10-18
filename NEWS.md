@@ -16,8 +16,7 @@ Renamed or removed:
 | `import_csv()` | `cpb_import_csv()` |
 | `cpb_area()` | no longer exported (`cpb_import_csv()` still draws `plot_type = "area"`) |
 | `filllab`, `colourlab` | `legend_title` |
-| `index` | `fill_index` (columns, boxes, histograms, maps, donuts) or `colour_index` (lines, scatters, dots) |
-| `color_index` | `colour_index` |
+| `index`, `fill_index`, `color_index` | `colour_index` (every chart) |
 | `sec_label` | `sec_legend_label` |
 | `sec_point_size` | `sec_symbol_size` |
 | `size` (`cpb_scatter()`, `cpb_dot()`), `point_size` (`cpb_line()`) | `symbol_size` |

@@ -69,7 +69,7 @@ cpb_nl_geo <- function(level = c("gemeente", "corop", "provincie")) {
 #'   `"qualitative"`, `"discr"`, `"sequential"` (pink ramp), or
 #'   `"blues"` (blue ramp -- the usual choice for classed maps), or
 #'   `"extended"` (20 categorical colours).
-#' @param fill_index Which house colours the series get. Either a vector
+#' @param colour_index Which house colours the series get. Either a vector
 #'   of palette positions -- `c(2, 5, 6)`, forwarded to
 #'   [scale_fill_cpb_manual()] -- or a keyword naming a palette:
 #'   `"discrete"` for the qualitative house palette (blue, magenta,
@@ -110,7 +110,7 @@ cpb_map <- function(data, region, value,
                     border_colour = NULL,
                     border_linewidth = 0.15,
                     palette = "sequential",
-                    fill_index = NULL,
+                    colour_index = NULL,
                     reverse = FALSE,
                     na_fill = NULL,
                     legend = "topleft",
@@ -123,7 +123,7 @@ cpb_map <- function(data, region, value,
                     legend_title = NULL,
                     style = getOption("ggcpb.style", "dutch"),
                     ...) {
-  .cpb_idx <- cpb_resolve_index(fill_index, palette, !missing(palette), "fill_index")
+  .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette), "colour_index")
   index <- .cpb_idx$index
   palette <- .cpb_idx$palette
   style <- match.arg(style, c("dutch", "english"))

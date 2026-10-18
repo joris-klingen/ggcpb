@@ -76,16 +76,16 @@ test_that("flush legend lands on the same pixel across chart types and label len
   # legend entry in every variant, so the lowest blue pixel is comparable
   rect_variants <- list(
     col_vertical   = cpb_col(short2, x = x, y = y, fill = g, position = "dodge",
-                             reverse_legend = FALSE, fill_index = c(6, 2), title = "t"),
+                             reverse_legend = FALSE, colour_index = c(6, 2), title = "t"),
     col_horizontal = cpb_col(long_cats, x = x, y = y, fill = g, position = "dodge",
                              orientation = "horizontal", reverse_legend = FALSE,
-                             fill_index = c(6, 2), title = "t"),
+                             colour_index = c(6, 2), title = "t"),
     col_five       = cpb_col(five, x = x, y = y, fill = g, position = "dodge",
-                             reverse_legend = FALSE, fill_index = c(6, 2, 3, 4, 5), title = "t"),
+                             reverse_legend = FALSE, colour_index = c(6, 2, 3, 4, 5), title = "t"),
     box            = cpb_box(box_df,
                              x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                              fill = g, reverse_legend = FALSE,
-                             fill_index = c(6, 2), title = "t")
+                             colour_index = c(6, 2), title = "t")
   )
   # line keys draw a stroke centred in the key, so their lowest blue
   # pixel sits ~half a key above the rect variants'; they are compared
@@ -147,7 +147,7 @@ test_that("legend key pixel is invariant to legend-label length and item count",
       y = 1:4
     )
     cpb_col(df, x = x, y = y, fill = g, position = "dodge",
-            reverse_legend = FALSE, fill_index = c(6, 2), title = "t")
+            reverse_legend = FALSE, colour_index = c(6, 2), title = "t")
   })
 
   # item-count sweep: 1 up to 8 legend entries; blue stays the first
@@ -161,7 +161,7 @@ test_that("legend key pixel is invariant to legend-label length and item count",
       y = rep(seq_len(n), 2)
     )
     cpb_col(df, x = x, y = y, fill = g, position = "dodge", reverse_legend = FALSE,
-            fill_index = c(6, 2, 3, 4, 5, 1, 7, 8)[seq_len(n)], title = "t")
+            colour_index = c(6, 2, 3, 4, 5, 1, 7, 8)[seq_len(n)], title = "t")
   })
   names(count_variants) <- paste0("n", counts)
 
@@ -202,23 +202,23 @@ test_that("legend key pixel is invariant to chart type", {
   # rect keys: their leftmost/lowest blue pixel is the key's own corner
   rect_variants <- list(
     col_dodge      = cpb_col(cat2, x = x, y = y, fill = g, position = "dodge",
-                             fill_index = c(6, 2), title = "t"),
+                             colour_index = c(6, 2), title = "t"),
     col_stack      = cpb_col(cat2, x = x, y = y, fill = g,
-                             fill_index = c(6, 2), title = "t"),
+                             colour_index = c(6, 2), title = "t"),
     col_horizontal = cpb_col(cat2, x = x, y = y, fill = g, position = "dodge",
                              orientation = "horizontal",
-                             fill_index = c(6, 2), title = "t"),
+                             colour_index = c(6, 2), title = "t"),
     area           = cpb_area(num2, x = x, y = y, fill = g,
-                              fill_index = c(6, 2), title = "t"),
+                              colour_index = c(6, 2), title = "t"),
     hist           = cpb_hist(hist_df, x = v, fill = g, binwidth = 1,
-                              fill_index = c(6, 2), title = "t"),
+                              colour_index = c(6, 2), title = "t"),
     box            = cpb_box(box_df,
                              x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                              fill = g, reverse_legend = TRUE,
-                             fill_index = c(6, 2), title = "t"),
+                             colour_index = c(6, 2), title = "t"),
     col_facet      = cpb_col(transform(cat2, f = rep(c("paneel 1", "paneel 2"), 2)),
                              x = x, y = y, fill = g, position = "dodge",
-                             facet = f, fill_index = c(6, 2), title = "t")
+                             facet = f, colour_index = c(6, 2), title = "t")
   )
   # line keys: stroke centred in the key box, so bottoms sit ~half a
   # key higher than rect bottoms
@@ -269,7 +269,7 @@ test_that("legend key pixel is invariant to canvas size and titles/axis titles",
   )
   mk <- function(...) {
     cpb_col(df, x = x, y = y, fill = g, position = "dodge",
-            fill_index = c(6, 2), ...)
+            colour_index = c(6, 2), ...)
   }
 
   # everything above/around the panel may change, the key may not

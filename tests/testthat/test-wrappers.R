@@ -343,7 +343,7 @@ test_that("cpb_hist bins the same way on ggplot2 3.5 and 4.x", {
 
 test_that("cpb_hist maps fill for grouped histograms", {
   df <- data.frame(waarde = rnorm(200), grp = rep(c("a", "b"), 100))
-  p <- cpb_hist(df, x = waarde, fill = grp, bins = 10, fill_index = c(6, 2))
+  p <- cpb_hist(df, x = waarde, fill = grp, bins = 10, colour_index = c(6, 2))
   has_fill_scale <- any(vapply(p$scales$scales, function(s) "fill" %in% s$aesthetics, logical(1)))
   expect_true(has_fill_scale)
 })
@@ -980,7 +980,7 @@ test_that("cpb_box group combines with a fill mapping (dodged boxes)", {
   p <- cpb_box(df, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                fill = jaar, group = grp, orientation = "horizontal",
                position = ggplot2::position_dodge(width = 0.6),
-               fill_index = c(6, 2), title = "t")
+               colour_index = c(6, 2), title = "t")
   built <- ggplot2::ggplot_build(p)
   box_data <- built$data[[which(vapply(p$layers, function(l)
     inherits(l$geom, "GeomBoxplot"), logical(1)))]]

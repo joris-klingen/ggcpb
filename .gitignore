@@ -41,3 +41,5 @@ ggcpb.Rproj
 
 # testthat writes failing tests here during a run
 /tests/testthat/_problems/
+/doc/
+/Meta/

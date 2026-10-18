@@ -106,7 +106,7 @@ test_that("more levels than a palette has: recycling warns and points to extende
   p <- cpb_line(d, x = x, y = y, colour = g, palette = "extended")
   expect_no_warning(b <- build(p))
   expect_length(unique(b$data[[1]]$colour), 12)
-  expect_length(unique(build(cpb_col(d, x = x, y = y, fill = g, fill_index = "extended"))$data[[1]]$fill), 12)
+  expect_length(unique(build(cpb_col(d, x = x, y = y, fill = g, colour_index = "extended"))$data[[1]]$fill), 12)
 })
 
 test_that("cpb_cols() with no arguments keeps the extended colour names", {

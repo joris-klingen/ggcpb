@@ -18,7 +18,7 @@ cpb_donut(
   ring_width = 0.6,
   panel_size = NULL,
   palette = "qualitative",
-  fill_index = NULL,
+  colour_index = NULL,
   reverse_legend = FALSE,
   legend_ncol = NULL,
   legend_nrow = NULL,
@@ -74,7 +74,7 @@ unevenly sized, wedges where \code{"wedge"} would not.}
 
 \item{label_colour}{Colour of the printed wedge/leader labels.
 Defaults to \code{"black"}; pass \code{"white"} (or another colour) if your
-own \code{palette}/\code{fill_index} choice comes out darker/more saturated (for
+own \code{palette}/\code{colour_index} choice comes out darker/more saturated (for
 \code{"wedge"} labels only -- \code{"leader"} labels sit outside the ring,
 against the plot background, so contrast doesn't depend on the
 wedge colours).}
@@ -118,9 +118,9 @@ at save time).}
 (pink ramp), \verb{\\"blues\\"} (blue ramp) or \verb{\\"extended\\"}
 (20 categorical colours).}
 
-\item{fill_index}{Which house colours the series get. Either a vector
+\item{colour_index}{Which house colours the series get. Either a vector
 of palette positions -- \code{c(2, 5, 6)}, forwarded to
-\code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} -- or a keyword naming a palette:
+\code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} or \code{\link[=scale_colour_cpb_manual]{scale_colour_cpb_manual()}} -- or a keyword naming a palette:
 \code{"discrete"} for the qualitative house palette (blue, magenta,
 taupe, ...) and \code{"continuous"} for the sequential ramp; the palette
 names (such as \code{"extended"}, 20 colours for charts with more than
@@ -182,6 +182,6 @@ df <- data.frame(
 )
 cpb_donut(df, fill = bron, y = share, label = mld,
   title = "Energiemix",
-  fill_index = c(6, 2, 5, 1)
+  colour_index = c(6, 2, 5, 1)
 )
 }

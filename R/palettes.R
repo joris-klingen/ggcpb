@@ -143,7 +143,7 @@ cpb_cols <- function(..., palette = c("qualitative", "discr", "sequential", "ext
 
 # Colour/fill index resolution ----
 
-# The keyword vocabulary for `colour_index` / `fill_index`. "discrete"
+# The keyword vocabulary for `colour_index`. "discrete"
 # and "continuous" are the two the house style is described in; the raw
 # palette names are accepted as synonyms so there are not two competing
 # vocabularies for the same thing.
@@ -157,13 +157,13 @@ cpb_index_keywords <- c(
   extended    = "extended"
 )
 
-#' Resolve a `colour_index` / `fill_index` argument
+#' Resolve a `colour_index` argument
 #'
 #' The argument does double duty: a numeric vector picks swatches out of
 #' the palette by position, while a keyword picks the palette itself.
 #' `NULL` defers to `palette`, so existing calls keep their behaviour.
 #'
-#' @param value The `colour_index`/`fill_index` value.
+#' @param value The `colour_index`/`colour_index` value.
 #' @param palette The wrapper's `palette` argument.
 #' @param palette_supplied Was `palette` given explicitly by the caller?
 #' @param arg Argument name, for error messages.

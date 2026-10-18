@@ -22,10 +22,10 @@ test_that("colour_index keywords choose a palette", {
                cpb_pal("sequential")(3))
 })
 
-test_that("fill_index works on the fill-mapped wrappers", {
+test_that("colour_index works on the fill-mapped wrappers", {
   d <- data.frame(x = c("a", "b", "c"), y = 1:3, f = c("p", "q", "r"))
   fills <- unique(ggplot2::ggplot_build(
-    cpb_col(d, x = x, y = y, fill = f, fill_index = c(2, 5, 6)))$data[[1]]$fill)
+    cpb_col(d, x = x, y = y, fill = f, colour_index = c(2, 5, 6)))$data[[1]]$fill)
   expect_equal(fills, unname(cpb_cols(2, 5, 6)))
 })
 
@@ -48,12 +48,12 @@ test_that("bad colour_index values are rejected clearly", {
                "positive whole numbers")
 })
 
-test_that("cpb_donut takes fill_index like the other fill charts", {
+test_that("cpb_donut takes colour_index like the other fill charts", {
   d <- data.frame(g = c("a", "b", "c"), v = c(3, 2, 1))
   fills <- function(...) ggplot2::ggplot_build(cpb_donut(d, fill = g, y = v, ...))$data[[1]]$fill
-  expect_equal(fills(fill_index = c(2, 5, 6)), unname(cpb_cols(2, 5, 6)))
-  expect_equal(fills(fill_index = "discrete"), fills())
-  expect_error(cpb_donut(d, fill = g, y = v, fill_index = "rainbow"), "not recognised")
+  expect_equal(fills(colour_index = c(2, 5, 6)), unname(cpb_cols(2, 5, 6)))
+  expect_equal(fills(colour_index = "discrete"), fills())
+  expect_error(cpb_donut(d, fill = g, y = v, colour_index = "rainbow"), "not recognised")
 })
 
 test_that("the wrappers have no index or color_index argument", {
@@ -68,5 +68,5 @@ test_that("cpb_map keeps its sequential default", {
   # a choropleth defaults to the ramp, not the discrete palette, so the
   # new argument must not force "discrete" on every wrapper
   expect_equal(eval(formals(cpb_map)$palette), "sequential")
-  expect_null(eval(formals(cpb_map)$fill_index))
+  expect_null(eval(formals(cpb_map)$colour_index))
 })
