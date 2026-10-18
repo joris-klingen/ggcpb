@@ -154,7 +154,8 @@ kk2 <- expand_grid(kk, jaar = factor(c(2026, 2027))) |>
 
 kk2 |>
   mutate(groep = factor(groep, labels = c(
-    "tot 120%\nwml", "120% wml\n- 1x", "1 - 1,5x", "1,5 - 2x", "2 - 3x", "boven 3x"
+    "tot 120%\nwml", "120% wml\n- 1x mod.", "1 - 1,5x\nmod.", "1,5 - 2x\nmod.",
+    "2 - 3x\nmod.", "boven 3x\nmod."
   ))) |>
   cpb_box(x = groep,
     p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
@@ -162,7 +163,6 @@ kk2 |>
     position = position_dodge(width = 0.6),
     fill_index = c(6, 2),
     title    = "Koopkracht per jaar, 2026 en 2027",
-    xlab     = "1x = modaal inkomen",
     ylab     = "% koopkrachtmutatie")
 ```
 

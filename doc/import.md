@@ -123,10 +123,10 @@ against. So, rather than printing it directly, it is written out through
 
 ``` r
 path <- tempfile(fileext = ".png")
-save_cpb(path, figs$koopkracht, page = "full")
+save_cpb(path, figs$koopkracht, page = "half")
 ```
 
-<img src="import_files/figure-gfm/fig-koopkracht-show-1.png" alt="" width="700px" />
+<img src="import_files/figure-gfm/fig-koopkracht-show-1.png" alt="" width="350px" />
 
 `werkloosheid` has no second axis, so it can be shown directly:
 
