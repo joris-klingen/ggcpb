@@ -312,6 +312,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | ticks | literal | TRUE | TRUE |
 | value_accuracy | literal |  | 0.1 |
 | value_breaks | literal |  | 0;25;50;75;100 |
+| value_crop | literal | FALSE | FALSE |
 | value_labels | literal | FALSE | FALSE |
 | value_limits | literal |  | 0;100 |
 | x | column (from data_csv) | (required) | year |
@@ -357,6 +358,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | ticks | literal | TRUE | TRUE |
 | value_accuracy | literal |  | 0.1 |
 | value_breaks | literal |  | 0;25;50;75;100 |
+| value_crop | literal | FALSE | FALSE |
 | value_limits | literal |  | 0;100 |
 | x | column (from data_csv) | (required) | year |
 | x_lim | literal |  | 2015;2025 |
@@ -405,6 +407,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | ticks | literal | TRUE | TRUE |
 | value_accuracy | literal |  | 0.1 |
 | value_breaks | literal |  | 0;25;50;75;100 |
+| value_crop | literal | FALSE | FALSE |
 | value_limits | literal |  | 0;100 |
 | x | column (from data_csv) | (required) | year |
 | x_lim | literal |  | 2015;2025 |
@@ -465,6 +468,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | value_accuracy | literal |  | 0.1 |
 | value_axis | literal | bottom/top (default: bottom) | bottom/top (default: bottom) |
 | value_breaks | literal |  | 0;25;50;75;100 |
+| value_crop | literal | FALSE | FALSE |
 | value_limits | literal |  | 0;100 |
 | width | literal | 0.5 | 0.5 |
 | x | column (from data_csv) | (required) | year |
@@ -516,6 +520,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | upper | column (from data_csv) | (required) | upper_bound |
 | value_accuracy | literal |  | 0.1 |
 | value_breaks | literal |  | 0;25;50;75;100 |
+| value_crop | literal | FALSE | FALSE |
 | value_limits | literal |  | 0;100 |
 | x | column (from data_csv) | (required) | year |
 | x_lim | literal |  | 2015;2025 |
@@ -548,6 +553,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | ticks | literal | TRUE | TRUE |
 | value_accuracy | literal |  | 0.1 |
 | value_breaks | literal |  | 0;25;50;75;100 |
+| value_crop | literal | FALSE | FALSE |
 | value_limits | literal |  | 0;100 |
 | x | column (from data_csv) | (required) | year |
 | x_lim | literal |  | 2015;2025 |
@@ -580,6 +586,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | ticks | literal | TRUE | TRUE |
 | value_accuracy | literal |  | 0.1 |
 | value_breaks | literal |  | 0;25;50;75;100 |
+| value_crop | literal | FALSE | FALSE |
 | value_limits | literal |  | 0;100 |
 | x | column (from data_csv) | (required) | year |
 | x_lim | literal |  | 2015;2025 |
