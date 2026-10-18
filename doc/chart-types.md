@@ -516,10 +516,8 @@ cpb_scatter(hh, x = inkomen, y = energierekening,
   title = "Energierekening naar inkomen",
   ylab  = "energierekening (euro per maand)",
   xlab  = "besteedbaar inkomen (euro per maand)",
-  legend_title = "koopkracht (%)") +
-  scale_x_continuous(labels = label_euro_nl())
-#> Scale for x is already present.
-#> Adding another scale for x, which will replace the existing scale.
+  x_labels = label_euro_nl(),
+  legend_title = "koopkracht (%)")
 ```
 
 <img src="chart-types_files/figure-gfm/scatter-1.png" alt="" width="350px" />
