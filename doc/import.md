@@ -320,10 +320,6 @@ to, so a table for one `plot_type` does not necessarily match another.
 | x_lim_follow_data | literal | FALSE | FALSE |
 | xlab | literal |  | unit below the x axis |
 | y | column (from data_csv) | (required) | purchasing_power |
-| y_r_at | literal |  |  |
-| y_r_lab | literal |  |  |
-| y_r_lim | literal |  |  |
-| y_r_scale_auto | literal |  |  |
 | ylab | literal |  | % change |
 | zeroline | literal | TRUE | TRUE |
 
@@ -368,10 +364,6 @@ to, so a table for one `plot_type` does not necessarily match another.
 | x_lim_follow_data | literal | FALSE | FALSE |
 | xlab | literal |  | unit below the x axis |
 | y | column (from data_csv) | (required) | purchasing_power |
-| y_r_at | literal |  |  |
-| y_r_lab | literal |  |  |
-| y_r_lim | literal |  |  |
-| y_r_scale_auto | literal |  |  |
 | ylab | literal |  | % change |
 | zeroline | literal | TRUE | TRUE |
 
@@ -421,10 +413,6 @@ to, so a table for one `plot_type` does not necessarily match another.
 | x_lim_follow_data | literal | TRUE | TRUE |
 | xlab | literal |  | unit below the x axis |
 | y | column (from data_csv) | (required) | purchasing_power |
-| y_r_at | literal |  |  |
-| y_r_lab | literal |  |  |
-| y_r_lim | literal |  |  |
-| y_r_scale_auto | literal |  |  |
 | ylab | literal |  | % change |
 | ymax | column (from data_csv) |  | upper_bound |
 | ymin | column (from data_csv) |  | lower_bound |
@@ -485,10 +473,6 @@ to, so a table for one `plot_type` does not necessarily match another.
 | x_lim | literal |  | 2015;2025 |
 | x_lim_follow_data | literal | TRUE | TRUE |
 | xlab | literal |  | unit below the x axis |
-| y_r_at | literal |  |  |
-| y_r_lab | literal |  |  |
-| y_r_lim | literal |  |  |
-| y_r_scale_auto | literal |  |  |
 | ylab | literal |  | % change |
 | zeroline | literal |  | TRUE |
 
@@ -541,10 +525,6 @@ to, so a table for one `plot_type` does not necessarily match another.
 | x_lim_follow_data | literal | TRUE | TRUE |
 | xlab | literal |  | unit below the x axis |
 | y | column (from data_csv) | (required) | purchasing_power |
-| y_r_at | literal |  |  |
-| y_r_lab | literal |  |  |
-| y_r_lim | literal |  |  |
-| y_r_scale_auto | literal |  |  |
 | ylab | literal |  | % change |
 | zeroline | literal | TRUE | TRUE |
 

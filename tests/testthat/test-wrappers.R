@@ -1362,7 +1362,7 @@ test_that("cpb_sec_map()'s primary-range check also uses floating point toleranc
   expect_no_error(cpb_sec_map(c(1, 2), NULL, 0.02, 0.06))
 })
 
-test_that("secondary axis auto-scaling and the y_r_* parameter aliases work as expected", {
+test_that("secondary axis auto-scaling and the sec_* arguments work as expected", {
   prim_breaks <- c(0, 5, 10, 15, 20)
   sec_vals <- c(12, 48)
 
@@ -1370,15 +1370,15 @@ test_that("secondary axis auto-scaling and the y_r_* parameter aliases work as e
   sec_br <- cpb_find_sec_breaks(prim_breaks, sec_vals, sec_scale_auto = TRUE)
   expect_equal(length(sec_br), length(prim_breaks))
 
-  # Explicit sec_at (y_r_at)
+  # Explicit sec_at
   sec_at_custom <- c(10, 20, 30, 40, 50)
   sec_br_at <- cpb_find_sec_breaks(prim_breaks, sec_vals, sec_at = sec_at_custom)
   expect_equal(sec_br_at, sec_at_custom)
 
-  # Wrapper supports y_r_scale_auto, y_r_lim, y_r_at, y_r_lab aliases
+  # The wrapper takes sec_scale_auto and sec_limits
   df <- data.frame(jaar = 2018:2022, v = c(10, 15, 12, 18, 14), sec = c(100, 150, 120, 180, 140))
-  expect_no_error(cpb_line(df, x = jaar, y = v, sec_y = sec, y_r_scale_auto = FALSE))
-  expect_no_error(cpb_line(df, x = jaar, y = v, sec_y = sec, y_r_lim = c(100, 200)))
+  expect_no_error(cpb_line(df, x = jaar, y = v, sec_y = sec, sec_scale_auto = FALSE))
+  expect_no_error(cpb_line(df, x = jaar, y = v, sec_y = sec, sec_limits = c(100, 200)))
 })
 
 test_that("cpb_sec_axis() keeps the boundary-most break when slope/inter aren't exact floats", {

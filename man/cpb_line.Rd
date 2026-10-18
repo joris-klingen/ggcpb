@@ -27,10 +27,6 @@ cpb_line(
   sec_scale_auto = TRUE,
   sec_at = NULL,
   sec_labels = NULL,
-  y_r_scale_auto = NULL,
-  y_r_at = NULL,
-  y_r_lab = NULL,
-  y_r_lim = NULL,
   palette = "qualitative",
   colour_index = NULL,
   color_index = NULL,
@@ -173,12 +169,6 @@ ggplot2's own axis \code{labels} accepts (a character vector matching
 \code{sec_at}/the auto-computed breaks one-for-one, or a labelling
 function such as \code{\link[scales:label_number]{scales::label_number()}}). \code{NULL} (default) uses
 \code{\link[=label_number_nl]{label_number_nl()}}, matching the primary axis's own formatting.}
-
-\item{y_r_scale_auto, y_r_at, y_r_lab, y_r_lim}{Aliases for
-\code{sec_scale_auto}, \code{sec_at}, \code{sec_labels}, and \code{sec_limits}
-respectively. Takes
-precedence over the \verb{sec_*} argument it aliases when both are
-given; \code{NULL} (default) defers to it.}
 
 \item{palette}{CPB palette to use for \code{colour}; one of
 \code{"qualitative"} (default), \code{"discr"}, \code{"sequential"}

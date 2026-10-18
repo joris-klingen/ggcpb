@@ -539,40 +539,30 @@ cpb_find_sec_breaks <- function(primary_breaks, sec_vals, sec_limits = NULL, sec
   high <- sec_limits[2]
 
   if (!isTRUE(sec_scale_auto) || user_custom_limits) {
-    y_r_at <- seq(low, high, length.out = n_labels)
+    sec_breaks <- seq(low, high, length.out = n_labels)
   } else {
-    y_r_at <- pretty(c(low, high), n = n_labels)
-    n <- n_labels - length(y_r_at)
-    delta <- if (length(y_r_at) >= 2) diff(y_r_at[1:2]) else (high - low) / n_labels
+    sec_breaks <- pretty(c(low, high), n = n_labels)
+    n <- n_labels - length(sec_breaks)
+    delta <- if (length(sec_breaks) >= 2) diff(sec_breaks[1:2]) else (high - low) / n_labels
 
     while (n != 0) {
       if (n > 0) {
         for (i in seq_len(n)) {
-          if ((low - y_r_at[1]) < (utils::tail(y_r_at, 1) - high)) {
-            y_r_at <- c(y_r_at[1] - delta, y_r_at)
+          if ((low - sec_breaks[1]) < (utils::tail(sec_breaks, 1) - high)) {
+            sec_breaks <- c(sec_breaks[1] - delta, sec_breaks)
           } else {
-            y_r_at <- c(y_r_at, utils::tail(y_r_at, 1) + delta)
+            sec_breaks <- c(sec_breaks, utils::tail(sec_breaks, 1) + delta)
           }
         }
       } else {
-        y_r_at <- odd_elements(y_r_at)
-        delta <- if (length(y_r_at) >= 2) diff(y_r_at[1:2]) else delta
+        sec_breaks <- odd_elements(sec_breaks)
+        delta <- if (length(sec_breaks) >= 2) diff(sec_breaks[1:2]) else delta
       }
-      n <- n_labels - length(y_r_at)
+      n <- n_labels - length(sec_breaks)
     }
   }
 
-  y_r_at
-}
-
-cpb_resolve_sec_opts <- function(sec_limits, sec_at, sec_scale_auto, sec_labels,
-                                 y_r_lim, y_r_at, y_r_scale_auto, y_r_lab) {
-  list(
-    limits     = if (!is.null(y_r_lim)) y_r_lim else sec_limits,
-    at         = if (!is.null(y_r_at)) y_r_at else sec_at,
-    scale_auto = if (!is.null(y_r_scale_auto)) y_r_scale_auto else sec_scale_auto,
-    labels     = if (!is.null(y_r_lab)) y_r_lab else sec_labels
-  )
+  sec_breaks
 }
 
 cpb_sec_map <- function(sec_vals, sec_limits = NULL, prim_min = NULL, prim_max = NULL,
@@ -846,18 +836,14 @@ cpb_add_sec_y <- function(p, scale_args, env = parent.frame()) {
   a <- mget(c("data", "x", "sec_y", "sec_type", "sec_label", "sec_colour",
               "sec_linewidth", "sec_points", "sec_point_size", "sec_col_width",
               "sec_accuracy", "sec_limits", "sec_at", "sec_scale_auto", "sec_labels",
-              "y_r_lim", "y_r_at", "y_r_scale_auto", "y_r_lab", "style"), envir = env)
-  opts <- cpb_resolve_sec_opts(
-    a$sec_limits, a$sec_at, a$sec_scale_auto, a$sec_labels,
-    a$y_r_lim, a$y_r_at, a$y_r_scale_auto, a$y_r_lab
-  )
+              "style"), envir = env)
   sec_vals <- rlang::eval_tidy(a$sec_y, a$data)
-  sec_map <- cpb_sec_map(sec_vals, primary_breaks = scale_args$breaks, sec_limits = opts$limits, sec_at = opts$at, sec_scale_auto = opts$scale_auto)
+  sec_map <- cpb_sec_map(sec_vals, primary_breaks = scale_args$breaks, sec_limits = a$sec_limits, sec_at = a$sec_at, sec_scale_auto = a$sec_scale_auto)
   sec_lab <- if (is.null(a$sec_label)) rlang::as_label(a$sec_y) else a$sec_label
   p <- cpb_sec_layer(p, a$data, a$x, sec_vals, sec_map, a$sec_type,
                      cpb_single_colour(a$sec_colour, 2), sec_lab, a$sec_linewidth,
                      a$sec_points, a$sec_point_size, a$sec_col_width, style = a$style)
-  scale_args$sec.axis <- cpb_sec_axis(sec_map, accuracy = a$sec_accuracy, sec_labels = opts$labels, style = a$style)
+  scale_args$sec.axis <- cpb_sec_axis(sec_map, accuracy = a$sec_accuracy, sec_labels = a$sec_labels, style = a$style)
   list(p = p, scale_args = scale_args)
 }
 
@@ -1201,11 +1187,6 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   `sec_at`/the auto-computed breaks one-for-one, or a labelling
 #'   function such as [scales::label_number()]). `NULL` (default) uses
 #'   [label_number_nl()], matching the primary axis's own formatting.
-#' @param y_r_scale_auto,y_r_at,y_r_lab,y_r_lim Aliases for
-#'   `sec_scale_auto`, `sec_at`, `sec_labels`, and `sec_limits`
-#'   respectively. Takes
-#'   precedence over the `sec_*` argument it aliases when both are
-#'   given; `NULL` (default) defers to it.
 #' @param value_limits Optional length-2 numeric vector giving the
 #'   span the value axis must *at least* cover -- typically to force
 #'   it wider than the data needs, e.g. always showing zero, or a
@@ -1362,10 +1343,6 @@ cpb_col <- function(data, x, y, fill = NULL,
                     sec_scale_auto = TRUE,
                     sec_at = NULL,
                     sec_labels = NULL,
-                    y_r_scale_auto = NULL,
-                    y_r_at = NULL,
-                    y_r_lab = NULL,
-                    y_r_lim = NULL,
                     palette = "qualitative",
                      fill_index = NULL,
                      index = NULL,
@@ -1717,10 +1694,6 @@ cpb_area <- function(data, x, y, fill,
                      sec_scale_auto = TRUE,
                      sec_at = NULL,
                      sec_labels = NULL,
-                     y_r_scale_auto = NULL,
-                     y_r_at = NULL,
-                     y_r_lab = NULL,
-                     y_r_lim = NULL,
                      palette = "qualitative",
                       fill_index = NULL,
                       index = NULL,
@@ -1979,10 +1952,6 @@ cpb_line <- function(data, x, y, colour = NULL,
                      sec_scale_auto = TRUE,
                      sec_at = NULL,
                      sec_labels = NULL,
-                     y_r_scale_auto = NULL,
-                     y_r_at = NULL,
-                     y_r_lab = NULL,
-                     y_r_lim = NULL,
                      palette = "qualitative",
                       colour_index = NULL,
                       color_index = NULL,
@@ -2066,10 +2035,6 @@ cpb_line <- function(data, x, y, colour = NULL,
   # the secondary series is placed by mapping its range linearly onto
   # the primary one, so the two axes always start together
   if (has_sec) {
-    opts <- cpb_resolve_sec_opts(
-      sec_limits, sec_at, sec_scale_auto, sec_labels,
-      y_r_lim, y_r_at, y_r_scale_auto, y_r_lab
-    )
     sec_vals <- rlang::eval_tidy(sec_y, data)
     if (!is.numeric(sec_vals)) {
       stop("`sec_y` must be a numeric column.", call. = FALSE)
@@ -2077,7 +2042,7 @@ cpb_line <- function(data, x, y, colour = NULL,
     sec_lab <- if (is.null(sec_label)) rlang::as_label(sec_y) else sec_label
     prim_lab <- if (is.null(ylab)) rlang::as_label(y) else ylab
 
-    sec_map <- cpb_sec_map(sec_vals, primary_breaks = scale_args$breaks, sec_limits = opts$limits, sec_at = opts$at, sec_scale_auto = opts$scale_auto)
+    sec_map <- cpb_sec_map(sec_vals, primary_breaks = scale_args$breaks, sec_limits = sec_limits, sec_at = sec_at, sec_scale_auto = sec_scale_auto)
     sec_df <- as.data.frame(data)
     sec_df[["cpb__sec"]] <- cpb_sec_to_primary(sec_vals, sec_map)
     # without a colour mapping, factor the shared-scale labels so the
@@ -2208,7 +2173,7 @@ cpb_line <- function(data, x, y, colour = NULL,
   # this function, so the secondary mapping and this scale cannot drift
   # apart -- see there.
   if (has_sec) {
-    scale_args$sec.axis <- cpb_sec_axis(sec_map, accuracy = sec_accuracy, sec_labels = opts$labels, style = style)
+    scale_args$sec.axis <- cpb_sec_axis(sec_map, accuracy = sec_accuracy, sec_labels = sec_labels, style = style)
   }
   if (length(scale_args)) {
     p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
@@ -2458,10 +2423,6 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                     sec_scale_auto = TRUE,
                     sec_at = NULL,
                     sec_labels = NULL,
-                    y_r_scale_auto = NULL,
-                    y_r_at = NULL,
-                    y_r_lab = NULL,
-                    y_r_lim = NULL,
                     facet = NULL,
                      facet_ncol = NULL,
                      facet_scales = "fixed",
@@ -3408,10 +3369,6 @@ cpb_dot <- function(data, x, y, lower, upper,
                     sec_scale_auto = TRUE,
                     sec_at = NULL,
                     sec_labels = NULL,
-                    y_r_scale_auto = NULL,
-                    y_r_at = NULL,
-                    y_r_lab = NULL,
-                    y_r_lim = NULL,
                     palette = "qualitative",
                      colour_index = NULL,
                      color_index = NULL,
