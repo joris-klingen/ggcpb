@@ -48,3 +48,11 @@ test_that("cpb_line() without sec_y is unchanged", {
                b$layout$panel_params[[1]]$y$get_labels())
   expect_length(b$plot$guides$guides, 0)
 })
+
+test_that("explicit sec_limits equal to the data range are kept, not rounded out", {
+  s <- c(15, 17, 22, 19, 25)
+  prim <- c(0, 2, 4, 6, 8)
+  expect_equal(cpb_find_sec_breaks(prim, s, sec_limits = c(15, 25)),
+               c(15, 17.5, 20, 22.5, 25))
+  expect_equal(cpb_find_sec_breaks(prim, s), c(14, 18, 22, 26, 30))
+})

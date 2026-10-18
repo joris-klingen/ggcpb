@@ -1316,7 +1316,11 @@ test_that("sec_y's default sec_limits use its own data range, not forced through
                         sec_limits = range(df$tekort))
   line_default <- Filter(function(l) inherits(l$geom, "GeomLine"), p_default$layers)[[1]]
   line_explicit <- Filter(function(l) inherits(l$geom, "GeomLine"), p_explicit$layers)[[1]]
-  expect_equal(line_default$data$cpb__sec, line_explicit$data$cpb__sec)
+  # explicit limits are kept: the data range fills the whole axis
+  expect_equal(range(line_explicit$data$cpb__sec),
+               p_explicit$scales$get_scales("y")$limits)
+  expect_false(isTRUE(all.equal(line_default$data$cpb__sec,
+                                line_explicit$data$cpb__sec)))
 
   # forcing 0 into an all-negative series' range is a different,
   # visually much more compressed mapping -- confirms the default

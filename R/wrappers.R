@@ -511,7 +511,8 @@ cpb_find_sec_breaks <- function(primary_breaks, sec_vals, sec_limits = NULL, sec
     return(sec_at)
   }
 
-  user_custom_limits <- !is.null(sec_limits) && !isTRUE(all.equal(sec_limits, range(sec_vals, na.rm = TRUE)))
+  # explicit limits are kept, even when they equal the data range
+  user_custom_limits <- !is.null(sec_limits)
 
   if (is.null(sec_limits)) {
     sec_limits <- range(sec_vals, na.rm = TRUE)
@@ -600,12 +601,10 @@ cpb_sec_map <- function(sec_vals, sec_limits = NULL, prim_min = NULL, prim_max =
 
   sec_breaks <- cpb_find_sec_breaks(primary_breaks, sec_vals, sec_limits = sec_limits, sec_at = sec_at, sec_scale_auto = sec_scale_auto)
 
-  # TRUE when sec_breaks come from an even linear split of sec_limits
-  # (fixed scale, or limits that differ from the data range) rather than
-  # pretty() -- those breaks are arbitrary fractions, so cpb_sec_axis()
-  # caps their auto label precision. Explicit sec_at is the caller's own.
-  user_custom_limits <- is.numeric(sec_limits) && length(sec_limits) == 2 &&
-    !isTRUE(all.equal(sort(as.numeric(sec_limits)), range(sec_vals, na.rm = TRUE)))
+  # TRUE when the breaks are an even split of sec_limits, not pretty().
+  # Those are arbitrary fractions, so cpb_sec_axis() caps their label
+  # precision. An explicit sec_at is left alone.
+  user_custom_limits <- is.numeric(sec_limits) && length(sec_limits) == 2
   forced_linear <- is.null(sec_at) && (!isTRUE(sec_scale_auto) || user_custom_limits)
 
   p_min <- primary_breaks[1]
