@@ -135,6 +135,16 @@ cpb_add_facet <- function(p, facet, facet_ncol = NULL, facet_scales = "fixed") {
                           axes = "all", axis.labels = "all")
 }
 
+# The value range of p's last layer as ggplot2 draws it, for the axis to
+# cover exactly: stacked per facet panel, NA rows dropped, area gaps
+# filled in, with ggplot2's own rounding.
+cpb_drawn_extent <- function(p, facet, facet_ncol, facet_scales) {
+  p <- cpb_add_facet(p, facet, facet_ncol, facet_scales)
+  # its warnings (e.g. removed NA rows) come again when p is drawn
+  drawn <- suppressWarnings(ggplot2::layer_data(p, length(p$layers)))
+  c(drawn$ymin, drawn$ymax, 0)
+}
+
 # reverse_legend, legend_ncol and legend_nrow all configure the same
 # guide_legend(), so they are resolved together: setting one through a
 # wrapper argument must not silently drop the others (which a bare
@@ -979,17 +989,6 @@ cpb_flush_scale_args <- function(axis_values, pct_axis = FALSE, pct_scale = 1,
       )
     }
   }
-  # position_stack() accumulates a stacked total in a different order
-  # than the sum this axis was sized from, so the two can disagree in
-  # the last bit: a 100% area whose top lands on 100 + 1e-14 sits just
-  # outside a limit of exactly 100. oob_censor() compares strictly, so
-  # that one point becomes NA and the whole geom then fails to build a
-  # grob. Widen by a relative hair -- far under a screen pixel, but
-  # orders of magnitude above any such rounding error.
-  span <- diff(args$limits)
-  if (is.finite(span) && span > 0) {
-    args$limits <- args$limits + c(-1, 1) * span * 1e-12
-  }
   args$expand <- ggplot2::expansion(mult = c(0, 0))
   args
 }
@@ -1427,33 +1426,6 @@ cpb_col <- function(data, x, y, fill = NULL,
     }
   }
 
-  # the value axis always spans the full drawn height of the bars, not
-  # just the raw y values: a stacked bar's top is the per-category sum,
-  # not any single segment, so the flush range (and the secondary-axis
-  # mapping below) must be computed the same way the bars are drawn
-  yvals <- rlang::eval_tidy(y, data)
-  xvals_for_axis <- as.character(rlang::eval_tidy(x, data))
-  axis_values <- if (position == "fill") {
-    c(0, 1)
-  } else if (position == "stack") {
-    c(
-      tapply(pmax(yvals, 0), xvals_for_axis, sum),
-      tapply(pmin(yvals, 0), xvals_for_axis, sum), 0
-    )
-  } else {
-    c(yvals, 0)
-  }
-  value_breaks_final <- if (!is.null(value_breaks)) {
-    value_breaks
-  } else {
-    pretty(range(axis_values, na.rm = TRUE))
-  }
-  flush_ylim <- if (!is.null(value_limits)) {
-    value_limits
-  } else {
-    range(value_breaks_final)
-  }
-
   if (has_group) {
     # a two-level category axis: categories in gapped group blocks on
     # one shared value axis, group names in bold under the categories
@@ -1524,6 +1496,12 @@ cpb_col <- function(data, x, y, fill = NULL,
     ggplot2::geom_col(position = position, fill = single_fill, ...)
   }
 
+  # the axis spans the bars as drawn: a stack reaches its total
+  axis_values <- switch(position,
+    fill  = c(0, 1),
+    stack = cpb_drawn_extent(p, facet, facet_ncol, facet_scales),
+    dodge = c(rlang::eval_tidy(y, data), 0)
+  )
   scale_args <- cpb_value_scale(axis_values, pct_scale = if (position == "fill") 100 else 1)
   value_limits_visual <- range(scale_args$breaks)
 
@@ -1793,6 +1771,8 @@ cpb_area <- function(data, x, y, fill,
   # helpers" block near the top of this file).
   p <- p + ggplot2::geom_area(
     show.legend = c(fill = TRUE, colour = FALSE), key_glyph = "rect", ...)
+  # geom_area() stacks, so the axis spans the stacked areas as drawn
+  axis_values <- cpb_drawn_extent(p, facet, facet_ncol, facet_scales)
 
   # on top of the areas
   if (isTRUE(zeroline)) {
@@ -1800,14 +1780,6 @@ cpb_area <- function(data, x, y, fill,
   }
   p <- p + cpb_forecast_label(forecast_x, rlang::eval_tidy(x, data), forecast_label, style = style)
 
-  # geom_area() stacks by default, so the axis must span the per-x
-  # total across fill levels, not any single series' raw y values
-  yvals <- rlang::eval_tidy(y, data)
-  xvals_for_axis <- as.character(rlang::eval_tidy(x, data))
-  axis_values <- c(
-    tapply(pmax(yvals, 0), xvals_for_axis, sum),
-    tapply(pmin(yvals, 0), xvals_for_axis, sum), 0
-  )
   scale_args <- cpb_value_scale(axis_values)
   value_limits_visual <- range(scale_args$breaks)
 

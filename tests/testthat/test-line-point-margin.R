@@ -73,18 +73,9 @@ test_that("widening the axis past value_limits gives a message", {
   expect_no_message(cpb_line(d, x = x, y = y, value_limits = c(0, 3)))
 })
 
-test_that("a stacked total a hair over the limit is drawn, not censored", {
-  # The axis is sized from tapply(..., sum) -- a forward sum -- while
-  # position_stack() reaches its top by cumsum()ing the same numbers in
-  # reverse. Floating point is not associative, so the two can differ in
-  # the last bit: here the forward sum is exactly 100 while the stack
-  # tops out at 100 + 1e-14. The scale's limits are flush (no expansion)
-  # and oob_censor() compares strictly, so without a tolerance that top
-  # point becomes NA -- geom_area() then fails to build a grob at all,
-  # and geom_col() silently drops the segment.
-  # Whether a given dataset hits that last-bit mismatch depends on the
-  # platform and ggplot2 version, so the tolerance itself is checked
-  # directly below; this dataset is a smoke test of the full pipeline.
+test_that("a stacked total a rounding error over 100 is drawn, not censored", {
+  # these shares sum to exactly 100, but position_stack() adds them in
+  # reverse and tops out at 100 + 1e-14
   raw <- c(3.03, 6.10, 8.66)
   shares <- 100 * raw / sum(raw)
 
@@ -110,15 +101,35 @@ test_that("a stacked total a hair over the limit is drawn, not censored", {
   # the area has to survive all the way to a grob, not just to build
   expect_no_error(ggplot2::ggplotGrob(area))
 
-  # the tolerance is far below a screen pixel, so the axis still reads
-  # as flush: the limits are still 0-100 to any visible precision
+  # the axis still reads as 0-100
   lims <- ggplot2::ggplot_build(col)$layout$panel_scales_y[[1]]$get_limits()
   expect_equal(lims, c(0, 100))
 })
 
-test_that("flush limits tolerate a last-bit overshoot but still censor real outliers", {
-  lims <- cpb_flush_scale_args(c(0, 100), pct_axis = TRUE)$limits
-  kept <- scales::oob_censor(c(0, 100 + 1e-14, -1e-14), lims)
-  expect_false(anyNA(kept))
-  expect_true(is.na(scales::oob_censor(100 * (1 + 1e-9), lims)))
+test_that("the axis covers every stack as ggplot2 draws it", {
+  y_lims <- function(p) p$scales$get_scales("y")$limits
+  top <- function(p) {
+    l <- which(vapply(p$layers, function(l) inherits(l$geom, c("GeomCol", "GeomArea")), TRUE))
+    max(suppressWarnings(ggplot2::layer_data(p, l))$ymax, na.rm = TRUE)
+  }
+
+  # an NA segment does not hide the rest of its column
+  col_na <- data.frame(x = rep(c("a", "b"), each = 2), s = rep(c("s1", "s2"), 2),
+                       y = c(10, 20, 50, NA))
+  p <- cpb_col(col_na, x = x, y = y, fill = s)
+  expect_gte(y_lims(p)[2], 50)
+
+  # geom_area() fills in the NA (17.5) and stacks the 50 on top of it
+  area_na <- data.frame(x = rep(1:3, each = 2), s = rep(c("s1", "s2"), 3),
+                        y = c(10, 20, 50, NA, 15, 15))
+  p <- cpb_area(area_na, x = x, y = y, fill = s)
+  expect_equal(top(p), 67.5)
+  expect_gte(y_lims(p)[2], 67.5)
+
+  # facets stack per panel, not across panels
+  fac <- data.frame(x = rep(c("a", "b"), 4), s = rep(c("s1", "s1", "s2", "s2"), 2),
+                    j = rep(c("2020", "2021"), each = 4), y = rep(c(10, 20), 4))
+  expect_equal(y_lims(cpb_col(fac, x = x, y = y, fill = s, facet = j))[2], 40)
+  expect_equal(y_lims(cpb_area(transform(fac, x = rep(1:2, 4)), x = x, y = y,
+                               fill = s, facet = j))[2], 40)
 })
