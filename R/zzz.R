@@ -30,7 +30,8 @@
       "ggcpb: LC_CTYPE is '", Sys.getlocale("LC_CTYPE"), "', not UTF-8, so ",
       "accented\n  characters will be drawn as missing glyphs. Fix with e.g.\n",
       '  Sys.setlocale("LC_CTYPE", "C.UTF-8")',
-      "  (or start R with LC_ALL=C.UTF-8)."
+      "  (or start R with LC_ALL=C.UTF-8). On Windows use\n",
+      '  Sys.setlocale("LC_CTYPE", "English_United States.utf8").'
     )
   }
   invisible(NULL)
