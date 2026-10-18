@@ -1958,10 +1958,8 @@ test_that("cpb_line/cpb_area/cpb_col accept a Date or POSIXct x axis (#49)", {
 
   b <- ggplot2::ggplot_build(cpb_line(d, x = date, y = value))
   expect_s3_class(b$layout$panel_scales_x[[1]], "ScaleContinuousDate")
-  # flush to the data, ending on a labelled month
-  xr <- b$layout$panel_params[[1]]$x.range
-  expect_equal(xr[1], as.numeric(min(d$date)))
-  expect_gte(xr[2], as.numeric(max(d$date)))
+  # flush to the data range, as for a numeric x
+  expect_equal(b$layout$panel_params[[1]]$x.range, as.numeric(range(d$date)))
 
   b <- ggplot2::ggplot_build(cpb_line(d, x = time, y = value))
   expect_s3_class(b$layout$panel_scales_x[[1]], "ScaleContinuousDatetime")
@@ -2127,27 +2125,26 @@ test_that("cpb_map's classed legend can be reversed and laid out", {
 
 test_that("cpb_axis_ticks() gives equal steps, with the ends labelled", {
   ticks <- function(lo, hi, ...) cpb_axis_ticks(lo, hi, whole = TRUE, ...)$breaks
-  # lines and areas: the axis ends at the data
-  expect_equal(ticks(2015, 2024, edge = TRUE, extend = TRUE), c(2015, 2018, 2021, 2024))
-  expect_equal(ticks(2019, 2025, edge = TRUE, extend = TRUE), 2019:2025)
-  expect_equal(ticks(2007, 2022, edge = TRUE, extend = TRUE), c(2007, 2012, 2017, 2022))
-  # no equal step fits 2001-2024: the axis ends one step later
-  tk <- cpb_axis_ticks(2001, 2024, whole = TRUE, edge = TRUE, extend = TRUE)
-  expect_equal(tk$breaks, seq(2001, 2025, by = 4))
-  expect_equal(tk$hi, 2025)
-  # bars: no extension, the last tick may stop short of the last bar
+  expect_equal(ticks(2015, 2024, edge = TRUE), c(2015, 2018, 2021, 2024))
+  expect_equal(ticks(2019, 2025, edge = TRUE), 2019:2025)
+  expect_equal(ticks(2007, 2022, edge = TRUE), c(2007, 2012, 2017, 2022))
+  # no equal step fits 2001-2024: only the two ends, never a year past the data
+  expect_equal(ticks(2001, 2024, edge = TRUE), c(2001, 2024))
+  expect_equal(ticks(2003, 2017, edge = TRUE), seq(2003, 2017, by = 2))
+  # bars: the ticks start at the first bar, and the last may stop short
   expect_equal(ticks(2001, 2024, edge = FALSE), seq(2001, 2021, by = 5))
-  # x_lim: never past the limit, so only the two limits when nothing fits
-  expect_equal(ticks(2001, 2024, edge = TRUE, extend = FALSE), c(2001, 2024))
-  expect_equal(ticks(2003, 2017, edge = TRUE, extend = FALSE), seq(2003, 2017, by = 2))
+  # no axis ever runs past the data
+  for (span in 1:60) expect_lte(max(ticks(2000, 2000 + span, edge = TRUE)), 2000 + span)
   # other data: any equal step
   br <- cpb_axis_ticks(1.3, 7.8)$breaks
   expect_equal(range(br), c(1.3, 7.8))
   expect_equal(length(unique(round(diff(br), 9))), 1)
   # months
   d <- as.Date(c("2020-01-01", "2021-06-01"))
-  tk <- cpb_time_ticks(d[1], d[2], edge = TRUE, extend = TRUE)
-  expect_equal(range(tk$breaks), c(d[1], as.Date("2021-07-01")))
+  expect_equal(cpb_time_ticks(d[1], d[2])$breaks, d)
+  d <- as.Date(c("2020-01-01", "2021-01-01"))
+  tk <- cpb_time_ticks(d[1], d[2])
+  expect_equal(range(tk$breaks), d)
   expect_equal(length(unique(diff(as.integer(format(tk$breaks, "%Y")) * 12 +
                                     as.integer(format(tk$breaks, "%m"))))), 1)
 })
@@ -2160,12 +2157,11 @@ test_that("every continuous axis and colour bar labels its first and last value"
   first_last <- function(x) x[c(1, length(x))]
   yrs <- data.frame(x = 2001:2024, g = "a", y = seq_len(24))
 
-  # no equal step fits 2001-2024: a flush axis ends at 2025, a padded one
-  # labels only the two ends
-  expect_equal(first_last(x_labels(cpb_line(yrs, x = x, y = y))), c("2001", "2025"))
+  # no equal step fits 2001-2024: only the two ends, never a year past the data
+  expect_equal(x_labels(cpb_line(yrs, x = x, y = y)), c("2001", "2024"))
   expect_equal(x_labels(cpb_area(yrs, x = x, y = y, fill = g)), c("2001", "2024"))
-  expect_equal(first_last(x_labels(cpb_area(yrs, x = x, y = y, fill = g,
-                                            x_lim_follow_data = TRUE))), c("2001", "2025"))
+  expect_equal(x_labels(cpb_area(yrs, x = x, y = y, fill = g, x_lim_follow_data = TRUE)),
+               c("2001", "2024"))
   # bars start at their first bar
   expect_equal(x_labels(cpb_col(yrs, x = x, y = y))[1], "2001")
   expect_equal(first_last(x_labels(cpb_line(yrs, x = x, y = y, x_lim = c(2003, 2017)))),
@@ -2173,7 +2169,7 @@ test_that("every continuous axis and colour bar labels its first and last value"
   expect_equal(x_labels(cpb_line(yrs, x = x, y = y, x_lim = c(2001, 2024))), c("2001", "2024"))
 
   mon <- data.frame(x = seq(as.Date("2020-01-01"), by = "month", length.out = 18), y = 1:18)
-  expect_equal(first_last(x_labels(cpb_line(mon, x = x, y = y))), c("2020-01", "2021-07"))
+  expect_equal(x_labels(cpb_line(mon, x = x, y = y)), c("2020-01", "2021-06"))
 
   sc <- data.frame(x = c(1.3, 2.9, 4.1, 7.8), y = c(0.3, 1.4, 0.9, 2.2))
   expect_equal(first_last(x_labels(cpb_scatter(sc, x = x, y = y, x_lim_follow_data = TRUE))),

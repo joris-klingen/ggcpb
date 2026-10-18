@@ -268,19 +268,16 @@ cpb_numeric_legend_scale <- function(values, style = "dutch") {
 
 # Equally spaced ticks for a numeric x axis from `lo` to `hi` (the
 # data, or x_lim). Whole-number data (years) gets whole-number steps.
-# `edge`: the axis ends at lo and hi, so both are labelled. When no
-# equal step fits the span, `extend` moves hi up to the nearest step
-# that does (never for x_lim, which is a limit: then only the two ends
-# are labelled). Without `edge` (bars: the axis has room around the
-# first and last value) the ticks start at lo and the last one may stop
-# short of hi.
-# @return list(breaks, lo, hi); hi is moved only by `extend`.
+# `edge`: the axis ends at lo and hi, so both are labelled; when no
+# equal step fits, only the two ends are. The axis never runs past hi,
+# so a year without data is not labelled. Without `edge` (bars: the
+# axis has room around the first and last value) the ticks start at lo
+# and the last one may stop short of hi.
+# @return list(breaks, lo, hi)
 # @noRd
-cpb_axis_ticks <- function(lo, hi, whole = FALSE, edge = TRUE,
-                           extend = FALSE, max_labels = 7) {
+cpb_axis_ticks <- function(lo, hi, whole = FALSE, edge = TRUE, max_labels = 7) {
   span <- hi - lo
-  end <- hi
-  out <- function(breaks, hi = end) list(breaks = breaks, lo = lo, hi = hi)
+  out <- function(breaks) list(breaks = breaks, lo = lo, hi = hi)
   if (!(span > 0)) return(out(lo))
   ks <- 2:(max_labels - 1)
   # a step of 1, 2 or a multiple of 5 reads best; it may take one more label
@@ -294,12 +291,6 @@ cpb_axis_ticks <- function(lo, hi, whole = FALSE, edge = TRUE,
       return(out(lo + (0:k) * span / k))
     }
     if (span < 2) return(out(c(lo, hi)))
-    if (edge && extend) {
-      steps <- ceiling(span / ks)
-      over <- ks * steps - span
-      k <- ks[order(over, !nice(steps), -ks)[1]]
-      return(out(lo + (0:k) * steps[ks == k], lo + k * steps[ks == k]))
-    }
     if (edge) return(out(c(lo, hi)))
     step <- ceiling(span / (max_labels - 2))
     return(out(lo + (0:floor(span / step)) * step))
@@ -331,19 +322,19 @@ cpb_axis_ticks <- function(lo, hi, whole = FALSE, edge = TRUE,
 # The same for a Date or POSIXct x. Dates on the first of a month step in
 # whole months; others in equal days (or seconds).
 # @noRd
-cpb_time_ticks <- function(lo, hi, edge = TRUE, extend = FALSE) {
+cpb_time_ticks <- function(lo, hi, edge = TRUE) {
   first <- inherits(lo, "Date") && all(format(c(lo, hi), "%d") == "01")
   if (first) {
     months <- function(d) as.integer(format(d, "%Y")) * 12L + as.integer(format(d, "%m"))
     tk <- cpb_axis_ticks(0, months(hi) - months(lo), whole = TRUE, edge = edge,
-                         extend = extend, max_labels = 5)
+                         max_labels = 5)
     n <- length(tk$breaks)
     if (n < 2) return(list(breaks = lo, lo = lo, hi = hi))
     breaks <- seq(lo, by = paste(tk$breaks[2] - tk$breaks[1], "months"), length.out = n)
-    return(list(breaks = breaks, lo = lo, hi = if (extend && edge) breaks[n] else hi))
+    return(list(breaks = breaks, lo = lo, hi = hi))
   }
   tk <- cpb_axis_ticks(as.numeric(lo), as.numeric(hi), whole = FALSE,
-                       edge = edge, extend = FALSE, max_labels = 5)
+                       edge = edge, max_labels = 5)
   back <- if (inherits(lo, "Date")) as.Date else function(x) as.POSIXct(x, tz = attr(lo, "tzone") %||% "")
   list(breaks = back(tk$breaks), lo = lo, hi = hi)
 }
@@ -351,10 +342,10 @@ cpb_time_ticks <- function(lo, hi, edge = TRUE, extend = FALSE) {
 # The ticks and axis range of a numeric, Date or POSIXct x, shared by
 # cpb_x_scale() and cpb_x_flush_xlim() so they cannot disagree.
 # @noRd
-cpb_x_ticks <- function(xvals, lo, hi, edge, extend) {
-  if (inherits(xvals, c("Date", "POSIXt"))) return(cpb_time_ticks(lo, hi, edge, extend))
+cpb_x_ticks <- function(xvals, lo, hi, edge) {
+  if (inherits(xvals, c("Date", "POSIXt"))) return(cpb_time_ticks(lo, hi, edge))
   whole <- all(c(xvals, lo, hi) == round(c(xvals, lo, hi)), na.rm = TRUE)
-  cpb_axis_ticks(lo, hi, whole, edge, extend)
+  cpb_axis_ticks(lo, hi, whole, edge)
 }
 
 # Round, labelled ends for a colour bar, as tight around the data as 3
@@ -414,7 +405,7 @@ cpb_x_scale <- function(p, x, data, flush, domain = NULL, bars = FALSE) {
   if (inherits(xvals, c("Date", "POSIXt")) || is.numeric(xvals)) {
     edge <- user_lim || !bars
     tk <- cpb_x_ticks(xvals, min(domain, na.rm = TRUE), max(domain, na.rm = TRUE),
-                      edge, extend = isTRUE(flush) && !user_lim && !bars)
+                      edge)
     if (inherits(xvals, "Date")) {
       p + ggplot2::scale_x_date(breaks = tk$breaks, labels = cpb_date_labels)
     } else if (inherits(xvals, "POSIXt")) {
@@ -514,7 +505,7 @@ cpb_x_flush_xlim <- function(x, data, flush, pad = 0) {
   if (!is.numeric(xvals) && !cpb_is_datetime(xvals)) return(NULL)
   r <- range(xvals, na.rm = TRUE)
   # bars (pad > 0) have room around the first and last value
-  tk <- cpb_x_ticks(xvals, r[1], r[2], edge = pad == 0, extend = pad == 0)
+  tk <- cpb_x_ticks(xvals, r[1], r[2], edge = pad == 0)
   c(tk$lo, tk$hi) + c(-pad, pad)
 }
 
@@ -1372,11 +1363,11 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   axis would then leave no cue where the data starts and ends. Ticks
 #'   are equally spaced and the first and last value are labelled; a
 #'   whole-number `x` (a year) only gets whole-number steps. When no
-#'   equal step fits, a flush axis ends at the next step, while on bars
-#'   the ticks run from the first value instead. With `x_lim` the exact
-#'   limits are labelled and nothing goes beyond them
-#'   (`x_lim_follow_data` is then ignored, as when `group` is mapped:
-#'   the grouped layout needs its own fixed margin). Adding your own
+#'   equal step fits, only the two ends are labelled (on bars the ticks
+#'   run from the first value instead). With `x_lim` the exact limits
+#'   are labelled and nothing goes beyond them (`x_lim_follow_data` is
+#'   then ignored, as when `group` is mapped: the grouped layout needs
+#'   its own fixed margin). Adding your own
 #'   `scale_x_continuous()`/`scale_x_discrete()` afterward replaces this
 #'   one entirely (ggplot2 keeps only one scale per aesthetic) -- add
 #'   `expand = ggplot2::expansion(mult = 0)` to it to keep the flush
@@ -3133,12 +3124,12 @@ cpb_scatter <- function(data, x, y, colour = NULL,
   xvals <- rlang::eval_tidy(x, data)
   if (!is.null(x_lim)) {
     # a manual zoom: both ends of x_lim labelled, equal steps between
-    tk <- cpb_x_ticks(xvals, x_lim[1], x_lim[2], edge = TRUE, extend = FALSE)
+    tk <- cpb_x_ticks(xvals, x_lim[1], x_lim[2], edge = TRUE)
     x_breaks <- tk$breaks
     flush_xlim <- x_lim
   } else if (isTRUE(x_lim_follow_data)) {
     # no rounding: flush to the data, both ends labelled
-    tk <- cpb_x_ticks(xvals, x_data_range[1], x_data_range[2], edge = TRUE, extend = TRUE)
+    tk <- cpb_x_ticks(xvals, x_data_range[1], x_data_range[2], edge = TRUE)
     x_breaks <- tk$breaks
     flush_xlim <- c(tk$lo, tk$hi)
   } else {
@@ -3357,11 +3348,11 @@ cpb_hist <- function(data, x, fill = NULL,
     # around them; both ends are labelled
     bin_range <- range(drawn$xmin, drawn$xmax, na.rm = TRUE)
     if (!is.null(x_lim)) {
-      tk <- cpb_axis_ticks(x_lim[1], x_lim[2], whole = FALSE, edge = TRUE, extend = FALSE)
+      tk <- cpb_axis_ticks(x_lim[1], x_lim[2], whole = FALSE, edge = TRUE)
       x_range <- x_lim
       x_breaks <- tk$breaks
     } else if (isTRUE(x_lim_follow_data)) {
-      tk <- cpb_axis_ticks(bin_range[1], bin_range[2], whole = FALSE, edge = TRUE, extend = TRUE)
+      tk <- cpb_axis_ticks(bin_range[1], bin_range[2], whole = FALSE, edge = TRUE)
       x_range <- c(tk$lo, tk$hi)
       x_breaks <- tk$breaks
     } else {
