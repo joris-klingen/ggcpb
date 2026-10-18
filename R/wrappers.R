@@ -833,13 +833,13 @@ cpb_add_sec_guides <- function(p, has_sec, reverse_legend, legend_ncol, legend_n
 # @return list(p, scale_args)
 # @noRd
 cpb_add_sec_y <- function(p, scale_args, env = parent.frame()) {
-  a <- mget(c("data", "x", "sec_y", "sec_type", "sec_label", "sec_colour",
+  a <- mget(c("data", "x", "sec_y", "sec_type", "sec_legend_label", "sec_colour",
               "sec_linewidth", "sec_points", "sec_symbol_size", "sec_col_width",
               "sec_accuracy", "sec_limits", "sec_at", "sec_scale_auto", "sec_axis_labels",
               "style"), envir = env)
   sec_vals <- rlang::eval_tidy(a$sec_y, a$data)
   sec_map <- cpb_sec_map(sec_vals, primary_breaks = scale_args$breaks, sec_limits = a$sec_limits, sec_at = a$sec_at, sec_scale_auto = a$sec_scale_auto)
-  sec_lab <- if (is.null(a$sec_label)) rlang::as_label(a$sec_y) else a$sec_label
+  sec_lab <- if (is.null(a$sec_legend_label)) rlang::as_label(a$sec_y) else a$sec_legend_label
   p <- cpb_sec_layer(p, a$data, a$x, sec_vals, sec_map, a$sec_type,
                      cpb_single_colour(a$sec_colour, 2), sec_lab, a$sec_linewidth,
                      a$sec_points, a$sec_symbol_size, a$sec_col_width, style = a$style)
@@ -1141,9 +1141,9 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   range linearly onto the primary range, so the two axes always
 #'   start together. Giving this explicitly also spaces the breaks
 #'   evenly across it, overriding `sec_scale_auto`.
-#' @param sec_label Legend label for `sec_y`. `NULL` (default) uses
-#'   the `sec_y` column name. Automatically suffixed `"(rechteras)"`
-#'   (right axis) -- don't add it yourself, e.g. `sec_label =
+#' @param sec_legend_label Name of the `sec_y` series in the legend.
+#'   `NULL` (default) uses the `sec_y` column name. Automatically suffixed `"(rechteras)"`
+#'   (right axis) -- don't add it yourself, e.g. `sec_legend_label =
 #'   "erfbelasting"` shows as `"erfbelasting (rechteras)"`.
 #' @param sec_ylab Unit caption for the secondary axis, drawn
 #'   right-aligned above the panel to mirror the left-hand unit that
@@ -1329,7 +1329,7 @@ cpb_col <- function(data, x, y, fill = NULL,
                      sec_y = NULL,
                      sec_type = c("line", "point", "col"),
                      sec_limits = NULL,
-                     sec_label = NULL,
+                     sec_legend_label = NULL,
                      sec_ylab = NULL,
                      sec_colour = NULL,
                      sec_linewidth = 0.55,
@@ -1678,7 +1678,7 @@ cpb_area <- function(data, x, y, fill,
                       sec_y = NULL,
                       sec_type = c("line", "point", "col"),
                       sec_limits = NULL,
-                      sec_label = NULL,
+                      sec_legend_label = NULL,
                       sec_ylab = NULL,
                       sec_colour = NULL,
                       sec_linewidth = 0.55,
@@ -1930,7 +1930,7 @@ cpb_line <- function(data, x, y, colour = NULL,
                       sec_y = NULL,
                       sec_type = c("line", "point", "col"),
                       sec_limits = NULL,
-                      sec_label = NULL,
+                      sec_legend_label = NULL,
                       sec_ylab = NULL,
                       sec_colour = NULL,
                       sec_linewidth = NULL,
@@ -2025,7 +2025,7 @@ cpb_line <- function(data, x, y, colour = NULL,
     if (!is.numeric(sec_vals)) {
       stop("`sec_y` must be a numeric column.", call. = FALSE)
     }
-    sec_lab <- if (is.null(sec_label)) rlang::as_label(sec_y) else sec_label
+    sec_lab <- if (is.null(sec_legend_label)) rlang::as_label(sec_y) else sec_legend_label
     prim_lab <- if (is.null(ylab)) rlang::as_label(y) else ylab
 
     sec_map <- cpb_sec_map(sec_vals, primary_breaks = scale_args$breaks, sec_limits = sec_limits, sec_at = sec_at, sec_scale_auto = sec_scale_auto)
@@ -2395,7 +2395,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                      sec_y = NULL,
                      sec_type = c("line", "point", "col"),
                      sec_limits = NULL,
-                     sec_label = NULL,
+                     sec_legend_label = NULL,
                      sec_ylab = NULL,
                      sec_colour = NULL,
                      sec_linewidth = 0.55,
@@ -3353,7 +3353,7 @@ cpb_dot <- function(data, x, y, lower, upper,
                      sec_y = NULL,
                      sec_type = c("line", "point", "col"),
                      sec_limits = NULL,
-                     sec_label = NULL,
+                     sec_legend_label = NULL,
                      sec_ylab = NULL,
                      sec_colour = NULL,
                      sec_linewidth = 0.55,

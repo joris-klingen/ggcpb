@@ -1300,7 +1300,7 @@ test_that("cpb_col(sec_y) rescales a line onto a secondary axis", {
                    soort = rep(c("a", "b"), each = 3),
                    klein = rep(c(0.5, 1, 1.5), 2))
   p <- cpb_col(df, x = jaar, y = v, fill = soort, sec_y = klein,
-               sec_limits = c(0, 2), sec_label = "klein")
+               sec_limits = c(0, 2), sec_legend_label = "klein")
   sc <- p$scales$get_scales("y")
   expect_s3_class(sc$secondary.axis, "AxisSecondary")
   # the primary stack tops out at 15, so the secondary maximum of 2

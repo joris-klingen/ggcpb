@@ -4,7 +4,7 @@ test_that("cpb_line() draws a secondary value axis", {
                   idx = c(100.5, 100, 96.8, 98.5, 99.2, 100.4, 101.6, 102.5))
 
   p <- cpb_line(d, x = jaar, y = pct, sec_y = idx, sec_limits = c(95, 110),
-                sec_label = "index", ylab = "pct", value_limits = c(-5, 10))
+                sec_legend_label = "index", ylab = "pct", value_limits = c(-5, 10))
   b <- ggplot2::ggplot_build(p)
 
   # the right-hand axis reads in the secondary series' own units, not
@@ -13,7 +13,7 @@ test_that("cpb_line() draws a secondary value axis", {
                c("95", "100", "105", "110"))
 
   # both series are named in one legend block, each key suffixed with
-  # the axis it belongs to (auto, not passed in sec_label)
+  # the axis it belongs to (auto, not passed in sec_legend_label)
   keys <- b$plot$guides$get_params("colour")$key$.label
   expect_length(keys, 2)
   expect_true("index (rechteras)" %in% keys)
@@ -30,7 +30,7 @@ test_that("cpb_line() draws a secondary value axis", {
                      reeks = rep(c("a", "b"), each = 8))
   long$idx <- rep(d$idx, 2)
   p2 <- cpb_line(long, x = jaar, y = waarde, colour = reeks, sec_y = idx,
-                 sec_label = "c")
+                 sec_legend_label = "c")
   keys2 <- ggplot2::ggplot_build(p2)$plot$guides$get_params("colour")$key$.label
   expect_length(keys2, 3)
   expect_true("c (rechteras)" %in% keys2)

@@ -302,7 +302,7 @@ p <- nalatenschap |>
   cpb_col(x = jaar, y = mld, fill = soort,
     sec_y      = heffing,
     sec_limits = c(0, 3),
-    sec_label  = "erfbelasting",
+    sec_legend_label  = "erfbelasting",
     sec_ylab   = "mld euro",
     title = "Belasting over erfenissen, prijzen 2022",
     ylab  = "mld euro")
@@ -313,10 +313,10 @@ p
 <img src="chart-types_files/figure-gfm/col-secaxis-1.png" alt="" width="350px" />
 
 `sec_ylab` mirrors on the right what `ylab` puts above the panel on the
-left, and `sec_label` names the line in the legend – house style says
-which axis it belongs to. The combination is refused where it cannot be
-read: horizontal bars, grouped categories, and `position = "fill"` all
-error rather than draw something misleading.
+left, and `sec_legend_label` names the line in the legend – house style
+says which axis it belongs to. The combination is refused where it
+cannot be read: horizontal bars, grouped categories, and
+`position = "fill"` all error rather than draw something misleading.
 
 `cpb_line()` takes the same arguments, for the figure that puts two
 rates on the left axis and an index on the right:
@@ -337,7 +337,7 @@ p <- lonen |>
   cpb_line(x = jaar, y = waarde, colour = reeks,
     sec_y      = reeel,
     sec_limits = c(95, 110),
-    sec_label  = "reële cao-loon bedrijven",
+    sec_legend_label  = "reële cao-loon bedrijven",
     sec_ylab   = "geïndexeerd, 2021 = 100",
     value_limits = c(-5, 10),
     value_breaks = seq(-5, 10, 5),

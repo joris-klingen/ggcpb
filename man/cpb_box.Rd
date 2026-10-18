@@ -36,7 +36,7 @@ cpb_box(
   sec_y = NULL,
   sec_type = c("line", "point", "col"),
   sec_limits = NULL,
-  sec_label = NULL,
+  sec_legend_label = NULL,
   sec_ylab = NULL,
   sec_colour = NULL,
   sec_linewidth = 0.55,
@@ -252,9 +252,9 @@ secondary axis spans. \code{NULL} (default) uses zero to the maximum of
 \code{sec_y}. \code{sec_y} is placed by mapping this range linearly onto
 the primary (p5-p95) range, so the two axes always start together.}
 
-\item{sec_label}{Legend label for \code{sec_y}. \code{NULL} (default) uses
-the \code{sec_y} column name. Automatically suffixed \code{"(rechteras)"}
-(right axis) -- don't add it yourself, e.g. \code{sec_label = "erfbelasting"} shows as \code{"erfbelasting (rechteras)"}.}
+\item{sec_legend_label}{Name of the \code{sec_y} series in the legend.
+\code{NULL} (default) uses the \code{sec_y} column name. Automatically suffixed \code{"(rechteras)"}
+(right axis) -- don't add it yourself, e.g. \code{sec_legend_label = "erfbelasting"} shows as \code{"erfbelasting (rechteras)"}.}
 
 \item{sec_ylab}{Unit caption for the secondary axis, drawn
 right-aligned above the panel to mirror the left-hand unit that

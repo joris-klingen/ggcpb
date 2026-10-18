@@ -61,10 +61,10 @@ test_that("with sec_y, every wrapper names both axes in the legend", {
 
   # fill-primary wrappers: square (fill guide) + line (colour guide)
   for (p in list(
-    cpb_col(d, x = x, y = y, sec_y = z, sec_label = "sec"),
-    cpb_area(d, x = x, y = y, fill = factor("v"), sec_y = z, sec_label = "sec"),
+    cpb_col(d, x = x, y = y, sec_y = z, sec_legend_label = "sec"),
+    cpb_area(d, x = x, y = y, fill = factor("v"), sec_y = z, sec_legend_label = "sec"),
     cpb_box(db, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-            sec_y = z, sec_label = "sec")
+            sec_y = z, sec_legend_label = "sec")
   )) {
     expect_match(keys(p, "fill"), "\\(linkeras\\)$", all = TRUE)
     expect_equal(keys(p, "colour"), "sec (rechteras)")
@@ -72,12 +72,12 @@ test_that("with sec_y, every wrapper names both axes in the legend", {
 
   # cpb_dot: primary keyed on fill (square), sec on colour (line)
   pd <- cpb_dot(dd, x = x, y = y, lower = lo, upper = hi, orientation = "vertical",
-                sec_y = z, sec_label = "sec")
+                sec_y = z, sec_legend_label = "sec")
   expect_match(keys(pd, "fill"), "\\(linkeras\\)$")
   expect_equal(keys(pd, "colour"), "sec (rechteras)")
 
   # cpb_line: both series share the colour scale
-  pl <- cpb_line(d, x = x, y = y, sec_y = z, sec_label = "sec", ylab = "prim")
+  pl <- cpb_line(d, x = x, y = y, sec_y = z, sec_legend_label = "sec", ylab = "prim")
   expect_setequal(keys(pl, "colour"), c("prim (linkeras)", "sec (rechteras)"))
 })
 

@@ -53,7 +53,7 @@ literal_examples <- c(
   line_colour      = "#005faf",
   symbol_colour    = "#e6006e",
   sec_colour       = "#e6006e",
-  sec_label        = "name of the second series",
+  sec_legend_label = "name of the second series",
   sec_ylab         = "unit of the right axis",
   sec_limits       = "0;100",
   sec_linewidth    = "0.55",

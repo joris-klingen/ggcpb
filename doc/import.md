@@ -78,13 +78,13 @@ params_csv <- system.file(
 
 This example uses the horizontal layout:
 
-    plot_type,id,title,x,y,fill,ylab,position,sec_y,sec_type,sec_label,sec_ylab,create
+    plot_type,id,title,x,y,fill,ylab,position,sec_y,sec_type,sec_legend_label,sec_ylab,create
     col,koopkracht,Koopkrachtontwikkeling naar groep,jaar,koopkracht,groep,% mutatie,dodge,werkloosheid,line,werkloosheid,%,y
     line,werkloosheid,Werkloosheid,jaar,werkloosheid,,%,,,,,,y
 
 The same content, split on the comma and shown as a table:
 
-| plot_type | id | title | x | y | fill | ylab | position | sec_y | sec_type | sec_label | sec_ylab | create |
+| plot_type | id | title | x | y | fill | ylab | position | sec_y | sec_type | sec_legend_label | sec_ylab | create |
 |:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|
 | col | koopkracht | Koopkrachtontwikkeling naar groep | jaar | koopkracht | groep | % mutatie | dodge | werkloosheid | line | werkloosheid | % | y |
 | line | werkloosheid | Werkloosheid | jaar | werkloosheid |  | % |  |  |  |  |  | y |
@@ -299,7 +299,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_axis_labels | literal |  |  |
 | sec_col_width | literal | 0.3 | 0.3 |
 | sec_colour | literal |  | \#e6006e |
-| sec_label | literal |  | name of the second series |
+| sec_legend_label | literal |  | name of the second series |
 | sec_limits | literal |  | 0;100 |
 | sec_linewidth | literal | 0.55 | 0.55 |
 | sec_points | literal | FALSE | FALSE |
@@ -344,7 +344,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_axis_labels | literal |  |  |
 | sec_col_width | literal | 0.3 | 0.3 |
 | sec_colour | literal |  | \#e6006e |
-| sec_label | literal |  | name of the second series |
+| sec_legend_label | literal |  | name of the second series |
 | sec_limits | literal |  | 0;100 |
 | sec_linewidth | literal | 0.55 | 0.55 |
 | sec_points | literal | FALSE | FALSE |
@@ -391,7 +391,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_axis_labels | literal |  |  |
 | sec_col_width | literal | 0.3 | 0.3 |
 | sec_colour | literal |  | \#e6006e |
-| sec_label | literal |  | name of the second series |
+| sec_legend_label | literal |  | name of the second series |
 | sec_limits | literal |  | 0;100 |
 | sec_linewidth | literal |  | 0.55 |
 | sec_points | literal | FALSE | FALSE |
@@ -451,7 +451,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_axis_labels | literal |  |  |
 | sec_col_width | literal | 0.3 | 0.3 |
 | sec_colour | literal |  | \#e6006e |
-| sec_label | literal |  | name of the second series |
+| sec_legend_label | literal |  | name of the second series |
 | sec_limits | literal |  | 0;100 |
 | sec_linewidth | literal | 0.55 | 0.55 |
 | sec_points | literal | FALSE | FALSE |
@@ -500,7 +500,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_axis_labels | literal |  |  |
 | sec_col_width | literal | 0.3 | 0.3 |
 | sec_colour | literal |  | \#e6006e |
-| sec_label | literal |  | name of the second series |
+| sec_legend_label | literal |  | name of the second series |
 | sec_limits | literal |  | 0;100 |
 | sec_linewidth | literal | 0.55 | 0.55 |
 | sec_points | literal | FALSE | FALSE |
