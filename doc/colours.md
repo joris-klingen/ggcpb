@@ -106,6 +106,11 @@ cpb_col(tw, x = jaar, y = waarde, fill = sector,
 Position numbers stay stable regardless of the default order, so
 `cpb_cols(6)` is the primary blue whatever else changes.
 
+If more colours are needed, `palette = "extended"` has 20 distinct
+colours.
+
+<img src="colours_files/figure-gfm/extended-1.png" alt="" width="700px" />
+
 ## When the order matters
 
 Two cases where you will reach for explicit positions rather than the

@@ -111,6 +111,17 @@ cpb_col(tw, x = jaar, y = waarde, fill = sector,
 Position numbers stay stable regardless of the default order, so
 `cpb_cols(6)` is the primary blue whatever else changes.
 
+If more colours are needed, `palette = "extended"` has 20 distinct
+colours.
+
+```{r extended, echo = FALSE, fig.width = 15.5 / 2.54, fig.height = 2.1, out.width = "700px"}
+ext <- cpb_cols(palette = "extended")
+op <- par(mar = c(5, 0, 0.5, 0), bg = cpb_tokens()$bg)
+barplot(rep(1, 20), col = ext, border = NA, space = 0.1, axes = FALSE,
+        names.arg = names(ext), las = 2, cex.names = 0.6)
+par(op)
+```
+
 ## When the order matters
 
 Two cases where you will reach for explicit positions rather than the
@@ -124,27 +135,6 @@ series to its colour.
 
 **Matching a figure you are reproducing.** A chart rebuilt from a
 publication needs that publication's colours, not the current default.
-
-# More than nine series
-
-The house palette cycles through nine colours. A chart with more series
-recycles them and warns, because a repeated colour makes two series
-look like one. `palette = "extended"` gives 20 distinct colours: the
-nine house colours first, in the same order, then eleven more. Charts
-with nine series or fewer look the same with either palette, and the
-default stays `"qualitative"`. The colours also have names:
-
-```{r extended, fig.width = 15.5 / 2.54, fig.height = 2.1, out.width = "700px"}
-ext <- cpb_cols(palette = "extended")
-op <- par(mar = c(5, 0, 0.5, 0), bg = cpb_tokens()$bg)
-barplot(rep(1, 20), col = ext, border = NA, space = 0.1, axes = FALSE,
-        names.arg = names(ext), las = 2, cex.names = 0.6)
-par(op)
-```
-
-```{r extended-names}
-cpb_cols("apple", "sun", "turquoise", palette = "extended")
-```
 
 # Sequential shades
 
