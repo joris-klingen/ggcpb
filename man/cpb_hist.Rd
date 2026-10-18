@@ -15,7 +15,6 @@ cpb_hist(
   position = "stack",
   palette = "qualitative",
   fill_index = NULL,
-  index = NULL,
   x_lim = NULL,
   x_lim_follow_data = FALSE,
   reverse_legend = TRUE,
@@ -76,9 +75,6 @@ taupe, ...) and \code{"continuous"} for the sequential ramp. \code{NULL}
 (default) uses \code{palette}, which is \code{"discrete"} for every wrapper
 except \code{\link[=cpb_map]{cpb_map()}}. A keyword and a non-matching \code{palette} are a
 conflict and raise an error, since both set the same thing.}
-
-\item{index}{Deprecated. Former name of
-\code{fill_index}. Still accepted, with a warning.}
 
 \item{x_lim}{Optional length-2 vector zooming the \code{x} axis to a
 range, without dropping data. Bins are computed from the full

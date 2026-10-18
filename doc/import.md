@@ -264,7 +264,6 @@ to, so a table for one `plot_type` does not necessarily match another.
 | setting | kind | default | example |
 |:---|:---|:---|:---|
 | flush_legend | literal | TRUE | TRUE |
-| index | literal |  | use colour_index or fill_index instead |
 | legend | literal | bottom | bottom |
 | legend_ncol | literal |  | 2 |
 | legend_nrow | literal |  |  |
@@ -590,6 +589,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | setting | kind | default | example |
 |:---|:---|:---|:---|
 | fill | column (from data_csv) | (required) | group |
+| fill_index | literal |  | 2;6 |
 | label | column (from data_csv) |  | name |
 | label_accuracy | literal | 1 | 1 |
 | label_colour | literal | black | black |

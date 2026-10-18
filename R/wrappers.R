@@ -1230,8 +1230,6 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   (default) uses `palette`, which is `"discrete"` for every wrapper
 #'   except [cpb_map()]. A keyword and a non-matching `palette` are a
 #'   conflict and raise an error, since both set the same thing.
-#' @param index Deprecated. Former name of
-#'   `fill_index`. Still accepted, with a warning.
 #' @param pct_axis If `TRUE`, format the value axis with
 #'   [label_pct_nl()]. Uses `scale = 100` automatically when
 #'   `position = "fill"` (proportions), and `scale = 1` otherwise
@@ -1345,7 +1343,6 @@ cpb_col <- function(data, x, y, fill = NULL,
                     sec_labels = NULL,
                     palette = "qualitative",
                      fill_index = NULL,
-                     index = NULL,
                      pct_axis = FALSE,
                      value_accuracy = NULL,
                      value_breaks = NULL,
@@ -1377,7 +1374,7 @@ cpb_col <- function(data, x, y, fill = NULL,
                     style = getOption("ggcpb.style", "dutch"),
                     ...) {
   style <- match.arg(style, c("dutch", "english"))
-  .cpb_idx <- cpb_resolve_index(fill_index, index, palette, !missing(palette), "fill_index")
+  .cpb_idx <- cpb_resolve_index(fill_index, palette, !missing(palette), "fill_index")
   index <- .cpb_idx$index
   palette <- .cpb_idx$palette
   position <- match.arg(position)
@@ -1696,7 +1693,6 @@ cpb_area <- function(data, x, y, fill,
                      sec_labels = NULL,
                      palette = "qualitative",
                       fill_index = NULL,
-                      index = NULL,
                       pct_axis = FALSE,
                       value_accuracy = NULL,
                       value_breaks = NULL,
@@ -1727,7 +1723,7 @@ cpb_area <- function(data, x, y, fill,
                      style = getOption("ggcpb.style", "dutch"),
                      ...) {
   style <- match.arg(style, c("dutch", "english"))
-  .cpb_idx <- cpb_resolve_index(fill_index, index, palette, !missing(palette), "fill_index")
+  .cpb_idx <- cpb_resolve_index(fill_index, palette, !missing(palette), "fill_index")
   index <- .cpb_idx$index
   palette <- .cpb_idx$palette
   sec_type <- match.arg(sec_type)
@@ -1880,8 +1876,6 @@ cpb_area <- function(data, x, y, fill,
 #'   conflict and raise an error, since both set the same thing.
 #' @param color_index American-spelling alias for `colour_index`; ignored
 #'   when `colour_index` is given.
-#' @param index Deprecated. Former name of
-#'   `colour_index`. Still accepted, with a warning.
 #' @param pct_axis If `TRUE`, format the y axis with [label_pct_nl()].
 #' @param x_lim Optional length-2 vector zooming the `x` axis to a
 #'   range, without dropping data -- applied as a coordinate-system
@@ -1955,7 +1949,6 @@ cpb_line <- function(data, x, y, colour = NULL,
                      palette = "qualitative",
                       colour_index = NULL,
                       color_index = NULL,
-                      index = NULL,
                       pct_axis = FALSE,
                       value_accuracy = NULL,
                       value_breaks = NULL,
@@ -1989,7 +1982,7 @@ cpb_line <- function(data, x, y, colour = NULL,
                      ...) {
   style <- match.arg(style, c("dutch", "english"))
   if (is.null(colour_index)) colour_index <- color_index
-  .cpb_idx <- cpb_resolve_index(colour_index, index, palette, !missing(palette), "colour_index")
+  .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette), "colour_index")
   index <- .cpb_idx$index
   palette <- .cpb_idx$palette
   sec_type <- match.arg(sec_type)
@@ -2400,7 +2393,6 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                      linewidth = 0.25,
                      palette = "qualitative",
                      fill_index = NULL,
-                     index = NULL,
                      pct_axis = FALSE,
                      value_accuracy = NULL,
                      value_breaks = NULL,
@@ -2445,7 +2437,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                     style = getOption("ggcpb.style", "dutch"),
                     ...) {
   style <- match.arg(style, c("dutch", "english"))
-  .cpb_idx <- cpb_resolve_index(fill_index, index, palette, !missing(palette), "fill_index")
+  .cpb_idx <- cpb_resolve_index(fill_index, palette, !missing(palette), "fill_index")
   index <- .cpb_idx$index
   palette <- .cpb_idx$palette
   orientation <- match.arg(orientation)
@@ -2873,8 +2865,6 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
 #' @param palette CPB palette used for a *discrete* `colour` column;
 #'   one of `"qualitative"` (default), `"discr"`, `"sequential"`
 #'   (pink ramp), or `"blues"` (blue ramp).
-#' @param index Deprecated. Former name of
-#'   `colour_index`. Still accepted, with a warning.
 #' @param x_lim Optional length-2 vector zooming the `x` axis to a
 #'   range, without dropping data. Also recomputes the flush breaks
 #'   for that window, rather than the full data's (which would mostly
@@ -2916,7 +2906,6 @@ cpb_scatter <- function(data, x, y, colour = NULL,
                          palette = "qualitative",
                          colour_index = NULL,
                          color_index = NULL,
-                         index = NULL,
                          x_lim = NULL,
                          x_lim_follow_data = FALSE,
                          forecast_x = NULL,
@@ -2944,7 +2933,7 @@ cpb_scatter <- function(data, x, y, colour = NULL,
                          ...) {
   style <- match.arg(style, c("dutch", "english"))
   if (is.null(colour_index)) colour_index <- color_index
-  .cpb_idx <- cpb_resolve_index(colour_index, index, palette, !missing(palette), "colour_index")
+  .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette), "colour_index")
   index <- .cpb_idx$index
   palette <- .cpb_idx$palette
   x <- rlang::enquo(x)
@@ -3129,7 +3118,6 @@ cpb_hist <- function(data, x, fill = NULL,
                       position = "stack",
                       palette = "qualitative",
                       fill_index = NULL,
-                      index = NULL,
                       x_lim = NULL,
                       x_lim_follow_data = FALSE,
                       reverse_legend = TRUE,
@@ -3154,7 +3142,7 @@ cpb_hist <- function(data, x, fill = NULL,
                       style = getOption("ggcpb.style", "dutch"),
                       ...) {
   style <- match.arg(style, c("dutch", "english"))
-  .cpb_idx <- cpb_resolve_index(fill_index, index, palette, !missing(palette), "fill_index")
+  .cpb_idx <- cpb_resolve_index(fill_index, palette, !missing(palette), "fill_index")
   index <- .cpb_idx$index
   palette <- .cpb_idx$palette
   x <- rlang::enquo(x)
@@ -3289,8 +3277,6 @@ cpb_hist <- function(data, x, fill = NULL,
 #' @param palette CPB palette to use for `colour`; one of
 #'   `"qualitative"` (default), `"discr"`, `"sequential"`
 #'   (pink ramp), or `"blues"` (blue ramp).
-#' @param index Deprecated. Former name of
-#'   `colour_index`. Still accepted, with a warning.
 #' @param pct_axis If `TRUE`, format the value axis with
 #'   [label_pct_nl()].
 #' @param value_breaks Optional breaks for the value axis (passed to
@@ -3372,7 +3358,6 @@ cpb_dot <- function(data, x, y, lower, upper,
                     palette = "qualitative",
                      colour_index = NULL,
                      color_index = NULL,
-                     index = NULL,
                      pct_axis = FALSE,
                      value_accuracy = NULL,
                      value_breaks = NULL,
@@ -3402,7 +3387,7 @@ cpb_dot <- function(data, x, y, lower, upper,
                     ...) {
   style <- match.arg(style, c("dutch", "english"))
   if (is.null(colour_index)) colour_index <- color_index
-  .cpb_idx <- cpb_resolve_index(colour_index, index, palette, !missing(palette), "colour_index")
+  .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette), "colour_index")
   index <- .cpb_idx$index
   palette <- .cpb_idx$palette
   orientation <- match.arg(orientation)
@@ -3637,7 +3622,7 @@ cpb_dot <- function(data, x, y, lower, upper,
 #'   unevenly sized, wedges where `"wedge"` would not.
 #' @param label_colour Colour of the printed wedge/leader labels.
 #'   Defaults to `"black"`; pass `"white"` (or another colour) if your
-#'   own `palette`/`index` choice comes out darker/more saturated (for
+#'   own `palette`/`fill_index` choice comes out darker/more saturated (for
 #'   `"wedge"` labels only -- `"leader"` labels sit outside the ring,
 #'   against the plot background, so contrast doesn't depend on the
 #'   wedge colours).
@@ -3671,9 +3656,6 @@ cpb_dot <- function(data, x, y, lower, upper,
 #'   to [save_cpb()] as its `panel_size` (which can still override it
 #'   at save time).
 #' @inheritParams cpb_col
-#' @param index Optional integer vector of palette positions, forwarded
-#'   to [scale_fill_cpb_manual()] instead of the default
-#'   [scale_fill_cpb_d()] when supplied.
 #' @param reverse_legend If `TRUE`, reverse the fill legend order via
 #'   `guide_legend(reverse = TRUE)`. Defaults to `FALSE`.
 #' @param legend_ncol Number of columns to lay the legend keys out in,
@@ -3704,7 +3686,7 @@ cpb_dot <- function(data, x, y, lower, upper,
 #' )
 #' cpb_donut(df, fill = bron, y = share, label = mld,
 #'   title = "Energiemix",
-#'   index = c(6, 2, 5, 1)
+#'   fill_index = c(6, 2, 5, 1)
 #' )
 #' @export
 cpb_donut <- function(data, fill, y,
@@ -3718,7 +3700,7 @@ cpb_donut <- function(data, fill, y,
                       ring_width = 0.6,
                       panel_size = NULL,
                       palette = "qualitative",
-                      index = NULL,
+                      fill_index = NULL,
                       reverse_legend = FALSE,
                       legend_ncol = NULL,
                       legend_nrow = NULL,
@@ -3729,6 +3711,9 @@ cpb_donut <- function(data, fill, y,
                       legend_title = NULL,
                       style = getOption("ggcpb.style", "dutch"),
                       ...) {
+  .cpb_idx <- cpb_resolve_index(fill_index, palette, !missing(palette), "fill_index")
+  index <- .cpb_idx$index
+  palette <- .cpb_idx$palette
   fill <- rlang::enquo(fill)
   y <- rlang::enquo(y)
   label <- rlang::enquo(label)

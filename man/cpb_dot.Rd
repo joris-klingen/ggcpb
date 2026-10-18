@@ -35,7 +35,6 @@ cpb_dot(
   palette = "qualitative",
   colour_index = NULL,
   color_index = NULL,
-  index = NULL,
   pct_axis = FALSE,
   value_accuracy = NULL,
   value_breaks = NULL,
@@ -191,9 +190,6 @@ conflict and raise an error, since both set the same thing.}
 
 \item{color_index}{American-spelling alias for \code{colour_index}; ignored
 when \code{colour_index} is given.}
-
-\item{index}{Deprecated. Former name of
-\code{colour_index}. Still accepted, with a warning.}
 
 \item{pct_axis}{If \code{TRUE}, format the value axis with
 \code{\link[=label_pct_nl]{label_pct_nl()}}.}

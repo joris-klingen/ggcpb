@@ -70,7 +70,6 @@ literal_examples <- c(
   box_labels       = "TRUE",
   dot_labels       = "p5:bottom 5%;p95:top 5%",
   zeroline         = "TRUE",
-  index            = "use colour_index or fill_index instead",
   colour_index     = "2;6",
   color_index      = "2;6",
   fill_index       = "2;6"

@@ -74,8 +74,8 @@ cpb_map(gemeenten_ct, region = code, value = index,
 
 `level = "provincie"` draws the coarser province boundaries instead;
 `"corop"` works the same way for COROP regions. A discrete `value` gets
-the discrete CPB palette (pick colours with `index`); a title that runs
-wider than the panel triggers a warning from `save_cpb()`, which
+the discrete CPB palette (pick colours with `fill_index`); a title that
+runs wider than the panel triggers a warning from `save_cpb()`, which
 suggests breaking it over two lines with `"\n"` – done here:
 
 ``` r

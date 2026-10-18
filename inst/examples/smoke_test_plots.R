@@ -706,7 +706,7 @@ energie_dt <- data.table(
 )
 render(26, "donut: energiemix",
   cpb_donut(energie_dt, fill = bron, y = share,
-    index = c(6, 2, 5, 1),
+    fill_index = c(6, 2, 5, 1),
     title = "Energiemix",
     legend_title = "bron"),
   "26_donut.png", page = "half")

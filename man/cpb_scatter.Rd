@@ -14,7 +14,6 @@ cpb_scatter(
   palette = "qualitative",
   colour_index = NULL,
   color_index = NULL,
-  index = NULL,
   x_lim = NULL,
   x_lim_follow_data = FALSE,
   forecast_x = NULL,
@@ -73,9 +72,6 @@ conflict and raise an error, since both set the same thing.}
 
 \item{color_index}{American-spelling alias for \code{colour_index}; ignored
 when \code{colour_index} is given.}
-
-\item{index}{Deprecated. Former name of
-\code{colour_index}. Still accepted, with a warning.}
 
 \item{x_lim}{Optional length-2 vector zooming the \code{x} axis to a
 range, without dropping data. Also recomputes the flush breaks

@@ -13,7 +13,6 @@ cpb_map(
   border_linewidth = 0.15,
   palette = "sequential",
   fill_index = NULL,
-  index = NULL,
   reverse = FALSE,
   na_fill = NULL,
   legend = "topleft",
@@ -58,9 +57,6 @@ taupe, ...) and \code{"continuous"} for the sequential ramp. \code{NULL}
 (default) uses \code{palette}, which is \code{"discrete"} for every wrapper
 except \code{\link[=cpb_map]{cpb_map()}}. A keyword and a non-matching \code{palette} are a
 conflict and raise an error, since both set the same thing.}
-
-\item{index}{Deprecated. Former name of
-\code{fill_index}. Still accepted, with a warning.}
 
 \item{reverse}{For a numeric \code{value} column: reverse the sequential
 gradient (passed to \code{\link[=scale_fill_cpb_c]{scale_fill_cpb_c()}}).}

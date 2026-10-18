@@ -76,8 +76,6 @@ cpb_nl_geo <- function(level = c("gemeente", "corop", "provincie")) {
 #'   (default) uses `palette`, which is `"discrete"` for every wrapper
 #'   except [cpb_map()]. A keyword and a non-matching `palette` are a
 #'   conflict and raise an error, since both set the same thing.
-#' @param index Deprecated. Former name of
-#'   `fill_index`. Still accepted, with a warning.
 #' @param reverse For a numeric `value` column: reverse the sequential
 #'   gradient (passed to [scale_fill_cpb_c()]).
 #' @param na_fill Fill for regions without a value in `data`; defaults
@@ -108,7 +106,6 @@ cpb_map <- function(data, region, value,
                     border_linewidth = 0.15,
                     palette = "sequential",
                     fill_index = NULL,
-                    index = NULL,
                     reverse = FALSE,
                     na_fill = NULL,
                     legend = "topleft",
@@ -118,7 +115,7 @@ cpb_map <- function(data, region, value,
                     legend_title = NULL,
                     style = getOption("ggcpb.style", "dutch"),
                     ...) {
-  .cpb_idx <- cpb_resolve_index(fill_index, index, palette, !missing(palette), "fill_index")
+  .cpb_idx <- cpb_resolve_index(fill_index, palette, !missing(palette), "fill_index")
   index <- .cpb_idx$index
   palette <- .cpb_idx$palette
   style <- match.arg(style, c("dutch", "english"))

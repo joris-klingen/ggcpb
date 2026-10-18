@@ -145,22 +145,13 @@ cpb_index_keywords <- c(
 #' `NULL` defers to `palette`, so existing calls keep their behaviour.
 #'
 #' @param value The `colour_index`/`fill_index` value.
-#' @param legacy The deprecated `index` value, if any.
 #' @param palette The wrapper's `palette` argument.
 #' @param palette_supplied Was `palette` given explicitly by the caller?
 #' @param arg Argument name, for error messages.
 #' @return A list with `index` (integer vector or `NULL`) and `palette`.
 #' @noRd
-cpb_resolve_index <- function(value, legacy, palette, palette_supplied,
+cpb_resolve_index <- function(value, palette, palette_supplied,
                               arg = "colour_index") {
-  if (!is.null(legacy)) {
-    if (!is.null(value)) {
-      stop("`index` and `", arg, "` cannot both be set. `index` is ",
-           "deprecated -- use `", arg, "` on its own.", call. = FALSE)
-    }
-    warning("`index` is deprecated; use `", arg, "` instead.", call. = FALSE)
-    value <- legacy
-  }
   if (is.null(value)) return(list(index = NULL, palette = palette))
 
   if (is.character(value)) {

@@ -18,7 +18,7 @@ cpb_donut(
   ring_width = 0.6,
   panel_size = NULL,
   palette = "qualitative",
-  index = NULL,
+  fill_index = NULL,
   reverse_legend = FALSE,
   legend_ncol = NULL,
   legend_nrow = NULL,
@@ -74,7 +74,7 @@ unevenly sized, wedges where \code{"wedge"} would not.}
 
 \item{label_colour}{Colour of the printed wedge/leader labels.
 Defaults to \code{"black"}; pass \code{"white"} (or another colour) if your
-own \code{palette}/\code{index} choice comes out darker/more saturated (for
+own \code{palette}/\code{fill_index} choice comes out darker/more saturated (for
 \code{"wedge"} labels only -- \code{"leader"} labels sit outside the ring,
 against the plot background, so contrast doesn't depend on the
 wedge colours).}
@@ -117,9 +117,14 @@ at save time).}
 \code{"qualitative"} (default), \code{"discr"}, \code{"sequential"}
 (pink ramp), or \code{"blues"} (blue ramp).}
 
-\item{index}{Optional integer vector of palette positions, forwarded
-to \code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} instead of the default
-\code{\link[=scale_fill_cpb_d]{scale_fill_cpb_d()}} when supplied.}
+\item{fill_index}{Which house colours the series get. Either a vector
+of palette positions -- \code{c(2, 5, 6)}, forwarded to
+\code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} -- or a keyword naming a palette:
+\code{"discrete"} for the qualitative house palette (blue, magenta,
+taupe, ...) and \code{"continuous"} for the sequential ramp. \code{NULL}
+(default) uses \code{palette}, which is \code{"discrete"} for every wrapper
+except \code{\link[=cpb_map]{cpb_map()}}. A keyword and a non-matching \code{palette} are a
+conflict and raise an error, since both set the same thing.}
 
 \item{reverse_legend}{If \code{TRUE}, reverse the fill legend order via
 \code{guide_legend(reverse = TRUE)}. Defaults to \code{FALSE}.}
@@ -174,6 +179,6 @@ df <- data.frame(
 )
 cpb_donut(df, fill = bron, y = share, label = mld,
   title = "Energiemix",
-  index = c(6, 2, 5, 1)
+  fill_index = c(6, 2, 5, 1)
 )
 }

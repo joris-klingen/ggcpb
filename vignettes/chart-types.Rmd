@@ -359,7 +359,7 @@ p
 The one difference from `cpb_col()`: there the columns key on `fill`
 and the secondary line on `colour`, so they form two legend blocks.
 Here the primary series already key on `colour`, so the secondary line
-joins that same scale, takes the next `index` position and shares a
+joins that same scale, takes the next palette position and shares a
 single legend -- which is why all three labels name their axis.
 
 # Donut charts
@@ -386,7 +386,7 @@ energie <- tibble(
 )
 
 cpb_donut(energie, fill = bron, y = share,
-  index = c(6, 5, 2, 4),
+  fill_index = c(6, 5, 2, 4),
   title = "Energiemix van huishoudens")
 ```
 
@@ -413,7 +413,7 @@ energie2 <- tibble(
 cpb_donut(energie2, fill = bron, y = share,
   label_style   = "leader",
   leader_length = 0.08,
-  index = c(6, 4, 5, 1, 3, 2),
+  fill_index = c(6, 4, 5, 1, 3, 2),
   title = "Energiemix, met lijnlabels")
 ```
 

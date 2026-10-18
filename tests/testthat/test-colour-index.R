@@ -55,14 +55,18 @@ test_that("bad colour_index values are rejected clearly", {
                "positive whole numbers")
 })
 
-test_that("the deprecated index argument still works, with a warning", {
-  expect_warning(p <- cpb_line(d3, x = x, y = y, colour = g, index = c(2, 5, 6)),
-                 "`index` is deprecated")
-  expect_equal(cols_of(p), unname(cpb_cols(2, 5, 6)))
+test_that("cpb_donut takes fill_index like the other fill charts", {
+  d <- data.frame(g = c("a", "b", "c"), v = c(3, 2, 1))
+  fills <- function(...) ggplot2::ggplot_build(cpb_donut(d, fill = g, y = v, ...))$data[[1]]$fill
+  expect_equal(fills(fill_index = c(2, 5, 6)), unname(cpb_cols(2, 5, 6)))
+  expect_equal(fills(fill_index = "discrete"), fills())
+  expect_error(cpb_donut(d, fill = g, y = v, fill_index = "rainbow"), "not recognised")
+})
 
-  expect_error(cpb_line(d3, x = x, y = y, colour = g,
-                        index = c(2), colour_index = c(3)),
-               "cannot both be set")
+test_that("the wrappers no longer have an index argument", {
+  fns <- list(cpb_col, cpb_area, cpb_line, cpb_box, cpb_boxplot_extended,
+              cpb_scatter, cpb_hist, cpb_dot, cpb_donut, cpb_map)
+  expect_false(any(vapply(fns, function(f) "index" %in% names(formals(f)), TRUE)))
 })
 
 test_that("cpb_map keeps its sequential default", {
