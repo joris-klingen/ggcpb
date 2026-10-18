@@ -29,6 +29,7 @@ cpb_boxplot_extended(
   value_accuracy = NULL,
   value_breaks = NULL,
   value_limits = NULL,
+  value_crop = FALSE,
   value_axis = NULL,
   x_lim = NULL,
   x_lim_follow_data = TRUE,
@@ -186,11 +187,13 @@ equal steps; where the data runs past it the axis is widened to
 round values (with a message), so no value is ever hidden. \code{NULL}
 (default) flushes to the full data range (for boxes p5 to p95, for
 the dot chart the interval bounds; see \code{x_lim}/\code{x_lim_follow_data}
-for the category axis's equivalent). For a deliberate zoom that
-does hide values, add \code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} yourself, or
-\code{\link[ggplot2:coord_flip]{ggplot2::coord_flip()}} for a horizontal chart. That replaces the
-chart's own coordinate system, so text outside the plot area, such
-as group names, can be cut off.}
+for the category axis's equivalent). To show only the limits, use
+\code{value_crop}.}
+
+\item{value_crop}{If \code{TRUE}, \code{value_limits} is a window instead of a
+minimum: the axis is exactly those limits, with equal steps, and
+values outside are cut off at the edge. A warning says when not all
+data is shown. Needs \code{value_limits}. Default \code{FALSE}.}
 
 \item{value_axis}{Where the value axis is drawn, \code{"top"} or
 \code{"bottom"}; see \code{\link[=cpb_box]{cpb_box()}}. \code{NULL} (default) resolves to \code{"top"}

@@ -45,6 +45,9 @@ Changed behaviour:
   `cpb_cols()` also finds them by name.
 * `style = "english"` works in every chart, and
   `options(ggcpb.style = "english")` sets it for a whole report.
+* `value_crop = TRUE` turns `value_limits` into a window: the axis is
+  exactly those limits and values outside are cut off, with a warning
+  that not all data is shown.
 * `cpb_scatter()` and `cpb_hist()` have `value_limits`, `value_breaks`
   and `value_accuracy`; `cpb_scatter()` also has `pct_axis` and
   `x_labels`.

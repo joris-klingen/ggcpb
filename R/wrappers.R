@@ -535,8 +535,8 @@ cpb_is_datetime <- function(x) {
 # clipped for display"), so that one keeps clipping.
 cpb_apply_coord <- function(p, orientation, x_lim, value_limits,
                             x, data, x_lim_follow_data, has_group,
-                            skip_x_flush = FALSE) {
-  clip <- if (is.null(x_lim)) "off" else "on"
+                            skip_x_flush = FALSE, scale_args = NULL) {
+  clip <- cpb_clip(x_lim, scale_args)
   do_flush <- is.null(x_lim) && !has_group && !skip_x_flush
   flush_xlim <- if (do_flush) cpb_x_flush_xlim(x, data, x_lim_follow_data) else NULL
   xlim_final <- if (!is.null(x_lim)) x_lim else flush_xlim
@@ -1032,10 +1032,11 @@ cpb_add_sec_ylab <- function(p, has_sec, sec_ylab) {
 cpb_value_scale <- function(axis_values, pct_scale = 1, env = parent.frame()) {
   a <- mget(c("pct_axis", "value_accuracy", "value_breaks", "value_limits", "style"),
             envir = env)
+  a$value_crop <- get0("value_crop", envir = env, inherits = FALSE, ifnotfound = FALSE)
   cpb_flush_scale_args(
     axis_values = axis_values, pct_axis = a$pct_axis, pct_scale = pct_scale,
     value_accuracy = a$value_accuracy, value_breaks = a$value_breaks,
-    value_limits = a$value_limits, style = a$style,
+    value_limits = a$value_limits, value_crop = a$value_crop, style = a$style,
     orientation = get0("orientation", envir = env, inherits = FALSE,
                        ifnotfound = "vertical")
   )
@@ -1058,6 +1059,7 @@ cpb_value_scale <- function(axis_values, pct_scale = 1, env = parent.frame()) {
 cpb_flush_scale_args <- function(axis_values, pct_axis = FALSE, pct_scale = 1,
                                  value_accuracy = NULL,
                                  value_breaks = NULL, value_limits = NULL,
+                                 value_crop = FALSE,
                                  style = "dutch", orientation = "vertical") {
   if (isTRUE(pct_axis) && !is.null(value_accuracy)) {
     stop("`pct_axis` and `value_accuracy` cannot be combined: `pct_axis` ",
@@ -1084,6 +1086,9 @@ cpb_flush_scale_args <- function(axis_values, pct_axis = FALSE, pct_scale = 1,
   # silently -- pass coord_cartesian(ylim = ) yourself for a deliberate
   # zoom, where it is visible in the calling code.
   data_range <- range(axis_values, na.rm = TRUE)
+  if (isTRUE(value_crop)) {
+    return(cpb_crop_scale_args(args, data_range, value_limits, value_breaks))
+  }
   needed <- range(c(data_range, value_limits))
   # limits the data fits inside are shown exactly, with equal steps
   lim <- if (!is.null(value_limits)) range(value_limits)
@@ -1120,18 +1125,52 @@ cpb_flush_scale_args <- function(axis_values, pct_axis = FALSE, pct_scale = 1,
     tol <- diff(range(value_limits)) * 1e-6
     if (data_range[1] < min(value_limits) - tol ||
         data_range[2] > max(value_limits) + tol) {
-      coord <- if (identical(orientation, "horizontal")) "coord_flip" else "coord_cartesian"
       message(
         "ggcpb: the data (", paste(signif(data_range, 4), collapse = " to "),
         ") runs past `value_limits`, so the axis is widened to ",
-        paste(signif(args$limits, 4), collapse = " to "), ". To crop it to ",
-        "`value_limits` instead, add `+ ", coord, "(ylim = c(",
-        paste(value_limits, collapse = ", "), "))`."
+        paste(signif(args$limits, 4), collapse = " to "),
+        ". Use `value_crop = TRUE` to show only `value_limits`."
       )
     }
   }
   args$expand <- ggplot2::expansion(mult = c(0, 0))
   args
+}
+
+# value_crop = TRUE: `value_limits` is a hard window. The axis is exactly
+# the limits with equal steps, and the wrapper's coord crops the view to
+# it (clip on). The scale keeps the data in range, so a bar or line
+# running past the window is cut at the edge, not dropped.
+cpb_crop_scale_args <- function(args, data_range, value_limits, value_breaks) {
+  if (is.null(value_limits)) {
+    stop("`value_crop = TRUE` needs `value_limits`.", call. = FALSE)
+  }
+  lim <- range(value_limits)
+  if (!(diff(lim) > 0)) stop("`value_limits` must span a range.", call. = FALSE)
+  tol <- diff(lim) * 1e-6
+  if (data_range[1] < lim[1] - tol || data_range[2] > lim[2] + tol) {
+    warning(
+      "ggcpb: `value_crop = TRUE` shows only ", lim[1], " to ", lim[2],
+      ", so not all data is shown (the data runs from ",
+      signif(data_range[1], 4), " to ", signif(data_range[2], 4), ").",
+      call. = FALSE
+    )
+  }
+  args$breaks <- if (is.null(value_breaks)) {
+    cpb_axis_ticks(lim[1], lim[2])$breaks
+  } else {
+    value_breaks[value_breaks >= lim[1] - tol & value_breaks <= lim[2] + tol]
+  }
+  args$limits <- range(c(lim, data_range))
+  args$expand <- ggplot2::expansion(mult = c(0, 0))
+  attr(args, "crop") <- TRUE
+  args
+}
+
+# Clip the panel for an explicit x_lim or a cropped value axis. Otherwise
+# off, since a flush axis puts a real point on the panel edge.
+cpb_clip <- function(x_lim, scale_args) {
+  if (is.null(x_lim) && !isTRUE(attr(scale_args, "crop"))) "off" else "on"
 }
 
 # Widen a break sequence outward, in its own step, until it spans
@@ -1344,11 +1383,12 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   round values (with a message), so no value is ever hidden. `NULL`
 #'   (default) flushes to the full data range (for boxes p5 to p95, for
 #'   the dot chart the interval bounds; see `x_lim`/`x_lim_follow_data`
-#'   for the category axis's equivalent). For a deliberate zoom that
-#'   does hide values, add [ggplot2::coord_cartesian()] yourself, or
-#'   [ggplot2::coord_flip()] for a horizontal chart. That replaces the
-#'   chart's own coordinate system, so text outside the plot area, such
-#'   as group names, can be cut off.
+#'   for the category axis's equivalent). To show only the limits, use
+#'   `value_crop`.
+#' @param value_crop If `TRUE`, `value_limits` is a window instead of a
+#'   minimum: the axis is exactly those limits, with equal steps, and
+#'   values outside are cut off at the edge. A warning says when not all
+#'   data is shown. Needs `value_limits`. Default `FALSE`.
 #' @param x_lim Optional length-2 vector zooming the category (`x`)
 #'   axis to a range, without dropping data -- applied as a
 #'   coordinate-system zoom ([ggplot2::coord_cartesian()] /
@@ -1502,6 +1542,7 @@ cpb_col <- function(data, x, y, fill = NULL,
                      value_accuracy = NULL,
                      value_breaks = NULL,
                      value_limits = NULL,
+                     value_crop = FALSE,
                      value_labels = FALSE,
                      x_lim = NULL,
                      x_lim_follow_data = FALSE,
@@ -1641,6 +1682,9 @@ cpb_col <- function(data, x, y, fill = NULL,
     dodge = c(rlang::eval_tidy(y, data), 0)
   )
   scale_args <- cpb_value_scale(axis_values, pct_scale = if (position == "fill") 100 else 1)
+  if (has_group && isTRUE(value_crop)) {
+    stop("`value_crop` cannot be combined with `group`.", call. = FALSE)
+  }
   value_limits_visual <- range(scale_args$breaks)
 
   if (has_sec) {
@@ -1681,7 +1725,7 @@ cpb_col <- function(data, x, y, fill = NULL,
   # already excludes -- the value axis's own expansion is already zero
   # either way (see cpb_flush_scale_args()), so this never strips
   # anything from it
-  clip <- if (is.null(x_lim)) "off" else "on"
+  clip <- cpb_clip(x_lim, scale_args)
   expand <- is.null(flush_xlim)
 
   if (has_group) {
@@ -1841,6 +1885,7 @@ cpb_area <- function(data, x, y, fill,
                       value_accuracy = NULL,
                       value_breaks = NULL,
                       value_limits = NULL,
+                      value_crop = FALSE,
                       x_lim = NULL,
                       x_lim_follow_data = FALSE,
                       forecast_x = NULL,
@@ -1927,7 +1972,7 @@ cpb_area <- function(data, x, y, fill,
   # own max) exactly on the panel edge, and clip = "on" would cut half
   # of its symbol off there; an explicit x_lim is a deliberate visual
   # crop instead, so that one case keeps clipping
-  clip <- if (is.null(x_lim)) "off" else "on"
+  clip <- cpb_clip(x_lim, scale_args)
   if (!is.null(value_limits) || !is.null(xlim_final) || clip == "off") {
     # expand = FALSE only skips the default expansion flush_xlim
     # itself already excludes -- the value axis's own expansion is
@@ -2088,6 +2133,7 @@ cpb_line <- function(data, x, y, colour = NULL,
                       value_accuracy = NULL,
                       value_breaks = NULL,
                       value_limits = NULL,
+                      value_crop = FALSE,
                       x_lim = NULL,
                       x_lim_follow_data = TRUE,
                       ymin = NULL,
@@ -2320,7 +2366,7 @@ cpb_line <- function(data, x, y, colour = NULL,
   # panel edge, and clip = "on" would cut half of its symbol off there
   # for no reason. Only an explicit x_lim, a deliberate visual crop,
   # keeps clipping.
-  clip <- if (is.null(x_lim)) "off" else "on"
+  clip <- cpb_clip(x_lim, scale_args)
 
   if (!is.null(xlim_final) || clip == "off") {
     # expand = FALSE only skips the default expansion flush_xlim
@@ -2519,6 +2565,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                      value_accuracy = NULL,
                      value_breaks = NULL,
                      value_limits = NULL,
+                     value_crop = FALSE,
                      value_axis = c("bottom", "top"),
                      x_lim = NULL,
                      x_lim_follow_data = TRUE,
@@ -2881,7 +2928,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   p <- cpb_apply_coord(
     p, orientation, x_lim, value_limits_visual,
     x, data, x_lim_follow_data, has_group,
-    skip_x_flush = isTRUE(box_labels) && !has_group
+    skip_x_flush = isTRUE(box_labels) && !has_group, scale_args = scale_args
   )
 
   # value_axis = "top" draws the value scale at the top of the panel
@@ -3036,6 +3083,7 @@ cpb_scatter <- function(data, x, y, colour = NULL,
                          value_accuracy = NULL,
                          value_breaks = NULL,
                          value_limits = NULL,
+                         value_crop = FALSE,
                          x_lim = NULL,
                          x_lim_follow_data = FALSE,
                          x_labels = NULL,
@@ -3143,7 +3191,7 @@ cpb_scatter <- function(data, x, y, colour = NULL,
   # clipping
   p <- p + ggplot2::coord_cartesian(
     xlim = flush_xlim, ylim = range(scale_args$limits),
-    expand = FALSE, clip = if (is.null(x_lim)) "off" else "on"
+    expand = FALSE, clip = cpb_clip(x_lim, scale_args)
   )
   x_scale_args <- list(
     labels = if (is.null(x_labels)) label_number_nl(style = style) else x_labels
@@ -3251,6 +3299,7 @@ cpb_hist <- function(data, x, fill = NULL,
                       value_accuracy = NULL,
                       value_breaks = NULL,
                       value_limits = NULL,
+                      value_crop = FALSE,
                       x_lim = NULL,
                       x_lim_follow_data = FALSE,
                       reverse_legend = TRUE,
@@ -3330,16 +3379,20 @@ cpb_hist <- function(data, x, fill = NULL,
   } else {
     do.call(ggplot2::scale_y_continuous, cpb_flush_scale_args(
       c(drawn$ymin, drawn$ymax, 0), value_accuracy = value_accuracy,
-      value_breaks = value_breaks, value_limits = value_limits, style = style
+      value_breaks = value_breaks, value_limits = value_limits,
+      value_crop = value_crop, style = style
     ))
   }
+  # a later coord_cartesian() replaces this one, so both carry the window
+  crop_ylim <- if (isTRUE(value_crop)) range(value_limits)
+  crop_clip <- if (isTRUE(value_crop)) "on" else "off"
 
   # bins are computed from the full data before any x zoom applies, so
   # x_lim only ever changes what is visible, never the binning itself
   xvals <- rlang::eval_tidy(x, data)
   if (!is.numeric(xvals)) {
     p <- if (!is.null(x_lim)) {
-      p + ggplot2::coord_cartesian(xlim = x_lim)
+      p + ggplot2::coord_cartesian(xlim = x_lim, ylim = crop_ylim, clip = crop_clip)
     } else {
       cpb_x_scale(p, x, data, flush = isTRUE(x_lim_follow_data))
     }
@@ -3361,7 +3414,7 @@ cpb_hist <- function(data, x, fill = NULL,
     }
     p <- p + ggplot2::scale_x_continuous(breaks = x_breaks)
     if (!free_x) {
-      p <- p + ggplot2::coord_cartesian(xlim = x_range, expand = FALSE)
+      p <- p + ggplot2::coord_cartesian(xlim = x_range, ylim = crop_ylim, expand = FALSE, clip = crop_clip)
     }
   }
 
@@ -3517,6 +3570,7 @@ cpb_dot <- function(data, x, y, lower, upper,
                      value_accuracy = NULL,
                      value_breaks = NULL,
                      value_limits = NULL,
+                     value_crop = FALSE,
                      x_lim = NULL,
                      x_lim_follow_data = TRUE,
                      zeroline = NULL,
@@ -3667,7 +3721,7 @@ cpb_dot <- function(data, x, y, lower, upper,
 
   p <- cpb_apply_coord(
     p, orientation, x_lim, value_limits_visual,
-    x, data, x_lim_follow_data, has_group
+    x, data, x_lim_follow_data, has_group, scale_args = scale_args
   )
 
   if (length(scale_args)) {

@@ -63,10 +63,7 @@ test_that("widening the axis past value_limits gives a message", {
   expect_message(cpb_line(d, x = x, y = y, value_limits = c(0, 3)),
                  "runs past `value_limits`, so the axis is widened to 0 to 4")
   expect_message(cpb_line(d, x = x, y = y, value_limits = c(0, 3)),
-                 "add `+ coord_cartesian(ylim = c(0, 3))`", fixed = TRUE)
-  expect_message(cpb_col(d, x = x, y = y, value_limits = c(0, 3),
-                         orientation = "horizontal"),
-                 "add `+ coord_flip(ylim = c(0, 3))`", fixed = TRUE)
+                 "Use `value_crop = TRUE`", fixed = TRUE)
   expect_no_message(cpb_line(d, x = x, y = y, value_limits = c(0, 5)))
   # a rounding error over the limit is not worth a message
   d$y[3] <- 3 + 1e-12
@@ -132,4 +129,32 @@ test_that("the axis covers every stack as ggplot2 draws it", {
   expect_equal(y_lims(cpb_col(fac, x = x, y = y, fill = s, facet = j))[2], 40)
   expect_equal(y_lims(cpb_area(transform(fac, x = rep(1:2, 4)), x = x, y = y,
                                fill = s, facet = j))[2], 40)
+})
+
+test_that("value_crop makes value_limits a window and warns", {
+  d <- data.frame(x = c("a", "b", "c"), y = c(1, 2, 4))
+  expect_warning(p <- cpb_col(d, x = x, y = y, value_limits = c(0, 3), value_crop = TRUE),
+                 "not all data is shown")
+  b <- ggplot2::ggplot_build(p)
+  expect_equal(b$layout$panel_params[[1]]$y$continuous_range, c(0, 3))
+  expect_equal(b$layout$panel_params[[1]]$y$get_breaks(), c(0, 1, 2, 3))
+  expect_equal(b$layout$coord$clip, "on")
+  # horizontal, line and scatter crop the same way
+  expect_warning(cpb_col(d, x = x, y = y, value_limits = c(0, 3), value_crop = TRUE,
+                         orientation = "horizontal"), "not all data")
+  dl <- data.frame(x = 1:3, y = c(1, 2, 4))
+  expect_warning(cpb_line(dl, x = x, y = y, value_limits = c(0, 3), value_crop = TRUE), "not all data")
+  expect_warning(cpb_scatter(dl, x = x, y = y, value_limits = c(0, 3), value_crop = TRUE), "not all data")
+  # nothing outside the window: no warning
+  expect_no_warning(cpb_line(dl, x = x, y = y, value_limits = c(0, 5), value_crop = TRUE))
+  expect_error(cpb_line(dl, x = x, y = y, value_crop = TRUE), "needs `value_limits`")
+})
+
+test_that("value_crop works for histograms", {
+  d <- data.frame(v = rep(1:5, times = c(30, 5, 3, 2, 1)))
+  expect_warning(p <- cpb_hist(d, x = v, value_limits = c(0, 10), value_crop = TRUE),
+                 "not all data")
+  b <- ggplot2::ggplot_build(p)
+  expect_equal(b$layout$panel_params[[1]]$y$continuous_range, c(0, 10))
+  expect_equal(b$layout$coord$clip, "on")
 })
