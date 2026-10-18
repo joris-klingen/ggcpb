@@ -91,6 +91,9 @@ cpb_nl_geo <- function(level = c("gemeente", "corop", "provincie")) {
 #' @param title,subtitle Plot title/subtitle. As elsewhere, `ylab` does
 #'   not exist here: use `subtitle` for the unit caption.
 #' @param legend_title Legend title. Defaults to `NULL` (no title).
+#' @param style Number format of a numeric legend: `"dutch"` (default,
+#'   `,` decimal) or `"english"` (`.` decimal). Taken from
+#'   `getOption("ggcpb.style")`, as in the other charts.
 #' @param ... Further arguments passed to [ggplot2::geom_polygon()].
 #' @return A `ggplot` object.
 #' @examples
@@ -113,10 +116,12 @@ cpb_map <- function(data, region, value,
                     title = NULL,
                     subtitle = NULL,
                     legend_title = NULL,
+                    style = getOption("ggcpb.style", "dutch"),
                     ...) {
   .cpb_idx <- cpb_resolve_index(fill_index, index, palette, !missing(palette), "fill_index")
   index <- .cpb_idx$index
   palette <- .cpb_idx$palette
+  style <- match.arg(style, c("dutch", "english"))
   level <- match.arg(level)
   region <- rlang::enquo(region)
   value <- rlang::enquo(value)
@@ -164,7 +169,8 @@ cpb_map <- function(data, region, value,
     ggplot2::coord_fixed(ratio = 1)
 
   p <- p + if (is.numeric(vals)) {
-    scale_fill_cpb_c(reverse = reverse, na.value = na_fill)
+    scale_fill_cpb_c(reverse = reverse, na.value = na_fill,
+                     labels = label_number_nl(style = style))
   } else if (!is.null(index)) {
     scale_fill_cpb_manual(index = index, palette = palette, na.value = na_fill)
   } else {

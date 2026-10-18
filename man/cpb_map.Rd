@@ -21,6 +21,7 @@ cpb_map(
   title = NULL,
   subtitle = NULL,
   legend_title = NULL,
+  style = getOption("ggcpb.style", "dutch"),
   ...
 )
 }
@@ -79,6 +80,10 @@ in the other wrappers. Ignored when \code{legend = "topleft"}.}
 not exist here: use \code{subtitle} for the unit caption.}
 
 \item{legend_title}{Legend title. Defaults to \code{NULL} (no title).}
+
+\item{style}{Number format of a numeric legend: \code{"dutch"} (default,
+\verb{,} decimal) or \code{"english"} (\code{.} decimal). Taken from
+\code{getOption("ggcpb.style")}, as in the other charts.}
 
 \item{...}{Further arguments passed to \code{\link[ggplot2:geom_polygon]{ggplot2::geom_polygon()}}.}
 }

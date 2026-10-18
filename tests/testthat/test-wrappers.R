@@ -1059,6 +1059,20 @@ test_that("cpb_map joins by code or name and styles the borders", {
   expect_false(anyNA(p2$data$cpb__value[p2$data$name == prov2$naam[1]]))
 })
 
+test_that("cpb_map's numeric legend follows style", {
+  d <- data.frame(r = unique(cpb_nl_geo("provincie")$name))
+  d$w <- seq(0.52, 1.18, length.out = nrow(d))
+  labels <- function(...) {
+    p <- cpb_map(d, region = r, value = w, level = "provincie", ...)
+    sc <- ggplot2::ggplot_build(p)$plot$scales$get_scales("fill")
+    sc$get_labels(sc$get_breaks())
+  }
+  expect_equal(labels(), c("0,6", "0,8", "1,0", "1,2"))
+  expect_equal(labels(style = "english"), c("0.6", "0.8", "1.0", "1.2"))
+  expect_error(cpb_map(d, region = r, value = w, level = "provincie",
+                       style = "french"), "should be one of")
+})
+
 test_that("cpb_map warns on unmatched regions and errors on duplicates", {
   df <- data.frame(r = c("Groningen", "Atlantis"), w = 1:2)
   expect_warning(cpb_map(df, region = r, value = w, level = "provincie"),
