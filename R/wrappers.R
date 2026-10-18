@@ -2984,6 +2984,11 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
 #' @param x_lim_follow_data If `TRUE`, flush the `x` axis exactly to the
 #'   data's own range instead of round values. Both ends are still
 #'   labelled. Defaults to `FALSE`. Ignored when `x_lim` is set.
+#' @param x_labels Labels at the `x` ticks: a labelling function such as
+#'   [label_euro_nl()], or a character vector. `NULL` (default) uses
+#'   [label_number_nl()]. Use this instead of adding your own
+#'   `scale_x_continuous()`, which replaces the ticks and with them the
+#'   labelled ends of the axis.
 #' @param forecast_x Optional x value where the forecast window
 #'   starts; overlaid and labelled as in [cpb_line()].
 #' @param reverse_legend If `TRUE`, reverse the colour legend order
@@ -3022,6 +3027,7 @@ cpb_scatter <- function(data, x, y, colour = NULL,
                          value_limits = NULL,
                          x_lim = NULL,
                          x_lim_follow_data = FALSE,
+                         x_labels = NULL,
                          forecast_x = NULL,
                          forecast_label = "raming",
                          reverse_legend = FALSE,
@@ -3099,12 +3105,10 @@ cpb_scatter <- function(data, x, y, colour = NULL,
   }
 
   # both axes are drawn flush at both ends (the value axis as in the
-  # other wrappers, via cpb_value_scale()) -- kept coord-based (not a scale limits/expand, as in the other wrappers)
-  # because a scatter plot's own follow-up scale_x_continuous() (e.g.
-  # to add euro labels, a common real usage pattern) would otherwise
-  # silently replace and discard the flush; coord survives that. Both
-  # axes are always continuous here, so a blanket coord expand = FALSE
-  # carries none of the discrete-axis-clipping risk it has elsewhere.
+  # other wrappers, via cpb_value_scale()). Kept coord-based, not scale
+  # limits/expand: a caller's own scale_x_continuous() replaces the
+  # ticks but the flush survives. Both axes are continuous here, so a
+  # blanket coord expand = FALSE has no discrete-axis clipping risk.
   x_data_range <- range(rlang::eval_tidy(x, data), na.rm = TRUE)
   xvals <- rlang::eval_tidy(x, data)
   if (!is.null(x_lim)) {
@@ -3130,7 +3134,10 @@ cpb_scatter <- function(data, x, y, colour = NULL,
     xlim = flush_xlim, ylim = range(scale_args$limits),
     expand = FALSE, clip = if (is.null(x_lim)) "off" else "on"
   )
-  x_scale_args <- if (!is.null(x_breaks)) list(breaks = x_breaks) else list()
+  x_scale_args <- list(
+    labels = if (is.null(x_labels)) label_number_nl(style = style) else x_labels
+  )
+  if (!is.null(x_breaks)) x_scale_args$breaks <- x_breaks
   p <- p + do.call(ggplot2::scale_x_continuous, x_scale_args) +
     ggplot2::scale_y_continuous(breaks = scale_args$breaks, labels = scale_args$labels)
 

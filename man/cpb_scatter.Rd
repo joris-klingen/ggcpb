@@ -19,6 +19,7 @@ cpb_scatter(
   value_limits = NULL,
   x_lim = NULL,
   x_lim_follow_data = FALSE,
+  x_labels = NULL,
   forecast_x = NULL,
   forecast_label = "raming",
   reverse_legend = FALSE,
@@ -116,6 +117,12 @@ fall outside it). \code{NULL} (default) shows the full range.}
 \item{x_lim_follow_data}{If \code{TRUE}, flush the \code{x} axis exactly to the
 data's own range instead of round values. Both ends are still
 labelled. Defaults to \code{FALSE}. Ignored when \code{x_lim} is set.}
+
+\item{x_labels}{Labels at the \code{x} ticks: a labelling function such as
+\code{\link[=label_euro_nl]{label_euro_nl()}}, or a character vector. \code{NULL} (default) uses
+\code{\link[=label_number_nl]{label_number_nl()}}. Use this instead of adding your own
+\code{scale_x_continuous()}, which replaces the ticks and with them the
+labelled ends of the axis.}
 
 \item{forecast_x}{Optional x value where the forecast window
 starts; overlaid and labelled as in \code{\link[=cpb_line]{cpb_line()}}.}

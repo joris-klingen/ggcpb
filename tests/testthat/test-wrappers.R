@@ -2177,7 +2177,7 @@ test_that("every continuous axis and colour bar labels its first and last value"
 
   sc <- data.frame(x = c(1.3, 2.9, 4.1, 7.8), y = c(0.3, 1.4, 0.9, 2.2))
   expect_equal(first_last(x_labels(cpb_scatter(sc, x = x, y = y, x_lim_follow_data = TRUE))),
-               c("1.3", "7.8"))
+               c("1,3", "7,8"))
 
   set.seed(1)
   h <- ggplot2::ggplot_build(cpb_hist(data.frame(v = rnorm(300, 50, 12)), x = v))
@@ -2214,4 +2214,21 @@ test_that("value_limits the data fits inside are shown exactly, with equal steps
   ax <- ggplot2::ggplot_build(p)$layout$panel_params[[1]]$y
   expect_equal(ax$continuous_range, c(5, 95))
   expect_equal(ax$breaks, c(5, 35, 65, 95))
+})
+
+test_that("cpb_scatter x_labels formats the ticks and keeps both axis ends labelled", {
+  set.seed(42)
+  d <- data.frame(x = round(rlnorm(200, log(2500), 0.35)), y = rnorm(200))
+  x_axis <- function(...) {
+    pp <- ggplot2::ggplot_build(cpb_scatter(d, x = x, y = y, ...))$layout$panel_params[[1]]$x
+    list(range = pp$continuous_range, labels = pp$get_labels(), breaks = pp$get_breaks())
+  }
+
+  a <- x_axis(x_labels = label_euro_nl())
+  expect_equal(a$range, c(0, 7000))
+  expect_equal(a$labels[length(a$labels)], "€7.000")
+  expect_equal(a$breaks[length(a$breaks)], a$range[2])
+  # the default uses the Dutch number format
+  expect_equal(x_axis()$labels[3], "2.000")
+  expect_equal(x_axis(style = "english")$labels[3], "2,000")
 })
