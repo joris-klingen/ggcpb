@@ -270,6 +270,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | legend_nrow | literal |  |  |
 | legend_title | literal |  | title of the legend |
 | palette | literal | qualitative | qualitative |
+| style | literal | dutch | dutch |
 | subtitle | literal |  | subtitle (replaces the default unit above the figure) |
 | title | literal |  | Title of the figure |
 
@@ -308,7 +309,6 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
 | sec_y | column (from data_csv) |  | unemployment |
 | sec_ylab | literal |  | unit of the right axis |
-| style | literal | dutch/english (default: dutch) | dutch/english (default: dutch) |
 | ticks | literal | TRUE | TRUE |
 | value_accuracy | literal |  | 0.1 |
 | value_breaks | literal |  | 0;25;50;75;100 |
@@ -353,7 +353,6 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
 | sec_y | column (from data_csv) |  | unemployment |
 | sec_ylab | literal |  | unit of the right axis |
-| style | literal | dutch/english (default: dutch) | dutch/english (default: dutch) |
 | ticks | literal | TRUE | TRUE |
 | value_accuracy | literal |  | 0.1 |
 | value_breaks | literal |  | 0;25;50;75;100 |
@@ -400,7 +399,6 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
 | sec_y | column (from data_csv) |  | unemployment |
 | sec_ylab | literal |  | unit of the right axis |
-| style | literal | dutch/english (default: dutch) | dutch/english (default: dutch) |
 | symbol_size | literal | 1.1 | 1.1 |
 | ticks | literal | TRUE | TRUE |
 | value_accuracy | literal |  | 0.1 |
@@ -460,7 +458,6 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
 | sec_y | column (from data_csv) |  | unemployment |
 | sec_ylab | literal |  | unit of the right axis |
-| style | literal | dutch/english (default: dutch) | dutch/english (default: dutch) |
 | ticks | literal | TRUE | TRUE |
 | value_accuracy | literal |  | 0.1 |
 | value_axis | literal | bottom/top (default: bottom) | bottom/top (default: bottom) |
@@ -509,7 +506,6 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
 | sec_y | column (from data_csv) |  | unemployment |
 | sec_ylab | literal |  | unit of the right axis |
-| style | literal | dutch/english (default: dutch) | dutch/english (default: dutch) |
 | symbol_colour | literal |  | \#e6006e |
 | symbol_size | literal | 1.4 | 1.4 |
 | ticks | literal | TRUE | TRUE |
@@ -524,70 +520,68 @@ to, so a table for one `plot_type` does not necessarily match another.
 | xlab | literal |  | unit below the x axis |
 | y | column (from data_csv) | (required) | purchasing_power |
 | ylab | literal |  | % change |
-| zeroline | literal | TRUE | TRUE |
+| zeroline | literal |  | TRUE |
 
 **Table A7. Parameters specific to `scatter`**
 
-| setting | kind | default | example |
-|:---|:---|:---|:---|
-| axis_text_size | literal | 7 | 7 |
-| colour | column (from data_csv) |  | group |
-| facet | column (from data_csv) |  | region |
-| facet_ncol | literal |  | 2 |
-| facet_scales | literal | fixed | fixed |
-| forecast_label | literal | raming | raming |
-| forecast_x | literal |  | 2025 |
-| grid_colour | literal | black | black |
-| grid_linewidth | literal | 0.1 | 0.1 |
-| minor | literal | FALSE | FALSE |
-| pct_axis | literal | FALSE | FALSE |
-| reverse_legend | literal | FALSE | FALSE |
-| style | literal | dutch/english (default: dutch) | dutch/english (default: dutch) |
-| symbol_colour | literal |  | \#e6006e |
-| symbol_size | literal | 0.8 | 0.8 |
-| ticks | literal | TRUE | TRUE |
-| value_accuracy | literal |  | 0.1 |
-| value_breaks | literal |  | 0;25;50;75;100 |
-| value_crop | literal | FALSE | FALSE |
-| value_limits | literal |  | 0;100 |
-| x | column (from data_csv) | (required) | year |
-| x_lim | literal |  | 2015;2025 |
-| x_lim_follow_data | literal | FALSE | FALSE |
-| xlab | literal |  | unit below the x axis |
-| y | column (from data_csv) | (required) | purchasing_power |
-| ylab | literal |  | % change |
-| zeroline | literal |  | TRUE |
+| setting           | kind                   | default    | example               |
+|:------------------|:-----------------------|:-----------|:----------------------|
+| axis_text_size    | literal                | 7          | 7                     |
+| colour            | column (from data_csv) |            | group                 |
+| facet             | column (from data_csv) |            | region                |
+| facet_ncol        | literal                |            | 2                     |
+| facet_scales      | literal                | fixed      | fixed                 |
+| forecast_label    | literal                | raming     | raming                |
+| forecast_x        | literal                |            | 2025                  |
+| grid_colour       | literal                | black      | black                 |
+| grid_linewidth    | literal                | 0.1        | 0.1                   |
+| minor             | literal                | FALSE      | FALSE                 |
+| pct_axis          | literal                | FALSE      | FALSE                 |
+| reverse_legend    | literal                | FALSE      | FALSE                 |
+| symbol_colour     | literal                |            | \#e6006e              |
+| symbol_size       | literal                | 0.8        | 0.8                   |
+| ticks             | literal                | TRUE       | TRUE                  |
+| value_accuracy    | literal                |            | 0.1                   |
+| value_breaks      | literal                |            | 0;25;50;75;100        |
+| value_crop        | literal                | FALSE      | FALSE                 |
+| value_limits      | literal                |            | 0;100                 |
+| x                 | column (from data_csv) | (required) | year                  |
+| x_lim             | literal                |            | 2015;2025             |
+| x_lim_follow_data | literal                | FALSE      | FALSE                 |
+| xlab              | literal                |            | unit below the x axis |
+| y                 | column (from data_csv) | (required) | purchasing_power      |
+| ylab              | literal                |            | % change              |
+| zeroline          | literal                |            | TRUE                  |
 
 **Table A8. Parameters specific to `hist`**
 
-| setting | kind | default | example |
-|:---|:---|:---|:---|
-| axis_text_size | literal | 7 | 7 |
-| bins | literal |  | 30 |
-| binwidth | literal |  | 5 |
-| facet | column (from data_csv) |  | region |
-| facet_ncol | literal |  | 2 |
-| facet_scales | literal | fixed | fixed |
-| fill | column (from data_csv) |  | group |
-| fill_colour | literal |  | \#005faf |
-| grid_colour | literal | black | black |
-| grid_linewidth | literal | 0.1 | 0.1 |
-| minor | literal | FALSE | FALSE |
-| outline | literal | white | white |
-| position | literal | stack | stack |
-| reverse_legend | literal | TRUE | TRUE |
-| style | literal | dutch/english (default: dutch) | dutch/english (default: dutch) |
-| ticks | literal | TRUE | TRUE |
-| value_accuracy | literal |  | 0.1 |
-| value_breaks | literal |  | 0;25;50;75;100 |
-| value_crop | literal | FALSE | FALSE |
-| value_limits | literal |  | 0;100 |
-| x | column (from data_csv) | (required) | year |
-| x_lim | literal |  | 2015;2025 |
-| x_lim_follow_data | literal | FALSE | FALSE |
-| xlab | literal |  | unit below the x axis |
-| ylab | literal |  | % change |
-| zeroline | literal | TRUE | TRUE |
+| setting           | kind                   | default    | example               |
+|:------------------|:-----------------------|:-----------|:----------------------|
+| axis_text_size    | literal                | 7          | 7                     |
+| bins              | literal                |            | 30                    |
+| binwidth          | literal                |            | 5                     |
+| facet             | column (from data_csv) |            | region                |
+| facet_ncol        | literal                |            | 2                     |
+| facet_scales      | literal                | fixed      | fixed                 |
+| fill              | column (from data_csv) |            | group                 |
+| fill_colour       | literal                |            | \#005faf              |
+| grid_colour       | literal                | black      | black                 |
+| grid_linewidth    | literal                | 0.1        | 0.1                   |
+| minor             | literal                | FALSE      | FALSE                 |
+| outline           | literal                | white      | white                 |
+| position          | literal                | stack      | stack                 |
+| reverse_legend    | literal                | TRUE       | TRUE                  |
+| ticks             | literal                | TRUE       | TRUE                  |
+| value_accuracy    | literal                |            | 0.1                   |
+| value_breaks      | literal                |            | 0;25;50;75;100        |
+| value_crop        | literal                | FALSE      | FALSE                 |
+| value_limits      | literal                |            | 0;100                 |
+| x                 | column (from data_csv) | (required) | year                  |
+| x_lim             | literal                |            | 2015;2025             |
+| x_lim_follow_data | literal                | FALSE      | FALSE                 |
+| xlab              | literal                |            | unit below the x axis |
+| ylab              | literal                |            | % change              |
+| zeroline          | literal                | TRUE       | TRUE                  |
 
 **Table A9. Parameters specific to `donut`**
 
@@ -600,7 +594,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | label_style | literal | wedge/leader (default: wedge) | wedge/leader (default: wedge) |
 | leader_length | literal | 0.15 | 0.15 |
 | legend_pct | literal | FALSE | FALSE |
-| panel_size | literal | 1.8 | 1.8 |
+| panel_size | literal |  |  |
 | reverse_legend | literal | FALSE | FALSE |
 | ring_width | literal | 0.6 | 0.6 |
 | wedge_labels | literal | TRUE | TRUE |
