@@ -2192,3 +2192,26 @@ test_that("every continuous axis and colour bar labels its first and last value"
   expect_equal(first_last(bar$key$.label), c("0,4", "1,2"))
   expect_equal(range(bar$decor$value), c(0.4, 1.2))
 })
+
+test_that("value_limits the data fits inside are shown exactly, with equal steps", {
+  scale <- function(d, ...) cpb_flush_scale_args(d, ...)
+  a <- scale(c(12, 41), value_limits = c(5, 95))
+  expect_equal(a$limits, c(5, 95))
+  expect_equal(a$breaks, c(5, 35, 65, 95))
+  expect_equal(scale(c(12, 41), value_limits = c(0, 100))$breaks, seq(0, 100, 20))
+  expect_equal(scale(c(-3, 8), value_limits = c(-5, 10))$breaks, c(-5, 0, 5, 10))
+  expect_equal(scale(c(0.2, 0.9), value_limits = c(0, 1))$breaks, seq(0, 1, 0.2))
+
+  # data past the limits: widened to round values, with the message
+  expect_message(b <- scale(c(12, 41), value_limits = c(0, 37)), "runs past")
+  expect_equal(b$limits, c(0, 50))
+  # an explicit value_breaks wins
+  expect_equal(scale(c(12, 41), value_limits = c(5, 95), value_breaks = c(0, 50, 100))$breaks,
+               c(0, 50, 100))
+
+  d <- data.frame(x = c("a", "b"), y = c(12, 41))
+  p <- cpb_line(data.frame(x = 1:2, y = c(12, 41)), x = x, y = y, value_limits = c(5, 95))
+  ax <- ggplot2::ggplot_build(p)$layout$panel_params[[1]]$y
+  expect_equal(ax$continuous_range, c(5, 95))
+  expect_equal(ax$breaks, c(5, 35, 65, 95))
+})

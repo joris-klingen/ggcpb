@@ -95,16 +95,17 @@ outermost break, evenly spaced breaks are extended outward in
 their own step until they cover it, so the axis still ends on a
 labelled gridline and no value is hidden.}
 
-\item{value_limits}{Optional length-2 numeric vector giving the
-span the value axis must \emph{at least} cover -- typically to force
-it wider than the data needs, e.g. always showing zero, or a
-fixed range shared across several figures. It is a minimum, not
-a crop: where the data runs past it the axis is widened to fit
-(with a message), so no value is ever hidden. \code{NULL} (default) flushes to
-the full data range (for boxes p5 to p95, for the dot chart the
-interval bounds; see \code{x_lim}/\code{x_lim_follow_data} for the category
-axis's equivalent). For a deliberate zoom that does hide
-values, add \code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} yourself, or
+\item{value_limits}{Optional length-2 numeric vector giving the span
+the value axis must \emph{at least} cover -- typically to force it wider
+than the data needs, e.g. always showing zero, or a fixed range
+shared across several figures. It is a minimum, not a crop: when
+the data fits inside it, the axis shows exactly those limits, with
+equal steps; where the data runs past it the axis is widened to
+round values (with a message), so no value is ever hidden. \code{NULL}
+(default) flushes to the full data range (for boxes p5 to p95, for
+the dot chart the interval bounds; see \code{x_lim}/\code{x_lim_follow_data}
+for the category axis's equivalent). For a deliberate zoom that
+does hide values, add \code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} yourself, or
 \code{\link[ggplot2:coord_flip]{ggplot2::coord_flip()}} for a horizontal chart. That replaces the
 chart's own coordinate system, so text outside the plot area, such
 as group names, can be cut off.}

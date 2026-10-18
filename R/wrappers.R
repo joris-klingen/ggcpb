@@ -304,16 +304,25 @@ cpb_axis_ticks <- function(lo, hi, whole = FALSE, edge = TRUE,
     step <- ceiling(span / (max_labels - 2))
     return(out(lo + (0:floor(span / step)) * step))
   }
-  # any step, preferably one with few decimals
-  ks <- 3:(max_labels - 1)
-  decimals <- vapply(ks, function(k) {
+  # any step: a round one (1, 2, 2.5 or 5 times a power of ten) if there
+  # is one, even at one more label; else 3 or 4; else any. As few
+  # decimals as possible.
+  mantissa <- function(k) round(span / k / 10^floor(log10(span / k)), 6)
+  decimals <- function(k) {
     step <- span / k
     for (d in 0:3) {
       if (abs(step * 10^d - round(step * 10^d)) < 1e-9 * max(1, abs(step * 10^d))) return(d)
     }
     4
-  }, 0)
-  k <- ks[order(decimals, abs(ks - 5))[1]]
+  }
+  ks <- 3:max_labels
+  pool <- ks[vapply(ks, mantissa, 0) %in% c(1, 2, 2.5, 5)]
+  if (!length(pool)) {
+    ks <- 3:(max_labels - 1)
+    pool <- ks[vapply(ks, mantissa, 0) %in% c(3, 4)]
+    if (!length(pool)) pool <- ks
+  }
+  k <- pool[order(vapply(pool, decimals, 0), abs(pool - 5))[1]]
   # the last tick is hi itself: a rounding error past the axis end
   # would make ggplot2 drop it
   out(c(lo + (0:(k - 1)) * span / k, hi))
@@ -1074,7 +1083,17 @@ cpb_flush_scale_args <- function(axis_values, pct_axis = FALSE, pct_scale = 1,
   # zoom, where it is visible in the calling code.
   data_range <- range(axis_values, na.rm = TRUE)
   needed <- range(c(data_range, value_limits))
-  breaks_final <- if (!is.null(value_breaks)) value_breaks else pretty(needed)
+  # limits the data fits inside are shown exactly, with equal steps
+  lim <- if (!is.null(value_limits)) range(value_limits)
+  fits <- !is.null(lim) && is.null(value_breaks) && diff(lim) > 0 &&
+    all(data_range >= lim[1] - diff(lim) * 1e-6 & data_range <= lim[2] + diff(lim) * 1e-6)
+  breaks_final <- if (!is.null(value_breaks)) {
+    value_breaks
+  } else if (fits) {
+    cpb_axis_ticks(lim[1], lim[2])$breaks
+  } else {
+    pretty(needed)
+  }
   breaks_final <- cpb_extend_breaks(breaks_final, needed)
   args$breaks <- breaks_final
   # Normally the extended breaks already span `needed`, so the axis ends
@@ -1312,16 +1331,17 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   matching `sec_at`/the auto-computed breaks one-for-one, or a
 #'   labelling function such as [scales::label_number()]). `NULL`
 #'   (default) uses [label_number_nl()], like the primary axis.
-#' @param value_limits Optional length-2 numeric vector giving the
-#'   span the value axis must *at least* cover -- typically to force
-#'   it wider than the data needs, e.g. always showing zero, or a
-#'   fixed range shared across several figures. It is a minimum, not
-#'   a crop: where the data runs past it the axis is widened to fit
-#'   (with a message), so no value is ever hidden. `NULL` (default) flushes to
-#'   the full data range (for boxes p5 to p95, for the dot chart the
-#'   interval bounds; see `x_lim`/`x_lim_follow_data` for the category
-#'   axis's equivalent). For a deliberate zoom that does hide
-#'   values, add [ggplot2::coord_cartesian()] yourself, or
+#' @param value_limits Optional length-2 numeric vector giving the span
+#'   the value axis must *at least* cover -- typically to force it wider
+#'   than the data needs, e.g. always showing zero, or a fixed range
+#'   shared across several figures. It is a minimum, not a crop: when
+#'   the data fits inside it, the axis shows exactly those limits, with
+#'   equal steps; where the data runs past it the axis is widened to
+#'   round values (with a message), so no value is ever hidden. `NULL`
+#'   (default) flushes to the full data range (for boxes p5 to p95, for
+#'   the dot chart the interval bounds; see `x_lim`/`x_lim_follow_data`
+#'   for the category axis's equivalent). For a deliberate zoom that
+#'   does hide values, add [ggplot2::coord_cartesian()] yourself, or
 #'   [ggplot2::coord_flip()] for a horizontal chart. That replaces the
 #'   chart's own coordinate system, so text outside the plot area, such
 #'   as group names, can be cut off.
