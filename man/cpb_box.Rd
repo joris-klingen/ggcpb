@@ -46,7 +46,7 @@ cpb_box(
   sec_accuracy = NULL,
   sec_scale_auto = TRUE,
   sec_at = NULL,
-  sec_labels = NULL,
+  sec_axis_labels = NULL,
   facet = NULL,
   facet_ncol = NULL,
   facet_scales = "fixed",
@@ -301,11 +301,11 @@ breaks, since each secondary break is drawn level with one
 primary gridline. \code{NULL} (default) auto-computes them; see
 \code{sec_scale_auto}.}
 
-\item{sec_labels}{Labels for the secondary axis's breaks; anything
-ggplot2's own axis \code{labels} accepts (a character vector matching
-\code{sec_at}/the auto-computed breaks one-for-one, or a labelling
-function such as \code{\link[scales:label_number]{scales::label_number()}}). \code{NULL} (default) uses
-\code{\link[=label_number_nl]{label_number_nl()}}, matching the primary axis's own formatting.}
+\item{sec_axis_labels}{Labels at the tick marks of the right axis;
+anything ggplot2's own axis \code{labels} accepts (a character vector
+matching \code{sec_at}/the auto-computed breaks one-for-one, or a
+labelling function such as \code{\link[scales:label_number]{scales::label_number()}}). \code{NULL}
+(default) uses \code{\link[=label_number_nl]{label_number_nl()}}, like the primary axis.}
 
 \item{facet}{Optional column (tidy eval) to facet by. Facets follow
 the house convention: the facet title is a bold

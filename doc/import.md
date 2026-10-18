@@ -296,10 +296,10 @@ to, so a table for one `plot_type` does not necessarily match another.
 | reverse_legend | literal | TRUE | TRUE |
 | sec_accuracy | literal |  | 0.1 |
 | sec_at | literal |  |  |
+| sec_axis_labels | literal |  |  |
 | sec_col_width | literal | 0.3 | 0.3 |
 | sec_colour | literal |  | \#e6006e |
 | sec_label | literal |  | name of the second series |
-| sec_labels | literal |  |  |
 | sec_limits | literal |  | 0;100 |
 | sec_linewidth | literal | 0.55 | 0.55 |
 | sec_points | literal | FALSE | FALSE |
@@ -341,10 +341,10 @@ to, so a table for one `plot_type` does not necessarily match another.
 | reverse_legend | literal | TRUE | TRUE |
 | sec_accuracy | literal |  | 0.1 |
 | sec_at | literal |  |  |
+| sec_axis_labels | literal |  |  |
 | sec_col_width | literal | 0.3 | 0.3 |
 | sec_colour | literal |  | \#e6006e |
 | sec_label | literal |  | name of the second series |
-| sec_labels | literal |  |  |
 | sec_limits | literal |  | 0;100 |
 | sec_linewidth | literal | 0.55 | 0.55 |
 | sec_points | literal | FALSE | FALSE |
@@ -388,10 +388,10 @@ to, so a table for one `plot_type` does not necessarily match another.
 | reverse_legend | literal | FALSE | FALSE |
 | sec_accuracy | literal |  | 0.1 |
 | sec_at | literal |  |  |
+| sec_axis_labels | literal |  |  |
 | sec_col_width | literal | 0.3 | 0.3 |
 | sec_colour | literal |  | \#e6006e |
 | sec_label | literal |  | name of the second series |
-| sec_labels | literal |  |  |
 | sec_limits | literal |  | 0;100 |
 | sec_linewidth | literal |  | 0.55 |
 | sec_points | literal | FALSE | FALSE |
@@ -448,10 +448,10 @@ to, so a table for one `plot_type` does not necessarily match another.
 | reverse_legend | literal | FALSE | FALSE |
 | sec_accuracy | literal |  | 0.1 |
 | sec_at | literal |  |  |
+| sec_axis_labels | literal |  |  |
 | sec_col_width | literal | 0.3 | 0.3 |
 | sec_colour | literal |  | \#e6006e |
 | sec_label | literal |  | name of the second series |
-| sec_labels | literal |  |  |
 | sec_limits | literal |  | 0;100 |
 | sec_linewidth | literal | 0.55 | 0.55 |
 | sec_points | literal | FALSE | FALSE |
@@ -497,10 +497,10 @@ to, so a table for one `plot_type` does not necessarily match another.
 | reverse_legend | literal | FALSE | FALSE |
 | sec_accuracy | literal |  | 0.1 |
 | sec_at | literal |  |  |
+| sec_axis_labels | literal |  |  |
 | sec_col_width | literal | 0.3 | 0.3 |
 | sec_colour | literal |  | \#e6006e |
 | sec_label | literal |  | name of the second series |
-| sec_labels | literal |  |  |
 | sec_limits | literal |  | 0;100 |
 | sec_linewidth | literal | 0.55 | 0.55 |
 | sec_points | literal | FALSE | FALSE |

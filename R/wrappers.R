@@ -659,7 +659,7 @@ cpb_sec_to_primary <- function(v, sec_map) {
 
 # Builds the right-hand secondary axis, converting primary y-axis positions
 # back into secondary values with formatted tick labels.
-cpb_sec_axis <- function(sec_map, accuracy = NULL, sec_labels = NULL, style = "dutch", primary_breaks = NULL) {
+cpb_sec_axis <- function(sec_map, accuracy = NULL, sec_axis_labels = NULL, style = "dutch", primary_breaks = NULL) {
   to_sec <- function(v) {
     cpb_sec_interp(v, sec_map$prim_min, sec_map$prim_max,
                    sec_map$sec_min, sec_map$sec_max)
@@ -680,7 +680,7 @@ cpb_sec_axis <- function(sec_map, accuracy = NULL, sec_labels = NULL, style = "d
   # back off to the finer value if one decimal would collapse adjacent
   # labels (a sec range only tenths wide). An explicit sec_accuracy wins.
   acc <- accuracy
-  if (is.null(acc) && is.null(sec_labels) && isTRUE(sec_map$forced_linear)) {
+  if (is.null(acc) && is.null(sec_axis_labels) && isTRUE(sec_map$forced_linear)) {
     detected <- cpb_accuracy(breaks_val)
     if (is.null(detected)) detected <- 0.1
     capped <- max(detected, 0.1)
@@ -691,8 +691,8 @@ cpb_sec_axis <- function(sec_map, accuracy = NULL, sec_labels = NULL, style = "d
     acc <- if (!is.null(shown_capped) && anyDuplicated(shown_capped) == 0) capped else detected
   }
 
-  labels_arg <- if (!is.null(sec_labels)) {
-    sec_labels
+  labels_arg <- if (!is.null(sec_axis_labels)) {
+    sec_axis_labels
   } else {
     label_number_nl(accuracy = acc, style = style)
   }
@@ -700,7 +700,7 @@ cpb_sec_axis <- function(sec_map, accuracy = NULL, sec_labels = NULL, style = "d
   # An explicit sec_accuracy coarser than the break spacing rounds every
   # break to the same text: gridlines still right, but the axis reads as
   # though it repeats itself. (The auto path above already backs off.)
-  if (!is.null(accuracy) && is.null(sec_labels)) {
+  if (!is.null(accuracy) && is.null(sec_axis_labels)) {
     shown <- tryCatch(labels_arg(breaks_val), error = function(e) NULL)
     if (!is.null(shown) && anyDuplicated(shown) > 0) {
       warning(
@@ -835,7 +835,7 @@ cpb_add_sec_guides <- function(p, has_sec, reverse_legend, legend_ncol, legend_n
 cpb_add_sec_y <- function(p, scale_args, env = parent.frame()) {
   a <- mget(c("data", "x", "sec_y", "sec_type", "sec_label", "sec_colour",
               "sec_linewidth", "sec_points", "sec_symbol_size", "sec_col_width",
-              "sec_accuracy", "sec_limits", "sec_at", "sec_scale_auto", "sec_labels",
+              "sec_accuracy", "sec_limits", "sec_at", "sec_scale_auto", "sec_axis_labels",
               "style"), envir = env)
   sec_vals <- rlang::eval_tidy(a$sec_y, a$data)
   sec_map <- cpb_sec_map(sec_vals, primary_breaks = scale_args$breaks, sec_limits = a$sec_limits, sec_at = a$sec_at, sec_scale_auto = a$sec_scale_auto)
@@ -843,7 +843,7 @@ cpb_add_sec_y <- function(p, scale_args, env = parent.frame()) {
   p <- cpb_sec_layer(p, a$data, a$x, sec_vals, sec_map, a$sec_type,
                      cpb_single_colour(a$sec_colour, 2), sec_lab, a$sec_linewidth,
                      a$sec_points, a$sec_symbol_size, a$sec_col_width, style = a$style)
-  scale_args$sec.axis <- cpb_sec_axis(sec_map, accuracy = a$sec_accuracy, sec_labels = a$sec_labels, style = a$style)
+  scale_args$sec.axis <- cpb_sec_axis(sec_map, accuracy = a$sec_accuracy, sec_axis_labels = a$sec_axis_labels, style = a$style)
   list(p = p, scale_args = scale_args)
 }
 
@@ -1182,11 +1182,11 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   breaks, since each secondary break is drawn level with one
 #'   primary gridline. `NULL` (default) auto-computes them; see
 #'   `sec_scale_auto`.
-#' @param sec_labels Labels for the secondary axis's breaks; anything
-#'   ggplot2's own axis `labels` accepts (a character vector matching
-#'   `sec_at`/the auto-computed breaks one-for-one, or a labelling
-#'   function such as [scales::label_number()]). `NULL` (default) uses
-#'   [label_number_nl()], matching the primary axis's own formatting.
+#' @param sec_axis_labels Labels at the tick marks of the right axis;
+#'   anything ggplot2's own axis `labels` accepts (a character vector
+#'   matching `sec_at`/the auto-computed breaks one-for-one, or a
+#'   labelling function such as [scales::label_number()]). `NULL`
+#'   (default) uses [label_number_nl()], like the primary axis.
 #' @param value_limits Optional length-2 numeric vector giving the
 #'   span the value axis must *at least* cover -- typically to force
 #'   it wider than the data needs, e.g. always showing zero, or a
@@ -1339,7 +1339,7 @@ cpb_col <- function(data, x, y, fill = NULL,
                      sec_accuracy = NULL,
                     sec_scale_auto = TRUE,
                     sec_at = NULL,
-                    sec_labels = NULL,
+                    sec_axis_labels = NULL,
                     palette = "qualitative",
                      fill_index = NULL,
                      pct_axis = FALSE,
@@ -1688,7 +1688,7 @@ cpb_area <- function(data, x, y, fill,
                       sec_accuracy = NULL,
                      sec_scale_auto = TRUE,
                      sec_at = NULL,
-                     sec_labels = NULL,
+                     sec_axis_labels = NULL,
                      palette = "qualitative",
                       fill_index = NULL,
                       pct_axis = FALSE,
@@ -1940,7 +1940,7 @@ cpb_line <- function(data, x, y, colour = NULL,
                       sec_accuracy = NULL,
                      sec_scale_auto = TRUE,
                      sec_at = NULL,
-                     sec_labels = NULL,
+                     sec_axis_labels = NULL,
                      palette = "qualitative",
                       colour_index = NULL,
                       pct_axis = FALSE,
@@ -2159,7 +2159,7 @@ cpb_line <- function(data, x, y, colour = NULL,
   # this function, so the secondary mapping and this scale cannot drift
   # apart -- see there.
   if (has_sec) {
-    scale_args$sec.axis <- cpb_sec_axis(sec_map, accuracy = sec_accuracy, sec_labels = sec_labels, style = style)
+    scale_args$sec.axis <- cpb_sec_axis(sec_map, accuracy = sec_accuracy, sec_axis_labels = sec_axis_labels, style = style)
   }
   if (length(scale_args)) {
     p <- p + do.call(ggplot2::scale_y_continuous, scale_args)
@@ -2405,7 +2405,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                      sec_accuracy = NULL,
                     sec_scale_auto = TRUE,
                     sec_at = NULL,
-                    sec_labels = NULL,
+                    sec_axis_labels = NULL,
                     facet = NULL,
                      facet_ncol = NULL,
                      facet_scales = "fixed",
@@ -3363,7 +3363,7 @@ cpb_dot <- function(data, x, y, lower, upper,
                      sec_accuracy = NULL,
                     sec_scale_auto = TRUE,
                     sec_at = NULL,
-                    sec_labels = NULL,
+                    sec_axis_labels = NULL,
                     palette = "qualitative",
                      colour_index = NULL,
                      pct_axis = FALSE,

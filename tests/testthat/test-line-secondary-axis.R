@@ -67,3 +67,13 @@ test_that("a constant sec_y says so, and sec_limits or sec_at give it an axis", 
   expect_error(cpb_find_sec_breaks(0:4, c(NA_real_, NA_real_)),
                "no values to draw", fixed = TRUE)
 })
+
+test_that("sec_axis_labels sets the labels at the ticks of the right axis", {
+  d <- data.frame(x = 2020:2024, y = c(2, 6, 4, 8, 5), s = c(15, 17, 22, 19, 25))
+  p <- cpb_line(d, x = x, y = y, sec_y = s, value_breaks = c(0, 2, 4, 6, 8),
+                sec_at = c(10, 15, 20, 25, 30),
+                sec_axis_labels = c("a", "b", "c", "d", "e"))
+  b <- ggplot2::ggplot_build(p)
+  expect_equal(b$layout$panel_params[[1]]$y.sec$get_labels(), c("a", "b", "c", "d", "e"))
+  expect_false("sec_labels" %in% names(formals(cpb_line)))
+})
