@@ -515,7 +515,17 @@ cpb_find_sec_breaks <- function(primary_breaks, sec_vals, sec_limits = NULL, sec
   user_custom_limits <- !is.null(sec_limits)
 
   if (is.null(sec_limits)) {
-    sec_limits <- range(sec_vals, na.rm = TRUE)
+    finite <- sec_vals[is.finite(sec_vals)]
+    if (!length(finite)) {
+      stop("`sec_y` has no values to draw.", call. = FALSE)
+    }
+    sec_limits <- range(finite)
+    if (isTRUE(all.equal(sec_limits[[1]], sec_limits[[2]]))) {
+      stop("`sec_y` has the same value everywhere, so its axis has no ",
+        "range. Pass `sec_limits` to give it one.",
+        call. = FALSE
+      )
+    }
   }
   if (length(sec_limits) != 2 || !is.numeric(sec_limits) ||
     isTRUE(all.equal(sec_limits[[1]], sec_limits[[2]]))) {

@@ -56,3 +56,14 @@ test_that("explicit sec_limits equal to the data range are kept, not rounded out
                c(15, 17.5, 20, 22.5, 25))
   expect_equal(cpb_find_sec_breaks(prim, s), c(14, 18, 22, 26, 30))
 })
+
+test_that("a constant sec_y says so, and sec_limits or sec_at give it an axis", {
+  d <- data.frame(x = 1:3, y = c(1, 3, 2), s = c(5, 5, 5))
+  expect_error(cpb_line(d, x = x, y = y, sec_y = s),
+               "same value everywhere", fixed = TRUE)
+  expect_no_error(cpb_line(d, x = x, y = y, sec_y = s, sec_limits = c(0, 10)))
+  expect_error(cpb_find_sec_breaks(0:4, 1:3, sec_limits = c(5, 5)),
+               "`sec_limits` must be", fixed = TRUE)
+  expect_error(cpb_find_sec_breaks(0:4, c(NA_real_, NA_real_)),
+               "no values to draw", fixed = TRUE)
+})
