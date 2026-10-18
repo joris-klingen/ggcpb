@@ -2102,3 +2102,23 @@ test_that("cpb_hist has value axis arguments for the histogram axis", {
   expect_true("1.200" %in% labels())
   expect_true("1,200" %in% labels(style = "english"))
 })
+
+test_that("cpb_map's classed legend can be reversed and laid out", {
+  d <- data.frame(r = unique(cpb_nl_geo("provincie")$name))
+  d$k <- factor(rep_len(c("laag", "midden", "hoog"), nrow(d)),
+                levels = c("laag", "midden", "hoog"))
+  guide <- function(...) {
+    p <- cpb_map(d, region = r, value = k, level = "provincie", ...)
+    ggplot2::ggplot_build(p)$plot$guides$params[[1]]
+  }
+
+  expect_false(isTRUE(guide()$reverse))
+  expect_true(guide(reverse_legend = TRUE)$reverse)
+  expect_equal(guide(legend_ncol = 2)$ncol, 2)
+  expect_equal(guide(legend_nrow = 3)$nrow, 3)
+
+  # a numeric value keeps its colourbar
+  d$w <- seq_len(nrow(d))
+  p <- cpb_map(d, region = r, value = w, level = "provincie", reverse_legend = TRUE)
+  expect_s3_class(ggplot2::ggplot_build(p)$plot$guides$guides[[1]], "GuideColourbar")
+})

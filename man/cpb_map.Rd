@@ -17,6 +17,9 @@ cpb_map(
   na_fill = NULL,
   legend = "topleft",
   flush_legend = TRUE,
+  reverse_legend = FALSE,
+  legend_ncol = NULL,
+  legend_nrow = NULL,
   title = NULL,
   subtitle = NULL,
   legend_title = NULL,
@@ -71,6 +74,11 @@ corner of the Netherlands -- as a vertical block. Any other value
 
 \item{flush_legend}{Anchor a \code{"bottom"} legend flush bottom-left, as
 in the other wrappers. Ignored when \code{legend = "topleft"}.}
+
+\item{reverse_legend, legend_ncol, legend_nrow}{For a discrete \code{value}:
+reverse the legend order, or lay it out in that many columns or
+rows, as in \code{\link[=cpb_col]{cpb_col()}}. A numeric \code{value} has a colourbar instead,
+reversed with \code{reverse}.}
 
 \item{title, subtitle}{Plot title/subtitle. As elsewhere, \code{ylab} does
 not exist here: use \code{subtitle} for the unit caption.}

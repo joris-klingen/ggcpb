@@ -86,6 +86,10 @@ cpb_nl_geo <- function(level = c("gemeente", "corop", "provincie")) {
 #'   (e.g. `"bottom"`, `"none"`) is forwarded to [theme_cpb()].
 #' @param flush_legend Anchor a `"bottom"` legend flush bottom-left, as
 #'   in the other wrappers. Ignored when `legend = "topleft"`.
+#' @param reverse_legend,legend_ncol,legend_nrow For a discrete `value`:
+#'   reverse the legend order, or lay it out in that many columns or
+#'   rows, as in [cpb_col()]. A numeric `value` has a colourbar instead,
+#'   reversed with `reverse`.
 #' @param title,subtitle Plot title/subtitle. As elsewhere, `ylab` does
 #'   not exist here: use `subtitle` for the unit caption.
 #' @param legend_title Legend title. Defaults to `NULL` (no title).
@@ -110,6 +114,9 @@ cpb_map <- function(data, region, value,
                     na_fill = NULL,
                     legend = "topleft",
                     flush_legend = TRUE,
+                    reverse_legend = FALSE,
+                    legend_ncol = NULL,
+                    legend_nrow = NULL,
                     title = NULL,
                     subtitle = NULL,
                     legend_title = NULL,
@@ -172,6 +179,9 @@ cpb_map <- function(data, region, value,
     scale_fill_cpb_manual(index = index, palette = palette, na.value = na_fill)
   } else {
     scale_fill_cpb_d(palette = palette, na.value = na_fill)
+  }
+  if (!is.numeric(vals)) {
+    p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol, legend_nrow)
   }
   if (is.numeric(vals)) {
     # a compact colourbar, thin like the legend keys; vertical when the
