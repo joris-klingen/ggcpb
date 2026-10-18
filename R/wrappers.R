@@ -726,12 +726,12 @@ cpb_sec_axis <- function(sec_map, accuracy = NULL, sec_labels = NULL, style = "d
 # The key's label always gets " (rechteras)" ("right axis") appended --
 # the CPB convention for showing which axis a legend entry belongs to.
 #
-# sec_point_size/sec_col_width are exposed, not hardcoded, so e.g.
+# sec_symbol_size/sec_col_width are exposed, not hardcoded, so e.g.
 # sec_type = "point" on cpb_dot() can be sized to match that wrapper's
-# own primary `size`; each wrapper's call site picks its own default.
+# own primary `symbol_size`; each wrapper's call site picks its own default.
 cpb_sec_layer <- function(p, data, x, sec_vals, sec_map, sec_type,
                           sec_col, sec_lab, sec_linewidth, sec_points,
-                          sec_point_size, sec_col_width, style = "dutch") {
+                          sec_symbol_size, sec_col_width, style = "dutch") {
   sec_df <- as.data.frame(data)
   sec_df[["cpb__sec"]] <- cpb_sec_to_primary(sec_vals, sec_map)
   sec_df <- sec_df[!duplicated(rlang::eval_tidy(x, data)), , drop = FALSE]
@@ -746,7 +746,7 @@ cpb_sec_layer <- function(p, data, x, sec_vals, sec_map, sec_type,
     p <- p + ggplot2::geom_point(
       data = sec_df,
       ggplot2::aes(x = !!x, y = .data[["cpb__sec"]], colour = sec_lab),
-      size = sec_point_size
+      size = sec_symbol_size
     )
   } else {
     p <- p + ggplot2::geom_line(
@@ -763,7 +763,7 @@ cpb_sec_layer <- function(p, data, x, sec_vals, sec_map, sec_type,
       p <- p + ggplot2::geom_point(
         data = sec_df,
         ggplot2::aes(x = !!x, y = .data[["cpb__sec"]], colour = sec_lab),
-        size = sec_point_size * 0.7
+        size = sec_symbol_size * 0.7
       )
     }
   }
@@ -834,7 +834,7 @@ cpb_add_sec_guides <- function(p, has_sec, reverse_legend, legend_ncol, legend_n
 # @noRd
 cpb_add_sec_y <- function(p, scale_args, env = parent.frame()) {
   a <- mget(c("data", "x", "sec_y", "sec_type", "sec_label", "sec_colour",
-              "sec_linewidth", "sec_points", "sec_point_size", "sec_col_width",
+              "sec_linewidth", "sec_points", "sec_symbol_size", "sec_col_width",
               "sec_accuracy", "sec_limits", "sec_at", "sec_scale_auto", "sec_labels",
               "style"), envir = env)
   sec_vals <- rlang::eval_tidy(a$sec_y, a$data)
@@ -842,7 +842,7 @@ cpb_add_sec_y <- function(p, scale_args, env = parent.frame()) {
   sec_lab <- if (is.null(a$sec_label)) rlang::as_label(a$sec_y) else a$sec_label
   p <- cpb_sec_layer(p, a$data, a$x, sec_vals, sec_map, a$sec_type,
                      cpb_single_colour(a$sec_colour, 2), sec_lab, a$sec_linewidth,
-                     a$sec_points, a$sec_point_size, a$sec_col_width, style = a$style)
+                     a$sec_points, a$sec_symbol_size, a$sec_col_width, style = a$style)
   scale_args$sec.axis <- cpb_sec_axis(sec_map, accuracy = a$sec_accuracy, sec_labels = a$sec_labels, style = a$style)
   list(p = p, scale_args = scale_args)
 }
@@ -1156,7 +1156,7 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #' @param sec_points If `TRUE`, add a marker at every point of the
 #'   `sec_y` line. Only used when `sec_type = "line"` -- for markers
 #'   without a connecting line, use `sec_type = "point"` instead.
-#' @param sec_point_size Point size; only used when `sec_type = "point"`
+#' @param sec_symbol_size Symbol size; only used when `sec_type = "point"`
 #'   (the main marker) or `sec_type = "line"` with `sec_points = TRUE`
 #'   (a smaller marker decorating the line, at 0.7x this). Defaults
 #'   to `1.6`.
@@ -1337,7 +1337,7 @@ cpb_col <- function(data, x, y, fill = NULL,
                      sec_colour = NULL,
                      sec_linewidth = 0.55,
                      sec_points = FALSE,
-                     sec_point_size = 1.6,
+                     sec_symbol_size = 1.6,
                      sec_col_width = 0.3,
                      sec_accuracy = NULL,
                     sec_scale_auto = TRUE,
@@ -1688,7 +1688,7 @@ cpb_area <- function(data, x, y, fill,
                       sec_colour = NULL,
                       sec_linewidth = 0.55,
                       sec_points = FALSE,
-                      sec_point_size = 1.6,
+                      sec_symbol_size = 1.6,
                       sec_col_width = 0.3,
                       sec_accuracy = NULL,
                      sec_scale_auto = TRUE,
@@ -1853,7 +1853,7 @@ cpb_area <- function(data, x, y, fill,
 #'   points are sliced in half by the panel edge. A line on its own
 #'   keeps the tight panel, where the axis meets the outermost
 #'   gridlines.
-#' @param point_size Marker size when `points = TRUE`; defaults to
+#' @param symbol_size Marker size when `points = TRUE`; defaults to
 #'   `1.1`, which reads as the published dot against the default
 #'   `linewidth`.
 #' @param sec_y Optional column (tidy eval) holding a series to draw
@@ -1937,7 +1937,7 @@ cpb_line <- function(data, x, y, colour = NULL,
                       line_colour = NULL,
                       linewidth = 0.55,
                       points = FALSE,
-                      point_size = 1.1,
+                      symbol_size = 1.1,
                       sec_y = NULL,
                       sec_type = c("line", "point", "col"),
                       sec_limits = NULL,
@@ -1946,7 +1946,7 @@ cpb_line <- function(data, x, y, colour = NULL,
                       sec_colour = NULL,
                       sec_linewidth = NULL,
                       sec_points = FALSE,
-                      sec_point_size = 1.6,
+                      sec_symbol_size = 1.6,
                       sec_col_width = 0.3,
                       sec_accuracy = NULL,
                      sec_scale_auto = TRUE,
@@ -2111,9 +2111,9 @@ cpb_line <- function(data, x, y, colour = NULL,
   # key -- a line with a marker on it, as in the published figures.
   if (isTRUE(points)) {
     p <- p + if (has_colour || has_sec) {
-      ggplot2::geom_point(size = point_size, show.legend = TRUE)
+      ggplot2::geom_point(size = symbol_size, show.legend = TRUE)
     } else {
-      ggplot2::geom_point(size = point_size, colour = single_colour)
+      ggplot2::geom_point(size = symbol_size, colour = single_colour)
     }
   }
 
@@ -2123,7 +2123,7 @@ cpb_line <- function(data, x, y, colour = NULL,
   # colour -- so the secondary line joins that same scale and takes the
   # next palette position, which is how the published figures name both
   # axes in a single legend block.
-  # sec_type/sec_points/sec_point_size/sec_col_width/sec_colour mean the
+  # sec_type/sec_points/sec_symbol_size/sec_col_width/sec_colour mean the
   # same here as in cpb_sec_layer() (which every other sec_y wrapper
   # calls); this block is separate only because the secondary series
   # keys on the shared colour scale rather than getting its own literal
@@ -2139,7 +2139,7 @@ cpb_line <- function(data, x, y, colour = NULL,
       )
     } else if (sec_type == "point") {
       p <- p + ggplot2::geom_point(
-        data = sec_df, sec_aes, size = sec_point_size, show.legend = TRUE
+        data = sec_df, sec_aes, size = sec_symbol_size, show.legend = TRUE
       )
     } else {
     p <- p + ggplot2::geom_line(
@@ -2157,7 +2157,7 @@ cpb_line <- function(data, x, y, colour = NULL,
       if (isTRUE(points) || isTRUE(sec_points)) {
       p <- p + ggplot2::geom_point(
         data = sec_df, sec_aes,
-          size = if (isTRUE(points)) point_size else sec_point_size * 0.7,
+          size = if (isTRUE(points)) symbol_size else sec_symbol_size * 0.7,
           show.legend = TRUE
       )
       }
@@ -2417,7 +2417,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                      sec_colour = NULL,
                      sec_linewidth = 0.55,
                      sec_points = FALSE,
-                     sec_point_size = 1.6,
+                     sec_symbol_size = 1.6,
                      sec_col_width = 0.3,
                      sec_accuracy = NULL,
                     sec_scale_auto = TRUE,
@@ -2865,11 +2865,11 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
 #' @param colour Optional column mapped to the colour aesthetic (tidy
 #'   eval). A numeric column gets the continuous CPB gradient
 #'   ([scale_colour_cpb_c()]); a discrete column gets the discrete CPB
-#'   palette. If omitted, points are drawn in `point_colour`.
-#' @param point_colour Constant point colour used when no `colour`
+#'   palette. If omitted, points are drawn in `symbol_colour`.
+#' @param symbol_colour Constant point colour used when no `colour`
 #'   column is mapped. Defaults to `NULL`, which resolves to the CPB
 #'   primary blue (`cpb_cols(6)`, `"#005faf"`).
-#' @param size Point size; defaults to `0.8`.
+#' @param symbol_size Symbol size; defaults to `0.8`.
 #' @param palette CPB palette used for a *discrete* `colour` column;
 #'   one of `"qualitative"` (default), `"discr"`, `"sequential"`
 #'   (pink ramp), or `"blues"` (blue ramp).
@@ -2911,8 +2911,8 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
 #'   xlab  = "besteedbaar inkomen (euro per maand)")
 #' @export
 cpb_scatter <- function(data, x, y, colour = NULL,
-                         point_colour = NULL,
-                         size = 0.8,
+                         symbol_colour = NULL,
+                         symbol_size = 0.8,
                          palette = "qualitative",
                          colour_index = NULL,
                          color_index = NULL,
@@ -2973,10 +2973,10 @@ cpb_scatter <- function(data, x, y, colour = NULL,
   }
 
   p <- p + if (has_colour) {
-    ggplot2::geom_point(size = size, show.legend = TRUE, ...)
+    ggplot2::geom_point(size = symbol_size, show.legend = TRUE, ...)
   } else {
-    single_colour <- cpb_single_colour(point_colour, 6)
-    ggplot2::geom_point(size = size, colour = single_colour, ...)
+    single_colour <- cpb_single_colour(symbol_colour, 6)
+    ggplot2::geom_point(size = symbol_size, colour = single_colour, ...)
   }
 
   # the label sits on top of everything
@@ -3242,8 +3242,8 @@ cpb_hist <- function(data, x, fill = NULL,
 #'   estimate without its uncertainty is a job for [cpb_col()].
 #' @param colour Optional column mapped to the colour aesthetic (tidy
 #'   eval), e.g. to distinguish two model specifications. If omitted,
-#'   everything is drawn in `point_colour`.
-#' @param point_colour Constant colour used when no `colour` column is
+#'   everything is drawn in `symbol_colour`.
+#' @param symbol_colour Constant colour used when no `colour` column is
 #'   mapped. Defaults to `NULL`, which resolves to the CPB pink
 #'   (`cpb_cols(2)`, `"#e6006e"`) used in the published coefficient
 #'   figures.
@@ -3252,7 +3252,7 @@ cpb_hist <- function(data, x, fill = NULL,
 #'   its categories, exactly as in [cpb_box()].
 #' @param group_gap Extra gap between group blocks, in category widths;
 #'   defaults to `0.7`.
-#' @param size Point size; defaults to `1.4`.
+#' @param symbol_size Symbol size; defaults to `1.4`.
 #' @param linewidth Interval line width; defaults to `0.4`.
 #' @param cap_width Width of the interval end caps, in category widths;
 #'   defaults to `0.25`. Use `0` for plain capless intervals.
@@ -3265,7 +3265,7 @@ cpb_hist <- function(data, x, fill = NULL,
 #'   `group` mapping (the bold group headings claim the same space),
 #'   and `colour` to be unset (both need the colour aesthetic and its
 #'   one legend); the primary points stay plain and unlabelled in
-#'   `point_colour`, and only `sec_y` gets a legend key.
+#'   `symbol_colour`, and only `sec_y` gets a legend key.
 #' @param sec_type How `sec_y` is drawn: `"line"` (default), `"point"`
 #'   (markers only, no connecting line), or `"col"` (thin bars).
 #' @param sec_limits Length-2 numeric vector giving the range the
@@ -3279,10 +3279,10 @@ cpb_hist <- function(data, x, fill = NULL,
 #'   resolves to the CPB pink (`cpb_cols(2)`, `"#e6006e"`).
 #' @param sec_linewidth Line width; only used when `sec_type = "line"`.
 #'   Defaults to `0.55`.
-#' @param sec_point_size Point size; only used when `sec_type = "point"`
+#' @param sec_symbol_size Symbol size; only used when `sec_type = "point"`
 #'   (the main marker) or `sec_type = "line"` with `sec_points = TRUE`
 #'   (a smaller marker decorating the line, at 0.7x this). Defaults to
-#'   `size`, matching the primary points.
+#'   `symbol_size`, matching the primary points.
 #' @param sec_col_width Column width; only used when `sec_type = "col"`,
 #'   drawn narrow enough not to visually compete with the point/interval
 #'   marks. Defaults to `0.3`.
@@ -3348,10 +3348,10 @@ cpb_hist <- function(data, x, fill = NULL,
 #' @export
 cpb_dot <- function(data, x, y, lower, upper,
                      colour = NULL,
-                     point_colour = NULL,
+                     symbol_colour = NULL,
                      group = NULL,
                      group_gap = 0.7,
-                     size = 1.4,
+                     symbol_size = 1.4,
                      linewidth = 0.4,
                      cap_width = 0.25,
                      orientation = c("horizontal", "vertical"),
@@ -3363,7 +3363,7 @@ cpb_dot <- function(data, x, y, lower, upper,
                      sec_colour = NULL,
                      sec_linewidth = 0.55,
                      sec_points = FALSE,
-                     sec_point_size = size,
+                     sec_symbol_size = symbol_size,
                      sec_col_width = 0.3,
                      sec_accuracy = NULL,
                     sec_scale_auto = TRUE,
@@ -3442,7 +3442,7 @@ cpb_dot <- function(data, x, y, lower, upper,
   # pink for its own line by default (see cpb_single_colour(sec_colour,
   # 2) below), so the primary points fall back to CPB blue instead --
   # the same two-colour pairing cpb_line() and cpb_box() use
-  single_colour <- cpb_single_colour(point_colour, if (has_sec) 6 else 2)
+  single_colour <- cpb_single_colour(symbol_colour, if (has_sec) 6 else 2)
   primary_lab <- if (is.null(ylab)) rlang::as_label(y) else ylab
 
   slots <- NULL
@@ -3486,7 +3486,7 @@ cpb_dot <- function(data, x, y, lower, upper,
   # mapping (a square, via key_glyph); show.legend is named per aesthetic
   # -- fill on, colour off -- so its glyph never bleeds into sec_y's own
   # colour guide, the same fix cpb_col()/cpb_area()/cpb_box() use.
-  point_args <- list(mapping = mapping_point, size = size,
+  point_args <- list(mapping = mapping_point, size = symbol_size,
                      show.legend = has_colour, ...)
   if (has_sec && !has_colour) {
     point_args$show.legend <- c(fill = TRUE, colour = FALSE)

@@ -9,8 +9,8 @@ cpb_scatter(
   x,
   y,
   colour = NULL,
-  point_colour = NULL,
-  size = 0.8,
+  symbol_colour = NULL,
+  symbol_size = 0.8,
   palette = "qualitative",
   colour_index = NULL,
   color_index = NULL,
@@ -50,13 +50,13 @@ cpb_scatter(
 \item{colour}{Optional column mapped to the colour aesthetic (tidy
 eval). A numeric column gets the continuous CPB gradient
 (\code{\link[=scale_colour_cpb_c]{scale_colour_cpb_c()}}); a discrete column gets the discrete CPB
-palette. If omitted, points are drawn in \code{point_colour}.}
+palette. If omitted, points are drawn in \code{symbol_colour}.}
 
-\item{point_colour}{Constant point colour used when no \code{colour}
+\item{symbol_colour}{Constant point colour used when no \code{colour}
 column is mapped. Defaults to \code{NULL}, which resolves to the CPB
 primary blue (\code{cpb_cols(6)}, \code{"#005faf"}).}
 
-\item{size}{Point size; defaults to \code{0.8}.}
+\item{symbol_size}{Symbol size; defaults to \code{0.8}.}
 
 \item{palette}{CPB palette used for a \emph{discrete} \code{colour} column;
 one of \code{"qualitative"} (default), \code{"discr"}, \code{"sequential"}

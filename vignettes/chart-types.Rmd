@@ -133,7 +133,7 @@ cpb_line(tarieven, x = leeftijd, y = tarief, colour = erfenis,
 ```
 
 `points = TRUE` is the only thing separating this from an ordinary
-`cpb_line()` call; `point_size` adjusts the marker if the default
+`cpb_line()` call; `symbol_size` adjusts the marker if the default
 reads too heavy against a thicker line.
 
 # Column charts

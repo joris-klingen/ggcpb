@@ -12,7 +12,7 @@ cpb_line(
   line_colour = NULL,
   linewidth = 0.55,
   points = FALSE,
-  point_size = 1.1,
+  symbol_size = 1.1,
   sec_y = NULL,
   sec_type = c("line", "point", "col"),
   sec_limits = NULL,
@@ -21,7 +21,7 @@ cpb_line(
   sec_colour = NULL,
   sec_linewidth = NULL,
   sec_points = FALSE,
-  sec_point_size = 1.6,
+  sec_symbol_size = 1.6,
   sec_col_width = 0.3,
   sec_accuracy = NULL,
   sec_scale_auto = TRUE,
@@ -95,7 +95,7 @@ points are sliced in half by the panel edge. A line on its own
 keeps the tight panel, where the axis meets the outermost
 gridlines.}
 
-\item{point_size}{Marker size when \code{points = TRUE}; defaults to
+\item{symbol_size}{Marker size when \code{points = TRUE}; defaults to
 \code{1.1}, which reads as the published dot against the default
 \code{linewidth}.}
 
@@ -133,7 +133,7 @@ Defaults to \code{0.55}.}
 \code{sec_y} line. Only used when \code{sec_type = "line"} -- for markers
 without a connecting line, use \code{sec_type = "point"} instead.}
 
-\item{sec_point_size}{Point size; only used when \code{sec_type = "point"}
+\item{sec_symbol_size}{Symbol size; only used when \code{sec_type = "point"}
 (the main marker) or \code{sec_type = "line"} with \code{sec_points = TRUE}
 (a smaller marker decorating the line, at 0.7x this). Defaults
 to \code{1.6}.}

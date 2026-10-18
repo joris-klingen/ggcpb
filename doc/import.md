@@ -303,9 +303,9 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_labels | literal |  |  |
 | sec_limits | literal |  | 0;100 |
 | sec_linewidth | literal | 0.55 | 0.55 |
-| sec_point_size | literal | 1.6 | 1.6 |
 | sec_points | literal | FALSE | FALSE |
 | sec_scale_auto | literal | TRUE | TRUE |
+| sec_symbol_size | literal | 1.6 | 1.6 |
 | sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
 | sec_y | column (from data_csv) |  | unemployment |
 | sec_ylab | literal |  | unit of the right axis |
@@ -348,9 +348,9 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_labels | literal |  |  |
 | sec_limits | literal |  | 0;100 |
 | sec_linewidth | literal | 0.55 | 0.55 |
-| sec_point_size | literal | 1.6 | 1.6 |
 | sec_points | literal | FALSE | FALSE |
 | sec_scale_auto | literal | TRUE | TRUE |
+| sec_symbol_size | literal | 1.6 | 1.6 |
 | sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
 | sec_y | column (from data_csv) |  | unemployment |
 | sec_ylab | literal |  | unit of the right axis |
@@ -386,7 +386,6 @@ to, so a table for one `plot_type` does not necessarily match another.
 | linewidth | literal | 0.55 | 0.55 |
 | minor | literal | FALSE | FALSE |
 | pct_axis | literal | FALSE | FALSE |
-| point_size | literal | 1.1 | 1.1 |
 | points | literal | FALSE | FALSE |
 | reverse_legend | literal | FALSE | FALSE |
 | sec_accuracy | literal |  | 0.1 |
@@ -397,13 +396,14 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_labels | literal |  |  |
 | sec_limits | literal |  | 0;100 |
 | sec_linewidth | literal |  | 0.55 |
-| sec_point_size | literal | 1.6 | 1.6 |
 | sec_points | literal | FALSE | FALSE |
 | sec_scale_auto | literal | TRUE | TRUE |
+| sec_symbol_size | literal | 1.6 | 1.6 |
 | sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
 | sec_y | column (from data_csv) |  | unemployment |
 | sec_ylab | literal |  | unit of the right axis |
 | style | literal | dutch/english (default: dutch) | dutch/english (default: dutch) |
+| symbol_size | literal | 1.1 | 1.1 |
 | ticks | literal | TRUE | TRUE |
 | value_accuracy | literal |  | 0.1 |
 | value_breaks | literal |  | 0;25;50;75;100 |
@@ -456,9 +456,9 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_labels | literal |  |  |
 | sec_limits | literal |  | 0;100 |
 | sec_linewidth | literal | 0.55 | 0.55 |
-| sec_point_size | literal | 1.6 | 1.6 |
 | sec_points | literal | FALSE | FALSE |
 | sec_scale_auto | literal | TRUE | TRUE |
+| sec_symbol_size | literal | 1.6 | 1.6 |
 | sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
 | sec_y | column (from data_csv) |  | unemployment |
 | sec_ylab | literal |  | unit of the right axis |
@@ -497,7 +497,6 @@ to, so a table for one `plot_type` does not necessarily match another.
 | minor | literal | FALSE | FALSE |
 | orientation | literal | horizontal/vertical (default: horizontal) | horizontal/vertical (default: horizontal) |
 | pct_axis | literal | FALSE | FALSE |
-| point_colour | literal |  | \#e6006e |
 | reverse_legend | literal | FALSE | FALSE |
 | sec_accuracy | literal |  | 0.1 |
 | sec_at | literal |  |  |
@@ -507,14 +506,15 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_labels | literal |  |  |
 | sec_limits | literal |  | 0;100 |
 | sec_linewidth | literal | 0.55 | 0.55 |
-| sec_point_size | literal | size | size |
 | sec_points | literal | FALSE | FALSE |
 | sec_scale_auto | literal | TRUE | TRUE |
+| sec_symbol_size | literal | symbol_size | symbol_size |
 | sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
 | sec_y | column (from data_csv) |  | unemployment |
 | sec_ylab | literal |  | unit of the right axis |
-| size | literal | 1.4 | 1.4 |
 | style | literal | dutch/english (default: dutch) | dutch/english (default: dutch) |
+| symbol_colour | literal |  | \#e6006e |
+| symbol_size | literal | 1.4 | 1.4 |
 | ticks | literal | TRUE | TRUE |
 | upper | column (from data_csv) | (required) | upper_bound |
 | value_accuracy | literal |  | 0.1 |
@@ -544,10 +544,10 @@ to, so a table for one `plot_type` does not necessarily match another.
 | grid_colour | literal | black | black |
 | grid_linewidth | literal | 0.1 | 0.1 |
 | minor | literal | FALSE | FALSE |
-| point_colour | literal |  | \#e6006e |
 | reverse_legend | literal | FALSE | FALSE |
-| size | literal | 0.8 | 0.8 |
 | style | literal | dutch/english (default: dutch) | dutch/english (default: dutch) |
+| symbol_colour | literal |  | \#e6006e |
+| symbol_size | literal | 0.8 | 0.8 |
 | ticks | literal | TRUE | TRUE |
 | x | column (from data_csv) | (required) | year |
 | x_lim | literal |  | 2015;2025 |

@@ -51,7 +51,7 @@ literal_examples <- c(
   legend_title     = "title of the legend",
   fill_colour      = "#005faf",
   line_colour      = "#005faf",
-  point_colour     = "#e6006e",
+  symbol_colour    = "#e6006e",
   sec_colour       = "#e6006e",
   sec_label        = "name of the second series",
   sec_ylab         = "unit of the right axis",
@@ -83,8 +83,8 @@ fmt_default <- function(val) {
   if (is.null(val)) {
     return(list(kind = "blank", text = "", is_blank = TRUE))
   }
-  # a call, e.g. c("stack", "dodge", "fill") or size (another
-  # argument's own default, e.g. sec_point_size = size): evaluate a
+  # a call, e.g. c("stack", "dodge", "fill") or symbol_size (another
+  # argument's own default, e.g. sec_symbol_size = symbol_size): evaluate a
   # literal vector, otherwise fall back to its deparsed source text
   evaluated <- tryCatch(eval(val), error = function(e) NULL)
   if (is.character(evaluated) && length(evaluated) > 1) {

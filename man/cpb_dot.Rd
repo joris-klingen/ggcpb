@@ -11,10 +11,10 @@ cpb_dot(
   lower,
   upper,
   colour = NULL,
-  point_colour = NULL,
+  symbol_colour = NULL,
   group = NULL,
   group_gap = 0.7,
-  size = 1.4,
+  symbol_size = 1.4,
   linewidth = 0.4,
   cap_width = 0.25,
   orientation = c("horizontal", "vertical"),
@@ -26,7 +26,7 @@ cpb_dot(
   sec_colour = NULL,
   sec_linewidth = 0.55,
   sec_points = FALSE,
-  sec_point_size = size,
+  sec_symbol_size = symbol_size,
   sec_col_width = 0.3,
   sec_accuracy = NULL,
   sec_scale_auto = TRUE,
@@ -79,9 +79,9 @@ estimate without its uncertainty is a job for \code{\link[=cpb_col]{cpb_col()}}.
 
 \item{colour}{Optional column mapped to the colour aesthetic (tidy
 eval), e.g. to distinguish two model specifications. If omitted,
-everything is drawn in \code{point_colour}.}
+everything is drawn in \code{symbol_colour}.}
 
-\item{point_colour}{Constant colour used when no \code{colour} column is
+\item{symbol_colour}{Constant colour used when no \code{colour} column is
 mapped. Defaults to \code{NULL}, which resolves to the CPB pink
 (\code{cpb_cols(2)}, \code{"#e6006e"}) used in the published coefficient
 figures.}
@@ -93,7 +93,7 @@ its categories, exactly as in \code{\link[=cpb_box]{cpb_box()}}.}
 \item{group_gap}{Extra gap between group blocks, in category widths;
 defaults to \code{0.7}.}
 
-\item{size}{Point size; defaults to \code{1.4}.}
+\item{symbol_size}{Symbol size; defaults to \code{1.4}.}
 
 \item{linewidth}{Interval line width; defaults to \code{0.4}.}
 
@@ -110,7 +110,7 @@ points. One value per \code{x}. Requires \code{orientation = "vertical"}
 \code{group} mapping (the bold group headings claim the same space),
 and \code{colour} to be unset (both need the colour aesthetic and its
 one legend); the primary points stay plain and unlabelled in
-\code{point_colour}, and only \code{sec_y} gets a legend key.}
+\code{symbol_colour}, and only \code{sec_y} gets a legend key.}
 
 \item{sec_type}{How \code{sec_y} is drawn: \code{"line"} (default), \code{"point"}
 (markers only, no connecting line), or \code{"col"} (thin bars).}
@@ -139,10 +139,10 @@ Defaults to \code{0.55}.}
 \code{sec_y} line. Only used when \code{sec_type = "line"} -- for markers
 without a connecting line, use \code{sec_type = "point"} instead.}
 
-\item{sec_point_size}{Point size; only used when \code{sec_type = "point"}
+\item{sec_symbol_size}{Symbol size; only used when \code{sec_type = "point"}
 (the main marker) or \code{sec_type = "line"} with \code{sec_points = TRUE}
 (a smaller marker decorating the line, at 0.7x this). Defaults to
-\code{size}, matching the primary points.}
+\code{symbol_size}, matching the primary points.}
 
 \item{sec_col_width}{Column width; only used when \code{sec_type = "col"},
 drawn narrow enough not to visually compete with the point/interval

@@ -113,7 +113,7 @@ cpb_line(tarieven, x = leeftijd, y = tarief, colour = erfenis,
 <img src="chart-types_files/figure-gfm/line-points-1.png" alt="" width="350px" />
 
 `points = TRUE` is the only thing separating this from an ordinary
-`cpb_line()` call; `point_size` adjusts the marker if the default reads
+`cpb_line()` call; `symbol_size` adjusts the marker if the default reads
 too heavy against a thicker line.
 
 # Column charts

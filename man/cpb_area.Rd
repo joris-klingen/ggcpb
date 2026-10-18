@@ -17,7 +17,7 @@ cpb_area(
   sec_colour = NULL,
   sec_linewidth = 0.55,
   sec_points = FALSE,
-  sec_point_size = 1.6,
+  sec_symbol_size = 1.6,
   sec_col_width = 0.3,
   sec_accuracy = NULL,
   sec_scale_auto = TRUE,
@@ -106,7 +106,7 @@ Defaults to \code{0.55}, as in \code{\link[=cpb_line]{cpb_line()}}.}
 \code{sec_y} line. Only used when \code{sec_type = "line"} -- for markers
 without a connecting line, use \code{sec_type = "point"} instead.}
 
-\item{sec_point_size}{Point size; only used when \code{sec_type = "point"}
+\item{sec_symbol_size}{Symbol size; only used when \code{sec_type = "point"}
 (the main marker) or \code{sec_type = "line"} with \code{sec_points = TRUE}
 (a smaller marker decorating the line, at 0.7x this). Defaults
 to \code{1.6}.}

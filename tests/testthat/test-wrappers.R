@@ -1666,11 +1666,11 @@ test_that("sec_accuracy rounds the secondary axis's own labels independently of 
   expect_equal(sc$secondary.axis$labels(c(1.234, 1.5)), c("1,23", "1,50"))
 })
 
-test_that("sec_point_size and sec_col_width replace the old hardcoded sizes", {
+test_that("sec_symbol_size and sec_col_width replace the old hardcoded sizes", {
   df <- data.frame(jaar = 2018:2020, mld = c(10, 12, 9), heffing = c(1.2, 1.4, 1.1))
 
   p <- cpb_col(df, x = jaar, y = mld, sec_y = heffing, sec_type = "point",
-              sec_point_size = 3)
+              sec_symbol_size = 3)
   pt <- Filter(function(l) inherits(l$geom, "GeomPoint"), p$layers)[[1]]
   expect_equal(pt$aes_params$size, 3)
 
@@ -1684,14 +1684,14 @@ test_that("sec_point_size and sec_col_width replace the old hardcoded sizes", {
   if (is.null(width2)) width2 <- cols[[2]]$geom_params$width
   expect_equal(width2, 0.7)
 
-  # cpb_dot()'s own sec_point_size defaults to its primary `size`, so a
+  # cpb_dot()'s own sec_symbol_size defaults to its primary `symbol_size`, so a
   # sec_type = "point" series reads as the same kind of mark by default
   df2 <- data.frame(
     term = c("a", "b", "c"), est = c(1, 2, 3), lo = c(0, 1, 2), hi = c(2, 3, 4),
     heffing = c(1.2, 1.4, 1.1)
   )
   p <- cpb_dot(df2, x = term, y = est, lower = lo, upper = hi,
-              sec_y = heffing, sec_type = "point", size = 2.5,
+              sec_y = heffing, sec_type = "point", symbol_size = 2.5,
               orientation = "vertical")
   point_sizes <- vapply(
     Filter(function(l) inherits(l$geom, "GeomPoint"), p$layers),
@@ -2036,4 +2036,25 @@ test_that("cpb_donut leader labels of thin wedges at the top stay in the panel, 
   paths <- p$layers[[which(is_path)[1]]]$data
   jumps <- tapply(paths$y, paths$grp, function(y) max(abs(diff(y))))
   expect_true(all(jumps < total / 2))
+})
+
+test_that("symbol_size and symbol_colour set the symbols of line, scatter and dot", {
+  size_of <- function(p) {
+    l <- Filter(function(l) inherits(l$geom, "GeomPoint"), p$layers)[[1]]
+    l$aes_params$size
+  }
+  colour_of <- function(p) {
+    l <- Filter(function(l) inherits(l$geom, "GeomPoint"), p$layers)[[1]]
+    l$aes_params$colour
+  }
+  d <- data.frame(x = 1:3, y = c(1, 3, 2), lo = c(0, 2, 1), hi = c(2, 4, 3))
+
+  expect_equal(size_of(cpb_scatter(d, x = x, y = y, symbol_size = 2)), 2)
+  expect_equal(size_of(cpb_dot(d, x = x, y = y, lower = lo, upper = hi,
+                               symbol_size = 2)), 2)
+  expect_equal(size_of(cpb_line(d, x = x, y = y, points = TRUE,
+                                symbol_size = 2)), 2)
+  expect_equal(colour_of(cpb_scatter(d, x = x, y = y, symbol_colour = "red")), "red")
+  expect_equal(colour_of(cpb_dot(d, x = x, y = y, lower = lo, upper = hi,
+                                 symbol_colour = "red")), "red")
 })
