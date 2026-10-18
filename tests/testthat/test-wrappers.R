@@ -2082,3 +2082,23 @@ test_that("cpb_scatter has the value axis arguments of the other charts", {
   expect_message(p <- cpb_scatter(d, x = x, y = y, value_limits = c(2, 3)), "runs past")
   expect_gte(y_range(p)[2], 4.6)
 })
+
+test_that("cpb_hist has value axis arguments for the histogram axis", {
+  d <- data.frame(x = c(rep(1, 3), rep(2, 2), 3))
+  y_scale <- function(...) {
+    ggplot2::ggplot_build(cpb_hist(d, x = x, binwidth = 1, ...))$layout$panel_params[[1]]$y
+  }
+
+  # default: room above the tallest bar (3), not flush
+  expect_gt(y_scale()$continuous_range[2], 3)
+  # value_limits / value_breaks: flush on a gridline, as in the other charts
+  expect_equal(y_scale(value_limits = c(0, 10))$continuous_range, c(0, 10))
+  expect_equal(y_scale(value_breaks = c(0, 2, 4))$breaks, c(0, 2, 4))
+  expect_equal(max(y_scale(value_breaks = c(0, 1))$breaks) >= 3, TRUE)
+
+  # the labels use the Dutch format
+  big <- data.frame(x = rep(1, 1500))
+  labels <- function(...) ggplot2::ggplot_build(cpb_hist(big, x = x, binwidth = 1, ...))$layout$panel_params[[1]]$y$get_labels()
+  expect_true("1.200" %in% labels())
+  expect_true("1,200" %in% labels(style = "english"))
+})

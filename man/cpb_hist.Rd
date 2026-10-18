@@ -15,6 +15,9 @@ cpb_hist(
   position = "stack",
   palette = "qualitative",
   fill_index = NULL,
+  value_accuracy = NULL,
+  value_breaks = NULL,
+  value_limits = NULL,
   x_lim = NULL,
   x_lim_follow_data = FALSE,
   reverse_legend = TRUE,
@@ -76,6 +79,36 @@ taupe, ...) and \code{"continuous"} for the sequential ramp. \code{NULL}
 except \code{\link[=cpb_map]{cpb_map()}}. A keyword and a non-matching \code{palette} are a
 conflict and raise an error, since both set the same thing.}
 
+\item{value_accuracy}{Rounding accuracy for the value axis labels,
+passed to \code{\link[=label_number_nl]{label_number_nl()}} (e.g. \code{0.1} for one decimal place).
+\code{NULL} (default) lets \code{scales} pick a sensible accuracy from the
+breaks. Cannot be combined with \code{pct_axis}. Use this instead of
+adding a second \code{scale_y_continuous()}, which would discard the
+wrapper's flush axis (see \code{value_breaks}).}
+
+\item{value_breaks}{Optional breaks for the value axis (passed to
+the wrapper-built \code{\link[ggplot2:scale_y_continuous]{ggplot2::scale_y_continuous()}}). Use this
+instead of adding a second y scale, which would discard the
+wrapper's axis formatting and expansion. These choose where the
+ticks sit, not where the axis stops: if the data runs past the
+outermost break, evenly spaced breaks are extended outward in
+their own step until they cover it, so the axis still ends on a
+labelled gridline and no value is hidden.}
+
+\item{value_limits}{Optional length-2 numeric vector giving the
+span the value axis must \emph{at least} cover -- typically to force
+it wider than the data needs, e.g. always showing zero, or a
+fixed range shared across several figures. It is a minimum, not
+a crop: where the data runs past it the axis is widened to fit
+(with a message), so no value is ever hidden. \code{NULL} (default) flushes to
+the full data range (for boxes p5 to p95, for the dot chart the
+interval bounds; see \code{x_lim}/\code{x_lim_follow_data} for the category
+axis's equivalent). For a deliberate zoom that does hide
+values, add \code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} yourself, or
+\code{\link[ggplot2:coord_flip]{ggplot2::coord_flip()}} for a horizontal chart. That replaces the
+chart's own coordinate system, so text outside the plot area, such
+as group names, can be cut off.}
+
 \item{x_lim}{Optional length-2 vector zooming the \code{x} axis to a
 range, without dropping data. Bins are computed from the full
 data first, so this only ever changes what is visible, never the
@@ -126,7 +159,7 @@ house defaults.}
 \item{xlab}{Axis title override. Defaults to \code{NULL}, matching CPB
 house style.}
 
-\item{ylab}{Label for the count (y) axis, rendered as the plot
+\item{ylab}{Label for the histogram (y) axis, rendered as the plot
 \emph{subtitle} (e.g. \code{"aantal"}) unless an explicit \code{subtitle} is
 also given.}
 
@@ -149,8 +182,13 @@ A \code{ggplot} object.
 \description{
 Thin wrapper around \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}} with CPB theming
 applied: house-blue bars with white outlines, a black zero line and
-a count axis that starts on the axis line. Returns a real ggplot
+a histogram axis that starts on the axis line. Returns a real ggplot
 object that can be extended further with \code{+}.
+}
+\details{
+Without \code{value_breaks} or \code{value_limits} the axis keeps its room
+above the tallest bar. With either, it ends flush on a gridline like
+the other charts, widened where the bars need it.
 }
 \examples{
 library(ggplot2)

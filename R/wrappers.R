@@ -3060,8 +3060,12 @@ cpb_hist_bin_args <- function(xvals, binwidth, bins, dots, facet_scales) {
 #'
 #' Thin wrapper around [ggplot2::geom_histogram()] with CPB theming
 #' applied: house-blue bars with white outlines, a black zero line and
-#' a count axis that starts on the axis line. Returns a real ggplot
+#' a histogram axis that starts on the axis line. Returns a real ggplot
 #' object that can be extended further with `+`.
+#'
+#' Without `value_breaks` or `value_limits` the axis keeps its room
+#' above the tallest bar. With either, it ends flush on a gridline like
+#' the other charts, widened where the bars need it.
 #'
 #' @param data A data.frame or data.table with one row per observation.
 #' @param x Column with the observations to bin (tidy eval).
@@ -3097,7 +3101,7 @@ cpb_hist_bin_args <- function(xvals, binwidth, bins, dots, facet_scales) {
 #' @param title,subtitle Plot title/subtitle.
 #' @param xlab Axis title override. Defaults to `NULL`, matching CPB
 #'   house style.
-#' @param ylab Label for the count (y) axis, rendered as the plot
+#' @param ylab Label for the histogram (y) axis, rendered as the plot
 #'   *subtitle* (e.g. `"aantal"`) unless an explicit `subtitle` is
 #'   also given.
 #' @param ... Further arguments passed to [ggplot2::geom_histogram()].
@@ -3118,6 +3122,9 @@ cpb_hist <- function(data, x, fill = NULL,
                       position = "stack",
                       palette = "qualitative",
                       fill_index = NULL,
+                      value_accuracy = NULL,
+                      value_breaks = NULL,
+                      value_limits = NULL,
                       x_lim = NULL,
                       x_lim_follow_data = FALSE,
                       reverse_legend = TRUE,
@@ -3175,12 +3182,28 @@ cpb_hist <- function(data, x, fill = NULL,
                             colour = outline, linewidth = 0.2, fill = single_fill, ...)
   }
 
+  # the bar heights as drawn, taken before the zero line becomes the
+  # last layer
+  heights <- if (!is.null(value_breaks) || !is.null(value_limits)) {
+    cpb_drawn_extent(p, facet, facet_ncol, facet_scales)
+  }
+
   # counts are anchored at zero: black zero line on top of the bars and
   # a count axis flush with the axis line
   if (isTRUE(zeroline)) {
     p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black", linewidth = 0.25)
   }
-  p <- p + ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0, 0.05)))
+  p <- p + if (is.null(heights)) {
+    ggplot2::scale_y_continuous(
+      expand = ggplot2::expansion(mult = c(0, 0.05)),
+      labels = label_number_nl(accuracy = value_accuracy, style = style)
+    )
+  } else {
+    do.call(ggplot2::scale_y_continuous, cpb_flush_scale_args(
+      heights, value_accuracy = value_accuracy, value_breaks = value_breaks,
+      value_limits = value_limits, style = style
+    ))
+  }
 
   # bins are computed from the full data before any x zoom applies, so
   # x_lim only ever changes what is visible, never the binning itself

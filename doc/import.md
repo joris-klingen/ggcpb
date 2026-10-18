@@ -581,6 +581,9 @@ to, so a table for one `plot_type` does not necessarily match another.
 | reverse_legend | literal | TRUE | TRUE |
 | style | literal | dutch/english (default: dutch) | dutch/english (default: dutch) |
 | ticks | literal | TRUE | TRUE |
+| value_accuracy | literal |  | 0.1 |
+| value_breaks | literal |  | 0;25;50;75;100 |
+| value_limits | literal |  | 0;100 |
 | x | column (from data_csv) | (required) | year |
 | x_lim | literal |  | 2015;2025 |
 | x_lim_follow_data | literal | FALSE | FALSE |
