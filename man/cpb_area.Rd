@@ -195,17 +195,22 @@ zoom (\code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} \code{xl
 the full range.}
 
 \item{x_lim_follow_data}{If \code{TRUE}, the \code{x} axis sits flush to the
-data's own range, with no padding on either side. A whole-number
-\code{x} (almost always a year) still only ever gets whole-number
-breaks, never a fractional one. Defaults to \code{FALSE}: unlike a
-thin line, an area's solid fill runs edge-to-edge, so a flush
-axis leaves no visual cue for where the data actually starts and
-ends -- ggplot2's usual padded, evenly spaced margin (the default
-here) keeps that visible. Ignored when \code{x_lim} is set. Adding your own
-\code{scale_x_continuous()}/\code{scale_x_discrete()} afterward replaces
-this one entirely (ggplot2 keeps only one scale per aesthetic) --
-add \code{expand = ggplot2::expansion(mult = 0)} to it to keep the
-flush behaviour when this is \code{TRUE}.}
+data's own range, with no padding on either side (for bars their
+width is included, so the outermost bars never spill past the panel
+edge). Defaults: \code{FALSE} for columns and areas, \code{TRUE} for lines,
+boxes and dots, because a solid fill runs edge-to-edge and a flush
+axis would then leave no cue where the data starts and ends. Ticks
+are equally spaced and the first and last value are labelled; a
+whole-number \code{x} (a year) only gets whole-number steps. When no
+equal step fits, a flush axis ends at the next step, while on bars
+the ticks run from the first value instead. With \code{x_lim} the exact
+limits are labelled and nothing goes beyond them
+(\code{x_lim_follow_data} is then ignored, as when \code{group} is mapped:
+the grouped layout needs its own fixed margin). Adding your own
+\code{scale_x_continuous()}/\code{scale_x_discrete()} afterward replaces this
+one entirely (ggplot2 keeps only one scale per aesthetic) -- add
+\code{expand = ggplot2::expansion(mult = 0)} to it to keep the flush
+behaviour.}
 
 \item{forecast_x}{Optional x value where the forecast window
 starts; overlaid and labelled as in \code{\link[=cpb_line]{cpb_line()}}.}

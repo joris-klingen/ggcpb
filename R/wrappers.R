@@ -135,13 +135,18 @@ cpb_add_facet <- function(p, facet, facet_ncol = NULL, facet_scales = "fixed") {
                           axes = "all", axis.labels = "all")
 }
 
-# The value range of p's last layer as ggplot2 draws it, for the axis to
-# cover exactly: stacked per facet panel, NA rows dropped, area gaps
-# filled in, with ggplot2's own rounding.
-cpb_drawn_extent <- function(p, facet, facet_ncol, facet_scales) {
+# p's last layer as ggplot2 draws it: stacked per facet panel, NA rows
+# dropped, area gaps filled in, histogram bins, with ggplot2's own
+# rounding.
+cpb_drawn_layer <- function(p, facet, facet_ncol, facet_scales) {
   p <- cpb_add_facet(p, facet, facet_ncol, facet_scales)
   # its warnings (e.g. removed NA rows) come again when p is drawn
-  drawn <- suppressWarnings(ggplot2::layer_data(p, length(p$layers)))
+  suppressWarnings(ggplot2::layer_data(p, length(p$layers)))
+}
+
+# The value range of that layer, for the axis to cover exactly.
+cpb_drawn_extent <- function(p, facet, facet_ncol, facet_scales) {
+  drawn <- cpb_drawn_layer(p, facet, facet_ncol, facet_scales)
   c(drawn$ymin, drawn$ymax, 0)
 }
 
@@ -261,12 +266,124 @@ cpb_numeric_legend_scale <- function(values, style = "dutch") {
                      guide = "legend")
 }
 
-# A whole-number x axis (almost always a year) must never get a
-# fractional break: both ggplot2's default algorithm and pretty()
-# itself can pick one for some ranges (confirmed empirically, e.g.
-# 2020-2021 -> 2020, 2020.2, ..., 2021). So this takes pretty()'s
-# candidates and keeps only the whole-number ones, unconditionally,
-# independent of `flush`.
+# Equally spaced ticks for a numeric x axis from `lo` to `hi` (the
+# data, or x_lim). Whole-number data (years) gets whole-number steps.
+# `edge`: the axis ends at lo and hi, so both are labelled. When no
+# equal step fits the span, `extend` moves hi up to the nearest step
+# that does (never for x_lim, which is a limit: then only the two ends
+# are labelled). Without `edge` (bars: the axis has room around the
+# first and last value) the ticks start at lo and the last one may stop
+# short of hi.
+# @return list(breaks, lo, hi); hi is moved only by `extend`.
+# @noRd
+cpb_axis_ticks <- function(lo, hi, whole = FALSE, edge = TRUE,
+                           extend = FALSE, max_labels = 7) {
+  span <- hi - lo
+  end <- hi
+  out <- function(breaks, hi = end) list(breaks = breaks, lo = lo, hi = hi)
+  if (!(span > 0)) return(out(lo))
+  ks <- 2:(max_labels - 1)
+  # a step of 1, 2 or a multiple of 5 reads best; it may take one more label
+  nice <- function(step) step %in% c(1, 2) | step %% 5 == 0
+  if (whole) {
+    exact <- c(ks, max_labels)[span %% c(ks, max_labels) == 0]
+    good <- exact[nice(span / exact)]
+    exact <- if (length(good)) good else exact[exact <= max(ks)]
+    if (length(exact)) {
+      k <- max(exact)
+      return(out(lo + (0:k) * span / k))
+    }
+    if (span < 2) return(out(c(lo, hi)))
+    if (edge && extend) {
+      steps <- ceiling(span / ks)
+      over <- ks * steps - span
+      k <- ks[order(over, !nice(steps), -ks)[1]]
+      return(out(lo + (0:k) * steps[ks == k], lo + k * steps[ks == k]))
+    }
+    if (edge) return(out(c(lo, hi)))
+    step <- ceiling(span / (max_labels - 2))
+    return(out(lo + (0:floor(span / step)) * step))
+  }
+  # any step, preferably one with few decimals
+  ks <- 3:(max_labels - 1)
+  decimals <- vapply(ks, function(k) {
+    step <- span / k
+    for (d in 0:3) {
+      if (abs(step * 10^d - round(step * 10^d)) < 1e-9 * max(1, abs(step * 10^d))) return(d)
+    }
+    4
+  }, 0)
+  k <- ks[order(decimals, abs(ks - 5))[1]]
+  # the last tick is hi itself: a rounding error past the axis end
+  # would make ggplot2 drop it
+  out(c(lo + (0:(k - 1)) * span / k, hi))
+}
+
+# The same for a Date or POSIXct x. Dates on the first of a month step in
+# whole months; others in equal days (or seconds).
+# @noRd
+cpb_time_ticks <- function(lo, hi, edge = TRUE, extend = FALSE) {
+  first <- inherits(lo, "Date") && all(format(c(lo, hi), "%d") == "01")
+  if (first) {
+    months <- function(d) as.integer(format(d, "%Y")) * 12L + as.integer(format(d, "%m"))
+    tk <- cpb_axis_ticks(0, months(hi) - months(lo), whole = TRUE, edge = edge,
+                         extend = extend, max_labels = 5)
+    n <- length(tk$breaks)
+    if (n < 2) return(list(breaks = lo, lo = lo, hi = hi))
+    breaks <- seq(lo, by = paste(tk$breaks[2] - tk$breaks[1], "months"), length.out = n)
+    return(list(breaks = breaks, lo = lo, hi = if (extend && edge) breaks[n] else hi))
+  }
+  tk <- cpb_axis_ticks(as.numeric(lo), as.numeric(hi), whole = FALSE,
+                       edge = edge, extend = FALSE, max_labels = 5)
+  back <- if (inherits(lo, "Date")) as.Date else function(x) as.POSIXct(x, tz = attr(lo, "tzone") %||% "")
+  list(breaks = back(tk$breaks), lo = lo, hi = hi)
+}
+
+# The ticks and axis range of a numeric, Date or POSIXct x, shared by
+# cpb_x_scale() and cpb_x_flush_xlim() so they cannot disagree.
+# @noRd
+cpb_x_ticks <- function(xvals, lo, hi, edge, extend) {
+  if (inherits(xvals, c("Date", "POSIXt"))) return(cpb_time_ticks(lo, hi, edge, extend))
+  whole <- all(c(xvals, lo, hi) == round(c(xvals, lo, hi)), na.rm = TRUE)
+  cpb_axis_ticks(lo, hi, whole, edge, extend)
+}
+
+# Round, labelled ends for a colour bar, as tight around the data as 3
+# to 5 evenly spaced labels allow.
+# @noRd
+cpb_bar_breaks <- function(values) {
+  r <- range(values, na.rm = TRUE)
+  candidates <- lapply(3:5, function(n) {
+    br <- pretty(r, n = n)
+    steps <- length(br) - 1
+    # every k-th break, so both ends stay labelled
+    k <- Find(function(k) steps %% k == 0 && steps / k + 1 <= 5, seq_len(steps))
+    if (!is.null(k)) br[seq(1, length(br), by = k)]
+  })
+  ok <- Filter(function(br) length(br) >= 3, candidates)
+  if (!length(ok)) return(pretty(r, n = 3))
+  ok[[which.min(vapply(ok, function(br) diff(range(br)), 0))]]
+}
+
+# Dates as short as all breaks allow: 2020, 2020-07 or 2020-07-15.
+# @noRd
+cpb_date_labels <- function(x) {
+  x <- as.Date(x)
+  fmt <- if (all(format(x, "%m-%d") == "01-01", na.rm = TRUE)) {
+    "%Y"
+  } else if (all(format(x, "%d") == "01", na.rm = TRUE)) {
+    "%Y-%m"
+  } else {
+    "%Y-%m-%d"
+  }
+  format(x, fmt)
+}
+
+# A numeric, Date or POSIXct x axis labels its first and last value
+# (cpb_axis_ticks()); `domain` is the data, or x_lim when given. A
+# whole-number x axis (almost always a year) never gets a fractional
+# break: both ggplot2 and pretty() can pick one for some ranges (e.g.
+# 2020-2021 -> 2020, 2020.2, ..., 2021).
 #
 # `flush` (x_lim_follow_data's own job) is handled here, via the
 # scale, only for a discrete x. A numeric x's flush goes through the
@@ -277,22 +394,25 @@ cpb_numeric_legend_scale <- function(values, style = "dutch") {
 # strips its default padding, clipping markers/labels at the first/last
 # category (a real bug, previously found and fixed) -- so it keeps the
 # more limited, collision-prone scale-based flush instead.
-cpb_x_scale <- function(p, x, data, flush) {
+cpb_x_scale <- function(p, x, data, flush, domain = NULL, bars = FALSE) {
   xvals <- rlang::eval_tidy(x, data)
+  user_lim <- !is.null(domain)
+  if (is.null(domain)) domain <- xvals
   # a Date/POSIXct x is continuous, not categorical: is.numeric() is
   # FALSE for both, so without these branches it fell through to
   # scale_x_discrete(), which cannot map it at all. Its flush already
   # comes from the coord (cpb_x_flush_xlim()), as for a numeric x.
-  if (inherits(xvals, "Date")) {
-    p + ggplot2::scale_x_date()
-  } else if (inherits(xvals, "POSIXt")) {
-    p + ggplot2::scale_x_datetime()
-  } else if (is.numeric(xvals)) {
-    if (!all(xvals == round(xvals))) return(p)
-    p + ggplot2::scale_x_continuous(breaks = function(range) {
-      br <- pretty(range)
-      br[br == round(br)]
-    })
+  if (inherits(xvals, c("Date", "POSIXt")) || is.numeric(xvals)) {
+    edge <- user_lim || !bars
+    tk <- cpb_x_ticks(xvals, min(domain, na.rm = TRUE), max(domain, na.rm = TRUE),
+                      edge, extend = isTRUE(flush) && !user_lim && !bars)
+    if (inherits(xvals, "Date")) {
+      p + ggplot2::scale_x_date(breaks = tk$breaks, labels = cpb_date_labels)
+    } else if (inherits(xvals, "POSIXt")) {
+      p + ggplot2::scale_x_datetime(breaks = tk$breaks)
+    } else {
+      p + ggplot2::scale_x_continuous(breaks = tk$breaks)
+    }
   } else {
     p + ggplot2::scale_x_discrete(
       labels = cpb_label_wrap(),
@@ -383,7 +503,10 @@ cpb_x_flush_xlim <- function(x, data, flush, pad = 0) {
   if (!isTRUE(flush)) return(NULL)
   xvals <- rlang::eval_tidy(x, data)
   if (!is.numeric(xvals) && !cpb_is_datetime(xvals)) return(NULL)
-  range(xvals, na.rm = TRUE) + c(-pad, pad)
+  r <- range(xvals, na.rm = TRUE)
+  # bars (pad > 0) have room around the first and last value
+  tk <- cpb_x_ticks(xvals, r[1], r[2], edge = pad == 0, extend = pad == 0)
+  c(tk$lo, tk$hi) + c(-pad, pad)
 }
 
 # Date/POSIXct (incl. data.table's IDate, which inherits from Date):
@@ -442,6 +565,8 @@ cpb_apply_coord <- function(p, orientation, x_lim, value_limits,
   }
   if (do_flush) {
     p <- cpb_x_scale(p, x, data, flush = isTRUE(x_lim_follow_data))
+  } else if (!is.null(x_lim) && !has_group && !skip_x_flush) {
+    p <- cpb_x_scale(p, x, data, flush = FALSE, domain = x_lim)
   }
   p
 }
@@ -1206,19 +1331,23 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   [ggplot2::coord_flip()] `xlim`), so a bar just outside the window
 #'   still contributes to breaks/totals but is only clipped for
 #'   display. `NULL` (default) shows the full range.
-#' @param x_lim_follow_data If `TRUE`, the category axis sits flush to
-#'   the data's own range, with no padding on either side (the bars'
-#'   own width is accounted for too, so the outermost bars never spill
-#'   past the panel edge). A whole-number `x` (almost always a year)
-#'   still only ever gets whole-number breaks, never a fractional one.
-#'   Defaults to `FALSE`: unlike a thin line, a bar's solid fill runs
-#'   edge-to-edge, so a flush axis leaves no visual cue for where the
-#'   data actually starts and ends -- ggplot2's usual padded, evenly
-#'   spaced margin (the default here) keeps that visible. Ignored when
-#'   `x_lim` is set. Adding your own `scale_x_continuous()`/`scale_x_discrete()`
-#'   afterward replaces this one entirely (ggplot2 keeps only one
-#'   scale per aesthetic) -- add `expand = ggplot2::expansion(mult = 0)`
-#'   to it to keep the flush behaviour when this is `TRUE`.
+#' @param x_lim_follow_data If `TRUE`, the `x` axis sits flush to the
+#'   data's own range, with no padding on either side (for bars their
+#'   width is included, so the outermost bars never spill past the panel
+#'   edge). Defaults: `FALSE` for columns and areas, `TRUE` for lines,
+#'   boxes and dots, because a solid fill runs edge-to-edge and a flush
+#'   axis would then leave no cue where the data starts and ends. Ticks
+#'   are equally spaced and the first and last value are labelled; a
+#'   whole-number `x` (a year) only gets whole-number steps. When no
+#'   equal step fits, a flush axis ends at the next step, while on bars
+#'   the ticks run from the first value instead. With `x_lim` the exact
+#'   limits are labelled and nothing goes beyond them
+#'   (`x_lim_follow_data` is then ignored, as when `group` is mapped:
+#'   the grouped layout needs its own fixed margin). Adding your own
+#'   `scale_x_continuous()`/`scale_x_discrete()` afterward replaces this
+#'   one entirely (ggplot2 keeps only one scale per aesthetic) -- add
+#'   `expand = ggplot2::expansion(mult = 0)` to it to keep the flush
+#'   behaviour.
 #' @param palette CPB palette to use for `fill`; one of
 #'   `"qualitative"` (default), `"discr"`, `"sequential"`
 #'   (pink ramp), or `"blues"` (blue ramp).
@@ -1551,7 +1680,9 @@ cpb_col <- function(data, x, y, fill = NULL,
     )
   }
   if (do_flush) {
-    p <- cpb_x_scale(p, x, data, flush = isTRUE(x_lim_follow_data))
+    p <- cpb_x_scale(p, x, data, flush = isTRUE(x_lim_follow_data), bars = TRUE)
+  } else if (!is.null(x_lim) && !has_group) {
+    p <- cpb_x_scale(p, x, data, flush = FALSE, domain = x_lim)
   }
 
   p <- cpb_add_sec_ylab(p, has_sec, sec_ylab)
@@ -1636,18 +1767,6 @@ cpb_col <- function(data, x, y, fill = NULL,
 #'   range, without dropping data -- applied as a coordinate-system
 #'   zoom ([ggplot2::coord_cartesian()] `xlim`). `NULL` (default) shows
 #'   the full range.
-#' @param x_lim_follow_data If `TRUE`, the `x` axis sits flush to the
-#'   data's own range, with no padding on either side. A whole-number
-#'   `x` (almost always a year) still only ever gets whole-number
-#'   breaks, never a fractional one. Defaults to `FALSE`: unlike a
-#'   thin line, an area's solid fill runs edge-to-edge, so a flush
-#'   axis leaves no visual cue for where the data actually starts and
-#'   ends -- ggplot2's usual padded, evenly spaced margin (the default
-#'   here) keeps that visible. Ignored when `x_lim` is set. Adding your own
-#'   `scale_x_continuous()`/`scale_x_discrete()` afterward replaces
-#'   this one entirely (ggplot2 keeps only one scale per aesthetic) --
-#'   add `expand = ggplot2::expansion(mult = 0)` to it to keep the
-#'   flush behaviour when this is `TRUE`.
 #' @param reverse_legend If `TRUE` (default), reverse the fill legend
 #'   order via `guide_legend(reverse = TRUE)`.
 #' @param forecast_x Optional x value where the forecast window
@@ -1794,6 +1913,8 @@ cpb_area <- function(data, x, y, fill,
   }
   if (do_flush) {
     p <- cpb_x_scale(p, x, data, flush = isTRUE(x_lim_follow_data))
+  } else if (!is.null(x_lim)) {
+    p <- cpb_x_scale(p, x, data, flush = FALSE, domain = x_lim)
   }
 
   p <- cpb_add_sec_ylab(p, has_sec, sec_ylab)
@@ -1876,16 +1997,6 @@ cpb_area <- function(data, x, y, fill,
 #'   range, without dropping data -- applied as a coordinate-system
 #'   zoom ([ggplot2::coord_cartesian()] `xlim`). `NULL` (default) shows
 #'   the full range.
-#' @param x_lim_follow_data If `TRUE` (default), the `x` axis sits
-#'   flush to the data's own range, with no padding on either side. A
-#'   whole-number `x` (almost always a year) still only ever gets
-#'   whole-number breaks, never a fractional one. Set to `FALSE` to
-#'   restore ggplot2's usual padded, evenly spaced margin instead.
-#'   Ignored when `x_lim` is set.
-#'   Adding your own `scale_x_continuous()`/`scale_x_discrete()`
-#'   afterward replaces this one entirely (ggplot2 keeps only one
-#'   scale per aesthetic) -- add `expand = ggplot2::expansion(mult = 0)`
-#'   to it to keep the flush behaviour.
 #' @param reverse_legend If `TRUE`, reverse the colour legend order
 #'   via `guide_legend(reverse = TRUE)`. Defaults to `FALSE`: unlike
 #'   the stacked wrappers, line order carries no stacking convention.
@@ -2192,6 +2303,8 @@ cpb_line <- function(data, x, y, colour = NULL,
   }
   if (do_flush) {
     p <- cpb_x_scale(p, x, data, flush = isTRUE(x_lim_follow_data))
+  } else if (!is.null(x_lim)) {
+    p <- cpb_x_scale(p, x, data, flush = FALSE, domain = x_lim)
   }
 
   if (has_colour || has_sec) {
@@ -2307,18 +2420,6 @@ cpb_line <- function(data, x, y, colour = NULL,
 #'   coordinate-system zoom ([ggplot2::coord_cartesian()] /
 #'   [ggplot2::coord_flip()] `xlim`). `NULL` (default) shows the full
 #'   range.
-#' @param x_lim_follow_data If `TRUE` (default), the category axis
-#'   sits flush to the data's own range, with no padding on either
-#'   side. A whole-number `x` (almost always a year) still only ever
-#'   gets whole-number breaks, never a fractional one. Set to `FALSE`
-#'   to restore ggplot2's usual padded, evenly spaced margin instead.
-#'   Ignored when
-#'   `x_lim` is set, and when `group` is mapped (the grouped layout
-#'   needs its own fixed margin for the heading rows).
-#'   Adding your own `scale_x_continuous()`/`scale_x_discrete()`
-#'   afterward replaces this one entirely (ggplot2 keeps only one
-#'   scale per aesthetic) -- add `expand = ggplot2::expansion(mult = 0)`
-#'   to it to keep the flush behaviour.
 #' @param sec_y Optional column (tidy eval) holding a series to draw
 #'   against a **secondary value axis** on the right, alongside the
 #'   boxes. One value per `x`. Only supported for vertical boxes with
@@ -2860,10 +2961,9 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
 #'   range, without dropping data. Also recomputes the flush breaks
 #'   for that window, rather than the full data's (which would mostly
 #'   fall outside it). `NULL` (default) shows the full range.
-#' @param x_lim_follow_data If `TRUE`, flush the `x` axis exactly to
-#'   the data's own range, at the cost of ggplot2 picking its own
-#'   breaks within that (possibly non-round) range instead of the
-#'   usual `pretty()` ones. Defaults to `FALSE`. Ignored when `x_lim` is set.
+#' @param x_lim_follow_data If `TRUE`, flush the `x` axis exactly to the
+#'   data's own range instead of round values. Both ends are still
+#'   labelled. Defaults to `FALSE`. Ignored when `x_lim` is set.
 #' @param forecast_x Optional x value where the forecast window
 #'   starts; overlaid and labelled as in [cpb_line()].
 #' @param reverse_legend If `TRUE`, reverse the colour legend order
@@ -2986,16 +3086,17 @@ cpb_scatter <- function(data, x, y, colour = NULL,
   # axes are always continuous here, so a blanket coord expand = FALSE
   # carries none of the discrete-axis-clipping risk it has elsewhere.
   x_data_range <- range(rlang::eval_tidy(x, data), na.rm = TRUE)
+  xvals <- rlang::eval_tidy(x, data)
   if (!is.null(x_lim)) {
-    # a manual zoom gets its own breaks computed for that window,
-    # rather than the full data's (which would mostly fall outside it)
-    x_breaks <- pretty(x_lim)
+    # a manual zoom: both ends of x_lim labelled, equal steps between
+    tk <- cpb_x_ticks(xvals, x_lim[1], x_lim[2], edge = TRUE, extend = FALSE)
+    x_breaks <- tk$breaks
     flush_xlim <- x_lim
   } else if (isTRUE(x_lim_follow_data)) {
-    # no rounding: flush exactly to the data, ggplot2 picks its own
-    # breaks within that (possibly non-round) range
-    x_breaks <- NULL
-    flush_xlim <- x_data_range
+    # no rounding: flush to the data, both ends labelled
+    tk <- cpb_x_ticks(xvals, x_data_range[1], x_data_range[2], edge = TRUE, extend = TRUE)
+    x_breaks <- tk$breaks
+    flush_xlim <- c(tk$lo, tk$hi)
   } else {
     x_breaks <- pretty(x_data_range)
     flush_xlim <- range(x_breaks)
@@ -3057,10 +3158,6 @@ cpb_hist_bin_args <- function(xvals, binwidth, bins, dots, facet_scales) {
 #' a histogram axis that starts on the axis line. Returns a real ggplot
 #' object that can be extended further with `+`.
 #'
-#' Without `value_breaks` or `value_limits` the axis keeps its room
-#' above the tallest bar. With either, it ends flush on a gridline like
-#' the other charts, widened where the bars need it.
-#'
 #' @param data A data.frame or data.table with one row per observation.
 #' @param x Column with the observations to bin (tidy eval).
 #' @param fill Optional column mapped to the fill aesthetic (tidy
@@ -3081,12 +3178,9 @@ cpb_hist_bin_args <- function(xvals, binwidth, bins, dots, facet_scales) {
 #'   range, without dropping data. Bins are computed from the full
 #'   data first, so this only ever changes what is visible, never the
 #'   binning itself. `NULL` (default) shows the full range.
-#' @param x_lim_follow_data If `TRUE`, remove the default margin on
-#'   either side of the `x` axis so it sits flush to the data's actual
-#'   range, at the cost of ggplot2 picking its own breaks within that
-#'   (possibly non-round) range instead of the usual padded, evenly
-#'   spaced ones.
-#'   Defaults to `FALSE`. Ignored when `x_lim` is set.
+#' @param x_lim_follow_data If `TRUE`, the `x` axis ends exactly at the
+#'   outer bin edges instead of on round values. Both ends are still
+#'   labelled. Defaults to `FALSE`. Ignored when `x_lim` is set.
 #' @param reverse_legend If `TRUE` (default), reverse the fill legend
 #'   order via `guide_legend(reverse = TRUE)`.
 #' @param legend Legend position, forwarded to [theme_cpb()].
@@ -3176,35 +3270,61 @@ cpb_hist <- function(data, x, fill = NULL,
                             colour = outline, linewidth = 0.2, fill = single_fill, ...)
   }
 
-  # the bar heights as drawn, taken before the zero line becomes the
-  # last layer
-  heights <- if (!is.null(value_breaks) || !is.null(value_limits)) {
-    cpb_drawn_extent(p, facet, facet_ncol, facet_scales)
-  }
+  # the bars as drawn, read before the zero line becomes the last layer
+  drawn <- cpb_drawn_layer(p, facet, facet_ncol, facet_scales)
+  free_x <- facet_scales %in% c("free", "free_x")
+  free_y <- facet_scales %in% c("free", "free_y")
 
   # counts are anchored at zero: black zero line on top of the bars and
   # a count axis flush with the axis line
   if (isTRUE(zeroline)) {
     p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black", linewidth = 0.25)
   }
-  p <- p + if (is.null(heights)) {
+  # flush on a labelled round value, as the other charts; free y facets
+  # each get their own
+  p <- p + if (free_y && is.null(value_breaks) && is.null(value_limits)) {
     ggplot2::scale_y_continuous(
-      expand = ggplot2::expansion(mult = c(0, 0.05)),
+      limits = function(l) range(pretty(c(0, l))),
+      breaks = function(l) pretty(l),
+      expand = ggplot2::expansion(mult = 0),
       labels = label_number_nl(accuracy = value_accuracy, style = style)
     )
   } else {
     do.call(ggplot2::scale_y_continuous, cpb_flush_scale_args(
-      heights, value_accuracy = value_accuracy, value_breaks = value_breaks,
-      value_limits = value_limits, style = style
+      c(drawn$ymin, drawn$ymax, 0), value_accuracy = value_accuracy,
+      value_breaks = value_breaks, value_limits = value_limits, style = style
     ))
   }
 
   # bins are computed from the full data before any x zoom applies, so
   # x_lim only ever changes what is visible, never the binning itself
-  if (!is.null(x_lim)) {
-    p <- p + ggplot2::coord_cartesian(xlim = x_lim)
+  xvals <- rlang::eval_tidy(x, data)
+  if (!is.numeric(xvals)) {
+    p <- if (!is.null(x_lim)) {
+      p + ggplot2::coord_cartesian(xlim = x_lim)
+    } else {
+      cpb_x_scale(p, x, data, flush = isTRUE(x_lim_follow_data))
+    }
   } else {
-    p <- cpb_x_scale(p, x, data, flush = isTRUE(x_lim_follow_data))
+    # the axis runs over x_lim, the outer bin edges, or round values
+    # around them; both ends are labelled
+    bin_range <- range(drawn$xmin, drawn$xmax, na.rm = TRUE)
+    if (!is.null(x_lim)) {
+      tk <- cpb_axis_ticks(x_lim[1], x_lim[2], whole = FALSE, edge = TRUE, extend = FALSE)
+      x_range <- x_lim
+      x_breaks <- tk$breaks
+    } else if (isTRUE(x_lim_follow_data)) {
+      tk <- cpb_axis_ticks(bin_range[1], bin_range[2], whole = FALSE, edge = TRUE, extend = TRUE)
+      x_range <- c(tk$lo, tk$hi)
+      x_breaks <- tk$breaks
+    } else {
+      x_breaks <- pretty(bin_range)
+      x_range <- range(x_breaks)
+    }
+    p <- p + ggplot2::scale_x_continuous(breaks = x_breaks)
+    if (!free_x) {
+      p <- p + ggplot2::coord_cartesian(xlim = x_range, expand = FALSE)
+    }
   }
 
   if (has_fill) {
@@ -3299,18 +3419,6 @@ cpb_hist <- function(data, x, fill = NULL,
 #'   coordinate-system zoom ([ggplot2::coord_cartesian()] /
 #'   [ggplot2::coord_flip()] `xlim`). `NULL` (default) shows the full
 #'   range.
-#' @param x_lim_follow_data If `TRUE` (default), the category axis
-#'   sits flush to the data's own range, with no padding on either
-#'   side. A whole-number `x` (almost always a year) still only ever
-#'   gets whole-number breaks, never a fractional one. Set to `FALSE`
-#'   to restore ggplot2's usual padded, evenly spaced margin instead.
-#'   Ignored when
-#'   `x_lim` is set, and when `group` is mapped (the grouped layout
-#'   needs its own fixed margin for the heading rows).
-#'   Adding your own `scale_x_continuous()`/`scale_x_discrete()`
-#'   afterward replaces this one entirely (ggplot2 keeps only one
-#'   scale per aesthetic) -- add `expand = ggplot2::expansion(mult = 0)`
-#'   to it to keep the flush behaviour.
 #' @param zeroline Draw a solid black reference
 #'   line at zero on the value axis -- the line the intervals are read
 #'   against. `NULL` (default) draws it only when zero is on the axis.

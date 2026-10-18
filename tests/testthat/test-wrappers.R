@@ -323,7 +323,7 @@ test_that("cpb_hist bins with house-blue bars, white outlines and flush counts",
   expect_equal(bar$aes_params$colour, "white")
   expect_true(any(vapply(p$layers, function(l) inherits(l$geom, "GeomHline"), logical(1))))
   sc <- p$scales$get_scales("y")
-  expect_equal(sc$expand, ggplot2::expansion(mult = c(0, 0.05)))
+  expect_equal(sc$expand, ggplot2::expansion(mult = c(0, 0)))
   expect_no_error(ggplot2::ggplotGrob(p))
 })
 
@@ -1067,8 +1067,8 @@ test_that("cpb_map's numeric legend follows style", {
     sc <- ggplot2::ggplot_build(p)$plot$scales$get_scales("fill")
     sc$get_labels(sc$get_breaks())
   }
-  expect_equal(labels(), c("0,6", "0,8", "1,0", "1,2"))
-  expect_equal(labels(style = "english"), c("0.6", "0.8", "1.0", "1.2"))
+  expect_equal(labels(), c("0,4", "0,6", "0,8", "1,0", "1,2"))
+  expect_equal(labels(style = "english"), c("0.4", "0.6", "0.8", "1.0", "1.2"))
   expect_error(cpb_map(d, region = r, value = w, level = "provincie",
                        style = "french"), "should be one of")
 })
@@ -1958,8 +1958,10 @@ test_that("cpb_line/cpb_area/cpb_col accept a Date or POSIXct x axis (#49)", {
 
   b <- ggplot2::ggplot_build(cpb_line(d, x = date, y = value))
   expect_s3_class(b$layout$panel_scales_x[[1]], "ScaleContinuousDate")
-  # flush to the data range, as for a numeric x
-  expect_equal(b$layout$panel_params[[1]]$x.range, as.numeric(range(d$date)))
+  # flush to the data, ending on a labelled month
+  xr <- b$layout$panel_params[[1]]$x.range
+  expect_equal(xr[1], as.numeric(min(d$date)))
+  expect_gte(xr[2], as.numeric(max(d$date)))
 
   b <- ggplot2::ggplot_build(cpb_line(d, x = time, y = value))
   expect_s3_class(b$layout$panel_scales_x[[1]], "ScaleContinuousDatetime")
@@ -2089,9 +2091,9 @@ test_that("cpb_hist has value axis arguments for the histogram axis", {
     ggplot2::ggplot_build(cpb_hist(d, x = x, binwidth = 1, ...))$layout$panel_params[[1]]$y
   }
 
-  # default: room above the tallest bar (3), not flush
-  expect_gt(y_scale()$continuous_range[2], 3)
-  # value_limits / value_breaks: flush on a gridline, as in the other charts
+  # default: flush on a labelled round value, as in the other charts
+  expect_equal(y_scale()$continuous_range, c(0, 3))
+  # value_limits / value_breaks
   expect_equal(y_scale(value_limits = c(0, 10))$continuous_range, c(0, 10))
   expect_equal(y_scale(value_breaks = c(0, 2, 4))$breaks, c(0, 2, 4))
   expect_equal(max(y_scale(value_breaks = c(0, 1))$breaks) >= 3, TRUE)
@@ -2099,8 +2101,8 @@ test_that("cpb_hist has value axis arguments for the histogram axis", {
   # the labels use the Dutch format
   big <- data.frame(x = rep(1, 1500))
   labels <- function(...) ggplot2::ggplot_build(cpb_hist(big, x = x, binwidth = 1, ...))$layout$panel_params[[1]]$y$get_labels()
-  expect_true("1.200" %in% labels())
-  expect_true("1,200" %in% labels(style = "english"))
+  expect_true("1.500" %in% labels())
+  expect_true("1,500" %in% labels(style = "english"))
 })
 
 test_that("cpb_map's classed legend can be reversed and laid out", {
@@ -2121,4 +2123,72 @@ test_that("cpb_map's classed legend can be reversed and laid out", {
   d$w <- seq_len(nrow(d))
   p <- cpb_map(d, region = r, value = w, level = "provincie", reverse_legend = TRUE)
   expect_s3_class(ggplot2::ggplot_build(p)$plot$guides$guides[[1]], "GuideColourbar")
+})
+
+test_that("cpb_axis_ticks() gives equal steps, with the ends labelled", {
+  ticks <- function(lo, hi, ...) cpb_axis_ticks(lo, hi, whole = TRUE, ...)$breaks
+  # lines and areas: the axis ends at the data
+  expect_equal(ticks(2015, 2024, edge = TRUE, extend = TRUE), c(2015, 2018, 2021, 2024))
+  expect_equal(ticks(2019, 2025, edge = TRUE, extend = TRUE), 2019:2025)
+  expect_equal(ticks(2007, 2022, edge = TRUE, extend = TRUE), c(2007, 2012, 2017, 2022))
+  # no equal step fits 2001-2024: the axis ends one step later
+  tk <- cpb_axis_ticks(2001, 2024, whole = TRUE, edge = TRUE, extend = TRUE)
+  expect_equal(tk$breaks, seq(2001, 2025, by = 4))
+  expect_equal(tk$hi, 2025)
+  # bars: no extension, the last tick may stop short of the last bar
+  expect_equal(ticks(2001, 2024, edge = FALSE), seq(2001, 2021, by = 5))
+  # x_lim: never past the limit, so only the two limits when nothing fits
+  expect_equal(ticks(2001, 2024, edge = TRUE, extend = FALSE), c(2001, 2024))
+  expect_equal(ticks(2003, 2017, edge = TRUE, extend = FALSE), seq(2003, 2017, by = 2))
+  # other data: any equal step
+  br <- cpb_axis_ticks(1.3, 7.8)$breaks
+  expect_equal(range(br), c(1.3, 7.8))
+  expect_equal(length(unique(round(diff(br), 9))), 1)
+  # months
+  d <- as.Date(c("2020-01-01", "2021-06-01"))
+  tk <- cpb_time_ticks(d[1], d[2], edge = TRUE, extend = TRUE)
+  expect_equal(range(tk$breaks), c(d[1], as.Date("2021-07-01")))
+  expect_equal(length(unique(diff(as.integer(format(tk$breaks, "%Y")) * 12 +
+                                    as.integer(format(tk$breaks, "%m"))))), 1)
+})
+
+test_that("every continuous axis and colour bar labels its first and last value", {
+  x_labels <- function(p) {
+    pp <- ggplot2::ggplot_build(p)$layout$panel_params[[1]]$x
+    pp$get_labels()[!is.na(pp$get_breaks())]
+  }
+  first_last <- function(x) x[c(1, length(x))]
+  yrs <- data.frame(x = 2001:2024, g = "a", y = seq_len(24))
+
+  # no equal step fits 2001-2024: a flush axis ends at 2025, a padded one
+  # labels only the two ends
+  expect_equal(first_last(x_labels(cpb_line(yrs, x = x, y = y))), c("2001", "2025"))
+  expect_equal(x_labels(cpb_area(yrs, x = x, y = y, fill = g)), c("2001", "2024"))
+  expect_equal(first_last(x_labels(cpb_area(yrs, x = x, y = y, fill = g,
+                                            x_lim_follow_data = TRUE))), c("2001", "2025"))
+  # bars start at their first bar
+  expect_equal(x_labels(cpb_col(yrs, x = x, y = y))[1], "2001")
+  expect_equal(first_last(x_labels(cpb_line(yrs, x = x, y = y, x_lim = c(2003, 2017)))),
+               c("2003", "2017"))
+  expect_equal(x_labels(cpb_line(yrs, x = x, y = y, x_lim = c(2001, 2024))), c("2001", "2024"))
+
+  mon <- data.frame(x = seq(as.Date("2020-01-01"), by = "month", length.out = 18), y = 1:18)
+  expect_equal(first_last(x_labels(cpb_line(mon, x = x, y = y))), c("2020-01", "2021-07"))
+
+  sc <- data.frame(x = c(1.3, 2.9, 4.1, 7.8), y = c(0.3, 1.4, 0.9, 2.2))
+  expect_equal(first_last(x_labels(cpb_scatter(sc, x = x, y = y, x_lim_follow_data = TRUE))),
+               c("1.3", "7.8"))
+
+  set.seed(1)
+  h <- ggplot2::ggplot_build(cpb_hist(data.frame(v = rnorm(300, 50, 12)), x = v))
+  hx <- h$layout$panel_params[[1]]$x
+  hy <- h$layout$panel_params[[1]]$y
+  expect_equal(range(hx$get_breaks(), na.rm = TRUE), hx$continuous_range)
+  expect_equal(range(hy$get_breaks(), na.rm = TRUE), hy$continuous_range)
+
+  m <- data.frame(r = unique(cpb_nl_geo("provincie")$name))
+  m$w <- seq(0.52, 1.18, length.out = nrow(m))
+  bar <- ggplot2::ggplot_build(cpb_map(m, region = r, value = w, level = "provincie"))$plot$guides$params[[1]]
+  expect_equal(first_last(bar$key$.label), c("0,4", "1,2"))
+  expect_equal(range(bar$decor$value), c(0.4, 1.2))
 })

@@ -172,8 +172,11 @@ cpb_map <- function(data, region, value,
     # Rijksdriehoek coordinates are metres: equal scales, no projection
     ggplot2::coord_fixed(ratio = 1)
 
+  # a numeric colour bar runs between two labelled round values
+  bar_breaks <- if (is.numeric(vals)) cpb_bar_breaks(vals)
   p <- p + if (is.numeric(vals)) {
     scale_fill_cpb_c(reverse = reverse, na.value = na_fill,
+                     limits = range(bar_breaks), breaks = bar_breaks,
                      labels = label_number_nl(style = style))
   } else if (!is.null(index)) {
     scale_fill_cpb_manual(index = index, palette = palette, na.value = na_fill)

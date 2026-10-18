@@ -114,12 +114,9 @@ range, without dropping data. Bins are computed from the full
 data first, so this only ever changes what is visible, never the
 binning itself. \code{NULL} (default) shows the full range.}
 
-\item{x_lim_follow_data}{If \code{TRUE}, remove the default margin on
-either side of the \code{x} axis so it sits flush to the data's actual
-range, at the cost of ggplot2 picking its own breaks within that
-(possibly non-round) range instead of the usual padded, evenly
-spaced ones.
-Defaults to \code{FALSE}. Ignored when \code{x_lim} is set.}
+\item{x_lim_follow_data}{If \code{TRUE}, the \code{x} axis ends exactly at the
+outer bin edges instead of on round values. Both ends are still
+labelled. Defaults to \code{FALSE}. Ignored when \code{x_lim} is set.}
 
 \item{reverse_legend}{If \code{TRUE} (default), reverse the fill legend
 order via \code{guide_legend(reverse = TRUE)}.}
@@ -184,11 +181,6 @@ Thin wrapper around \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram(
 applied: house-blue bars with white outlines, a black zero line and
 a histogram axis that starts on the axis line. Returns a real ggplot
 object that can be extended further with \code{+}.
-}
-\details{
-Without \code{value_breaks} or \code{value_limits} the axis keeps its room
-above the tallest bar. With either, it ends flush on a gridline like
-the other charts, widened where the bars need it.
 }
 \examples{
 library(ggplot2)
