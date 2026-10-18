@@ -672,7 +672,20 @@ cpb_find_sec_breaks <- function(primary_breaks, sec_vals, sec_limits = NULL, sec
   low <- sec_limits[1]
   high <- sec_limits[2]
 
-  if (!isTRUE(sec_scale_auto) || user_custom_limits) {
+  # data past the limits would be drawn off the axis: widen it to round
+  # values instead, as value_limits does
+  widened <- FALSE
+  if (user_custom_limits) {
+    finite <- sec_vals[is.finite(sec_vals)]
+    tol <- (high - low) * 1e-9
+    if (length(finite) && (min(finite) < low - tol || max(finite) > high + tol)) {
+      widened <- TRUE
+      low <- min(low, finite)
+      high <- max(high, finite)
+    }
+  }
+
+  if ((!isTRUE(sec_scale_auto) || user_custom_limits) && !widened) {
     sec_breaks <- seq(low, high, length.out = n_labels)
   } else {
     sec_breaks <- pretty(c(low, high), n = n_labels)
@@ -694,6 +707,13 @@ cpb_find_sec_breaks <- function(primary_breaks, sec_vals, sec_limits = NULL, sec
       }
       n <- n_labels - length(sec_breaks)
     }
+  }
+  if (widened) {
+    message(
+      "ggcpb: the data of `sec_y` (", paste(signif(range(sec_vals, na.rm = TRUE), 4), collapse = " to "),
+      ") runs past `sec_limits`, so the right axis is widened to ",
+      paste(signif(range(sec_breaks), 4), collapse = " to "), "."
+    )
   }
 
   sec_breaks
@@ -1275,7 +1295,9 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   itself, minimum to maximum. `sec_y` is placed by mapping this
 #'   range linearly onto the primary range, so the two axes always
 #'   start together. Giving this explicitly also spaces the breaks
-#'   evenly across it, overriding `sec_scale_auto`.
+#'   evenly across it, overriding `sec_scale_auto`. If `sec_y` runs
+#'   past it, the axis is widened to round values (with a message), so
+#'   no value is cut off.
 #' @param sec_legend_label Name of the `sec_y` series in the legend.
 #'   `NULL` (default) uses the `sec_y` column name. Automatically suffixed `"(rechteras)"`
 #'   (right axis) -- don't add it yourself, e.g. `sec_legend_label =

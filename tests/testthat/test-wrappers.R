@@ -1481,7 +1481,7 @@ test_that("a fixed secondary scale caps its auto label precision at one decimal"
     pp <- ggplot2::ggplot_build(p)$layout$panel_params[[1]]
     pp$y.sec$get_labels()
   }
-  d <- data.frame(jaar = 2018:2027, prim = 1:10, sec = c(9, 20, 35, 50, 60, 70, 77, 80, 90, 95))
+  d <- data.frame(jaar = 2018:2027, prim = 1:10, sec = c(12, 20, 35, 50, 60, 70, 77, 72, 65, 55))
 
   # sec_limits divides into arbitrary fractions -> one decimal, not 3-6
   fixed <- cpb_line(d, x = jaar, y = prim, sec_y = sec,
@@ -1573,7 +1573,7 @@ test_that("an explicit sec_limits spaces breaks evenly, whatever sec_scale_auto 
     ggplot2::ggplot_build(p)$layout$panel_params[[1]]$y.sec$get_labels()
   }
   d <- data.frame(jaar = 2018:2027, prim = 1:10,
-                  sec = c(9, 20, 35, 50, 60, 70, 77, 80, 90, 95))
+                  sec = c(12, 20, 35, 50, 60, 70, 77, 72, 65, 55))
 
   # no sec_limits: sec_scale_auto is what decides
   pretty_auto <- sec_labels(cpb_line(d, x = jaar, y = prim, sec_y = sec))

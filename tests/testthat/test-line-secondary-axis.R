@@ -77,3 +77,23 @@ test_that("sec_axis_labels sets the labels at the ticks of the right axis", {
   expect_equal(b$layout$panel_params[[1]]$y.sec$get_labels(), c("a", "b", "c", "d", "e"))
   expect_false("sec_labels" %in% names(formals(cpb_line)))
 })
+
+test_that("a secondary series past sec_limits widens the axis instead of being cut off", {
+  d <- data.frame(x = 2019:2025, y = c(2, 6, 4, 8, 5, 3, 7), s = c(96, 99, 104, 101, 108, 97, 103))
+  on_panel <- function(p) {
+    pp <- ggplot2::ggplot_build(p)$layout$panel_params[[1]]
+    k <- which(vapply(p$layers, function(l) "cpb__sec" %in% names(l$data), TRUE))[1]
+    pos <- p$layers[[k]]$data$cpb__sec
+    all(pos >= pp$y.range[1] - 1e-9 & pos <= pp$y.range[2] + 1e-9)
+  }
+
+  expect_message(p <- cpb_line(d, x = x, y = y, sec_y = s, sec_limits = c(98, 105)),
+                 "runs past `sec_limits`, so the right axis is widened to 96 to 108")
+  expect_true(on_panel(p))
+  expect_message(p <- cpb_col(d, x = x, y = y, sec_y = s, sec_limits = c(100, 120)), "widened")
+  expect_true(on_panel(p))
+  # limits the data fits inside stay as given, without a message
+  expect_no_message(p <- cpb_line(d, x = x, y = y, sec_y = s, sec_limits = c(95, 110)))
+  labs <- ggplot2::ggplot_build(p)$layout$panel_params[[1]]$y.sec$get_labels()
+  expect_equal(c(labs[1], labs[length(labs)]), c("95,0", "110,0"))
+})

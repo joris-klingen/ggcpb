@@ -111,7 +111,9 @@ secondary axis spans. \code{NULL} (default) uses the range of \code{sec_y}
 itself, minimum to maximum. \code{sec_y} is placed by mapping this
 range linearly onto the primary range, so the two axes always
 start together. Giving this explicitly also spaces the breaks
-evenly across it, overriding \code{sec_scale_auto}.}
+evenly across it, overriding \code{sec_scale_auto}. If \code{sec_y} runs
+past it, the axis is widened to round values (with a message), so
+no value is cut off.}
 
 \item{sec_legend_label}{Name of the \code{sec_y} series in the legend.
 \code{NULL} (default) uses the \code{sec_y} column name. Automatically suffixed \code{"(rechteras)"}
