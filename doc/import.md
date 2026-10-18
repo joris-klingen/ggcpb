@@ -371,7 +371,6 @@ to, so a table for one `plot_type` does not necessarily match another.
 | setting | kind | default | example |
 |:---|:---|:---|:---|
 | axis_text_size | literal | 7 | 7 |
-| color_index | literal |  | 2;6 |
 | colour | column (from data_csv) |  | group |
 | colour_index | literal |  | 2;6 |
 | facet | column (from data_csv) |  | region |
@@ -481,7 +480,6 @@ to, so a table for one `plot_type` does not necessarily match another.
 |:---|:---|:---|:---|
 | axis_text_size | literal | 7 | 7 |
 | cap_width | literal | 0.25 | 0.25 |
-| color_index | literal |  | 2;6 |
 | colour | column (from data_csv) |  | group |
 | colour_index | literal |  | 2;6 |
 | facet | column (from data_csv) |  | region |
@@ -532,7 +530,6 @@ to, so a table for one `plot_type` does not necessarily match another.
 | setting | kind | default | example |
 |:---|:---|:---|:---|
 | axis_text_size | literal | 7 | 7 |
-| color_index | literal |  | 2;6 |
 | colour | column (from data_csv) |  | group |
 | colour_index | literal |  | 2;6 |
 | facet | column (from data_csv) |  | region |

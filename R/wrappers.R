@@ -1872,8 +1872,6 @@ cpb_area <- function(data, x, y, fill,
 #'   (default) uses `palette`, which is `"discrete"` for every wrapper
 #'   except [cpb_map()]. A keyword and a non-matching `palette` are a
 #'   conflict and raise an error, since both set the same thing.
-#' @param color_index American-spelling alias for `colour_index`; ignored
-#'   when `colour_index` is given.
 #' @param x_lim Optional length-2 vector zooming the `x` axis to a
 #'   range, without dropping data -- applied as a coordinate-system
 #'   zoom ([ggplot2::coord_cartesian()] `xlim`). `NULL` (default) shows
@@ -1945,7 +1943,6 @@ cpb_line <- function(data, x, y, colour = NULL,
                      sec_labels = NULL,
                      palette = "qualitative",
                       colour_index = NULL,
-                      color_index = NULL,
                       pct_axis = FALSE,
                       value_accuracy = NULL,
                       value_breaks = NULL,
@@ -1978,7 +1975,6 @@ cpb_line <- function(data, x, y, colour = NULL,
                      style = getOption("ggcpb.style", "dutch"),
                      ...) {
   style <- match.arg(style, c("dutch", "english"))
-  if (is.null(colour_index)) colour_index <- color_index
   .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette), "colour_index")
   index <- .cpb_idx$index
   palette <- .cpb_idx$palette
@@ -2900,7 +2896,6 @@ cpb_scatter <- function(data, x, y, colour = NULL,
                          symbol_size = 0.8,
                          palette = "qualitative",
                          colour_index = NULL,
-                         color_index = NULL,
                          pct_axis = FALSE,
                          value_accuracy = NULL,
                          value_breaks = NULL,
@@ -2931,7 +2926,6 @@ cpb_scatter <- function(data, x, y, colour = NULL,
                          style = getOption("ggcpb.style", "dutch"),
                          ...) {
   style <- match.arg(style, c("dutch", "english"))
-  if (is.null(colour_index)) colour_index <- color_index
   .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette), "colour_index")
   index <- .cpb_idx$index
   palette <- .cpb_idx$palette
@@ -3372,7 +3366,6 @@ cpb_dot <- function(data, x, y, lower, upper,
                     sec_labels = NULL,
                     palette = "qualitative",
                      colour_index = NULL,
-                     color_index = NULL,
                      pct_axis = FALSE,
                      value_accuracy = NULL,
                      value_breaks = NULL,
@@ -3401,7 +3394,6 @@ cpb_dot <- function(data, x, y, lower, upper,
                     style = getOption("ggcpb.style", "dutch"),
                     ...) {
   style <- match.arg(style, c("dutch", "english"))
-  if (is.null(colour_index)) colour_index <- color_index
   .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette), "colour_index")
   index <- .cpb_idx$index
   palette <- .cpb_idx$palette

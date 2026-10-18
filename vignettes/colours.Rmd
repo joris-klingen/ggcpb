@@ -37,8 +37,6 @@ coloured:
 * `fill_index` on the wrappers that map `fill` -- `cpb_col()`,
   `cpb_box()`, `cpb_hist()`, `cpb_map()`
 
-`color_index` is accepted wherever `colour_index` is.
-
 ```{r data}
 groei <- expand_grid(
   reeks = c("arbeidsproductiviteit", "tfp", "arbeidsvolume"),

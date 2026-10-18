@@ -22,13 +22,6 @@ test_that("colour_index keywords choose a palette", {
                cpb_pal("sequential")(3))
 })
 
-test_that("color_index is accepted as an alias", {
-  expect_equal(cols_of(cpb_line(d3, x = x, y = y, colour = g,
-                                color_index = c(2, 5, 6))),
-               cols_of(cpb_line(d3, x = x, y = y, colour = g,
-                                colour_index = c(2, 5, 6))))
-})
-
 test_that("fill_index works on the fill-mapped wrappers", {
   d <- data.frame(x = c("a", "b", "c"), y = 1:3, f = c("p", "q", "r"))
   fills <- unique(ggplot2::ggplot_build(
@@ -63,10 +56,12 @@ test_that("cpb_donut takes fill_index like the other fill charts", {
   expect_error(cpb_donut(d, fill = g, y = v, fill_index = "rainbow"), "not recognised")
 })
 
-test_that("the wrappers no longer have an index argument", {
+test_that("the wrappers have no index or color_index argument", {
   fns <- list(cpb_col, cpb_area, cpb_line, cpb_box, cpb_boxplot_extended,
               cpb_scatter, cpb_hist, cpb_dot, cpb_donut, cpb_map)
-  expect_false(any(vapply(fns, function(f) "index" %in% names(formals(f)), TRUE)))
+  has <- function(name) vapply(fns, function(f) name %in% names(formals(f)), TRUE)
+  expect_false(any(has("index")))
+  expect_false(any(has("color_index")))
 })
 
 test_that("cpb_map keeps its sequential default", {
