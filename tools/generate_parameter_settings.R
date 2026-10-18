@@ -109,7 +109,8 @@ for (pt in plot_types) {
   f <- formals(fn)
   col_args <- cpb_import_col_args[[pt]]
   for (nm in names(f)) {
-    if (nm %in% c("data", "...")) next
+    # a function cannot be given in a CSV
+    if (nm %in% c("data", "...", "x_labels")) next
     is_column <- nm %in% col_args
     default <- fmt_default(f[[nm]])
 
