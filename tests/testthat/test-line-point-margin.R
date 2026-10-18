@@ -158,3 +158,41 @@ test_that("value_crop works for histograms", {
   expect_equal(b$layout$panel_params[[1]]$y$continuous_range, c(0, 10))
   expect_equal(b$layout$coord$clip, "on")
 })
+
+test_that("value_crop crops cpb_dot and cpb_box, warns and renders", {
+  dot_df <- data.frame(x = c("a", "b", "c"), y = c(1, 2, 8),
+                       lower = c(0.5, 1.5, 6), upper = c(1.5, 2.5, 10))
+  box_df <- data.frame(groep = c("a", "b"), p5 = c(1, 2), p25 = c(2, 3),
+                       p50 = c(3, 4), p75 = c(4, 5), p95 = c(5, 9))
+  # coord_flip() makes the value axis x in the panel parameters
+  value_range <- function(b, orientation) {
+    pp <- b$layout$panel_params[[1]]
+    (if (orientation == "horizontal") pp$x else pp$y)$continuous_range
+  }
+  for (orientation in c("vertical", "horizontal")) {
+    expect_warning(
+      p <- cpb_dot(dot_df, x = x, y = y, lower = lower, upper = upper,
+                   value_limits = c(0, 4), value_crop = TRUE, orientation = orientation),
+      "shows only 0 to 4, so not all data is shown (the data runs from 0.5 to 10)",
+      fixed = TRUE
+    )
+    b <- ggplot2::ggplot_build(p)
+    expect_equal(value_range(b, orientation), c(0, 4))
+    expect_equal(b$layout$coord$clip, "on")
+    expect_no_error(ggplot2::ggsave(tempfile(fileext = ".png"), p, width = 4, height = 3))
+
+    expect_warning(
+      p <- cpb_box(box_df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+                   value_limits = c(0, 6), value_crop = TRUE, orientation = orientation),
+      "shows only 0 to 6, so not all data is shown (the data runs from 1 to 9)",
+      fixed = TRUE
+    )
+    b <- ggplot2::ggplot_build(p)
+    expect_equal(value_range(b, orientation), c(0, 6))
+    expect_equal(b$layout$coord$clip, "on")
+    expect_no_error(ggplot2::ggsave(tempfile(fileext = ".png"), p, width = 4, height = 3))
+  }
+  # data inside the window: no warning
+  expect_no_warning(cpb_box(box_df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75,
+                            p95 = p95, value_limits = c(0, 10), value_crop = TRUE))
+})
