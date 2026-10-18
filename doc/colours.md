@@ -10,13 +10,10 @@ set.seed(42)
 ```
 
 How series get their colours, and how to override them. Everything here
-applies equally to `cpb_line()` and `cpb_col()`; the only difference is
-the argument name, which follows the aesthetic being coloured:
-
-- `colour_index` on the wrappers that map `colour` – `cpb_line()`,
-  `cpb_scatter()`, `cpb_dot()`
-- `fill_index` on the wrappers that map `fill` – `cpb_col()`,
-  `cpb_box()`, `cpb_hist()`, `cpb_map()`
+applies equally to every chart: `colour_index` sets the colours, whether
+the chart fills its marks (`cpb_col()`, `cpb_box()`, `cpb_hist()`,
+`cpb_map()`, `cpb_donut()`) or colours them (`cpb_line()`,
+`cpb_scatter()`, `cpb_dot()`).
 
 ``` r
 groei <- expand_grid(
@@ -81,9 +78,9 @@ cpb_cols()
 #> "#64504b"
 ```
 
-Pass those positions to `colour_index` / `fill_index` to depart from the
-default order – `c(6, 2)` is the recurring blue/magenta pair, `8` the
-taupe used for a third, quieter series:
+Pass those positions to `colour_index` to depart from the default order
+– `c(6, 2)` is the recurring blue/magenta pair, `8` the taupe used for a
+third, quieter series:
 
 ``` r
 cpb_line(groei, x = jaar, y = waarde, colour = reeks,
@@ -96,7 +93,7 @@ cpb_line(groei, x = jaar, y = waarde, colour = reeks,
 
 ``` r
 cpb_col(tw, x = jaar, y = waarde, fill = sector,
-  fill_index = c(6, 5, 2, 4),
+  colour_index = c(6, 5, 2, 4),
   title = "Chosen by position: c(6, 5, 2, 4)",
   ylab  = "mld euro")
 ```
@@ -140,7 +137,7 @@ intensiteit <- expand_grid(jaar   = 2024:2027,
   mutate(n = round(runif(n(), 40, 220)))
 
 cpb_col(intensiteit, x = jaar, y = n, fill = klasse,
-  fill_index = "continuous",
+  colour_index = "continuous",
   title = "Ordered classes take the ramp",
   ylab  = "aantal personen, x 1000")
 ```
@@ -153,7 +150,7 @@ visible in the code:
 
 ``` r
 cpb_col(tw, x = jaar, y = waarde, fill = sector,
-  fill_index = "discrete",
+  colour_index = "discrete",
   title = "The default, named explicitly",
   ylab  = "mld euro")
 ```
@@ -172,20 +169,20 @@ still work, so pick one per call: a keyword that contradicts an explicit
 
 ``` r
 cpb_col(tw, x = jaar, y = waarde, fill = sector,
-  fill_index = "continuous",
+  colour_index = "continuous",
   palette    = "qualitative")
 #> Error:
-#> ! `fill_index = "continuous"` and `palette = "qualitative"` both set the palette, and they disagree. Pass one of them.
+#> ! `colour_index = "continuous"` and `palette = "qualitative"` both set the palette, and they disagree. Pass one of them.
 ```
 
 `palette` is also the way to reach a palette while still picking
-positions out of it, since `fill_index` can carry positions *or* a
+positions out of it, since `colour_index` can carry positions *or* a
 palette name, not both at once:
 
 ``` r
 cpb_col(intensiteit, x = jaar, y = n, fill = klasse,
   palette    = "blues",
-  fill_index = c(2, 3, 4, 5, 6),
+  colour_index = c(2, 3, 4, 5, 6),
   title = "Positions out of a named palette",
   ylab  = "aantal personen, x 1000")
 ```
@@ -223,12 +220,12 @@ cpb_line(filter(groei, reeks == "tfp"), x = jaar, y = waarde,
 
 # Summary
 
-| Goal                             | Argument                                |
-|----------------------------------|-----------------------------------------|
-| House colours, published order   | nothing – it is the default             |
-| Specific swatches                | `colour_index` / `fill_index = c(6, 2)` |
-| Ordered classes                  | `fill_index = "continuous"`             |
-| Name the default explicitly      | `fill_index = "discrete"`               |
-| Positions out of another palette | `palette =` plus positions              |
-| One series, one colour           | `line_colour` / `fill_colour`           |
-| Anything else                    | a plain `scale_*_manual()`              |
+| Goal                             | Argument                      |
+|----------------------------------|-------------------------------|
+| House colours, published order   | nothing – it is the default   |
+| Specific swatches                | `colour_index = c(6, 2)`      |
+| Ordered classes                  | `colour_index = "continuous"` |
+| Name the default explicitly      | `colour_index = "discrete"`   |
+| Positions out of another palette | `palette =` plus positions    |
+| One series, one colour           | `line_colour` / `fill_colour` |
+| Anything else                    | a plain `scale_*_manual()`    |

@@ -263,6 +263,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 
 | setting | kind | default | example |
 |:---|:---|:---|:---|
+| colour_index | literal |  | 2;6 |
 | flush_legend | literal | TRUE | TRUE |
 | legend | literal | bottom | bottom |
 | legend_ncol | literal |  | 2 |
@@ -282,7 +283,6 @@ to, so a table for one `plot_type` does not necessarily match another.
 | facet_scales | literal | fixed | fixed |
 | fill | column (from data_csv) |  | group |
 | fill_colour | literal |  | \#005faf |
-| fill_index | literal |  | 2;6 |
 | forecast_label | literal | raming | raming |
 | forecast_x | literal |  | 2025 |
 | grid_colour | literal | black | black |
@@ -332,7 +332,6 @@ to, so a table for one `plot_type` does not necessarily match another.
 | facet_ncol | literal |  | 2 |
 | facet_scales | literal | fixed | fixed |
 | fill | column (from data_csv) | (required) | group |
-| fill_index | literal |  | 2;6 |
 | forecast_label | literal | raming | raming |
 | forecast_x | literal |  | 2025 |
 | grid_colour | literal | black | black |
@@ -374,7 +373,6 @@ to, so a table for one `plot_type` does not necessarily match another.
 |:---|:---|:---|:---|
 | axis_text_size | literal | 7 | 7 |
 | colour | column (from data_csv) |  | group |
-| colour_index | literal |  | 2;6 |
 | facet | column (from data_csv) |  | region |
 | facet_ncol | literal |  | 2 |
 | facet_scales | literal | fixed | fixed |
@@ -432,7 +430,6 @@ to, so a table for one `plot_type` does not necessarily match another.
 | facet_scales | literal | fixed | fixed |
 | fill | column (from data_csv) |  | group |
 | fill_colour | literal |  | \#005faf |
-| fill_index | literal |  | 2;6 |
 | grid_colour | literal | black | black |
 | grid_linewidth | literal | 0.1 | 0.1 |
 | group | column (from data_csv) |  | sector |
@@ -485,7 +482,6 @@ to, so a table for one `plot_type` does not necessarily match another.
 | axis_text_size | literal | 7 | 7 |
 | cap_width | literal | 0.25 | 0.25 |
 | colour | column (from data_csv) |  | group |
-| colour_index | literal |  | 2;6 |
 | facet | column (from data_csv) |  | region |
 | facet_ncol | literal |  | 2 |
 | facet_scales | literal | fixed | fixed |
@@ -536,7 +532,6 @@ to, so a table for one `plot_type` does not necessarily match another.
 |:---|:---|:---|:---|
 | axis_text_size | literal | 7 | 7 |
 | colour | column (from data_csv) |  | group |
-| colour_index | literal |  | 2;6 |
 | facet | column (from data_csv) |  | region |
 | facet_ncol | literal |  | 2 |
 | facet_scales | literal | fixed | fixed |
@@ -575,7 +570,6 @@ to, so a table for one `plot_type` does not necessarily match another.
 | facet_scales | literal | fixed | fixed |
 | fill | column (from data_csv) |  | group |
 | fill_colour | literal |  | \#005faf |
-| fill_index | literal |  | 2;6 |
 | grid_colour | literal | black | black |
 | grid_linewidth | literal | 0.1 | 0.1 |
 | minor | literal | FALSE | FALSE |
@@ -600,7 +594,6 @@ to, so a table for one `plot_type` does not necessarily match another.
 | setting | kind | default | example |
 |:---|:---|:---|:---|
 | fill | column (from data_csv) | (required) | group |
-| fill_index | literal |  | 2;6 |
 | label | column (from data_csv) |  | name |
 | label_accuracy | literal | 1 | 1 |
 | label_colour | literal | black | black |

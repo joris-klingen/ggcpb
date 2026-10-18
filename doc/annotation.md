@@ -111,7 +111,7 @@ totaal <- dec |>
 
 cpb_col(dec, x = jaar, y = bijdrage, fill = component,
   position = "stack",
-  fill_index = c(2, 5, 6),
+  colour_index = c(2, 5, 6),
   width    = 0.75,
   title    = "Opbouw productiviteitsgroei",
   ylab     = "%") +
@@ -128,6 +128,26 @@ cpb_col(dec, x = jaar, y = bijdrage, fill = component,
 ```
 
 <img src="annotation_files/figure-gfm/overlay-1.png" alt="" width="350px" />
+
+# Keeping the legend’s space
+
+A figure without a legend gives its panel the room the legend would
+take, so it comes out taller than the stacked chart above. In a
+publication the figures of one spread should line up. With
+`legend = "filled-empty"` no legend is drawn, but its space stays empty,
+so this histogram has the same panel height as a figure with a legend:
+
+``` r
+duur <- tibble(maanden = round(rgamma(1200, 8, 0.6)))
+
+cpb_hist(duur, x = maanden, binwidth = 2,
+  legend = "filled-empty",
+  title  = "Verdeling van de duur",
+  ylab   = "aantal",
+  xlab   = "duur (maanden)")
+```
+
+<img src="annotation_files/figure-gfm/filled-empty-1.png" alt="" width="350px" />
 
 # Everything is a ggplot object
 

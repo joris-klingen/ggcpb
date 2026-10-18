@@ -145,7 +145,7 @@ kk2 |>
     p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
     fill     = jaar,
     position = position_dodge(width = 0.6),
-    fill_index = c(6, 2),
+    colour_index = c(6, 2),
     title    = "Koopkracht per jaar, 2026 en 2027",
     ylab     = "% koopkrachtmutatie")
 ```
@@ -173,7 +173,7 @@ cpb_box(kk3, x = groep,
   group    = grp,
   position = position_dodge(width = 0.6),
   orientation = "horizontal",
-  fill_index = c(6, 2),
+  colour_index = c(6, 2),
   reverse_legend = TRUE,
   title = "Koopkracht per jaar en inkomensgroep",
   ylab  = "% koopkrachtmutatie")

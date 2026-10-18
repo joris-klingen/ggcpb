@@ -74,9 +74,9 @@ cpb_map(gemeenten_ct, region = code, value = index,
 
 `level = "provincie"` draws the coarser province boundaries instead;
 `"corop"` works the same way for COROP regions. A discrete `value` gets
-the discrete CPB palette (pick colours with `fill_index`); a title that
-runs wider than the panel triggers a warning from `save_cpb()`, which
-suggests breaking it over two lines with `"\n"` – done here:
+the discrete CPB palette (pick colours with `colour_index`); a title
+that runs wider than the panel triggers a warning from `save_cpb()`,
+which suggests breaking it over two lines with `"\n"` – done here:
 
 ``` r
 provincies <- tibble(naam = unique(cpb_nl_geo("provincie")$name)) |>
@@ -86,7 +86,7 @@ provincies <- tibble(naam = unique(cpb_nl_geo("provincie")$name)) |>
   ))
 
 cpb_map(provincies, region = naam, value = klasse, level = "provincie",
-  fill_index = c(2, 6),
+  colour_index = c(2, 6),
   title = "Groei ten opzichte van het\nlandelijk gemiddelde")
 ```
 
