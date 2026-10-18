@@ -257,13 +257,13 @@ cpb_discrete_scale <- function(aesthetic = c("fill", "colour"), index = NULL,
 # @noRd
 cpb_numeric_legend_scale <- function(values, style = "dutch") {
   lims <- range(values, na.rm = TRUE)
-  n <- length(cpb_palette_colours("sequential"))
-  breaks <- unique(c(utils::head(seq(lims[1], lims[2], length.out = n), -1), lims[2]))
-  step <- diff(lims) / (n - 1)
-  # two significant digits of the step, without decimals that are always 0
-  accuracy <- if (step > 0) cpb_accuracy(round(breaks, 1 - floor(log10(step)))) else NULL
-  scale_colour_cpb_c(breaks = breaks, labels = label_number_nl(accuracy = accuracy, style = style),
-                     guide = "legend")
+  # equal steps between the data limits, labelled exactly
+  breaks <- cpb_axis_ticks(lims[1], lims[2], max_labels = 7)$breaks
+  scale_colour_cpb_c(
+    breaks = breaks,
+    labels = label_number_nl(accuracy = cpb_label_accuracy(breaks), style = style),
+    guide = "legend"
+  )
 }
 
 # Equally spaced ticks for a numeric x axis from `lo` to `hi` (the
@@ -807,22 +807,13 @@ cpb_sec_axis <- function(sec_map, accuracy = NULL, sec_axis_labels = NULL, style
     to_sec(c(sec_map$prim_min, sec_map$prim_max))
   }
 
-  # Resolve the label accuracy. label_number_nl(NULL) picks a precision
-  # fine enough to tell the breaks apart. On a forced linear split the
-  # breaks are arbitrary fractions (0.128333...), so cap that at one
-  # decimal -- but keep whole numbers when the steps are integers, and
-  # back off to the finer value if one decimal would collapse adjacent
-  # labels (a sec range only tenths wide). An explicit sec_accuracy wins.
+  # Resolve the label accuracy. On a forced linear split the breaks are
+  # arbitrary fractions (97.142857...), so the labels get as many
+  # decimals as it takes to stay true to the tick (cpb_label_accuracy()).
+  # An explicit sec_accuracy wins.
   acc <- accuracy
   if (is.null(acc) && is.null(sec_axis_labels) && isTRUE(sec_map$forced_linear)) {
-    detected <- cpb_accuracy(breaks_val)
-    if (is.null(detected)) detected <- 0.1
-    capped <- max(detected, 0.1)
-    shown_capped <- tryCatch(
-      label_number_nl(accuracy = capped, style = style)(breaks_val),
-      error = function(e) NULL
-    )
-    acc <- if (!is.null(shown_capped) && anyDuplicated(shown_capped) == 0) capped else detected
+    acc <- cpb_label_accuracy(breaks_val)
   }
 
   labels_arg <- if (!is.null(sec_axis_labels)) {

@@ -2232,3 +2232,35 @@ test_that("cpb_scatter x_labels formats the ticks and keeps both axis ends label
   expect_equal(x_axis()$labels[3], "2.000")
   expect_equal(x_axis(style = "english")$labels[3], "2,000")
 })
+
+test_that("a tick label names the value its tick sits at", {
+  parse_nl <- function(x) as.numeric(gsub(",", ".", gsub(".", "", x, fixed = TRUE), fixed = TRUE))
+  error <- function(breaks, labels) max(abs(parse_nl(labels) - breaks)) / diff(range(breaks))
+
+  # the helper: as coarse as the tolerance allows
+  expect_equal(cpb_label_accuracy(c(95, 97.142857, 99.285714, 110)), 0.01)
+  expect_equal(cpb_label_accuracy(c(0, 20, 40, 60)), 10)
+  expect_equal(cpb_label_accuracy(c(0, 25, 50, 75)), 1)
+  expect_equal(cpb_label_accuracy(c(1000, 2000, 3000)), 1000)
+  expect_null(cpb_label_accuracy(5))
+
+  # secondary axis with given limits: arbitrary fractions, labels stay within 0.1%
+  set.seed(11)
+  for (i in 1:25) {
+    base <- 10^runif(1, -2, 5)
+    s <- runif(1, -3, 3) * base + base * runif(7, 0.5, 1.5)
+    lim <- signif(range(s) + c(-1, 1) * diff(range(s)) * 0.1, 3)
+    d <- data.frame(x = 2019:2025, y = c(2, 6, 4, 8, 5, 3, 7), s = s)
+    ax <- ggplot2::ggplot_build(cpb_line(d, x = x, y = y, sec_y = s, sec_limits = lim))$layout$panel_params[[1]]$y.sec
+    true <- seq(lim[1], lim[2], length.out = length(ax$get_labels()))
+    expect_lte(error(true, ax$get_labels()), 0.001)
+  }
+
+  # the scatter colour legend: equal steps between the data limits, exact labels
+  d <- data.frame(x = 1:4, y = c(.1, .5, .3, .9), w = c(0.52, 0.8, 1.0, 1.18))
+  sc <- ggplot2::ggplot_build(cpb_scatter(d, x = x, y = y, colour = w))$plot$scales$get_scales("colour")
+  br <- sc$get_breaks(range(d$w))
+  expect_equal(range(br), range(d$w))
+  expect_equal(sc$get_labels(br), c("0,52", "0,63", "0,74", "0,85", "0,96", "1,07", "1,18"))
+  expect_equal(length(unique(round(diff(br), 9))), 1)
+})

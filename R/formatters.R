@@ -108,6 +108,20 @@ label_number_nl <- function(accuracy = NULL,
   }
 }
 
+# The coarsest label accuracy at which no label differs from its tick by
+# more than `tol` of the axis length, so a label never names a value the
+# tick is not at. NULL when `breaks` has no range.
+# @noRd
+cpb_label_accuracy <- function(breaks, tol = 0.001) {
+  breaks <- breaks[is.finite(breaks)]
+  span <- diff(range(breaks))
+  if (length(breaks) < 2 || !(span > 0)) return(NULL)
+  for (acc in 10^(3:-6)) {
+    if (max(abs(round(breaks / acc) * acc - breaks)) <= tol * span) return(acc)
+  }
+  1e-6
+}
+
 #' Determine required decimal accuracy for label_number_nl
 #' @noRd
 cpb_accuracy <- function(x) {
