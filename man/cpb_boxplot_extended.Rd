@@ -155,7 +155,8 @@ except \code{\link[=cpb_map]{cpb_map()}}. A keyword and a non-matching \code{pal
 conflict and raise an error, since both set the same thing.}
 
 \item{pct_axis}{If \code{TRUE}, format the value axis with
-\code{\link[=label_pct_nl]{label_pct_nl()}}.}
+\code{\link[=label_pct_nl]{label_pct_nl()}}, for values already in percentage points. With
+\code{position = "fill"} (proportions) the scale is 100 automatically.}
 
 \item{value_accuracy}{Rounding accuracy for the value axis labels,
 passed to \code{\link[=label_number_nl]{label_number_nl()}} (e.g. \code{0.1} for one decimal place).

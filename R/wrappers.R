@@ -1231,9 +1231,8 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   except [cpb_map()]. A keyword and a non-matching `palette` are a
 #'   conflict and raise an error, since both set the same thing.
 #' @param pct_axis If `TRUE`, format the value axis with
-#'   [label_pct_nl()]. Uses `scale = 100` automatically when
-#'   `position = "fill"` (proportions), and `scale = 1` otherwise
-#'   (values already in percentage points).
+#'   [label_pct_nl()], for values already in percentage points. With
+#'   `position = "fill"` (proportions) the scale is 100 automatically.
 #' @param value_accuracy Rounding accuracy for the value axis labels,
 #'   passed to [label_number_nl()] (e.g. `0.1` for one decimal place).
 #'   `NULL` (default) lets `scales` pick a sensible accuracy from the
@@ -1633,7 +1632,6 @@ cpb_col <- function(data, x, y, fill = NULL,
 #' @param sec_colour Colour for `sec_y`; defaults to `NULL`, which
 #'   resolves to the CPB pink (`cpb_cols(2)`, `"#e6006e"`) that sets it
 #'   apart from the blue-led area fills.
-#' @param pct_axis If `TRUE`, format the y axis with [label_pct_nl()].
 #' @param x_lim Optional length-2 vector zooming the `x` axis to a
 #'   range, without dropping data -- applied as a coordinate-system
 #'   zoom ([ggplot2::coord_cartesian()] `xlim`). `NULL` (default) shows
@@ -1876,7 +1874,6 @@ cpb_area <- function(data, x, y, fill,
 #'   conflict and raise an error, since both set the same thing.
 #' @param color_index American-spelling alias for `colour_index`; ignored
 #'   when `colour_index` is given.
-#' @param pct_axis If `TRUE`, format the y axis with [label_pct_nl()].
 #' @param x_lim Optional length-2 vector zooming the `x` axis to a
 #'   range, without dropping data -- applied as a coordinate-system
 #'   zoom ([ggplot2::coord_cartesian()] `xlim`). `NULL` (default) shows
@@ -2304,8 +2301,6 @@ cpb_line <- function(data, x, y, colour = NULL,
 #'   errorbars in the `"ggcpb"` style. Defaults to `0.25`, matching
 #'   the thin strokes of the published CPB distributional figures.
 #' @inheritParams cpb_col
-#' @param pct_axis If `TRUE`, format the value axis with
-#'   [label_pct_nl()].
 #' @param value_axis Where the value axis is drawn: `"bottom"`
 #'   (default) or `"top"`. `"top"` places the numeric scale along the
 #'   top of the panel, the convention of the CPB koopkracht figures;
@@ -2906,6 +2901,10 @@ cpb_scatter <- function(data, x, y, colour = NULL,
                          palette = "qualitative",
                          colour_index = NULL,
                          color_index = NULL,
+                         pct_axis = FALSE,
+                         value_accuracy = NULL,
+                         value_breaks = NULL,
+                         value_limits = NULL,
                          x_lim = NULL,
                          x_lim_follow_data = FALSE,
                          forecast_x = NULL,
@@ -2941,6 +2940,8 @@ cpb_scatter <- function(data, x, y, colour = NULL,
   colour <- rlang::enquo(colour)
   facet <- rlang::enquo(facet)
   has_colour <- !rlang::quo_is_null(colour)
+
+  scale_args <- cpb_value_scale(rlang::eval_tidy(y, data))
 
   if (is.null(zeroline)) {
     yvals <- rlang::eval_tidy(y, data)
@@ -2983,8 +2984,8 @@ cpb_scatter <- function(data, x, y, colour = NULL,
     p <- cpb_add_legend_guide(p, "colour", reverse_legend, legend_ncol, legend_nrow)
   }
 
-  # both axes are drawn flush at both ends via pretty() breaks -- kept
-  # coord-based (not a scale limits/expand, as in the other wrappers)
+  # both axes are drawn flush at both ends (the value axis as in the
+  # other wrappers, via cpb_value_scale()) -- kept coord-based (not a scale limits/expand, as in the other wrappers)
   # because a scatter plot's own follow-up scale_x_continuous() (e.g.
   # to add euro labels, a common real usage pattern) would otherwise
   # silently replace and discard the flush; coord survives that. Both
@@ -3005,19 +3006,18 @@ cpb_scatter <- function(data, x, y, colour = NULL,
     x_breaks <- pretty(x_data_range)
     flush_xlim <- range(x_breaks)
   }
-  y_breaks <- pretty(range(rlang::eval_tidy(y, data), na.rm = TRUE))
   # always off unless the caller explicitly zoomed with x_lim -- a
   # point can legitimately land exactly on either flush boundary, and
   # clip = "on" would cut half its symbol off there; an explicit
   # x_lim is a deliberate visual crop instead, so that one case keeps
   # clipping
   p <- p + ggplot2::coord_cartesian(
-    xlim = flush_xlim, ylim = range(y_breaks),
+    xlim = flush_xlim, ylim = range(scale_args$limits),
     expand = FALSE, clip = if (is.null(x_lim)) "off" else "on"
   )
   x_scale_args <- if (!is.null(x_breaks)) list(breaks = x_breaks) else list()
   p <- p + do.call(ggplot2::scale_x_continuous, x_scale_args) +
-    ggplot2::scale_y_continuous(breaks = y_breaks)
+    ggplot2::scale_y_continuous(breaks = scale_args$breaks, labels = scale_args$labels)
 
   p <- cpb_add_facet(p, facet, facet_ncol, facet_scales)
 
@@ -3277,14 +3277,6 @@ cpb_hist <- function(data, x, fill = NULL,
 #' @param palette CPB palette to use for `colour`; one of
 #'   `"qualitative"` (default), `"discr"`, `"sequential"`
 #'   (pink ramp), or `"blues"` (blue ramp).
-#' @param pct_axis If `TRUE`, format the value axis with
-#'   [label_pct_nl()].
-#' @param value_breaks Optional breaks for the value axis (passed to
-#'   [ggplot2::scale_y_continuous()]). These choose where the
-#'   ticks sit, not where the axis stops: if the data runs past the
-#'   outermost break, evenly spaced breaks are extended outward in
-#'   their own step until they cover it, so the axis still ends on a
-#'   labelled gridline and no value is hidden.
 #' @param x_lim Optional length-2 vector zooming the category (`x`)
 #'   axis to a range, without dropping data -- applied as a
 #'   coordinate-system zoom ([ggplot2::coord_cartesian()] /

@@ -543,11 +543,15 @@ to, so a table for one `plot_type` does not necessarily match another.
 | grid_colour | literal | black | black |
 | grid_linewidth | literal | 0.1 | 0.1 |
 | minor | literal | FALSE | FALSE |
+| pct_axis | literal | FALSE | FALSE |
 | reverse_legend | literal | FALSE | FALSE |
 | style | literal | dutch/english (default: dutch) | dutch/english (default: dutch) |
 | symbol_colour | literal |  | \#e6006e |
 | symbol_size | literal | 0.8 | 0.8 |
 | ticks | literal | TRUE | TRUE |
+| value_accuracy | literal |  | 0.1 |
+| value_breaks | literal |  | 0;25;50;75;100 |
+| value_limits | literal |  | 0;100 |
 | x | column (from data_csv) | (required) | year |
 | x_lim | literal |  | 2015;2025 |
 | x_lim_follow_data | literal | FALSE | FALSE |

@@ -192,7 +192,8 @@ conflict and raise an error, since both set the same thing.}
 when \code{colour_index} is given.}
 
 \item{pct_axis}{If \code{TRUE}, format the value axis with
-\code{\link[=label_pct_nl]{label_pct_nl()}}.}
+\code{\link[=label_pct_nl]{label_pct_nl()}}, for values already in percentage points. With
+\code{position = "fill"} (proportions) the scale is 100 automatically.}
 
 \item{value_accuracy}{Rounding accuracy for the value axis labels,
 passed to \code{\link[=label_number_nl]{label_number_nl()}} (e.g. \code{0.1} for one decimal place).
@@ -202,7 +203,9 @@ adding a second \code{scale_y_continuous()}, which would discard the
 wrapper's flush axis (see \code{value_breaks}).}
 
 \item{value_breaks}{Optional breaks for the value axis (passed to
-\code{\link[ggplot2:scale_y_continuous]{ggplot2::scale_y_continuous()}}). These choose where the
+the wrapper-built \code{\link[ggplot2:scale_y_continuous]{ggplot2::scale_y_continuous()}}). Use this
+instead of adding a second y scale, which would discard the
+wrapper's axis formatting and expansion. These choose where the
 ticks sit, not where the axis stops: if the data runs past the
 outermost break, evenly spaced breaks are extended outward in
 their own step until they cover it, so the axis still ends on a

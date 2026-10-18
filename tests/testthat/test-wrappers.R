@@ -2058,3 +2058,27 @@ test_that("symbol_size and symbol_colour set the symbols of line, scatter and do
   expect_equal(colour_of(cpb_dot(d, x = x, y = y, lower = lo, upper = hi,
                                  symbol_colour = "red")), "red")
 })
+
+test_that("cpb_scatter has the value axis arguments of the other charts", {
+  d <- data.frame(x = 1:4, y = c(2.2, 3.1, 2.7, 4.6))
+  y_scale <- function(p) ggplot2::ggplot_build(p)$layout$panel_params[[1]]$y
+  y_range <- function(p) y_scale(p)$continuous_range
+
+  # value_limits widens, value_breaks places the ticks
+  expect_equal(y_range(cpb_scatter(d, x = x, y = y, value_limits = c(0, 10))), c(0, 10))
+  expect_equal(y_scale(cpb_scatter(d, x = x, y = y, value_breaks = c(0, 2.5, 5)))$breaks,
+               c(0, 2.5, 5))
+
+  # labels follow style, and pct_axis / value_accuracy apply
+  labs <- function(...) y_scale(cpb_scatter(d, x = x, y = y, ...))$get_labels()
+  expect_equal(labs(value_breaks = c(2, 3, 4, 5)), c("2", "3", "4", "5"))
+  expect_equal(labs(value_breaks = 2:5, value_accuracy = 0.1),
+               c("2,0", "3,0", "4,0", "5,0"))
+  expect_equal(labs(value_breaks = 2:5, value_accuracy = 0.1, style = "english"),
+               c("2.0", "3.0", "4.0", "5.0"))
+  expect_equal(labs(value_breaks = c(2, 4, 6), pct_axis = TRUE), c("2%", "4%", "6%"))
+
+  # data is never cut off
+  expect_message(p <- cpb_scatter(d, x = x, y = y, value_limits = c(2, 3)), "runs past")
+  expect_gte(y_range(p)[2], 4.6)
+})
