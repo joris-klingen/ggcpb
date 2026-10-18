@@ -138,6 +138,25 @@ cpb_col(dec, x = jaar, y = bijdrage, fill = component,
   theme(legend.box = "horizontal", legend.box.just = "top")
 ```
 
+# Keeping the legend's space
+
+A figure without a legend gives its panel the room the legend would
+take, so it comes out taller than the stacked chart above. In a
+publication the figures of one spread should line up. With
+`legend = "filled-empty"` no legend is drawn, but its space stays
+empty, so this histogram has the same panel height as a figure with a
+legend:
+
+```{r filled-empty}
+duur <- tibble(maanden = round(rgamma(1200, 8, 0.6)))
+
+cpb_hist(duur, x = maanden, binwidth = 2,
+  legend = "filled-empty",
+  title  = "Verdeling van de duur",
+  ylab   = "aantal",
+  xlab   = "duur (maanden)")
+```
+
 # Everything is a ggplot object
 
 The wrappers do not draw anything -- they *return* a `ggplot` object
