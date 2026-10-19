@@ -25,13 +25,14 @@
   #
   # Deliberately only a message: resetting the session's locale as a
   # side effect of library() would be a surprising global change.
-  if (!cpb_utf8_locale()) {
+  # Not on Windows: its default code page (1252) covers the Dutch
+  # accents, and figures draw them correctly there.
+  if (!cpb_utf8_locale() && !identical(.Platform$OS.type, "windows")) {
     packageStartupMessage(
       "ggcpb: LC_CTYPE is '", Sys.getlocale("LC_CTYPE"), "', not UTF-8, so ",
       "accented\n  characters will be drawn as missing glyphs. Fix with e.g.\n",
       '  Sys.setlocale("LC_CTYPE", "C.UTF-8")',
-      "  (or start R with LC_ALL=C.UTF-8). On Windows use\n",
-      '  Sys.setlocale("LC_CTYPE", "English_United States.utf8").'
+      "  (or start R with LC_ALL=C.UTF-8)."
     )
   }
   invisible(NULL)
