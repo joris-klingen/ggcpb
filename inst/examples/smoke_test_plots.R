@@ -296,7 +296,7 @@ mod_dt <- data.table(
 # labelled breaks only, black ticks on the category axis, 7 pt axis
 # text, a flush-left bottom legend, a black zero line on the value
 # axis where zero is in range, and the CPB primary blue as the
-# single-series colour. (The titles avoid the em dash: the bundled
+# single-series colour. (The titles avoid the em dash: the
 # Rijksoverheid font has no glyph for it.)
 
 render(1, "line: single series",

@@ -134,8 +134,10 @@ test_that("the pinned axis text still disappears when a plot blanks it", {
 
 test_that("cpb_font_family falls back on devices without TTF lookup", {
   skip_if_not_installed("withr")
-  # the bundled font is registered in this session
-  expect_equal(cpb_font_family(), "RijksoverheidSansText")
+  # the font is registered in this session
+  family <- .ggcpb_env$font_family
+  expect_true(nzchar(family))
+  expect_equal(cpb_font_family(), family)
 
   f <- withr::local_tempfile(fileext = ".pdf")
   grDevices::pdf(f)
@@ -147,5 +149,5 @@ test_that("cpb_font_family falls back on devices without TTF lookup", {
   expect_no_error(print(cpb_col(df, x = x, y = y, title = "t", ylab = "u")))
   # escape hatch for showtext-style setups that draw text themselves
   withr::local_options(ggcpb.force_font_family = TRUE)
-  expect_equal(cpb_font_family(), "RijksoverheidSansText")
+  expect_equal(cpb_font_family(), family)
 })

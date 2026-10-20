@@ -21,13 +21,13 @@ test_that("cpb_scan_fonts() reads family and face from font metadata", {
   skip_if(!nzchar(dir) || !dir.exists(dir), "bundled fonts unavailable")
 
   found <- cpb_scan_fonts(dir)
-  expect_true(all(found$family == "RijksoverheidSansText"))
+  expect_true(all(found$family == "Source Sans 3"))
   # the bundled family ships exactly these three faces
   expect_setequal(found$face, c("plain", "bold", "italic"))
   # regression: font_info() returns weight as an ordered factor, so a
   # naive identical(weight, "bold") files the bold face under "plain"
   expect_equal(basename(found$file[found$face == "bold"]),
-               "RijksoverheidSansText-Bold_2_0.ttf")
+               "SourceSans3-Bold.ttf")
 })
 
 test_that("cpb_scan_fonts() falls back to the file name for unreadable files", {
@@ -45,7 +45,8 @@ test_that("cpb_scan_fonts() validates its path and searches recursively", {
 
   tmp <- withr::local_tempdir()
   dir.create(file.path(tmp, "nested"))
-  file.copy(cpb_font_files()$plain, file.path(tmp, "nested", "Reg.ttf"))
+  file.copy(system.file("fonts", "SourceSans3-Regular.ttf", package = "ggcpb"),
+            file.path(tmp, "nested", "Reg.ttf"))
   expect_equal(nrow(cpb_scan_fonts(tmp)), 0L)
   expect_equal(nrow(cpb_scan_fonts(tmp, recursive = TRUE)), 1L)
 })
@@ -55,7 +56,8 @@ test_that("cpb_register_fonts() reports what it registered", {
   expect_s3_class(res, "data.frame")
   expect_named(res, c("family", "faces", "n_files", "systemfonts",
                       "sysfonts", "windows"))
-  expect_equal(res$family, "RijksoverheidSansText")
+  expect_true(res$family %in% c(cpb_house_family, cpb_fallback_family))
+  expect_equal(.ggcpb_env$font_family, res$family)
   expect_true(res$systemfonts || res$sysfonts)
   expect_false(attr(res, "showtext"))
   # off Windows the base-device mapping is a documented no-op
@@ -68,12 +70,11 @@ test_that("cpb_register_fonts(path =) adds families without dropping the house o
   writeLines("not a font", file.path(tmp, "Extra-Regular.ttf"))
 
   res <- cpb_register_fonts(path = tmp, enable_showtext = FALSE)
-  expect_true("RijksoverheidSansText" %in% res$family)
+  expect_true(.ggcpb_env$font_family %in% res$family)
   expect_true("Extra" %in% res$family)
   # each family reported once, even when `path` re-registers the bundled one
   expect_false(any(duplicated(res$family)))
-  expect_true(cpb_font_family() == "RijksoverheidSansText" ||
-                cpb_font_family() == "")
+  expect_true(cpb_font_family() %in% c(.ggcpb_env$font_family, ""))
 })
 
 test_that("cpb_register_fonts() warns on a directory with no fonts", {
@@ -93,7 +94,7 @@ test_that("enable_showtext toggles showtext rendering", {
   # that does its own font lookup, rather than erroring on it
   p <- ggplot2::ggplot(data.frame(x = 1:3, y = 1:3), ggplot2::aes(x, y)) +
     ggplot2::geom_line() +
-    ggplot2::theme(text = ggplot2::element_text(family = "RijksoverheidSansText"))
+    ggplot2::theme(text = ggplot2::element_text(family = .ggcpb_env$font_family))
   f <- withr::local_tempfile(fileext = ".png")
   expect_silent({
     grDevices::png(f, width = 400, height = 300)
@@ -101,4 +102,57 @@ test_that("enable_showtext toggles showtext rendering", {
     grDevices::dev.off()
   })
   expect_gt(file.size(f), 0)
+})
+
+test_that("the Rijksoverheid font is taken from the first folder that has it", {
+  house <- cpb_font_files()
+  skip_if(house$family != cpb_house_family, "Rijksoverheid font not available")
+
+  empty <- withr::local_tempdir()
+  tmp <- withr::local_tempdir()
+  file.copy(house$faces[!is.na(house$faces)], tmp)
+  font <- cpb_font_files(c(file.path(empty, "missing"), empty, tmp))
+  expect_equal(font$family, cpb_house_family)
+  expect_equal(dirname(unname(font$faces[cpb_required_faces])), rep(tmp, 3))
+})
+
+test_that("without the Rijksoverheid font, the bundled Source Sans 3 stands in", {
+  font <- cpb_font_files(withr::local_tempdir())
+  expect_equal(font$family, cpb_fallback_family)
+  expect_equal(basename(unname(font$faces[cpb_required_faces])),
+               c("SourceSans3-Regular.ttf", "SourceSans3-Bold.ttf",
+                 "SourceSans3-It.ttf"))
+
+  # restore this session's font once the option is reset
+  withr::defer(cpb_register_fonts(enable_showtext = FALSE))
+  withr::local_options(ggcpb.font_path = withr::local_tempdir())
+  res <- cpb_register_fonts(enable_showtext = FALSE)
+  expect_equal(res$family, cpb_fallback_family)
+  expect_equal(cpb_font_family(), cpb_fallback_family)
+})
+
+test_that("save_cpb() and print() warn when the Rijksoverheid font is not used", {
+  # setup.R turns the warning off; "verbose" lifts print()'s once-only limit
+  withr::local_options(ggcpb.font_warning = TRUE, rlib_warning_verbosity = "verbose")
+  df <- data.frame(x = c("a", "b"), y = 1:2)
+  p <- cpb_col(df, x = x, y = y) +
+    ggplot2::theme(text = ggplot2::element_text(family = cpb_fallback_family))
+  path <- withr::local_tempfile(fileext = ".png")
+  expect_warning(save_cpb(path, p), "does not meet the Rijkshuisstijl requirements")
+
+  ragg::agg_png(withr::local_tempfile(fileext = ".png"))
+  withr::defer(grDevices::dev.off())
+  expect_warning(print(p), "does not meet the Rijkshuisstijl requirements")
+
+  withr::local_options(ggcpb.font_warning = FALSE)
+  expect_no_warning(save_cpb(path, p))
+})
+
+test_that("a plot in the Rijksoverheid font saves without the font warning", {
+  skip_if_not(identical(.ggcpb_env$font_family, cpb_house_family),
+              "Rijksoverheid font not available")
+  withr::local_options(ggcpb.font_warning = TRUE)
+  df <- data.frame(x = c("a", "b"), y = 1:2)
+  path <- withr::local_tempfile(fileext = ".png")
+  expect_no_warning(save_cpb(path, cpb_col(df, x = x, y = y)))
 })

@@ -19,8 +19,7 @@
 # The CPB palette and background/grid tokens are defined inline so the file
 # has no dependency on the package itself; ggcpb exposes the same values via
 # cpb_tokens(), cpb_cols() and cpb_pal(). Scripts that only did data
-# aggregation, and the ones that used the legacy nicerplot::nplot() wrapper
-# instead of raw ggplot2, are not represented here.
+# aggregation are not represented here.
 
 # Setup ----
 
