@@ -14,12 +14,16 @@ cpb_hist(
   outline = "white",
   position = "stack",
   palette = "qualitative",
-  fill_index = NULL,
-  index = NULL,
+  colour_index = NULL,
+  value_accuracy = NULL,
+  value_breaks = NULL,
+  value_limits = NULL,
+  value_crop = FALSE,
   x_lim = NULL,
   x_lim_follow_data = FALSE,
   reverse_legend = TRUE,
   legend_ncol = NULL,
+  legend_nrow = NULL,
   facet = NULL,
   facet_ncol = NULL,
   facet_scales = "fixed",
@@ -29,15 +33,14 @@ cpb_hist(
   ticks = TRUE,
   flush_legend = TRUE,
   axis_text_size = 7,
-  legend_key_size = NULL,
   grid_colour = "black",
   grid_linewidth = 0.1,
   title = NULL,
   subtitle = NULL,
   xlab = NULL,
   ylab = NULL,
-  filllab = NULL,
-  style = c("dutch", "english"),
+  legend_title = NULL,
+  style = getOption("ggcpb.style", "dutch"),
   ...
 )
 }
@@ -66,43 +69,77 @@ defaults to \code{"stack"}.}
 
 \item{palette}{CPB palette to use for \code{fill}; one of
 \code{"qualitative"} (default), \code{"discr"}, \code{"sequential"}
-(pink ramp), or \code{"blues"} (blue ramp).}
+(pink ramp), \verb{\\"blues\\"} (blue ramp) or \verb{\\"extended\\"}
+(20 categorical colours).}
 
-\item{fill_index}{Which house colours the series get. Either a vector
+\item{colour_index}{Which house colours the series get. Either a vector
 of palette positions -- \code{c(2, 5, 6)}, forwarded to
-\code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} -- or a keyword naming a palette:
+\code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} or \code{\link[=scale_colour_cpb_manual]{scale_colour_cpb_manual()}} -- or a keyword naming a palette:
 \code{"discrete"} for the qualitative house palette (blue, magenta,
-taupe, ...) and \code{"continuous"} for the sequential ramp. \code{NULL}
+taupe, ...) and \code{"continuous"} for the sequential ramp; the palette
+names (such as \code{"extended"}, 20 colours for charts with more than
+nine series) work as keywords too. \code{NULL}
 (default) uses \code{palette}, which is \code{"discrete"} for every wrapper
 except \code{\link[=cpb_map]{cpb_map()}}. A keyword and a non-matching \code{palette} are a
 conflict and raise an error, since both set the same thing.}
 
-\item{index}{Deprecated. Former name of
-\code{fill_index}. Still accepted, with a warning.}
+\item{value_accuracy}{Rounding accuracy for the value axis labels,
+passed to \code{\link[=label_number_nl]{label_number_nl()}} (e.g. \code{0.1} for one decimal place).
+\code{NULL} (default) lets \code{scales} pick a sensible accuracy from the
+breaks. Cannot be combined with \code{pct_axis}. Use this instead of
+adding a second \code{scale_y_continuous()}, which would discard the
+wrapper's flush axis (see \code{value_breaks}).}
+
+\item{value_breaks}{Optional breaks for the value axis (passed to
+the wrapper-built \code{\link[ggplot2:scale_y_continuous]{ggplot2::scale_y_continuous()}}). Use this
+instead of adding a second y scale, which would discard the
+wrapper's axis formatting and expansion. These choose where the
+ticks sit, not where the axis stops: if the data runs past the
+outermost break, evenly spaced breaks are extended outward in
+their own step until they cover it, so the axis still ends on a
+labelled gridline and no value is hidden.}
+
+\item{value_limits}{Optional length-2 numeric vector giving the span
+the value axis must \emph{at least} cover -- typically to force it wider
+than the data needs, e.g. always showing zero, or a fixed range
+shared across several figures. It is a minimum, not a crop: when
+the data fits inside it, the axis shows exactly those limits, with
+equal steps; where the data runs past it the axis is widened to
+round values (with a message), so no value is ever hidden. \code{NULL}
+(default) flushes to the full data range (for boxes p5 to p95, for
+the dot chart the interval bounds; see \code{x_lim}/\code{x_lim_follow_data}
+for the category axis's equivalent). To show only the limits, use
+\code{value_crop}.}
+
+\item{value_crop}{If \code{TRUE}, \code{value_limits} is a window instead of a
+minimum: the axis is exactly those limits, with equal steps, and
+values outside are cut off at the edge. A warning says when not all
+data is shown. Needs \code{value_limits}. Default \code{FALSE}.}
 
 \item{x_lim}{Optional length-2 vector zooming the \code{x} axis to a
 range, without dropping data. Bins are computed from the full
 data first, so this only ever changes what is visible, never the
 binning itself. \code{NULL} (default) shows the full range.}
 
-\item{x_lim_follow_data}{If \code{TRUE}, remove the default margin on
-either side of the \code{x} axis so it sits flush to the data's actual
-range, at the cost of ggplot2 picking its own breaks within that
-(possibly non-round) range instead of the usual padded, evenly
-spaced ones. Matches nicerplot's parameter of the same name.
-Defaults to \code{FALSE}. Ignored when \code{x_lim} is set.}
+\item{x_lim_follow_data}{If \code{TRUE}, the \code{x} axis ends exactly at the
+outer bin edges instead of on round values. Both ends are still
+labelled. Defaults to \code{FALSE}. Ignored when \code{x_lim} is set.}
 
 \item{reverse_legend}{If \code{TRUE} (default), reverse the fill legend
 order via \code{guide_legend(reverse = TRUE)}.}
 
 \item{legend_ncol}{Number of columns to lay the legend keys out in,
-passed to \code{guide_legend(ncol = )}. \code{NULL} (default) leaves the
-single flush-left column of the house style; \code{2} and up suit a
-legend with many short keys, such as binned classes from
-\code{\link[=cpb_cut]{cpb_cut()}}, which would otherwise run past the panel.}
+passed to \code{guide_legend(ncol = )}. \code{NULL} (default) keeps
+the house 3 keys per column, filled column by column. A set
+number spreads the keys over that many columns instead.}
+
+\item{legend_nrow}{Number of rows to lay the legend keys out in,
+passed to \code{guide_legend(nrow = )}. Combine with \code{legend_ncol} to
+pin both dimensions of the grid at once. \code{NULL} (default) keeps
+the house 3 rows.}
 
 \item{facet}{Optional column (tidy eval) to facet by. Facets follow
-the house (legacy nicerplot) convention: the facet title is a bold
+the house convention: the facet title is a bold
 strip \emph{below} each panel, and every panel is a complete
 mini-figure with its own axes and axis labels.}
 
@@ -118,20 +155,28 @@ mini-figure with its own axes and axis labels.}
 \item{zeroline}{If \code{TRUE} (default), draw a solid black line at
 zero on the count axis on top of the bars.}
 
-\item{minor, ticks, flush_legend, axis_text_size, legend_key_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}} for per-figure deviations from the
+\item{minor, ticks, flush_legend, axis_text_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}} for per-figure deviations from the
 house defaults.}
 
 \item{title, subtitle}{Plot title/subtitle.}
 
-\item{xlab, filllab}{Axis and legend title overrides; default to
-\code{NULL}, matching CPB house style.}
+\item{xlab}{Axis title override. Defaults to \code{NULL}, matching CPB
+house style.}
 
-\item{ylab}{Label for the count (y) axis, rendered as the plot
+\item{ylab}{Label for the histogram (y) axis, rendered as the plot
 \emph{subtitle} (e.g. \code{"aantal"}) unless an explicit \code{subtitle} is
 also given.}
 
+\item{legend_title}{Legend title, drawn in italic as the first row of
+the legend, with at most 2 rows of legend items below it (title and
+items together take the 3 rows a legend has without a title).
+\code{NULL} (default) draws no title, matching CPB house style.}
+
 \item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
-or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).}
+or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).
+Taken from \code{getOption("ggcpb.style")}, so an English report can set
+\code{options(ggcpb.style = "english")} once rather than passing \code{style} to
+every figure and risking a stray Dutch decimal comma.}
 
 \item{...}{Further arguments passed to \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}}.}
 }
@@ -141,7 +186,7 @@ A \code{ggplot} object.
 \description{
 Thin wrapper around \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}} with CPB theming
 applied: house-blue bars with white outlines, a black zero line and
-a count axis that starts on the axis line. Returns a real ggplot
+a histogram axis that starts on the axis line. Returns a real ggplot
 object that can be extended further with \code{+}.
 }
 \examples{

@@ -17,11 +17,11 @@ vertically grouped boxplot layout.
 
 # Facets
 
-Every wrapper accepts a `facet` column. Facets follow the house (legacy
-nicerplot) convention: the facet title is a bold strip *below* each
-panel, and every panel is a complete mini-figure with its own axes.
-Control the grid with `facet_ncol` and shared-versus-free axis ranges
-with `facet_scales` (`"fixed"` by default, so panels are directly
+Every wrapper accepts a `facet` column. Facets follow the house
+convention: the facet title is a bold strip *below* each panel, and
+every panel is a complete mini-figure with its own axes. Control the
+grid with `facet_ncol` and shared-versus-free axis ranges with
+`facet_scales` (`"fixed"` by default, so panels are directly
 comparable):
 
 ``` r
@@ -36,7 +36,7 @@ cpb_col(regios, x = jaar, y = waarde, fill = groep,
   position   = "dodge",
   facet      = regio,
   facet_ncol = 2,
-  fill_index = c(6, 2, 5),
+  colour_index = c(6, 2, 5),
   title = "Ontwikkeling per regio",
   ylab  = "mld euro")
 ```
@@ -65,7 +65,7 @@ zakkans <- tibble(
   pct   = c(8.7, 8.7, 9.7, 5.1, 11.2, 8.0, 8.1, 6.0))
 
 cpb_col(zakkans, x = cat, y = pct, fill = serie, group = grp,
-  position = "dodge", fill_index = c(6, 2), width = 0.75,
+  position = "dodge", colour_index = c(6, 2), width = 0.75,
   value_breaks = seq(0, 12, 2), value_limits = c(0, 12),
   title = "VWO", ylab = "zakkans (%)")
 ```

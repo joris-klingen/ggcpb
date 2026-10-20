@@ -12,15 +12,18 @@ cpb_map(
   border_colour = NULL,
   border_linewidth = 0.15,
   palette = "sequential",
-  fill_index = NULL,
-  index = NULL,
+  colour_index = NULL,
   reverse = FALSE,
   na_fill = NULL,
   legend = "topleft",
   flush_legend = TRUE,
+  reverse_legend = FALSE,
+  legend_ncol = NULL,
+  legend_nrow = NULL,
   title = NULL,
   subtitle = NULL,
-  filllab = NULL,
+  legend_title = NULL,
+  style = getOption("ggcpb.style", "dutch"),
   ...
 )
 }
@@ -47,9 +50,10 @@ thin seam that keeps adjacent regions legible without outlines.}
 
 \item{palette}{CPB palette for a \emph{discrete} \code{value} column; one of
 \code{"qualitative"}, \code{"discr"}, \code{"sequential"} (pink ramp), or
-\code{"blues"} (blue ramp -- the usual choice for classed maps).}
+\code{"blues"} (blue ramp -- the usual choice for classed maps), or
+\code{"extended"} (20 categorical colours).}
 
-\item{fill_index}{Which house colours the series get. Either a vector
+\item{colour_index}{Which house colours the series get. Either a vector
 of palette positions -- \code{c(2, 5, 6)}, forwarded to
 \code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} -- or a keyword naming a palette:
 \code{"discrete"} for the qualitative house palette (blue, magenta,
@@ -57,9 +61,6 @@ taupe, ...) and \code{"continuous"} for the sequential ramp. \code{NULL}
 (default) uses \code{palette}, which is \code{"discrete"} for every wrapper
 except \code{\link[=cpb_map]{cpb_map()}}. A keyword and a non-matching \code{palette} are a
 conflict and raise an error, since both set the same thing.}
-
-\item{index}{Deprecated. Former name of
-\code{fill_index}. Still accepted, with a warning.}
 
 \item{reverse}{For a numeric \code{value} column: reverse the sequential
 gradient (passed to \code{\link[=scale_fill_cpb_c]{scale_fill_cpb_c()}}).}
@@ -75,10 +76,19 @@ corner of the Netherlands -- as a vertical block. Any other value
 \item{flush_legend}{Anchor a \code{"bottom"} legend flush bottom-left, as
 in the other wrappers. Ignored when \code{legend = "topleft"}.}
 
+\item{reverse_legend, legend_ncol, legend_nrow}{For a discrete \code{value}:
+reverse the legend order, or lay it out in that many columns or
+rows, as in \code{\link[=cpb_col]{cpb_col()}}. A numeric \code{value} has a colourbar instead,
+reversed with \code{reverse}.}
+
 \item{title, subtitle}{Plot title/subtitle. As elsewhere, \code{ylab} does
 not exist here: use \code{subtitle} for the unit caption.}
 
-\item{filllab}{Legend title; defaults to \code{NULL} (no title).}
+\item{legend_title}{Legend title. Defaults to \code{NULL} (no title).}
+
+\item{style}{Number format of a numeric legend: \code{"dutch"} (default,
+\verb{,} decimal) or \code{"english"} (\code{.} decimal). Taken from
+\code{getOption("ggcpb.style")}, as in the other charts.}
 
 \item{...}{Further arguments passed to \code{\link[ggplot2:geom_polygon]{ggplot2::geom_polygon()}}.}
 }

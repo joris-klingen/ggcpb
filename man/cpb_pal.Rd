@@ -5,7 +5,7 @@
 \title{A CPB colour palette generator}
 \usage{
 cpb_pal(
-  palette = c("qualitative", "discr", "sequential", "blues"),
+  palette = c("qualitative", "discr", "sequential", "blues", "extended"),
   reverse = FALSE
 )
 }
@@ -13,7 +13,9 @@ cpb_pal(
 \item{palette}{One of \code{"qualitative"} (the primary 9-colour discrete
 palette), \code{"discr"} (the alternate blue/pink-led 7-colour discrete
 palette), \code{"sequential"} (the 6-colour light-to-dark pink ramp), or
-\code{"blues"} (the 6-colour light-to-dark blue ramp for classed fills).
+\code{"blues"} (the 6-colour light-to-dark blue ramp for classed fills),
+or \code{"extended"} (20 categorical colours: the nine of
+\code{"qualitative"} in the same order, then eleven more).
 Ramps are interpolated to any number of levels.}
 
 \item{reverse}{If \code{TRUE}, reverse the palette order before drawing

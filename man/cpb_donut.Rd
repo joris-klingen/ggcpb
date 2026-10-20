@@ -16,17 +16,18 @@ cpb_donut(
   legend_pct = FALSE,
   label_accuracy = 1,
   ring_width = 0.6,
-  panel_size = 1.8,
+  panel_size = NULL,
   palette = "qualitative",
-  index = NULL,
+  colour_index = NULL,
   reverse_legend = FALSE,
   legend_ncol = NULL,
+  legend_nrow = NULL,
   legend = "bottom",
   flush_legend = TRUE,
-  legend_key_size = NULL,
   title = NULL,
   subtitle = NULL,
-  filllab = NULL,
+  legend_title = NULL,
+  style = getOption("ggcpb.style", "dutch"),
   ...
 )
 }
@@ -73,7 +74,7 @@ unevenly sized, wedges where \code{"wedge"} would not.}
 
 \item{label_colour}{Colour of the printed wedge/leader labels.
 Defaults to \code{"black"}; pass \code{"white"} (or another colour) if your
-own \code{palette}/\code{index} choice comes out darker/more saturated (for
+own \code{palette}/\code{colour_index} choice comes out darker/more saturated (for
 \code{"wedge"} labels only -- \code{"leader"} labels sit outside the ring,
 against the plot background, so contrast doesn't depend on the
 wedge colours).}
@@ -104,20 +105,29 @@ Defaults to \code{0.6}.}
 
 \item{panel_size}{The ring's own physical size, in inches (a square
 panel; \code{coord_polar()} is aspect-locked so a single number is
-enough). Fixed regardless of the title or legend length, so the
-same donut always draws the same size -- unlike those, which
-overflow past the figure's edge if they do not fit rather than
-shrinking the ring to make room. Forwarded to \code{\link[=save_cpb]{save_cpb()}} as its
-\code{panel_size} (which can still override it at save time). Defaults
-to \code{1.8}.}
+enough). \code{NULL} (default) fills the room \code{\link[=save_cpb]{save_cpb()}}'s page height
+leaves between the fixed figure top and bottom, so a donut
+is as tall as any other figure: a 3.9 cm ring on the default
+7.5 cm page with a title. A number pins the ring to that size
+instead, and the figure's height then follows from it. Forwarded
+to \code{\link[=save_cpb]{save_cpb()}} as its \code{panel_size} (which can still override it
+at save time).}
 
 \item{palette}{CPB palette to use for \code{fill}; one of
 \code{"qualitative"} (default), \code{"discr"}, \code{"sequential"}
-(pink ramp), or \code{"blues"} (blue ramp).}
+(pink ramp), \verb{\\"blues\\"} (blue ramp) or \verb{\\"extended\\"}
+(20 categorical colours).}
 
-\item{index}{Optional integer vector of palette positions, forwarded
-to \code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} instead of the default
-\code{\link[=scale_fill_cpb_d]{scale_fill_cpb_d()}} when supplied.}
+\item{colour_index}{Which house colours the series get. Either a vector
+of palette positions -- \code{c(2, 5, 6)}, forwarded to
+\code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} or \code{\link[=scale_colour_cpb_manual]{scale_colour_cpb_manual()}} -- or a keyword naming a palette:
+\code{"discrete"} for the qualitative house palette (blue, magenta,
+taupe, ...) and \code{"continuous"} for the sequential ramp; the palette
+names (such as \code{"extended"}, 20 colours for charts with more than
+nine series) work as keywords too. \code{NULL}
+(default) uses \code{palette}, which is \code{"discrete"} for every wrapper
+except \code{\link[=cpb_map]{cpb_map()}}. A keyword and a non-matching \code{palette} are a
+conflict and raise an error, since both set the same thing.}
 
 \item{reverse_legend}{If \code{TRUE}, reverse the fill legend order via
 \code{guide_legend(reverse = TRUE)}. Defaults to \code{FALSE}.}
@@ -126,9 +136,14 @@ to \code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} instead of the 
 passed to \code{guide_legend(ncol = ...)}. \code{NULL} (default) keeps
 ggplot2's own single-row/column layout.}
 
+\item{legend_nrow}{Number of rows to lay the legend keys out in,
+passed to \code{guide_legend(nrow = ...)}. Combine with \code{legend_ncol}
+to pin both dimensions of the grid at once. \code{NULL} (default) keeps
+ggplot2's own sizing.}
+
 \item{legend}{Legend position, forwarded to \code{\link[=theme_cpb]{theme_cpb()}}.}
 
-\item{flush_legend, legend_key_size}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}} for
+\item{flush_legend}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}} for
 per-figure deviations from the house defaults. Unlike the other
 wrappers, \code{minor}, \code{ticks}, \code{axis_text_size}, \code{grid_colour} and
 \code{grid_linewidth} are not exposed here: a donut draws no axis or
@@ -136,8 +151,16 @@ gridlines for them to affect.}
 
 \item{title, subtitle}{Plot title/subtitle.}
 
-\item{filllab}{Legend title override; defaults to \code{NULL} (no
-title), matching CPB house style.}
+\item{legend_title}{Legend title, drawn in italic as the first row of
+the legend, with at most 2 rows of legend items below it (title and
+items together take the 3 rows a legend has without a title).
+\code{NULL} (default) draws no title, matching CPB house style.}
+
+\item{style}{Formatting style for the percentages: \code{"dutch"}
+(default, \verb{,} decimal) or \code{"english"} (\code{.} decimal). Taken from
+\code{getOption("ggcpb.style")}, so an English report can set
+\code{options(ggcpb.style = "english")} once rather than passing \code{style} to
+every figure and risking a stray Dutch decimal comma.}
 
 \item{...}{Further arguments passed to \code{\link[ggplot2:geom_col]{ggplot2::geom_col()}}.}
 }
@@ -159,6 +182,6 @@ df <- data.frame(
 )
 cpb_donut(df, fill = bron, y = share, label = mld,
   title = "Energiemix",
-  index = c(6, 2, 5, 1)
+  colour_index = c(6, 2, 5, 1)
 )
 }

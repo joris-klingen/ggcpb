@@ -37,3 +37,10 @@ test_that("an unknown token errors instead of returning NULL", {
   expect_equal(tok$bg, "#eef8ff")
   expect_equal(tok[["bg"]], "#eef8ff")
 })
+
+test_that("cpb_tokens includes the extended palette", {
+  tok <- cpb_tokens()
+  expect_false("lightgrey" %in% tok$colors_extended)
+  expect_length(tok$colors_extended, 20)
+  expect_equal(names(tok$colors_extended)[1:2], c("endeavour", "rose"))
+})

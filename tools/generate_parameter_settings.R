@@ -17,19 +17,19 @@ plot_types <- names(cpb_import_col_args)
 # plot_type + parameter, since the same name (x, fill, sec_y, ...)
 # means the same thing across every wrapper that has it.
 column_examples <- c(
-  x       = "jaar",
-  y       = "koopkracht",
-  fill    = "groep",
-  colour  = "groep",
+  x       = "year",
+  y       = "purchasing_power",
+  fill    = "group",
+  colour  = "group",
   group   = "sector",
-  facet   = "regio",
-  sec_y   = "werkloosheid",
-  label   = "naam",
-  lower   = "ondergrens",
-  upper   = "bovengrens",
-  ymin    = "ondergrens",
-  ymax    = "bovengrens",
-  mean    = "gemiddelde",
+  facet   = "region",
+  sec_y   = "unemployment",
+  label   = "name",
+  lower   = "lower_bound",
+  upper   = "upper_bound",
+  ymin    = "lower_bound",
+  ymax    = "upper_bound",
+  mean    = "mean",
   p5      = "p5",
   p25     = "p25",
   p50     = "p50",
@@ -44,18 +44,17 @@ column_examples <- c(
 # named choices) needs no entry here -- its own default already is a
 # valid example, and is used as one automatically below.
 literal_examples <- c(
-  title            = "Titel van de figuur",
-  subtitle         = "ondertitel (vervangt de standaard eenheid boven de figuur)",
-  xlab             = "eenheid onderaan de x-as",
-  ylab             = "% mutatie",
-  colourlab        = "titel van de kleurenlegenda",
-  filllab          = "titel van de vullingslegenda",
+  title            = "Title of the figure",
+  subtitle         = "subtitle (replaces the default unit above the figure)",
+  xlab             = "unit below the x axis",
+  ylab             = "% change",
+  legend_title     = "title of the legend",
   fill_colour      = "#005faf",
   line_colour      = "#005faf",
-  point_colour     = "#e6006e",
+  symbol_colour    = "#e6006e",
   sec_colour       = "#e6006e",
-  sec_label        = "naam van de tweede reeks",
-  sec_ylab         = "eenheid van de rechteras",
+  sec_legend_label = "name of the second series",
+  sec_ylab         = "unit of the right axis",
   sec_limits       = "0;100",
   sec_linewidth    = "0.55",
   sec_accuracy     = "0.1",
@@ -66,16 +65,13 @@ literal_examples <- c(
   forecast_x       = "2025",
   legend_ncol      = "2",
   facet_ncol       = "2",
-  legend_key_size  = "0.3",
   bins             = "30",
   binwidth         = "5",
   box_labels       = "TRUE",
-  dot_labels       = "p5:onderste 5%;p95:bovenste 5%",
+  dot_labels       = "p5:bottom 5%;p95:top 5%",
   zeroline         = "TRUE",
-  index            = "gebruik colour_index of fill_index in plaats hiervan",
   colour_index     = "2;6",
-  color_index      = "2;6",
-  fill_index       = "2;6"
+  colour_index       = "2;6"
 )
 
 fmt_default <- function(val) {
@@ -85,8 +81,8 @@ fmt_default <- function(val) {
   if (is.null(val)) {
     return(list(kind = "blank", text = "", is_blank = TRUE))
   }
-  # a call, e.g. c("stack", "dodge", "fill") or size (another
-  # argument's own default, e.g. sec_point_size = size): evaluate a
+  # a call, e.g. c("stack", "dodge", "fill") or symbol_size (another
+  # argument's own default, e.g. sec_symbol_size = symbol_size): evaluate a
   # literal vector, otherwise fall back to its deparsed source text
   evaluated <- tryCatch(eval(val), error = function(e) NULL)
   if (is.character(evaluated) && length(evaluated) > 1) {
@@ -113,7 +109,8 @@ for (pt in plot_types) {
   f <- formals(fn)
   col_args <- cpb_import_col_args[[pt]]
   for (nm in names(f)) {
-    if (nm %in% c("data", "...")) next
+    # a function cannot be given in a CSV
+    if (nm %in% c("data", "...", "x_labels")) next
     is_column <- nm %in% col_args
     default <- fmt_default(f[[nm]])
 

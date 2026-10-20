@@ -8,8 +8,8 @@ cpb_tokens()
 }
 \value{
 A named list (classed \code{"cpb_tokens"}) with elements
-\code{colors}, \code{colors_discr}, \code{colors_scale}, \code{colors_blues}
-(character vectors of data colours), \code{bg}, \code{grid}, \code{na},
+\code{colors}, \code{colors_discr}, \code{colors_scale}, \code{colors_blues},
+\code{colors_extended} (character vectors of data colours), \code{bg}, \code{grid}, \code{na},
 \code{table_header}, \code{table_total} (single hex strings).
 }
 \description{

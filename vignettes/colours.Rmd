@@ -11,8 +11,8 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.width = 2.98,
-  fig.height = 2.98,
+  fig.width = 7.5 / 2.54,
+  fig.height = 7.5 / 2.54,
   dpi = 300,
   out.width = "350px",
   dev = if (requireNamespace("ragg", quietly = TRUE)) "ragg_png" else "png"
@@ -28,16 +28,10 @@ set.seed(42)
 ```
 
 How series get their colours, and how to override them. Everything
-here applies equally to `cpb_line()` and `cpb_col()`; the only
-difference is the argument name, which follows the aesthetic being
-coloured:
-
-* `colour_index` on the wrappers that map `colour` -- `cpb_line()`,
-  `cpb_scatter()`, `cpb_dot()`
-* `fill_index` on the wrappers that map `fill` -- `cpb_col()`,
-  `cpb_area()`, `cpb_box()`, `cpb_hist()`, `cpb_map()`
-
-`color_index` is accepted wherever `colour_index` is.
+here applies equally to every chart: `colour_index` sets the colours,
+whether the chart fills its marks (`cpb_col()`, `cpb_box()`,
+`cpb_hist()`, `cpb_map()`, `cpb_donut()`) or colours them (`cpb_line()`,
+`cpb_scatter()`, `cpb_dot()`).
 
 ```{r data}
 groei <- expand_grid(
@@ -92,7 +86,7 @@ position, which is how CPB source scripts refer to them:
 cpb_cols()
 ```
 
-Pass those positions to `colour_index` / `fill_index` to depart from
+Pass those positions to `colour_index` to depart from
 the default order -- `c(6, 2)` is the recurring blue/magenta pair,
 `8` the taupe used for a third, quieter series:
 
@@ -105,13 +99,24 @@ cpb_line(groei, x = jaar, y = waarde, colour = reeks,
 
 ```{r positions-col}
 cpb_col(tw, x = jaar, y = waarde, fill = sector,
-  fill_index = c(6, 5, 2, 4),
+  colour_index = c(6, 5, 2, 4),
   title = "Chosen by position: c(6, 5, 2, 4)",
   ylab  = "mld euro")
 ```
 
 Position numbers stay stable regardless of the default order, so
 `cpb_cols(6)` is the primary blue whatever else changes.
+
+If more colours are needed, `palette = "extended"` has 20 distinct
+colours.
+
+```{r extended, echo = FALSE, fig.width = 15.5 / 2.54, fig.height = 2.1, out.width = "700px"}
+ext <- cpb_cols(palette = "extended")
+op <- par(mar = c(5, 0, 0.5, 0), bg = cpb_tokens()$bg)
+barplot(rep(1, 20), col = ext, border = NA, space = 0.1, axes = FALSE,
+        names.arg = names(ext), las = 2, cex.names = 0.6)
+par(op)
+```
 
 ## When the order matters
 
@@ -142,7 +147,7 @@ intensiteit <- expand_grid(jaar   = 2024:2027,
   mutate(n = round(runif(n(), 40, 220)))
 
 cpb_col(intensiteit, x = jaar, y = n, fill = klasse,
-  fill_index = "continuous",
+  colour_index = "continuous",
   title = "Ordered classes take the ramp",
   ylab  = "aantal personen, x 1000")
 ```
@@ -153,7 +158,7 @@ be visible in the code:
 
 ```{r discrete-keyword}
 cpb_col(tw, x = jaar, y = waarde, fill = sector,
-  fill_index = "discrete",
+  colour_index = "discrete",
   title = "The default, named explicitly",
   ylab  = "mld euro")
 ```
@@ -170,18 +175,18 @@ explicit `palette` is an error rather than a silent winner.
 
 ```{r conflict, error = TRUE}
 cpb_col(tw, x = jaar, y = waarde, fill = sector,
-  fill_index = "continuous",
+  colour_index = "continuous",
   palette    = "qualitative")
 ```
 
 `palette` is also the way to reach a palette while still picking
-positions out of it, since `fill_index` can carry positions *or* a
+positions out of it, since `colour_index` can carry positions *or* a
 palette name, not both at once:
 
 ```{r palette-plus-positions}
 cpb_col(intensiteit, x = jaar, y = n, fill = klasse,
   palette    = "blues",
-  fill_index = c(2, 3, 4, 5, 6),
+  colour_index = c(2, 3, 4, 5, 6),
   title = "Positions out of a named palette",
   ylab  = "aantal personen, x 1000")
 ```
@@ -214,9 +219,9 @@ cpb_line(filter(groei, reeks == "tfp"), x = jaar, y = waarde,
 | Goal | Argument |
 | --- | --- |
 | House colours, published order | nothing -- it is the default |
-| Specific swatches | `colour_index` / `fill_index = c(6, 2)` |
-| Ordered classes | `fill_index = "continuous"` |
-| Name the default explicitly | `fill_index = "discrete"` |
+| Specific swatches | `colour_index = c(6, 2)` |
+| Ordered classes | `colour_index = "continuous"` |
+| Name the default explicitly | `colour_index = "discrete"` |
 | Positions out of another palette | `palette =` plus positions |
 | One series, one colour | `line_colour` / `fill_colour` |
 | Anything else | a plain `scale_*_manual()` |

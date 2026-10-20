@@ -51,7 +51,7 @@
 #'   here (CPB legends show plain colour squares, not miniature
 #'   boxplots) to read against `panel_fill`'s light background instead
 #'   of the usual white one.
-#' @param minor,ticks,flush_legend,axis_text_size,legend_key_size,grid_linewidth
+#' @param minor,ticks,flush_legend,axis_text_size,grid_linewidth
 #'   Forwarded to [theme_cpb()] for per-figure deviations from the
 #'   house defaults -- documented here rather than left to
 #'   `@inheritParams cpb_box` above, since that tag shares a single
@@ -66,29 +66,34 @@
 #'   (`axis.line.x.top`/`axis.line.x.bottom` when `orientation` is
 #'   `"horizontal"`, `axis.line.y` when `"vertical"`); defaults to
 #'   `0.7`.
-#' @param zero_indicator If `TRUE` (default), draw a thick white
+#' @param zero_indicator Draw a thick white
 #'   reference line at zero underneath every other layer, standing in
 #'   for [cpb_box()]'s own black `zeroline` (forced off here, see
 #'   `zeroline` below) -- a black line reads poorly against
 #'   `panel_fill`'s light background, and this is drawn first so nothing
-#'   else is covered by it.
+#'   else is covered by it. `NULL` (default) draws it only when zero is
+#'   on the value axis. `TRUE` or `FALSE` turns it on or off.
 #' @param zero_indicator_linewidth Line width of the `zero_indicator`
 #'   line; defaults to `2`. [cpb_box()]'s own `zeroline` is not
 #'   exposed here at all (always off): it draws a black line, which
 #'   reads poorly against `panel_fill`'s light background, and the two
 #'   would otherwise draw one on top of the other.
-#' @param ylab_position Where the title (and, tied to it, the `ylab`
-#'   caption -- ggplot2 has no way to place them separately, since both
-#'   read off the same `plot.title.position` anchor) are placed:
-#'   `"left"`, flush with the full figure width, matching the plain
-#'   [cpb_box()]/[cpb_col()] house convention, or `"middle"`, centred
-#'   over just the panel, matching the boxed-in look `panel_fill`
-#'   gives this style. `NULL` (default) picks `"left"` when `facet` is
-#'   set and `"middle"` otherwise, matching every reference figure this
-#'   look has been checked against; pass one explicitly to override
-#'   that for a single figure.
+#' @param ylab_position Where the `ylab` caption (the value axis's
+#'   title) is placed.
+#'   * `"right"`: at the figure's right edge. With `facet`, every panel
+#'     gets its own caption, under its facet name.
+#'   * `"left"`: under the title, as in [cpb_box()] and [cpb_col()].
+#'   * `"middle"`: at the panel's left edge, with the title centred
+#'     over the panel.
+#'
+#'   `NULL` (default) picks `"right"` when the value axis is at the
+#'   top, and `"left"` otherwise (`orientation = "vertical"`,
+#'   `value_axis = "bottom"`).
 #' @param style Formatting style: `"dutch"` (default, `.` thousands, `,` decimal)
 #'   or `"english"` (`,` thousands, `.` decimal, English forecast / axis labels).
+#'   Taken from `getOption("ggcpb.style")`, so an English report can set
+#'   `options(ggcpb.style = "english")` once rather than passing `style` to
+#'   every figure and risking a stray Dutch decimal comma.
 #' @param ... Further arguments passed to both [ggplot2::geom_errorbar()]
 #'   and [ggplot2::geom_boxplot()], as in [cpb_box()].
 #' @return A `ggplot` object.
@@ -114,12 +119,12 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
                                   width = 0.45,
                                   linewidth = 0.25,
                                   palette = "qualitative",
-                                  fill_index = NULL,
-                                  index = NULL,
+                                  colour_index = NULL,
                                   pct_axis = FALSE,
                                   value_accuracy = NULL,
                                   value_breaks = NULL,
                                   value_limits = NULL,
+                                  value_crop = FALSE,
                                   value_axis = NULL,
                                   x_lim = NULL,
                                   x_lim_follow_data = TRUE,
@@ -127,40 +132,43 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
                                   sec_y = NULL,
                                   sec_type = c("line", "point", "col"),
                                   sec_limits = NULL,
-                                  sec_label = NULL,
+                                  sec_legend_label = NULL,
                                   sec_ylab = NULL,
                                   sec_colour = NULL,
                                   sec_linewidth = 0.55,
                                   sec_points = FALSE,
-                                  sec_point_size = 1.6,
+                                  sec_symbol_size = 1.6,
                                   sec_col_width = 0.3,
                                   sec_accuracy = NULL,
+                                  sec_scale_auto = TRUE,
+                                  sec_at = NULL,
+                                  sec_axis_labels = NULL,
                                   facet = NULL,
                                   facet_ncol = NULL,
                                   facet_scales = "fixed",
                                   legend = "bottom",
                                   reverse_legend = FALSE,
                                   legend_ncol = NULL,
+                                  legend_nrow = NULL,
                                   minor = FALSE,
                                   ticks = FALSE,
                                   flush_legend = TRUE,
                                   axis_text_size = 7,
-                                  legend_key_size = NULL,
                                   grid_colour = "white",
                                   grid_linewidth = 0.8,
                                   title = NULL,
                                   subtitle = NULL,
                                   xlab = NULL,
                                   ylab = NULL,
-                                  filllab = NULL,
+                                  legend_title = NULL,
                                   panel_fill = "#eef8ff",
                                   value_axis_linewidth = 0.7,
-                                  zero_indicator = TRUE,
+                                  zero_indicator = NULL,
                                   zero_indicator_linewidth = 2,
                                   ylab_position = NULL,
-                                  style = c("dutch", "english"),
+                                  style = getOption("ggcpb.style", "dutch"),
                                   ...) {
-  style <- match.arg(style)
+  style <- match.arg(style, c("dutch", "english"))
   box_style <- match.arg(box_style)
   orientation <- match.arg(orientation)
   has_facet <- !rlang::quo_is_null(rlang::enquo(facet))
@@ -171,12 +179,11 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
     value_axis <- match.arg(value_axis, c("top", "bottom"))
   }
   if (is.null(ylab_position)) {
-    # matches the look every current reference figure was checked
-    # against: a faceted figure keeps the flush-left full-width title,
-    # a single-panel one gets the centred-over-panel title
-    ylab_position <- if (has_facet) "left" else "middle"
+    # on the right, the caption reads as the top value axis's own title
+    # rather than as part of the plot title above it
+    ylab_position <- if (orientation == "horizontal" && value_axis == "top") "right" else "left"
   } else {
-    ylab_position <- match.arg(ylab_position, c("left", "middle"))
+    ylab_position <- match.arg(ylab_position, c("left", "middle", "right"))
   }
 
   p <- cpb_box(data,
@@ -186,26 +193,28 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
     group = {{ group }}, group_gap = group_gap,
     box_style = box_style, dot_labels = dot_labels, box_labels = box_labels,
     label_accuracy = label_accuracy, width = width, linewidth = linewidth,
-    palette = palette, fill_index = fill_index, index = index,
+    palette = palette, colour_index = colour_index,
     pct_axis = pct_axis, value_accuracy = value_accuracy,
-    value_breaks = value_breaks, value_limits = value_limits,
+    value_breaks = value_breaks, value_limits = value_limits, value_crop = value_crop,
     value_axis = value_axis, x_lim = x_lim,
     x_lim_follow_data = x_lim_follow_data, orientation = orientation,
     sec_y = {{ sec_y }}, sec_type = sec_type, sec_limits = sec_limits,
-    sec_label = sec_label, sec_ylab = sec_ylab, sec_colour = sec_colour,
+    sec_legend_label = sec_legend_label, sec_ylab = sec_ylab, sec_colour = sec_colour,
     sec_linewidth = sec_linewidth, sec_points = sec_points,
-    sec_point_size = sec_point_size, sec_col_width = sec_col_width,
-    sec_accuracy = sec_accuracy,
+    sec_symbol_size = sec_symbol_size, sec_col_width = sec_col_width,
+    sec_accuracy = sec_accuracy, sec_scale_auto = sec_scale_auto,
+    sec_at = sec_at, sec_axis_labels = sec_axis_labels,
     facet = {{ facet }}, facet_ncol = facet_ncol, facet_scales = facet_scales,
     legend = legend, reverse_legend = reverse_legend, legend_ncol = legend_ncol,
+    legend_nrow = legend_nrow,
     # cpb_box()'s own zeroline is always off: zero_indicator below
     # replaces it, see the `zero_indicator_linewidth` @param for why
     zeroline = FALSE,
     minor = minor, ticks = ticks, flush_legend = flush_legend,
-    axis_text_size = axis_text_size, legend_key_size = legend_key_size,
+    axis_text_size = axis_text_size,
     grid_colour = grid_colour, grid_linewidth = grid_linewidth,
     title = title, subtitle = subtitle, xlab = xlab, ylab = ylab,
-    filllab = filllab, style = style, ...
+    legend_title = legend_title, style = style, ...
   )
 
   # the value axis is x post-coord_flip() when horizontal, y when not
@@ -246,38 +255,48 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
     strip.placement       = "outside"
   ) + theme_extra
 
-  # ggplot2 has no separate `plot.subtitle.position`: title, subtitle
-  # and caption always share the one `plot.title.position` anchor
-  # (`"plot"`, flush with the full figure width, or `"panel"`, flush
-  # with just the panel) -- so `ylab_position` moves the title and the
-  # `ylab` caption together, not `ylab` alone. `"left"` keeps the house
-  # full-width, left-aligned title (theme_cpb()'s own default -- kept
-  # explicit here rather than relied on, so this look does not silently
-  # change if that default ever does); `"middle"` centres the title
-  # over just the panel, which reads better once the panel is visually
-  # boxed in by panel_fill.
-  p <- p + if (ylab_position == "left") {
-    ggplot2::theme(
+  # Read by cpb_figure_top() (save.R), which places the title and the
+  # `ylab` caption. The theme below gives the same placement to a plot
+  # drawn without that fixed top (a legend that is not at the bottom).
+  # There ggplot2 anchors title and subtitle together
+  # (`plot.title.position`), so "middle" moves both over the panel.
+  attr(p, "cpb_ylab_position") <- ylab_position
+  p <- p + switch(ylab_position,
+    left = ggplot2::theme(
       plot.title.position = "plot",
       plot.title          = ggplot2::element_text(hjust = 0)
-    )
-  } else {
-    ggplot2::theme(
+    ),
+    right = ggplot2::theme(
+      plot.title.position = "plot",
+      plot.title          = ggplot2::element_text(hjust = 0),
+      plot.subtitle       = ggplot2::element_text(hjust = 1)
+    ),
+    middle = ggplot2::theme(
       plot.title.position = "panel",
       plot.title          = ggplot2::element_text(hjust = 0.5)
     )
-  }
+  )
 
   if (has_facet) {
     # strip.position is a facet_wrap() construction argument, not a
     # theme setting -- cpb_add_facet() (see wrappers.R) always draws
-    # it at the bottom (the legacy nicerplot convention every other
+    # it at the bottom (the house convention every other
     # wrapper follows), so it is moved here instead of adding a
     # second, conflicting facet_wrap() layer just to change one of its
     # own arguments
     p$facet$params$strip.position <- "top"
+    # One column's worth of panels (each still needing its own
+    # category labels and, per box, a full whisker-to-whisker span) is
+    # rarely legible split across a half page's 7.5 cm. save_cpb()
+    # warns using this when asked to.
+    attr(p, "cpb_half_page_unsuitable") <- "an extended boxplot faceted into multiple panels"
   }
 
+  if (is.null(zero_indicator)) {
+    # the value axis range cpb_box() set on the coord
+    value_lims <- p$coordinates$limits$y
+    zero_indicator <- cpb_zeroline_auto(value_lims[1], value_lims[2])
+  }
   if (isTRUE(zero_indicator)) {
     p$layers <- c(
       ggplot2::geom_hline(
@@ -287,5 +306,6 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
     )
   }
 
+  ggplot2::set_last_plot(p)
   p
 }

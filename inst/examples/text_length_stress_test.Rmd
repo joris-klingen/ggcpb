@@ -656,9 +656,9 @@ show_map(map_dt, region = naam, value = waarde, level = "provincie",
   title = title_long, subtitle = ylab_long)
 ```
 
-## long legend title (filllab)
+## long legend title (legend_title)
 
-```{r map-long-filllab}
+```{r map-long-legend-title}
 show_map(map_dt, region = naam, value = waarde, level = "provincie",
-  title = title_short, subtitle = ylab_short, filllab = xlab_long)
+  title = title_short, subtitle = ylab_short, legend_title = xlab_long)
 ```

@@ -29,7 +29,7 @@ cpb_import_known_names <- function() {
 
 # One string value from a CSV cell -> an R value. A value containing ";"
 # becomes a vector, each piece coerced the same way (so "6;2" becomes the
-# numeric vector c(6, 2), matching e.g. index = c(6, 2)). Otherwise: a
+# numeric vector c(6, 2), matching e.g. colour_index = c(6, 2)). Otherwise: a
 # plain number if it looks like one, TRUE/FALSE if it reads as one, else
 # the string as-is.
 cpb_import_coerce_scalar <- function(x) {
@@ -76,7 +76,7 @@ cpb_import_sep_hint <- function(path, sep, actual_cols) {
     paste0(
       " Only ", actual_cols, " column(s) were found using ",
       "`sep = \"", sep, "\"`, but the first line looks like it might use a ",
-      best, " instead. Pass the matching `sep` to `import_csv()`, or ",
+      best, " instead. Pass the matching `sep` to `cpb_import_csv()`, or ",
       "resave the file using \"", sep, "\" throughout."
     )
   } else {
@@ -109,7 +109,7 @@ cpb_import_read_data <- function(data_csv, sep) {
   if (any(looks_numeric)) {
     stop("The first row of `data_csv` does not look like column names ",
       "(found ", paste0("\"", names(data_df)[looks_numeric], "\"", collapse = ", "),
-      "). `import_csv()` always reads the first row as the header; check ",
+      "). `cpb_import_csv()` always reads the first row as the header; check ",
       "that a real header row is there, and that no other line comes ",
       "before it.", cpb_import_sep_hint(data_csv, sep, ncol(data_df)),
       call. = FALSE
@@ -261,7 +261,7 @@ cpb_import_write_log <- function(params_csv, data_csv, entries) {
   log_path <- paste0(tools::file_path_sans_ext(params_csv), "_log.txt")
 
   header <- c(
-    paste0("ggcpb import_csv log -- ", format(Sys.time(), "%Y-%m-%d %H:%M:%S")),
+    paste0("ggcpb cpb_import_csv log -- ", format(Sys.time(), "%Y-%m-%d %H:%M:%S")),
     paste0("data:   ", data_csv),
     paste0("params: ", params_csv),
     ""
@@ -316,7 +316,7 @@ cpb_import_write_log <- function(params_csv, data_csv, entries) {
 #' arguments (`x`, `y`, `fill`, `colour`, `p5`..`p95`, `sec_y`, ...) take
 #' a column name from `data_csv`; everything else (`title`, `ylab`,
 #' `palette`, `pct_axis`, `sec_type`, ...) is a literal value. A cell
-#' containing `;` becomes a vector (e.g. `index` = `"6;2"` becomes
+#' containing `;` becomes a vector (e.g. `colour_index` = `"6;2"` becomes
 #' `c(6, 2)`). Blank
 #' cells, and any parameter name that isn't a real argument of the
 #' chosen wrapper, are simply skipped -- the wrapper's own default
@@ -358,14 +358,14 @@ cpb_import_write_log <- function(params_csv, data_csv, entries) {
 #'   several. Also writes a run log as a side effect -- see Details.
 #' @examples
 #' \dontrun{
-#' p <- import_csv("data.csv", "params.csv")
+#' p <- cpb_import_csv("data.csv", "params.csv")
 #' p
 #'
-#' ps <- import_csv("data.csv", "params_multi.csv")
+#' ps <- cpb_import_csv("data.csv", "params_multi.csv")
 #' ps$koopkracht
 #' }
 #' @export
-import_csv <- function(data_csv, params_csv, sep = ",", ...) {
+cpb_import_csv <- function(data_csv, params_csv, sep = ",", ...) {
   if (!file.exists(data_csv)) {
     stop("Data CSV file not found: ", data_csv, call. = FALSE)
   }
@@ -457,7 +457,7 @@ import_csv <- function(data_csv, params_csv, sep = ",", ...) {
 
 #' Copy a ready-to-run figure-generating kit to a folder
 #'
-#' `import_csv()` itself still needs R to be started by hand. This copies
+#' `cpb_import_csv()` itself still needs R to be started by hand. This copies
 #' a small kit to `dest`: an example `data.csv` and `params.csv`, a
 #' `run_import.R` script that reads them and saves each figure as a PNG
 #' in a `generated` subfolder, and two launchers that run it with a

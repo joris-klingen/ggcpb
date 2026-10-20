@@ -24,6 +24,23 @@ cpb_colors <- c(
 # with many series stays legible.
 cpb_series_order <- c(6, 2, 8, 7, 3, 5, 9, 1, 4)
 
+# extended categorical palette: 20 colours ----
+# The nine house colours in their cycling order (see cpb_series_order),
+# then eleven more, ordered so the next series stay easy to tell apart.
+# Named, so cpb_cols("apple", palette = "extended") works; the NA colour
+# is last, as in the other palettes. Used when a chart has more than nine
+# series (palette = "extended").
+cpb_colors_extended <- c(
+  endeavour = "#005faf", rose = "#e6006e", brown = "#96827d",
+  biscay = "#193c69", siren = "#820050", anakiwa = "#87d2ff",
+  dorado = "#64504b", mauvelous = "#F596AF", cold_turkey = "#d7c8c8",
+  sun = "#FBAD1D", apple = "#43B546", scarlet_gum = "#401663",
+  orange = "#FA6B09", turquoise = "#16A08C", purple1 = "#5A5895",
+  cerulean = "#00aeef", crimson = "#DC143C", green2 = "#A1C720",
+  leather = "#8B5E4F", kaitoke_green = "#00421C",
+  na = "lightgrey"
+)
+
 # alternate discrete ordering (blue/pink lead) ----
 cpb_colors_discr <- c(
   "#eb0073", "#005795", "#fad1e8", "#b7e4ff",
@@ -58,17 +75,20 @@ cpb_table_total  <- "#f08bb8"
 #' The last entry of each raw token vector is always the NA colour
 #' (`"lightgrey"`), not a data colour, so it is dropped here.
 #'
-#' @param palette One of `"qualitative"`, `"discr"`, `"sequential"`.
-#' @return An unnamed character vector of hex colours (data colours only).
+#' @param palette One of `"qualitative"`, `"discr"`, `"sequential"`,
+#'   `"blues"` or `"extended"`.
+#' @return A character vector of hex colours (data colours only); named
+#'   for `"extended"`, unnamed for the others.
 #' @noRd
-cpb_palette_colours <- function(palette = c("qualitative", "discr", "sequential", "blues")) {
+cpb_palette_colours <- function(palette = c("qualitative", "discr", "sequential", "blues", "extended")) {
   palette <- match.arg(palette)
   raw <- switch(
     palette,
     qualitative = cpb_colors,
     discr       = cpb_colors_discr,
     sequential  = cpb_colors_scale,
-    blues       = cpb_colors_blues
+    blues       = cpb_colors_blues,
+    extended    = cpb_colors_extended
   )
   # drop the trailing NA colour ("lightgrey") -- it is never a data colour
   utils::head(raw, -1L)
@@ -92,8 +112,8 @@ cpb_palette_colours <- function(palette = c("qualitative", "discr", "sequential"
 #' spelling (`colour`, `fill_colour`, `grid_colour`, ...).
 #'
 #' @return A named list (classed `"cpb_tokens"`) with elements
-#'   `colors`, `colors_discr`, `colors_scale`, `colors_blues`
-#'   (character vectors of data colours), `bg`, `grid`, `na`,
+#'   `colors`, `colors_discr`, `colors_scale`, `colors_blues`,
+#'   `colors_extended` (character vectors of data colours), `bg`, `grid`, `na`,
 #'   `table_header`, `table_total` (single hex strings).
 #' @examples
 #' cpb_tokens()$colors
@@ -106,6 +126,7 @@ cpb_tokens <- function() {
       colors_discr = cpb_palette_colours("discr"),
       colors_scale = cpb_palette_colours("sequential"),
       colors_blues = cpb_palette_colours("blues"),
+      colors_extended = cpb_palette_colours("extended"),
       bg           = cpb_bg,
       grid         = cpb_grid,
       na           = cpb_na,

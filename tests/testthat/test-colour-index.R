@@ -22,17 +22,10 @@ test_that("colour_index keywords choose a palette", {
                cpb_pal("sequential")(3))
 })
 
-test_that("color_index is accepted as an alias", {
-  expect_equal(cols_of(cpb_line(d3, x = x, y = y, colour = g,
-                                color_index = c(2, 5, 6))),
-               cols_of(cpb_line(d3, x = x, y = y, colour = g,
-                                colour_index = c(2, 5, 6))))
-})
-
-test_that("fill_index works on the fill-mapped wrappers", {
+test_that("colour_index works on the fill-mapped wrappers", {
   d <- data.frame(x = c("a", "b", "c"), y = 1:3, f = c("p", "q", "r"))
   fills <- unique(ggplot2::ggplot_build(
-    cpb_col(d, x = x, y = y, fill = f, fill_index = c(2, 5, 6)))$data[[1]]$fill)
+    cpb_col(d, x = x, y = y, fill = f, colour_index = c(2, 5, 6)))$data[[1]]$fill)
   expect_equal(fills, unname(cpb_cols(2, 5, 6)))
 })
 
@@ -55,19 +48,25 @@ test_that("bad colour_index values are rejected clearly", {
                "positive whole numbers")
 })
 
-test_that("the deprecated index argument still works, with a warning", {
-  expect_warning(p <- cpb_line(d3, x = x, y = y, colour = g, index = c(2, 5, 6)),
-                 "`index` is deprecated")
-  expect_equal(cols_of(p), unname(cpb_cols(2, 5, 6)))
+test_that("cpb_donut takes colour_index like the other fill charts", {
+  d <- data.frame(g = c("a", "b", "c"), v = c(3, 2, 1))
+  fills <- function(...) ggplot2::ggplot_build(cpb_donut(d, fill = g, y = v, ...))$data[[1]]$fill
+  expect_equal(fills(colour_index = c(2, 5, 6)), unname(cpb_cols(2, 5, 6)))
+  expect_equal(fills(colour_index = "discrete"), fills())
+  expect_error(cpb_donut(d, fill = g, y = v, colour_index = "rainbow"), "not recognised")
+})
 
-  expect_error(cpb_line(d3, x = x, y = y, colour = g,
-                        index = c(2), colour_index = c(3)),
-               "cannot both be set")
+test_that("the wrappers have no index or color_index argument", {
+  fns <- list(cpb_col, cpb_area, cpb_line, cpb_box, cpb_boxplot_extended,
+              cpb_scatter, cpb_hist, cpb_dot, cpb_donut, cpb_map)
+  has <- function(name) vapply(fns, function(f) name %in% names(formals(f)), TRUE)
+  expect_false(any(has("index")))
+  expect_false(any(has("color_index")))
 })
 
 test_that("cpb_map keeps its sequential default", {
   # a choropleth defaults to the ramp, not the discrete palette, so the
   # new argument must not force "discrete" on every wrapper
   expect_equal(eval(formals(cpb_map)$palette), "sequential")
-  expect_null(eval(formals(cpb_map)$fill_index))
+  expect_null(eval(formals(cpb_map)$colour_index))
 })

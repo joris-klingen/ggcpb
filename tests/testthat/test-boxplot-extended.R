@@ -76,12 +76,29 @@ test_that("cpb_boxplot_extended adds a white zero_indicator line underneath ever
   expect_false(any(vapply(p2$layers, function(l) inherits(l$geom, "GeomHline"), TRUE)))
 })
 
-test_that("cpb_boxplot_extended centres the title over the panel when there is no facet", {
+test_that("cpb_boxplot_extended draws zero_indicator only when zero is on the value axis", {
+  has_hline <- function(p) any(vapply(p$layers, function(l) inherits(l$geom, "GeomHline"), TRUE))
+  pos <- data.frame(cat = c("A", "B"), p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5)
+  p <- cpb_boxplot_extended(pos, x = cat, p5 = p5, p25 = p25, p50 = p50,
+                            p75 = p75, p95 = p95)
+  expect_false(has_hline(p))
+  expect_no_warning(ggplot2::ggplot_build(p))
+  # value_limits can bring zero onto the axis
+  expect_true(has_hline(cpb_boxplot_extended(pos, x = cat, p5 = p5, p25 = p25,
+                                             p50 = p50, p75 = p75, p95 = p95,
+                                             value_limits = c(0, 5))))
+  expect_true(has_hline(cpb_boxplot_extended(pos, x = cat, p5 = p5, p25 = p25,
+                                             p50 = p50, p75 = p75, p95 = p95,
+                                             zero_indicator = TRUE)))
+})
+
+test_that("cpb_boxplot_extended keeps the title on the left by default, caption on the right", {
   d <- local_boxplot_extended_data()
   p <- cpb_boxplot_extended(d, x = cat, p5 = p5, p25 = p25, p50 = p50,
                              p75 = p75, p95 = p95, title = "Titel")
-  expect_equal(p$theme$plot.title.position, "panel")
-  expect_equal(p$theme$plot.title$hjust, 0.5)
+  expect_equal(p$theme$plot.title.position, "plot")
+  expect_equal(p$theme$plot.title$hjust, 0)
+  expect_equal(p$theme$plot.subtitle$hjust, 1)
 })
 
 test_that("cpb_boxplot_extended keeps the full-width left-aligned title when faceted", {
@@ -95,10 +112,32 @@ test_that("cpb_boxplot_extended keeps the full-width left-aligned title when fac
   expect_equal(p$facet$params$strip.position, "top")
 })
 
-test_that("cpb_boxplot_extended's ylab_position overrides the facet-based default", {
+test_that("cpb_boxplot_extended puts ylab's caption on the right by default", {
   d <- local_boxplot_extended_data()
-  # no facet, forced to "left" (the faceted default) instead of the
-  # single-panel default "middle"
+  box <- function(...) {
+    cpb_boxplot_extended(d, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+                         title = "Titel", ylab = "%", ...)
+  }
+  caption <- function(p) {
+    g <- cpb_figure_top(cpb_figure_bottom(ggplot2::ggplotGrob(p), "none"), NULL, attr(p, "cpb_ylab_position"))
+    list(caption = g$grobs[[which(g$layout$name == "cpb-subtitle")]],
+         title = g$grobs[[which(g$layout$name == "cpb-title")]])
+  }
+  # value axis at the top: caption right-aligned, title still on the left
+  right <- caption(box())
+  expect_equal(attr(box(), "cpb_ylab_position"), "right")
+  expect_equal(right$caption$hjust, 1)
+  expect_equal(right$title$hjust, 0)
+  # no top value axis to belong to: under the title, as in cpb_box()
+  expect_equal(attr(box(orientation = "vertical"), "cpb_ylab_position"), "left")
+  expect_equal(attr(box(value_axis = "bottom"), "cpb_ylab_position"), "left")
+  expect_equal(caption(box(ylab_position = "left"))$caption$hjust, 0)
+  # "middle": title centred over the panel
+  expect_equal(caption(box(ylab_position = "middle"))$title$hjust, 0.5)
+})
+
+test_that("cpb_boxplot_extended's ylab_position sets the ggplot2 fallback theme too", {
+  d <- local_boxplot_extended_data()
   p_left <- cpb_boxplot_extended(d, x = cat, p5 = p5, p25 = p25, p50 = p50,
                                   p75 = p75, p95 = p95, title = "Titel",
                                   ylab_position = "left")
@@ -107,8 +146,6 @@ test_that("cpb_boxplot_extended's ylab_position overrides the facet-based defaul
 
   d2 <- rbind(d, d)
   d2$jaar <- rep(c(2025, 2026), each = 3)
-  # faceted, forced to "middle" (the single-panel default) instead of
-  # the faceted default "left"
   p_middle <- cpb_boxplot_extended(d2, x = cat, p5 = p5, p25 = p25, p50 = p50,
                                     p75 = p75, p95 = p95, title = "Titel",
                                     facet = jaar, ylab_position = "middle")
@@ -183,4 +220,29 @@ test_that("cpb_boxplot_extended's value_axis_linewidth defaults to 0.7 and is ov
   p2 <- cpb_boxplot_extended(d, x = cat, p5 = p5, p25 = p25, p50 = p50,
                               p75 = p75, p95 = p95, value_axis_linewidth = 1.2)
   expect_equal(p2$theme$axis.line.x.top$linewidth, 1.2)
+})
+
+test_that("a faceted cpb_boxplot_extended gets one caption per panel, under its facet name", {
+  d <- local_boxplot_extended_data()
+  d2 <- rbind(d, d)
+  d2$jaar <- rep(c(2025, 2026), each = 3)
+  p <- cpb_boxplot_extended(d2, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+                             facet = jaar, title = "Titel", ylab = "%")
+  g <- cpb_figure_top(cpb_figure_bottom(ggplot2::ggplotGrob(p), "none"), NULL, attr(p, "cpb_ylab_position"))
+  lay <- g$layout
+  caps <- lay[grepl("^cpb-subtitle-", lay$name), ]
+  strips <- lay[grepl("^strip-t", lay$name), ]
+  axes <- lay[grepl("^axis-t", lay$name), ]
+  panels <- lay[grepl("^panel", lay$name), ]
+  expect_equal(nrow(caps), 2)
+  # below the strip, above the axis, over its own panel's columns
+  expect_true(all(caps$t == strips$t[1] + 1))
+  expect_true(all(caps$t < min(axes$t)))
+  expect_equal(sort(caps$l), sort(panels$l))
+  expect_equal(g$grobs[[which(lay$name == caps$name[1])]]$hjust, 1)
+  # "left" keeps the single caption under the title
+  p_left <- cpb_boxplot_extended(d2, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+                                  facet = jaar, title = "Titel", ylab = "%", ylab_position = "left")
+  g_left <- cpb_figure_top(cpb_figure_bottom(ggplot2::ggplotGrob(p_left), "none"), NULL, "left")
+  expect_equal(sum(grepl("^cpb-subtitle", g_left$layout$name)), 1)
 })

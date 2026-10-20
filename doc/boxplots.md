@@ -136,16 +136,21 @@ grouped boxes – for example one pair of years per income group:
 kk2 <- expand_grid(kk, jaar = factor(c(2026, 2027))) |>
   mutate(across(p5:p95, \(q) q + (jaar == "2027") * 0.8))
 
-cpb_box(kk2, x = groep,
-  p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-  fill     = jaar,
-  position = position_dodge(width = 0.6),
-  fill_index = c(6, 2),
-  title    = "Koopkracht per jaar, 2026 en 2027",
-  ylab     = "% koopkrachtmutatie")
+kk2 |>
+  mutate(groep = factor(groep, labels = c(
+    "tot 120%\nwml", "120% wml\n- 1x mod.", "1 - 1,5x\nmod.", "1,5 - 2x\nmod.",
+    "2 - 3x\nmod.", "boven 3x\nmod."
+  ))) |>
+  cpb_box(x = groep,
+    p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+    fill     = jaar,
+    position = position_dodge(width = 0.6),
+    colour_index = c(6, 2),
+    title    = "Koopkracht per jaar, 2026 en 2027",
+    ylab     = "% koopkrachtmutatie")
 ```
 
-<img src="boxplots_files/figure-gfm/box-dodged-1.png" alt="" width="700px" />
+<img src="boxplots_files/figure-gfm/box-dodged-1.png" alt="" width="350px" />
 
 # Grouped, with a fill per year
 
@@ -168,7 +173,7 @@ cpb_box(kk3, x = groep,
   group    = grp,
   position = position_dodge(width = 0.6),
   orientation = "horizontal",
-  fill_index = c(6, 2),
+  colour_index = c(6, 2),
   reverse_legend = TRUE,
   title = "Koopkracht per jaar en inkomensgroep",
   ylab  = "% koopkrachtmutatie")

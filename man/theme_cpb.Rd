@@ -14,7 +14,6 @@ theme_cpb(
   ticks = TRUE,
   flush_legend = TRUE,
   axis_text_size = 7,
-  legend_key_size = NULL,
   grid_colour = "black",
   grid_linewidth = 0.1
 )
@@ -44,7 +43,10 @@ gridlines only on the value axis implied by \code{orientation};
 \item{legend}{Passed through to \code{legend.position}; accepts the
 usual \code{"bottom"} (default) /\code{"right"}/\code{"left"}/\code{"top"}/\code{"none"}
 strings, or a two-element numeric vector of plot-relative
-coordinates.}
+coordinates. \code{"filled-empty"} draws no legend but, in a wrapper's
+figure, keeps the legend's space at the bottom, so the panel is
+as tall as in a figure with a legend. \code{"none"} gives that space
+to the panel.}
 
 \item{minor}{If \code{TRUE}, minor gridlines are drawn (matching the
 major gridlines). Defaults to \code{FALSE}: gridlines appear only at
@@ -61,9 +63,6 @@ a left justification) and stack its keys vertically -- the fixed
 bottom-left legend block of CPB figures.}
 
 \item{axis_text_size}{Axis text size in points. Defaults to \code{7}.}
-
-\item{legend_key_size}{Legend key size in cm. \code{NULL} (default)
-keeps the house 0.25 x 0.30 cm keys.}
 
 \item{grid_colour}{Gridline colour. Defaults to \code{"black"}.}
 

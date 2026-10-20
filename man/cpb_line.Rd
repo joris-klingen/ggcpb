@@ -12,26 +12,28 @@ cpb_line(
   line_colour = NULL,
   linewidth = 0.55,
   points = FALSE,
-  point_size = 1.1,
+  symbol_size = 1.1,
   sec_y = NULL,
   sec_type = c("line", "point", "col"),
   sec_limits = NULL,
-  sec_label = NULL,
+  sec_legend_label = NULL,
   sec_ylab = NULL,
   sec_colour = NULL,
   sec_linewidth = NULL,
   sec_points = FALSE,
-  sec_point_size = 1.6,
+  sec_symbol_size = 1.6,
   sec_col_width = 0.3,
   sec_accuracy = NULL,
+  sec_scale_auto = TRUE,
+  sec_at = NULL,
+  sec_axis_labels = NULL,
   palette = "qualitative",
   colour_index = NULL,
-  color_index = NULL,
-  index = NULL,
   pct_axis = FALSE,
   value_accuracy = NULL,
   value_breaks = NULL,
   value_limits = NULL,
+  value_crop = FALSE,
   x_lim = NULL,
   x_lim_follow_data = TRUE,
   ymin = NULL,
@@ -40,6 +42,7 @@ cpb_line(
   forecast_label = "raming",
   reverse_legend = FALSE,
   legend_ncol = NULL,
+  legend_nrow = NULL,
   facet = NULL,
   facet_ncol = NULL,
   facet_scales = "fixed",
@@ -49,15 +52,14 @@ cpb_line(
   ticks = TRUE,
   flush_legend = TRUE,
   axis_text_size = 7,
-  legend_key_size = NULL,
   grid_colour = "black",
   grid_linewidth = 0.1,
   title = NULL,
   subtitle = NULL,
   xlab = NULL,
   ylab = NULL,
-  colourlab = NULL,
-  style = c("dutch", "english"),
+  legend_title = NULL,
+  style = getOption("ggcpb.style", "dutch"),
   ...
 )
 }
@@ -92,7 +94,7 @@ points are sliced in half by the panel edge. A line on its own
 keeps the tight panel, where the axis meets the outermost
 gridlines.}
 
-\item{point_size}{Marker size when \code{points = TRUE}; defaults to
+\item{symbol_size}{Marker size when \code{points = TRUE}; defaults to
 \code{1.1}, which reads as the published dot against the default
 \code{linewidth}.}
 
@@ -106,13 +108,17 @@ above); the primary line stays a plain, unlabelled line in
 (markers only, no connecting line), or \code{"col"} (thin bars).}
 
 \item{sec_limits}{Length-2 numeric vector giving the range the
-secondary axis spans. \code{NULL} (default) uses zero to the maximum of
-\code{sec_y}. \code{sec_y} is placed by mapping this range linearly onto
-the primary range, so the two axes always start together.}
+secondary axis spans. \code{NULL} (default) uses the range of \code{sec_y}
+itself, minimum to maximum. \code{sec_y} is placed by mapping this
+range linearly onto the primary range, so the two axes always
+start together. Giving this explicitly also spaces the breaks
+evenly across it, overriding \code{sec_scale_auto}. If \code{sec_y} runs
+past it, the axis is widened to round values (with a message), so
+no value is cut off.}
 
-\item{sec_label}{Legend label for \code{sec_y}. \code{NULL} (default) uses
-the \code{sec_y} column name. Automatically suffixed \code{"(rechteras)"}
-(right axis) -- don't add it yourself, e.g. \code{sec_label = "erfbelasting"} shows as \code{"erfbelasting (rechteras)"}.}
+\item{sec_legend_label}{Name of the \code{sec_y} series in the legend.
+\code{NULL} (default) uses the \code{sec_y} column name. Automatically suffixed \code{"(rechteras)"}
+(right axis) -- don't add it yourself, e.g. \code{sec_legend_label = "erfbelasting"} shows as \code{"erfbelasting (rechteras)"}.}
 
 \item{sec_ylab}{Unit caption for the secondary axis, drawn
 right-aligned above the panel to mirror the left-hand unit that
@@ -128,7 +134,7 @@ Defaults to \code{0.55}.}
 \code{sec_y} line. Only used when \code{sec_type = "line"} -- for markers
 without a connecting line, use \code{sec_type = "point"} instead.}
 
-\item{sec_point_size}{Point size; only used when \code{sec_type = "point"}
+\item{sec_symbol_size}{Symbol size; only used when \code{sec_type = "point"}
 (the main marker) or \code{sec_type = "line"} with \code{sec_points = TRUE}
 (a smaller marker decorating the line, at 0.7x this). Defaults
 to \code{1.6}.}
@@ -143,26 +149,47 @@ function's own automatic rounding -- set this when \code{sec_y} needs
 a different precision than its default (e.g. whole numbers for a
 count alongside a one-decimal percentage share).}
 
+\item{sec_scale_auto}{If \code{TRUE} (default), auto-scale the secondary
+axis's breaks to "nice" numbers via \code{\link[=pretty]{pretty()}}, matching the
+primary axis's own break count. Set to \code{FALSE} to instead space
+breaks evenly across \code{sec_limits} (or the \code{sec_y} data range)
+without rounding them to nice numbers. Only takes effect when
+\code{sec_limits} is left at its default: an explicit \code{sec_limits} is
+always spaced evenly, whatever this is set to, since breaks
+rounded to nice numbers would not land on the endpoints asked
+for.}
+
+\item{sec_at}{Explicit secondary-axis break values, in \code{sec_y}'s own
+units. Must have exactly as many values as the primary axis has
+breaks, since each secondary break is drawn level with one
+primary gridline. \code{NULL} (default) auto-computes them; see
+\code{sec_scale_auto}.}
+
+\item{sec_axis_labels}{Labels at the tick marks of the right axis;
+anything ggplot2's own axis \code{labels} accepts (a character vector
+matching \code{sec_at}/the auto-computed breaks one-for-one, or a
+labelling function such as \code{\link[scales:label_number]{scales::label_number()}}). \code{NULL}
+(default) uses \code{\link[=label_number_nl]{label_number_nl()}}, like the primary axis.}
+
 \item{palette}{CPB palette to use for \code{colour}; one of
 \code{"qualitative"} (default), \code{"discr"}, \code{"sequential"}
-(pink ramp), or \code{"blues"} (blue ramp).}
+(pink ramp), \verb{\\"blues\\"} (blue ramp) or \verb{\\"extended\\"}
+(20 categorical colours).}
 
 \item{colour_index}{Which house colours the series get. Either a vector
 of palette positions -- \code{c(2, 5, 6)}, forwarded to
-\code{\link[=scale_colour_cpb_manual]{scale_colour_cpb_manual()}} -- or a keyword naming a palette:
+\code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} or \code{\link[=scale_colour_cpb_manual]{scale_colour_cpb_manual()}} -- or a keyword naming a palette:
 \code{"discrete"} for the qualitative house palette (blue, magenta,
-taupe, ...) and \code{"continuous"} for the sequential ramp. \code{NULL}
+taupe, ...) and \code{"continuous"} for the sequential ramp; the palette
+names (such as \code{"extended"}, 20 colours for charts with more than
+nine series) work as keywords too. \code{NULL}
 (default) uses \code{palette}, which is \code{"discrete"} for every wrapper
 except \code{\link[=cpb_map]{cpb_map()}}. A keyword and a non-matching \code{palette} are a
 conflict and raise an error, since both set the same thing.}
 
-\item{color_index}{American-spelling alias for \code{colour_index}; ignored
-when \code{colour_index} is given.}
-
-\item{index}{Deprecated. Former name of
-\code{colour_index}. Still accepted, with a warning.}
-
-\item{pct_axis}{If \code{TRUE}, format the y axis with \code{\link[=label_pct_nl]{label_pct_nl()}}.}
+\item{pct_axis}{If \code{TRUE}, format the value axis with
+\code{\link[=label_pct_nl]{label_pct_nl()}}, for values already in percentage points. With
+\code{position = "fill"} (proportions) the scale is 100 automatically.}
 
 \item{value_accuracy}{Rounding accuracy for the value axis labels,
 passed to \code{\link[=label_number_nl]{label_number_nl()}} (e.g. \code{0.1} for one decimal place).
@@ -174,31 +201,51 @@ wrapper's flush axis (see \code{value_breaks}).}
 \item{value_breaks}{Optional breaks for the value axis (passed to
 the wrapper-built \code{\link[ggplot2:scale_y_continuous]{ggplot2::scale_y_continuous()}}). Use this
 instead of adding a second y scale, which would discard the
-wrapper's axis formatting and expansion.}
+wrapper's axis formatting and expansion. These choose where the
+ticks sit, not where the axis stops: if the data runs past the
+outermost break, evenly spaced breaks are extended outward in
+their own step until they cover it, so the axis still ends on a
+labelled gridline and no value is hidden.}
 
-\item{value_limits}{Optional length-2 numeric vector giving the
-value-axis range, applied as the wrapper-built value scale's own
-\code{limits} (not a coordinate-system zoom) -- the hard bound the axis
-is drawn flush to; a point outside it is genuinely dropped, with a
-warning, the same as setting \code{limits} on any ggplot2 scale. \code{NULL}
-(default) flushes to the full data range instead.}
+\item{value_limits}{Optional length-2 numeric vector giving the span
+the value axis must \emph{at least} cover -- typically to force it wider
+than the data needs, e.g. always showing zero, or a fixed range
+shared across several figures. It is a minimum, not a crop: when
+the data fits inside it, the axis shows exactly those limits, with
+equal steps; where the data runs past it the axis is widened to
+round values (with a message), so no value is ever hidden. \code{NULL}
+(default) flushes to the full data range (for boxes p5 to p95, for
+the dot chart the interval bounds; see \code{x_lim}/\code{x_lim_follow_data}
+for the category axis's equivalent). To show only the limits, use
+\code{value_crop}.}
+
+\item{value_crop}{If \code{TRUE}, \code{value_limits} is a window instead of a
+minimum: the axis is exactly those limits, with equal steps, and
+values outside are cut off at the edge. A warning says when not all
+data is shown. Needs \code{value_limits}. Default \code{FALSE}.}
 
 \item{x_lim}{Optional length-2 vector zooming the \code{x} axis to a
 range, without dropping data -- applied as a coordinate-system
 zoom (\code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} \code{xlim}). \code{NULL} (default) shows
 the full range.}
 
-\item{x_lim_follow_data}{If \code{TRUE} (default), the \code{x} axis sits
-flush to the data's own range, with no padding on either side. A
-whole-number \code{x} (almost always a year) still only ever gets
-whole-number breaks, never a fractional one. Set to \code{FALSE} to
-restore ggplot2's usual padded, evenly spaced margin instead.
-Matches nicerplot's parameter of the same name. Ignored when
-\code{x_lim} is set.
-Adding your own \code{scale_x_continuous()}/\code{scale_x_discrete()}
-afterward replaces this one entirely (ggplot2 keeps only one
-scale per aesthetic) -- add \code{expand = ggplot2::expansion(mult = 0)}
-to it to keep the flush behaviour.}
+\item{x_lim_follow_data}{If \code{TRUE}, the \code{x} axis sits flush to the
+data's own range, with no padding on either side (for bars their
+width is included, so the outermost bars never spill past the panel
+edge). Defaults: \code{FALSE} for columns and areas, \code{TRUE} for lines,
+boxes and dots, because a solid fill runs edge-to-edge and a flush
+axis would then leave no cue where the data starts and ends. Ticks
+are equally spaced and the first and last value are labelled; a
+whole-number \code{x} (a year) only gets whole-number steps. When no
+equal step fits, only the two ends are labelled (on bars the ticks
+run from the first value instead). With \code{x_lim} the exact limits
+are labelled and nothing goes beyond them (\code{x_lim_follow_data} is
+then ignored, as when \code{group} is mapped: the grouped layout needs
+its own fixed margin). Adding your own
+\code{scale_x_continuous()}/\code{scale_x_discrete()} afterward replaces this
+one entirely (ggplot2 keeps only one scale per aesthetic) -- add
+\code{expand = ggplot2::expansion(mult = 0)} to it to keep the flush
+behaviour.}
 
 \item{ymin, ymax}{Optional columns (tidy eval) bounding an
 uncertainty band, drawn as a translucent ribbon underneath the
@@ -219,13 +266,17 @@ via \code{guide_legend(reverse = TRUE)}. Defaults to \code{FALSE}: unlike
 the stacked wrappers, line order carries no stacking convention.}
 
 \item{legend_ncol}{Number of columns to lay the legend keys out in,
-passed to \code{guide_legend(ncol = )}. \code{NULL} (default) leaves the
-single flush-left column of the house style; \code{2} and up suit a
-legend with many short keys, such as binned classes from
-\code{\link[=cpb_cut]{cpb_cut()}}, which would otherwise run past the panel.}
+passed to \code{guide_legend(ncol = )}. \code{NULL} (default) keeps
+the house 3 keys per column, filled column by column. A set
+number spreads the keys over that many columns instead.}
+
+\item{legend_nrow}{Number of rows to lay the legend keys out in,
+passed to \code{guide_legend(nrow = )}. Combine with \code{legend_ncol} to
+pin both dimensions of the grid at once. \code{NULL} (default) keeps
+the house 3 rows.}
 
 \item{facet}{Optional column (tidy eval) to facet by. Facets follow
-the house (legacy nicerplot) convention: the facet title is a bold
+the house convention: the facet title is a bold
 strip \emph{below} each panel, and every panel is a complete
 mini-figure with its own axes and axis labels.}
 
@@ -243,13 +294,13 @@ value axis underneath the data lines. \code{NULL} (default) draws it
 automatically when the \code{y} data spans (or touches) zero, the
 house bold-axis-if-zero convention.}
 
-\item{minor, ticks, flush_legend, axis_text_size, legend_key_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}} for per-figure deviations from the
+\item{minor, ticks, flush_legend, axis_text_size, grid_colour, grid_linewidth}{Forwarded to \code{\link[=theme_cpb]{theme_cpb()}} for per-figure deviations from the
 house defaults.}
 
 \item{title, subtitle}{Plot title/subtitle.}
 
-\item{xlab, colourlab}{Axis and legend title overrides; default
-to \code{NULL} (no axis title), matching CPB house style.}
+\item{xlab}{Axis title override. Defaults to \code{NULL} (no axis
+title), matching CPB house style.}
 
 \item{ylab}{Label for the value (y) axis. Following CPB house style
 it is rendered as the plot \emph{subtitle} -- a left-aligned italic
@@ -257,8 +308,16 @@ caption above the panel (e.g. the unit, \code{"\%"}) -- unless an
 explicit \code{subtitle} is also given, in which case it falls back to
 a rotated y-axis title.}
 
+\item{legend_title}{Legend title, drawn in italic as the first row of
+the legend, with at most 2 rows of legend items below it (title and
+items together take the 3 rows a legend has without a title).
+\code{NULL} (default) draws no title, matching CPB house style.}
+
 \item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
-or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).}
+or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).
+Taken from \code{getOption("ggcpb.style")}, so an English report can set
+\code{options(ggcpb.style = "english")} once rather than passing \code{style} to
+every figure and risking a stray Dutch decimal comma.}
 
 \item{...}{Further arguments passed to \code{\link[ggplot2:geom_line]{ggplot2::geom_line()}}.}
 }

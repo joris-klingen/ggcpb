@@ -134,7 +134,7 @@ not cover.
 # Export
 
 `save_cpb()` writes the figure at the strict CPB page widths –
-`page = "half"` (2.98 in) or `page = "full"` (5.96 in) – through the
+`page = "half"` (7.5 cm) or `page = "full"` (15.5 cm) – through the
 `ragg` device, which consults `systemfonts` – so the bundled
 Rijksoverheid font (registered automatically on load; see
 `cpb_register_fonts()`) renders correctly with no further setup, and
@@ -148,7 +148,7 @@ save_cpb("koopkracht_breed.png", p, page = "full", height = 3.2)
 The half/full widths are the only ones `save_cpb()` accepts: a stray
 `width = 8` fails loudly instead of silently producing an off-spec
 figure. Text sizes in `theme_cpb()` are absolute points, so the canvas
-size is part of the design – draw at 2.98/5.96 in and scale the
+size is part of the design – draw at 7.5/15.5 cm and scale the
 *display*, never the figure. Height defaults to the report height; pass
 `height` for taller figures (grouped boxes, facets) or
 `preset = "presentation"`.

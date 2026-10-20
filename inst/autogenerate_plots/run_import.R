@@ -41,7 +41,7 @@ result <- tryCatch({
     stop("params.csv was not found in this folder.")
   }
 
-  figs <- ggcpb::import_csv(data_csv, params_csv)
+  figs <- ggcpb::cpb_import_csv(data_csv, params_csv)
   if (ggplot2::is.ggplot(figs)) {
     figs <- list(figuur_1 = figs)
   }

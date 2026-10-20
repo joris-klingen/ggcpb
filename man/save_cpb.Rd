@@ -7,14 +7,15 @@
 save_cpb(
   filename,
   plot = ggplot2::last_plot(),
-  page = c("half", "full"),
-  preset = c("report", "presentation"),
+  page = c("half", "full", "small"),
+  preset = c("report", "presentation", "map"),
   height = NULL,
   width = NULL,
   dpi = 300,
   device = ragg::agg_png,
   bg = cpb_bg,
   panel_size = NULL,
+  lock = TRUE,
   ...
 )
 }
@@ -23,17 +24,21 @@ save_cpb(
 
 \item{plot}{The plot to save; defaults to \code{\link[ggplot2:last_plot]{ggplot2::last_plot()}}.}
 
-\item{page}{Either \code{"half"} (default, 2.98 in wide) or \code{"full"}
-(5.96 in wide). Ignored if \code{width} is supplied explicitly.}
+\item{page}{\code{"half"} (default, 7.5 cm wide), \code{"full"} (15.5 cm wide)
+or \code{"small"} (6.8 cm wide and tall, for a figure in a "kader").
+Ignored if \code{width} is supplied explicitly.}
 
-\item{preset}{Either \code{"report"} (default, 2.98 in tall) or
-\code{"presentation"} (2.5 in tall). Ignored if \code{height} is supplied
-explicitly.}
+\item{preset}{\code{"report"} (default, 7.5 cm tall, or 6.8 cm for
+\code{page = "small"}), \code{"presentation"} (2.5 in tall), or \code{"map"}.
+\code{"map"} makes a \code{\link[=cpb_map]{cpb_map()}} plot as tall as the map needs at the
+page's full width, and works as \code{"report"} for any other plot.
+Ignored if \code{height} is supplied explicitly.}
 
 \item{height}{Explicit height in inches. \code{NULL} (default) uses
 \code{preset} to determine the height.}
 
-\item{width}{Explicit width in inches; must be \code{2.98} or \code{5.96}.
+\item{width}{Explicit width in inches. Must be \code{7.5 / 2.54},
+\code{15.5 / 2.54} or \code{6.8 / 2.54}.
 \code{NULL} (default) uses \code{page} to determine the width.}
 
 \item{dpi}{Resolution in dots per inch; defaults to \code{300}. CPB tall
@@ -57,6 +62,11 @@ it). Anything that does not fit around a fixed-size panel -- a
 long title, a legend entry -- overflows past the figure's edge
 instead of shrinking the panel to make room.}
 
+\item{lock}{If \code{TRUE} (default), a title or
+legend wider than the page allows (its width minus 0.45 cm on each
+side) is an error. If \code{FALSE}, it is only a warning. Text is
+never shrunk to fit either way.}
+
 \item{...}{Further arguments passed to \code{\link[ggplot2:ggsave]{ggplot2::ggsave()}} (or, when
 \code{panel_size} applies, to \code{device} instead).}
 }
@@ -70,21 +80,22 @@ bundled \code{RijksoverheidSansText} font to render correctly).
 }
 \details{
 Width is strict: it is set by \code{page}, not free-form. \code{page = "half"}
-gives a width of 2.98 in; \code{page = "full"} gives 5.96 in. An explicit
-\code{width} is only an escape hatch and is validated against these two
+gives a width of 7.5 cm, \code{page = "full"} 15.5 cm and \code{page = "small"}
+6.8 cm (the size for a figure in a "kader"). An explicit
+\code{width} is only an escape hatch and is validated against these
 values -- any other width errors, so a stray \code{width = 8} fails
 loudly rather than silently producing an off-spec figure.
 
-Height defaults to 2.98 in (the \code{"report"} preset). Pass
+Height defaults to 7.5 cm (the \code{"report"} preset), or 6.8 cm for
+\code{page = "small"}, which is square too. Pass
 \code{preset = "presentation"} for the 2.5 in presentation height, or set
 \code{height} explicitly for anything else (e.g. a tall stacked-facet
-export) -- an explicit \code{height} always wins over \code{preset}. A
-\code{cpb_map()} plot is the one exception: left at its default (no
-explicit \code{height}), its panel is instead auto-sized to the
-boundaries' true geographic aspect ratio, so the map fills the
-figure exactly rather than sitting letterboxed inside a
-fixed-height page (pass \code{height} explicitly to opt back into a
-fixed height, e.g. to match a neighbouring figure).
+export). An explicit \code{height} always wins over \code{preset}. A
+\code{cpb_map()} plot is saved at these sizes too: the map keeps its true
+geographic proportions and is drawn as large as fits inside the
+figure. \code{preset = "map"} instead draws the map as wide as the page
+allows and makes the figure as tall as that takes (8.7 cm for the
+Netherlands on a half page).
 }
 \examples{
 \dontrun{

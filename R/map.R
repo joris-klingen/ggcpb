@@ -67,8 +67,9 @@ cpb_nl_geo <- function(level = c("gemeente", "corop", "provincie")) {
 #'   thin seam that keeps adjacent regions legible without outlines.
 #' @param palette CPB palette for a *discrete* `value` column; one of
 #'   `"qualitative"`, `"discr"`, `"sequential"` (pink ramp), or
-#'   `"blues"` (blue ramp -- the usual choice for classed maps).
-#' @param fill_index Which house colours the series get. Either a vector
+#'   `"blues"` (blue ramp -- the usual choice for classed maps), or
+#'   `"extended"` (20 categorical colours).
+#' @param colour_index Which house colours the series get. Either a vector
 #'   of palette positions -- `c(2, 5, 6)`, forwarded to
 #'   [scale_fill_cpb_manual()] -- or a keyword naming a palette:
 #'   `"discrete"` for the qualitative house palette (blue, magenta,
@@ -76,8 +77,6 @@ cpb_nl_geo <- function(level = c("gemeente", "corop", "provincie")) {
 #'   (default) uses `palette`, which is `"discrete"` for every wrapper
 #'   except [cpb_map()]. A keyword and a non-matching `palette` are a
 #'   conflict and raise an error, since both set the same thing.
-#' @param index Deprecated. Former name of
-#'   `fill_index`. Still accepted, with a warning.
 #' @param reverse For a numeric `value` column: reverse the sequential
 #'   gradient (passed to [scale_fill_cpb_c()]).
 #' @param na_fill Fill for regions without a value in `data`; defaults
@@ -88,9 +87,16 @@ cpb_nl_geo <- function(level = c("gemeente", "corop", "provincie")) {
 #'   (e.g. `"bottom"`, `"none"`) is forwarded to [theme_cpb()].
 #' @param flush_legend Anchor a `"bottom"` legend flush bottom-left, as
 #'   in the other wrappers. Ignored when `legend = "topleft"`.
+#' @param reverse_legend,legend_ncol,legend_nrow For a discrete `value`:
+#'   reverse the legend order, or lay it out in that many columns or
+#'   rows, as in [cpb_col()]. A numeric `value` has a colourbar instead,
+#'   reversed with `reverse`.
 #' @param title,subtitle Plot title/subtitle. As elsewhere, `ylab` does
 #'   not exist here: use `subtitle` for the unit caption.
-#' @param filllab Legend title; defaults to `NULL` (no title).
+#' @param legend_title Legend title. Defaults to `NULL` (no title).
+#' @param style Number format of a numeric legend: `"dutch"` (default,
+#'   `,` decimal) or `"english"` (`.` decimal). Taken from
+#'   `getOption("ggcpb.style")`, as in the other charts.
 #' @param ... Further arguments passed to [ggplot2::geom_polygon()].
 #' @return A `ggplot` object.
 #' @examples
@@ -104,19 +110,23 @@ cpb_map <- function(data, region, value,
                     border_colour = NULL,
                     border_linewidth = 0.15,
                     palette = "sequential",
-                    fill_index = NULL,
-                    index = NULL,
+                    colour_index = NULL,
                     reverse = FALSE,
                     na_fill = NULL,
                     legend = "topleft",
                     flush_legend = TRUE,
+                    reverse_legend = FALSE,
+                    legend_ncol = NULL,
+                    legend_nrow = NULL,
                     title = NULL,
                     subtitle = NULL,
-                    filllab = NULL,
+                    legend_title = NULL,
+                    style = getOption("ggcpb.style", "dutch"),
                     ...) {
-  .cpb_idx <- cpb_resolve_index(fill_index, index, palette, !missing(palette), "fill_index")
+  .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette), "colour_index")
   index <- .cpb_idx$index
   palette <- .cpb_idx$palette
+  style <- match.arg(style, c("dutch", "english"))
   level <- match.arg(level)
   region <- rlang::enquo(region)
   value <- rlang::enquo(value)
@@ -163,12 +173,19 @@ cpb_map <- function(data, region, value,
     # Rijksdriehoek coordinates are metres: equal scales, no projection
     ggplot2::coord_fixed(ratio = 1)
 
+  # a numeric colour bar runs between two labelled round values
+  bar_breaks <- if (is.numeric(vals)) cpb_bar_breaks(vals)
   p <- p + if (is.numeric(vals)) {
-    scale_fill_cpb_c(reverse = reverse, na.value = na_fill)
+    scale_fill_cpb_c(reverse = reverse, na.value = na_fill,
+                     limits = range(bar_breaks), breaks = bar_breaks,
+                     labels = label_number_nl(style = style))
   } else if (!is.null(index)) {
     scale_fill_cpb_manual(index = index, palette = palette, na.value = na_fill)
   } else {
     scale_fill_cpb_d(palette = palette, na.value = na_fill)
+  }
+  if (!is.numeric(vals)) {
+    p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol, legend_nrow)
   }
   if (is.numeric(vals)) {
     # a compact colourbar, thin like the legend keys; vertical when the
@@ -183,7 +200,7 @@ cpb_map <- function(data, region, value,
   }
 
   p <- p +
-    ggplot2::labs(title = title, subtitle = subtitle, fill = filllab) +
+    ggplot2::labs(title = title, subtitle = subtitle, fill = legend_title) +
     theme_cpb(grid = "none", ticks = FALSE,
               legend = if (inside) "bottom" else legend,
               flush_legend = if (inside) FALSE else flush_legend) +
@@ -213,5 +230,6 @@ cpb_map <- function(data, region, value,
   # shows this approximately rather than exactly -- only save_cpb()
   # reads the attribute above
   class(p) <- union("cpb_plot", class(p))
+  ggplot2::set_last_plot(p)
   p
 }

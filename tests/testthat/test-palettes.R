@@ -77,3 +77,40 @@ test_that("cpb_cols errors on an out-of-range index", {
   expect_error(cpb_cols(99), "out of range")
   expect_error(cpb_cols(0), "out of range")
 })
+
+test_that("the extended palette has 20 distinct colours, led by the house nine", {
+  ext <- cpb_pal("extended")(20)
+  expect_length(ext, 20)
+  expect_equal(anyDuplicated(toupper(ext)), 0L)
+  expect_equal(cpb_pal("extended")(9), cpb_pal("qualitative")(9))
+  expect_equal(unname(cpb_cols(palette = "extended")), ext)
+})
+
+test_that("cpb_cols() finds extended colours by name", {
+  expect_equal(cpb_cols("apple", "sun", palette = "extended"),
+               c(apple = "#43B546", sun = "#FBAD1D"))
+  expect_error(cpb_cols("nope", palette = "extended"), "unknown colour name")
+  expect_error(cpb_cols("apple"), "numeric positions")
+})
+
+test_that("more levels than a palette has: recycling warns and points to extended", {
+  expect_warning(cpb_pal("qualitative")(10), 'palette = "extended"', fixed = TRUE)
+  expect_warning(cpb_pal("discr")(8), 'palette = "extended"', fixed = TRUE)
+  # extended itself has nothing larger to suggest
+  w <- tryCatch(cpb_pal("extended")(21), warning = function(w) conditionMessage(w))
+  expect_false(grepl("Use palette", w, fixed = TRUE))
+
+  d <- data.frame(x = rep(1:3, 12), g = rep(sprintf("s%02d", 1:12), each = 3), y = 1:36)
+  build <- function(p) ggplot2::ggplot_build(p)
+  expect_warning(build(cpb_line(d, x = x, y = y, colour = g)), 'palette = "extended"', fixed = TRUE)
+  p <- cpb_line(d, x = x, y = y, colour = g, palette = "extended")
+  expect_no_warning(b <- build(p))
+  expect_length(unique(b$data[[1]]$colour), 12)
+  expect_length(unique(build(cpb_col(d, x = x, y = y, fill = g, colour_index = "extended"))$data[[1]]$fill), 12)
+})
+
+test_that("cpb_cols() with no arguments keeps the extended colour names", {
+  expect_equal(names(cpb_cols(palette = "extended"))[c(1, 11, 20)],
+               c("endeavour", "apple", "kaitoke_green"))
+  expect_equal(names(cpb_cols(1:2, palette = "extended")), c("1", "2"))
+})

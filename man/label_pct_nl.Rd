@@ -4,7 +4,12 @@
 \alias{label_pct_nl}
 \title{Percent-formatted labels, Dutch locale}
 \usage{
-label_pct_nl(scale = 1, accuracy = 1, style = c("dutch", "english"), ...)
+label_pct_nl(
+  scale = 1,
+  accuracy = 1,
+  style = getOption("ggcpb.style", "dutch"),
+  ...
+)
 }
 \arguments{
 \item{scale}{Multiplier applied before formatting; \code{1} (default)
@@ -15,7 +20,10 @@ proportions in \verb{[0, 1]}.}
 percentage points.}
 
 \item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
-or \code{"english"} (\verb{,} thousands, \code{.} decimal).}
+or \code{"english"} (\verb{,} thousands, \code{.} decimal). Taken from
+\code{getOption("ggcpb.style")}, so an English report can set
+\code{options(ggcpb.style = "english")} once rather than passing \code{style}
+to every call.}
 
 \item{...}{Further arguments passed to \code{\link[scales:label_percent]{scales::label_percent()}}.}
 }

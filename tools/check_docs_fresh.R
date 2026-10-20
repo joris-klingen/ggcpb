@@ -32,7 +32,7 @@ pkg_root <- normalizePath(file.path(dirname(sub(
 devtools::load_all(pkg_root, quiet = TRUE)
 
 if (!ggcpb:::cpb_utf8_locale()) {
-  for (loc in c("C.UTF-8", "en_US.UTF-8", "nl_NL.UTF-8")) {
+  for (loc in c("C.UTF-8", "en_US.UTF-8", "nl_NL.UTF-8", "English_United States.utf8")) {
     if (suppressWarnings(Sys.setlocale("LC_CTYPE", loc)) != "") break
   }
 }

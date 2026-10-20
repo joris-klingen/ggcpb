@@ -15,7 +15,9 @@
 #' @param palette One of `"qualitative"` (the primary 9-colour discrete
 #'   palette), `"discr"` (the alternate blue/pink-led 7-colour discrete
 #'   palette), `"sequential"` (the 6-colour light-to-dark pink ramp), or
-#'   `"blues"` (the 6-colour light-to-dark blue ramp for classed fills).
+#'   `"blues"` (the 6-colour light-to-dark blue ramp for classed fills),
+#'   or `"extended"` (20 categorical colours: the nine of
+#'   `"qualitative"` in the same order, then eleven more).
 #'   Ramps are interpolated to any number of levels.
 #' @details For `"sequential"`, up to six levels take the darkest
 #'   swatches of the ramp: `n` levels get the `n` darkest, still ordered
@@ -34,7 +36,7 @@
 #' cpb_pal("sequential")(5)
 #' cpb_pal("qualitative", reverse = TRUE)(3)
 #' @export
-cpb_pal <- function(palette = c("qualitative", "discr", "sequential", "blues"), reverse = FALSE) {
+cpb_pal <- function(palette = c("qualitative", "discr", "sequential", "blues", "extended"), reverse = FALSE) {
   palette <- match.arg(palette)
   cols <- cpb_palette_colours(palette)
   # the qualitative swatches are stored in their own (CPB source-script)
@@ -71,6 +73,7 @@ cpb_pal <- function(palette = c("qualitative", "discr", "sequential", "blues"), 
         warning(
           "cpb_pal(): the '", palette, "' palette only has ", length(cols),
           " colours; recycling to fill ", n, " requested levels.",
+          if (!identical(palette, "extended")) ' Use palette = "extended" for up to 20 colours.',
           call. = FALSE
         )
         cols <- rep_len(cols, n)
@@ -89,26 +92,41 @@ cpb_pal <- function(palette = c("qualitative", "discr", "sequential", "blues"), 
 #' CPB source scripts), but without needing to know the internal
 #' object names.
 #'
-#' @param ... One or more integer positions into `palette`. If empty,
-#'   the full palette is returned in its original order.
+#' @param ... One or more integer positions into `palette`, or for
+#'   `"extended"` colour names such as `"apple"`. If empty, the full
+#'   palette is returned in its original order.
 #' @param palette One of `"qualitative"` (default), `"discr"`,
-#'   `"sequential"` (pink ramp), or `"blues"` (blue ramp).
+#'   `"sequential"` (pink ramp), `"blues"` (blue ramp) or `"extended"`
+#'   (20 categorical colours).
 #' @param reverse If `TRUE`, reverse the palette before indexing.
 #' @return A character vector of hex colours, named by the position
-#'   they were drawn from.
+#'   (or colour name) they were drawn from.
 #' @examples
 #' cpb_cols(6, 2)
 #' cpb_cols(1:3, palette = "discr")
+#' cpb_cols("apple", "sun", palette = "extended")
 #' @export
-cpb_cols <- function(..., palette = c("qualitative", "discr", "sequential"), reverse = FALSE) {
+cpb_cols <- function(..., palette = c("qualitative", "discr", "sequential", "extended"), reverse = FALSE) {
   palette <- match.arg(palette)
   cols <- cpb_palette_colours(palette)
   if (isTRUE(reverse)) cols <- rev(cols)
 
   idx <- c(...)
+  # the full named palette keeps its colour names
+  if (length(idx) == 0 && !is.null(names(cols))) return(cols)
   if (length(idx) == 0) idx <- seq_along(cols)
+  if (is.character(idx) && !is.null(names(cols))) {
+    unknown <- setdiff(idx, names(cols))
+    if (length(unknown)) {
+      stop("cpb_cols(): unknown colour name(s) ", paste0("'", unknown, "'", collapse = ", "),
+           "; the '", palette, "' palette has ", paste(names(cols), collapse = ", "), ".",
+           call. = FALSE)
+    }
+    return(cols[idx])
+  }
   if (!is.numeric(idx)) {
-    stop("cpb_cols(): indices passed via ... must be numeric positions into the palette.", call. = FALSE)
+    stop("cpb_cols(): indices passed via ... must be numeric positions into the palette",
+         if (!is.null(names(cols))) " or colour names" else "", ".", call. = FALSE)
   }
   if (any(idx < 1 | idx > length(cols))) {
     stop(
@@ -125,7 +143,7 @@ cpb_cols <- function(..., palette = c("qualitative", "discr", "sequential"), rev
 
 # Colour/fill index resolution ----
 
-# The keyword vocabulary for `colour_index` / `fill_index`. "discrete"
+# The keyword vocabulary for `colour_index`. "discrete"
 # and "continuous" are the two the house style is described in; the raw
 # palette names are accepted as synonyms so there are not two competing
 # vocabularies for the same thing.
@@ -135,32 +153,24 @@ cpb_index_keywords <- c(
   qualitative = "qualitative",
   sequential  = "sequential",
   discr       = "discr",
-  blues       = "blues"
+  blues       = "blues",
+  extended    = "extended"
 )
 
-#' Resolve a `colour_index` / `fill_index` argument
+#' Resolve a `colour_index` argument
 #'
 #' The argument does double duty: a numeric vector picks swatches out of
 #' the palette by position, while a keyword picks the palette itself.
 #' `NULL` defers to `palette`, so existing calls keep their behaviour.
 #'
-#' @param value The `colour_index`/`fill_index` value.
-#' @param legacy The deprecated `index` value, if any.
+#' @param value The `colour_index`/`colour_index` value.
 #' @param palette The wrapper's `palette` argument.
 #' @param palette_supplied Was `palette` given explicitly by the caller?
 #' @param arg Argument name, for error messages.
 #' @return A list with `index` (integer vector or `NULL`) and `palette`.
 #' @noRd
-cpb_resolve_index <- function(value, legacy, palette, palette_supplied,
+cpb_resolve_index <- function(value, palette, palette_supplied,
                               arg = "colour_index") {
-  if (!is.null(legacy)) {
-    if (!is.null(value)) {
-      stop("`index` and `", arg, "` cannot both be set. `index` is ",
-           "deprecated -- use `", arg, "` on its own.", call. = FALSE)
-    }
-    warning("`index` is deprecated; use `", arg, "` instead.", call. = FALSE)
-    value <- legacy
-  }
   if (is.null(value)) return(list(index = NULL, palette = palette))
 
   if (is.character(value)) {
