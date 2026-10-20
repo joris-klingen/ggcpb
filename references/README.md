@@ -7,8 +7,7 @@ only the files noted below are tracked.
 
 ## The goal
 
-**ggcpb should mimic the output of the legacy `nplot()` function** (from the
-internal `nicerplot` package). `nplot()` is the current CPB house-style
+**ggcpb should mimic the output of the legacy `nplot()` function**. `nplot()` is the current CPB house-style
 plotter, and its rendered figures are the target that ggcpb's theme,
 palettes, scales and wrapper functions are trying to match.
 
@@ -40,9 +39,6 @@ When judging whether a ggcpb figure is "right", compare it against the
   calls plus the CPB palette) already got to the house style *before* ggcpb
   existed — a starting point and a sanity check, nothing more. All data is
   simulated and all labels are placeholders.
-- **`nicerplot/`** *(gitignored, local only)* — a clone of the internal
-  `nicerplot` package, the source of `nplot()`. Read it here to see exactly
-  what output ggcpb is chasing.
 
 Figure-by-figure coverage of the cMEV 2027 figures against the wrappers,
 including what is deliberately out of scope, is in

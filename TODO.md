@@ -74,7 +74,7 @@ or dropped.
 - **Minor tick marks on continuous (year) axes** are currently added
   per plot via `guide_axis(minor.ticks = TRUE)` (see the vignettes and
   smoke-test figures 1/4/9/10); could be folded into the wrappers.
-- **Em dash**: the bundled Rijksoverheid font has no em-dash glyph (it
+- **Em dash**: the Rijksoverheid font has no em-dash glyph (it
   renders as `...`); consider substituting en/em dashes in title
   strings automatically.
 - ~~**RoxygenNote drift**~~ -- resolved. What looked like a roxygen2

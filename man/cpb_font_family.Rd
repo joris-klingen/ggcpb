@@ -2,18 +2,19 @@
 % Please edit documentation in R/fonts.R
 \name{cpb_font_family}
 \alias{cpb_font_family}
-\title{The CPB font family name for use in \code{theme_cpb()}}
+\title{The font name for use in \code{theme_cpb()}}
 \usage{
 cpb_font_family()
 }
 \value{
-\code{"RijksoverheidSansText"} if the font was registered
-successfully (see \code{\link[=cpb_register_fonts]{cpb_register_fonts()}}), or \code{""} otherwise -- an
-empty string tells ggplot2 to use its built-in default family, so
-plots still render correctly even without the CPB font.
+The registered family (see \code{\link[=cpb_register_fonts]{cpb_register_fonts()}}):
+\code{"RijksoverheidSansText"}, or \code{"Source Sans 3"} where that is not
+available. \code{""} if neither can be found. An empty string tells
+ggplot2 to use its built-in default family, so plots still render
+correctly even without the Rijkshuisstijl font.
 }
 \description{
-The CPB font family name for use in \code{theme_cpb()}
+The font name for use in \code{theme_cpb()}
 }
 \section{Devices without TTF lookup}{
 

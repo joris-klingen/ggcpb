@@ -21,9 +21,9 @@
 #' `strip.text` are 7 pt.
 #'
 #' @param base_family Font family for all text. Defaults to
-#'   [cpb_font_family()], which resolves to `"RijksoverheidSansText"`
-#'   if the bundled font registered successfully, or `""` (the
-#'   ggplot2 default family) otherwise.
+#'   [cpb_font_family()]: `"RijksoverheidSansText"`, the bundled
+#'   `"Source Sans 3"` where that is not available, or `""` (the
+#'   ggplot2 default family) if neither registered.
 #' @param background If `TRUE` (default), `plot.background` is filled
 #'   with the CPB background colour (`cpb_tokens()$bg`). If `FALSE`,
 #'   the plot background is left blank/transparent.

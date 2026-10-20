@@ -45,7 +45,7 @@ Ignored if \code{height} is supplied explicitly.}
 exports commonly use \code{dpi = 800}.}
 
 \item{device}{Graphics device passed to \code{\link[ggplot2:ggsave]{ggplot2::ggsave()}};
-defaults to \code{\link[ragg:agg_png]{ragg::agg_png()}} so the bundled CPB font renders
+defaults to \code{\link[ragg:agg_png]{ragg::agg_png()}} so the font renders
 correctly.}
 
 \item{bg}{Output background colour; defaults to the CPB background
@@ -76,9 +76,14 @@ Invisibly, the \code{filename} that was written.
 \description{
 A wrapper around \code{\link[ggplot2:ggsave]{ggplot2::ggsave()}} that enforces the CPB page
 widths and renders with the \code{ragg} device by default (needed for the
-bundled \code{RijksoverheidSansText} font to render correctly).
+font to render correctly).
 }
 \details{
+It warns when the plot does not use the Rijksoverheid font, e.g.
+because the bundled Source Sans 3 stands in for it (see
+\code{\link[=cpb_register_fonts]{cpb_register_fonts()}}). \code{options(ggcpb.font_warning = FALSE)} turns
+that off.
+
 Width is strict: it is set by \code{page}, not free-form. \code{page = "half"}
 gives a width of 7.5 cm, \code{page = "full"} 15.5 cm and \code{page = "small"}
 6.8 cm (the size for a figure in a "kader"). An explicit

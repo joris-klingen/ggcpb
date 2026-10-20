@@ -26,7 +26,7 @@ doc/*.Rmd
 Meta/
 # reference material: the internal originals stay untracked; only the
 # anonymised plot snippets and the (already published) reference PNGs are
-# committed. reference_code.txt and the nicerplot/ clone remain ignored.
+# committed. reference_code.txt remain ignored.
 references/*
 !references/README.md
 !references/plots/

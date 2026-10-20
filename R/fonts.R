@@ -1,33 +1,86 @@
 # fonts.R ----
 #
-# Registration of the bundled RijksoverheidSansText font family. Loading
+# Font registration. The house font, RijksoverheidSansText, may not be
+# published, so it is looked up where CPB keeps it.
+# Without it, Source Sans 3 (SIL OFL 1.1) stands in. Loading
 # ggcpb must never fail because of fonts: registration is wrapped in
 # tryCatch() and falls back to the ggplot2 default family ("") with a
 # single warning if a backend or a font file is missing.
 
 .ggcpb_env <- new.env(parent = emptyenv())
-.ggcpb_env$font_registered <- FALSE
+.ggcpb_env$font_family <- ""
 
-#' Paths to the bundled RijksoverheidSansText font files
+cpb_house_family    <- "RijksoverheidSansText"
+cpb_fallback_family <- "Source Sans 3"
+
+# theme_cpb() uses bold (titles, strips) and italic (subtitle, axis and
+# legend titles), never both at once
+cpb_required_faces <- c("plain", "bold", "italic")
+
+#' Folders to search for the Rijksoverheid font
 #'
-#' @return A named list of four file paths (`plain`, `bold`, `italic`,
-#'   `bolditalic`). Paths are resolved with [system.file()] and may be
-#'   `""` if a file is not found.
+#' The M share on Windows and Linux, and the user font
+#' folder on macOS. `options(ggcpb.font_path =)` replaces the list.
 #' @noRd
-cpb_font_files <- function() {
+cpb_font_paths <- function() {
+  getOption("ggcpb.font_path", c(
+    "M:/p_james/fonts",
+    "/Volumes/data/M/p_james/fonts",
+    "/nas/mdk/M/p_james/fonts",
+    "/cifs/p_james/fonts",
+    "~/Library/Fonts"
+  ))
+}
+
+#' The font files to register
+#'
+#' @param paths Folders to search, in order.
+#' @return A list with `family` and `faces`, a named character vector
+#'   (`plain`, `bold`, `italic`, `bolditalic`; `NA` where missing). The
+#'   Rijksoverheid font from the first folder that has it, else the
+#'   bundled Source Sans 3.
+#' @noRd
+cpb_font_files <- function(paths = cpb_font_paths()) {
+  for (p in path.expand(paths)) {
+    if (!dir.exists(p)) next
+    files <- list.files(p, pattern = "^Rijksoverheid.*\\.(ttf|otf)$",
+                        ignore.case = TRUE, full.names = TRUE)
+    found <- cpb_read_fonts(files)
+    found <- found[found$family == cpb_house_family, , drop = FALSE]
+    faces <- cpb_family_faces(found)
+    if (!anyNA(faces[cpb_required_faces])) {
+      return(list(family = cpb_house_family, faces = faces))
+    }
+  }
+  bundled <- function(file) {
+    f <- system.file("fonts", file, package = "ggcpb")
+    if (nzchar(f)) f else NA_character_
+  }
   list(
-    plain = system.file(
-      "fonts", "RijksoverheidSansText-Regular_2_0.ttf", package = "ggcpb"
-    ),
-    bold = system.file(
-      "fonts", "RijksoverheidSansText-Bold_2_0.ttf", package = "ggcpb"
-    ),
-    italic = system.file(
-      "fonts", "RijksoverheidSansText-Italic_2_0.ttf", package = "ggcpb"
-    ),
-    bolditalic = system.file(
-      "fonts", "RijksoverheidSansText-BoldItalic_2_0.ttf", package = "ggcpb"
+    family = cpb_fallback_family,
+    faces = c(
+      plain      = bundled("SourceSans3-Regular.ttf"),
+      bold       = bundled("SourceSans3-Bold.ttf"),
+      italic     = bundled("SourceSans3-It.ttf"),
+      bolditalic = NA_character_
     )
+  )
+}
+
+#' One family's files as `font_add()` slots
+#'
+#' @param found A data frame from `cpb_read_fonts()`, one family only.
+#' @return A named character vector (`plain`, `bold`, `italic`,
+#'   `bolditalic`), `NA` where a face is missing.
+#' @noRd
+cpb_family_faces <- function(found) {
+  vapply(
+    c("plain", "bold", "italic", "bolditalic"),
+    function(nm) {
+      hit <- found$file[found$face == nm]
+      if (length(hit)) hit[[1]] else NA_character_
+    },
+    character(1)
   )
 }
 
@@ -79,6 +132,15 @@ cpb_scan_fonts <- function(path, recursive = FALSE) {
     path, pattern = "\\.(ttf|otf|ttc)$", ignore.case = TRUE,
     full.names = TRUE, recursive = isTRUE(recursive)
   )
+  cpb_read_fonts(files)
+}
+
+#' Read family and face from font files
+#'
+#' @param files Font file paths.
+#' @return A data frame with one row per file (`file`, `family`, `face`).
+#' @noRd
+cpb_read_fonts <- function(files) {
   if (!length(files)) {
     return(data.frame(file = character(), family = character(),
                       face = character(), stringsAsFactors = FALSE))
@@ -180,9 +242,9 @@ cpb_register_family <- function(family, faces, windows_device = TRUE) {
   )
 }
 
-#' Register the CPB "RijksoverheidSansText" font family
+#' Register the Rijkshuisstijl font family
 #'
-#' Registers the bundled Rijksoverheid Sans Text font family with
+#' Registers Rijksoverheid Sans Text, with
 #' \pkg{systemfonts} (so `ragg`/`svglite`/`ggplot2` output picks it up)
 #' and \pkg{sysfonts} (the registry \pkg{showtext} draws from), and
 #' optionally turns \pkg{showtext} on so the font also renders on
@@ -190,10 +252,16 @@ cpb_register_family <- function(family, faces, windows_device = TRUE) {
 #' is loaded, and safe to re-run on demand -- e.g. in a fresh parallel
 #' worker that does not inherit the main session's font registry.
 #'
-#' Registration never raises an error: if the bundled font files cannot
-#' be found, or a backend fails to register them, a single warning is
-#' issued and [cpb_font_family()] subsequently returns `""`, letting
-#' [theme_cpb()] fall back to the ggplot2 default font.
+#' The default font is the Rijksoverheid font. The package will search 
+#' in M-certain directories for this font. If the package can not find the font,
+#' Source Sans 3 serves as an open source default font. Its text runs about
+#' 10-15% wider, so a title or legend that only just fits may not, and
+#' such figures do not meet the Rijkshuisstijl: [save_cpb()] warns
+#' about that.
+#'
+#' If no font files can be found, a single warning is issued and
+#' [cpb_font_family()] subsequently returns `""`, letting [theme_cpb()]
+#' fall back to the ggplot2 default font.
 #'
 #' @section Why registration alone is not enough:
 #' `sysfonts::font_add()` adds a font to showtext's own registry; it
@@ -234,12 +302,12 @@ cpb_register_family <- function(family, faces, windows_device = TRUE) {
 #' are the simpler path when you are only exporting files.
 #'
 #' @param path Optional single directory holding font files (`.ttf`,
-#'   `.otf`, `.ttc`) to register in addition to the bundled family. Each
+#'   `.otf`, `.ttc`) to register in addition to the Rijkshuisstijl. Each
 #'   file's family and face are read from its own metadata where
 #'   possible, falling back to the file name, and the regular/bold/
 #'   italic/bold-italic variants of one family are mapped onto the
 #'   matching [sysfonts::font_add()] slots. `NULL` (default) registers
-#'   only the bundled font.
+#'   only the Rijkshuisstijl font.
 #' @param recursive If `TRUE`, search `path` recursively. Defaults to
 #'   `FALSE`.
 #' @param enable_showtext If `TRUE` (default), call
@@ -270,30 +338,12 @@ cpb_register_fonts <- function(path = NULL,
                                recursive = FALSE,
                                enable_showtext = TRUE,
                                windows_device = TRUE) {
-  files <- cpb_font_files()
-
-  # RijksoverheidSansText 2.0 ships regular, bold and italic but no
-  # bold-italic face. theme_cpb() only ever asks for those three (bold
-  # titles/strips, italic subtitle/axis/legend titles) and never combines
-  # bold + italic, so only these three are required.
-  required <- c("plain", "bold", "italic")
-  have_required <- all(vapply(
-    files[required], function(f) nzchar(f) && file.exists(f), logical(1)
-  ))
-
+  font <- cpb_font_files()
   registered <- NULL
+  .ggcpb_env$font_family <- ""
 
-  if (have_required) {
-    faces <- vapply(
-      c("plain", "bold", "italic", "bolditalic"),
-      function(nm) if (nzchar(files[[nm]]) && file.exists(files[[nm]])) {
-        files[[nm]]
-      } else {
-        NA_character_
-      },
-      character(1)
-    )
-    registered <- cpb_register_family("RijksoverheidSansText", faces,
+  if (!anyNA(font$faces[cpb_required_faces])) {
+    registered <- cpb_register_family(font$family, font$faces,
                                       windows_device = windows_device)
     if (!registered$systemfonts && !registered$sysfonts) {
       warning(
@@ -301,37 +351,27 @@ cpb_register_fonts <- function(path = NULL,
         "sysfonts backends; falling back to the default ggplot2 font family.",
         call. = FALSE
       )
-      .ggcpb_env$font_registered <- FALSE
     } else {
-      .ggcpb_env$font_registered <- TRUE
+      .ggcpb_env$font_family <- font$family
     }
   } else {
     warning(
-      "ggcpb: could not find the bundled RijksoverheidSansText font files ",
-      "in inst/fonts/; falling back to the default ggplot2 font family. ",
-      "See the ggcpb README for the path-based fallback.",
+      "ggcpb: could not find the Rijksoverheid font or ",
+      "Source Sans 3 files in inst/fonts/; falling back to the default ",
+      "ggplot2 font family.",
       call. = FALSE
     )
-    .ggcpb_env$font_registered <- FALSE
   }
 
-  # `path` adds to the bundled family rather than replacing it, so the
-  # house font keeps working whatever else the user points us at
+  # `path` adds to the family rather than replacing it, so the
+  # Rijkshuisstijl font keeps working whatever else the user points us at
   if (!is.null(path)) {
     found <- cpb_scan_fonts(path, recursive = recursive)
     if (!nrow(found)) {
       warning("ggcpb: no font files found in '", path, "'.", call. = FALSE)
     }
     for (fam in unique(found$family)) {
-      rows <- found[found$family == fam, , drop = FALSE]
-      faces <- vapply(
-        c("plain", "bold", "italic", "bolditalic"),
-        function(nm) {
-          hit <- rows$file[rows$face == nm]
-          if (length(hit)) hit[[1]] else NA_character_
-        },
-        character(1)
-      )
+      faces <- cpb_family_faces(found[found$family == fam, , drop = FALSE])
       registered <- rbind(
         registered,
         cpb_register_family(fam, faces, windows_device = windows_device)
@@ -364,7 +404,7 @@ cpb_register_fonts <- function(path = NULL,
       stringsAsFactors = FALSE
     )
   }
-  # a `path` pointing at the bundled font re-registers the house family;
+  # a `path` pointing at the font's folder re-registers that family;
   # report each family once, keeping the registration that actually took
   # effect (the later one wins in both backends)
   registered <- registered[!duplicated(registered$family, fromLast = TRUE), ,
@@ -374,12 +414,13 @@ cpb_register_fonts <- function(path = NULL,
   invisible(registered)
 }
 
-#' The CPB font family name for use in `theme_cpb()`
+#' The font name for use in `theme_cpb()`
 #'
-#' @return `"RijksoverheidSansText"` if the font was registered
-#'   successfully (see [cpb_register_fonts()]), or `""` otherwise -- an
-#'   empty string tells ggplot2 to use its built-in default family, so
-#'   plots still render correctly even without the CPB font.
+#' @return The registered family (see [cpb_register_fonts()]):
+#'   `"RijksoverheidSansText"`, or `"Source Sans 3"` where that is not
+#'   available. `""` if neither can be found. An empty string tells
+#'   ggplot2 to use its built-in default family, so plots still render
+#'   correctly even without the Rijkshuisstijl font.
 #'
 #' @section Devices without TTF lookup:
 #' The registration goes through \pkg{systemfonts}, which the modern
@@ -398,10 +439,41 @@ cpb_register_fonts <- function(path = NULL,
 #' cpb_font_family()
 #' @export
 cpb_font_family <- function() {
-  if (!isTRUE(.ggcpb_env$font_registered)) return("")
+  family <- .ggcpb_env$font_family
+  if (!nzchar(family)) return("")
   if (!isTRUE(getOption("ggcpb.force_font_family", FALSE))) {
     dev <- names(grDevices::dev.cur())
     if (dev %in% c("pdf", "postscript")) return("")
   }
-  "RijksoverheidSansText"
+  family
+}
+
+#' Warn when a plot does not use the Rijksoverheid font
+#'
+#' Called by save_cpb() and print.cpb_plot(). Off with
+#' `options(ggcpb.font_warning = FALSE)`.
+#' @param plot A ggplot.
+#' @param once Warn once per session: print() runs on every redraw.
+#' @return Invisibly `TRUE` if the plot uses the font.
+#' @noRd
+cpb_check_house_font <- function(plot, once = FALSE) {
+  if (!isTRUE(getOption("ggcpb.font_warning", TRUE))) return(invisible(TRUE))
+  family <- tryCatch(
+    ggplot2::calc_element("text", ggplot2::theme_get() + plot$theme)$family,
+    error = function(e) NULL
+  )
+  registered <- identical(.ggcpb_env$font_family, cpb_house_family)
+  if (identical(family, cpb_house_family) && registered) {
+    return(invisible(TRUE))
+  }
+  rlang::warn(
+    paste0(
+      "ggcpb: this plot does not meet the Rijkshuisstijl requirements, ",
+      "because it does not use the Rijkshuisstijl font (", cpb_house_family, ").",
+      if (!registered) " The font was not found. See ?cpb_register_fonts."
+    ),
+    .frequency = if (once) "once" else "always",
+    .frequency_id = "cpb_house_font"
+  )
+  invisible(FALSE)
 }

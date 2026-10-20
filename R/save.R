@@ -57,6 +57,7 @@ print.cpb_plot <- function(x, newpage = is.null(vp), vp = NULL, ...) {
       .frequency_id = "cpb_print_exact_error"
     )
   }
+  cpb_check_house_font(x, once = TRUE)
   if (drawn) {
     ggplot2::set_last_plot(x)
     return(invisible(x))
@@ -801,7 +802,12 @@ cpb_ggsave_grob <- function(filename, grob, dpi, device, bg, width = NULL, heigh
 #'
 #' A wrapper around [ggplot2::ggsave()] that enforces the CPB page
 #' widths and renders with the `ragg` device by default (needed for the
-#' bundled `RijksoverheidSansText` font to render correctly).
+#' font to render correctly).
+#'
+#' It warns when the plot does not use the Rijksoverheid font, e.g.
+#' because the bundled Source Sans 3 stands in for it (see
+#' [cpb_register_fonts()]). `options(ggcpb.font_warning = FALSE)` turns
+#' that off.
 #'
 #' Width is strict: it is set by `page`, not free-form. `page = "half"`
 #' gives a width of 7.5 cm, `page = "full"` 15.5 cm and `page = "small"`
@@ -839,7 +845,7 @@ cpb_ggsave_grob <- function(filename, grob, dpi, device, bg, width = NULL, heigh
 #' @param dpi Resolution in dots per inch; defaults to `300`. CPB tall
 #'   exports commonly use `dpi = 800`.
 #' @param device Graphics device passed to [ggplot2::ggsave()];
-#'   defaults to [ragg::agg_png()] so the bundled CPB font renders
+#'   defaults to [ragg::agg_png()] so the font renders
 #'   correctly.
 #' @param bg Output background colour; defaults to the CPB background
 #'   colour so it matches `theme_cpb()`'s on-plot background. Use
@@ -937,6 +943,7 @@ save_cpb <- function(filename,
 
   cpb_check_half_page(plot, width)
   cpb_check_category_labels(plot, width)
+  cpb_check_house_font(plot)
 
   # an explicit panel_size always wins; failing that, a wrapper (only
   # cpb_donut() so far) may have already asked for one of its own
