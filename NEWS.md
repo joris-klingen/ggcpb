@@ -22,10 +22,8 @@ Changed behaviour:
   (`"full"`) or 6.8 cm (`"small"`) wide, fixed margins, and a fixed top
   and bottom. The legend sits on a fixed grid. `save_cpb()` stops on a
   title or legend wider than the page (`lock = TRUE`, the default).
-* The value axis always covers the data. `value_limits` is a minimum:
-  when the data fits inside it the axis shows exactly those limits,
-  otherwise it widens to round values and says so. Neither
-  `value_limits` nor `value_breaks` hides a value any more.
+* `value_limits` sets the value axis range and widens when the data runs
+  past it. `value_crop = TRUE` cuts off the data outside it, with a warning.
 * Every continuous axis and colour bar labels its lowest and highest
   value, with equal steps.
 * The zero line is drawn only when zero is on the axis.
@@ -37,15 +35,12 @@ Changed behaviour:
   `cpb_cols()` also finds them by name.
 * `style = "english"` works in every chart, and
   `options(ggcpb.style = "english")` sets it for a whole report.
-* `value_crop = TRUE` turns `value_limits` into a window: the axis is
-  exactly those limits and values outside are cut off, with a warning
-  that not all data is shown.
 * `cpb_scatter()` and `cpb_hist()` have `value_limits`, `value_breaks`
   and `value_accuracy`. `cpb_scatter()` also has `pct_axis` and
   `x_labels`.
-* The right axis (`sec_y`) places its ticks on the gridlines of the left
-  axis. New arguments: `sec_at`, `sec_scale_auto`, `sec_axis_labels`.
-  Its series is named in the legend.
+* The right axis (`sec_y`) ticks sit on the left axis gridlines, and the axis
+  widens when its series runs past `sec_limits`. New arguments: `sec_at`,
+  `sec_scale_auto`, `sec_axis_labels`. Its series is named in the legend.
 * `legend_title` and `legend_nrow` work in every chart. `cpb_map()` has
   `reverse_legend`, `legend_ncol` and `legend_nrow`.
 * `legend = "filled-empty"` draws no legend but keeps its space, so a figure
@@ -61,5 +56,4 @@ Changed behaviour:
 
 * The axis of a stacked chart covers the stacks ggplot2 draws, also
   with missing values and facets.
-* * The right axis (`sec_y`) widens when its series runs past `sec_limits`
-  instead of cutting it off, so it shows all possible observations. A `sec_y` containing only observations with the exact same values stops with a clear error (non-unique data set).
+* A constant `sec_y` (the same value everywhere) stops with a clear error.
