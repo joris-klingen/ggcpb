@@ -1,13 +1,6 @@
 # ggcpb 0.2.0
 
-This release gives every figure a fixed layout and cleans up argument
-names. Code written for 0.1.0 needs the changes under "Breaking
-changes". A removed argument is not always an error: chart functions
-pass unknown arguments on to ggplot2, which only warns, and
-`cpb_import_csv()` skips an unknown name in a parameter file with a
-warning. After updating, check the warnings.
-
-## Breaking changes
+## Changes
 
 Renamed or removed:
 
@@ -34,7 +27,7 @@ Changed behaviour:
   otherwise it widens to round values and says so. Neither
   `value_limits` nor `value_breaks` hides a value any more.
 * Every continuous axis and colour bar labels its lowest and highest
-  value, with equal steps. A flush axis never runs past the data.
+  value, with equal steps.
 * The zero line is drawn only when zero is on the axis.
 * ggplot2 3.5.2 or newer is required.
 
@@ -48,13 +41,16 @@ Changed behaviour:
   exactly those limits and values outside are cut off, with a warning
   that not all data is shown.
 * `cpb_scatter()` and `cpb_hist()` have `value_limits`, `value_breaks`
-  and `value_accuracy`; `cpb_scatter()` also has `pct_axis` and
+  and `value_accuracy`. `cpb_scatter()` also has `pct_axis` and
   `x_labels`.
 * The right axis (`sec_y`) places its ticks on the gridlines of the left
   axis. New arguments: `sec_at`, `sec_scale_auto`, `sec_axis_labels`.
   Its series is named in the legend.
 * `legend_title` and `legend_nrow` work in every chart. `cpb_map()` has
   `reverse_legend`, `legend_ncol` and `legend_nrow`.
+* `legend = "filled-empty"` draws no legend but keeps its space, so a figure
+  without a legend has the same panel height as one with a legend.
+* `cpb_boxplot_extended()` puts the axis title at same width as the value axis.
 * A `cpb_map()` figure has the size of the page, and
   `save_cpb(preset = "map")` makes it as tall as the map needs.
 * `cpb_donut()` uses the same layout as the other charts.
@@ -63,10 +59,7 @@ Changed behaviour:
 
 ## Fixes
 
-* A tick label names the value its tick sits at, on every axis and
-  legend (within 0.1% of the axis length).
 * The axis of a stacked chart covers the stacks ggplot2 draws, also
   with missing values and facets.
-* The right axis widens when its series runs past `sec_limits`, instead
-  of cutting the series off. A constant `sec_y` gives a clear error.
-* A chart drawn on screen looks like the saved one.
+* * The right axis (`sec_y`) widens when its series runs past `sec_limits`
+  instead of cutting it off, so it shows all possible observations. A `sec_y` containing only observations with the exact same values stops with a clear error (non-unique data set).
