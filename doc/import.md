@@ -37,22 +37,22 @@ The file can be read in the usual way:
 
 ``` r
 read.csv(data_csv)
-#>    jaar                  groep koopkracht werkloosheid
-#> 1  2021              werkenden        0.3          3.4
-#> 2  2021        gepensioneerden       -0.2          3.4
-#> 3  2021 uitkeringsgerechtigden       -0.9          3.4
-#> 4  2022              werkenden       -2.7          3.5
-#> 5  2022        gepensioneerden       -2.3          3.5
-#> 6  2022 uitkeringsgerechtigden       -3.2          3.5
-#> 7  2023              werkenden        1.5          3.6
-#> 8  2023        gepensioneerden        0.8          3.6
-#> 9  2023 uitkeringsgerechtigden       -0.3          3.6
-#> 10 2024              werkenden        1.2          3.7
-#> 11 2024        gepensioneerden        0.6          3.7
-#> 12 2024 uitkeringsgerechtigden       -0.5          3.7
-#> 13 2025              werkenden        0.9          3.7
-#> 14 2025        gepensioneerden        0.4          3.7
-#> 15 2025 uitkeringsgerechtigden       -0.6          3.7
+#>    jaar           groep koopkracht werkloosheid
+#> 1  2021       werkenden        0.3          3.4
+#> 2  2021 gepensioneerden       -0.2          3.4
+#> 3  2021       uitkering       -0.9          3.4
+#> 4  2022       werkenden       -2.7          3.5
+#> 5  2022 gepensioneerden       -2.3          3.5
+#> 6  2022       uitkering       -3.2          3.5
+#> 7  2023       werkenden        1.5          3.6
+#> 8  2023 gepensioneerden        0.8          3.6
+#> 9  2023       uitkering       -0.3          3.6
+#> 10 2024       werkenden        1.2          3.7
+#> 11 2024 gepensioneerden        0.6          3.7
+#> 12 2024       uitkering       -0.5          3.7
+#> 13 2025       werkenden        0.9          3.7
+#> 14 2025 gepensioneerden        0.4          3.7
+#> 15 2025       uitkering       -0.6          3.7
 ```
 
 The important point for the import method is that the parameter file
