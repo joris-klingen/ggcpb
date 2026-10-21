@@ -137,7 +137,7 @@ not cover.
 `page = "half"` (7.5 cm) or `page = "full"` (15.5 cm) – through the
 `ragg` device, which consults `systemfonts`, so the Rijkshuisstijl font
 (registered automatically on load) renders correctly. See
-`cpb_register_fonts()` for more information. 
+`cpb_register_fonts()` for more information.
 
 ``` r
 save_cpb("koopkracht.png", p, page = "half")
