@@ -163,21 +163,9 @@ short name of their own.
 
 # The palette argument
 
-`palette` selects the same palettes and predates the keywords. Both
-still work, so pick one per call: a keyword that contradicts an explicit
-`palette` is an error rather than a silent winner.
-
-``` r
-cpb_col(tw, x = jaar, y = waarde, fill = sector,
-  colour_index = "continuous",
-  palette    = "qualitative")
-#> Error:
-#> ! `colour_index = "continuous"` and `palette = "qualitative"` both set the palette, and they disagree. Pass one of them.
-```
-
-`palette` is also the way to reach a palette while still picking
-positions out of it, since `colour_index` can carry positions *or* a
-palette name, not both at once:
+`palette`can reach a palette while still picking positions out of it,
+since `colour_index` can carry positions *or* a palette name, not both
+at once:
 
 ``` r
 cpb_col(intensiteit, x = jaar, y = n, fill = klasse,

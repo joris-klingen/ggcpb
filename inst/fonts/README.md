@@ -1,32 +1,32 @@
 # Bundled fonts
 
-This directory holds the Rijksoverheid Sans Text TTF files that `ggcpb`
-registers automatically on load (see `R/fonts.R` / `cpb_register_fonts()`):
+The house font, Rijksoverheid Sans Text, may not be published, so it is
+not in this repository. `cpb_register_fonts()` (see `R/fonts.R`) takes
+it from the first of these folders that has it, as nicerplot does:
+
+| Folder | Platform |
+|---|---|
+| `M:/p_james/fonts` | Windows |
+| `/nas/mdk/M/p_james/fonts`, `/cifs/p_james/fonts` | Linux |
+| `~/Library/Fonts` | macOS |
+
+`options(ggcpb.font_path = )` replaces this list.
+
+Where none of them has it, the Source Sans 3 files here stand in:
 
 ```
-RijksoverheidSansText-Regular_2_0.ttf
-RijksoverheidSansText-Bold_2_0.ttf
-RijksoverheidSansText-Italic_2_0.ttf
+SourceSans3-Regular.ttf
+SourceSans3-Bold.ttf
+SourceSans3-It.ttf
 ```
 
-These are version 2.000 of the family (`family = "RijksoverheidSansText"`),
-sourced from the Rijkshuisstijl web assets at
-[Pleio/rijkshuisstijl](https://github.com/Pleio/rijkshuisstijl/tree/master/src/font)
-(the `rijksoverheidsanstext-*-webfont.ttf` files, renamed to the versioned
-names above).
+These are Adobe's original files (version 3.052, from
+[adobe-fonts/source-sans](https://github.com/adobe-fonts/source-sans)),
+licensed under the SIL Open Font License 1.1 (`OFL.txt`). Source Sans 3
+sets text about 10-15% wider than the Rijksoverheid font on the M share
+(italic the most), so a title or legend that only just fits there may
+not fit here. Figures in it do not meet the Rijkshuisstijl, so
+`save_cpb()` and printing a ggcpb chart warn about it.
 
-The family has **no bold-italic face**, so no
-`RijksoverheidSansText-BoldItalic_2_0.ttf` is shipped. `theme_cpb()` never
-combines bold + italic (it uses bold for titles/strips and italic for the
-subtitle, axis titles and legend), so this makes no visual difference;
-`cpb_register_fonts()` reuses the bold face for the bold-italic slot to keep
-any stray bold + italic request from erroring.
-
-If the three required files are absent, `cpb_register_fonts()` fails
-gracefully with a single warning and `theme_cpb()` falls back to the ggplot2
-default font family (`cpb_font_family()` returns `""`) -- see the top-level
-README for the path-based registration fallback.
-
-**Licensing.** The Rijksoverheid house-style fonts are the property of the
-Dutch central government; use them only where you are permitted to. Confirm
-redistribution is acceptable before publishing this package externally.
+No bold-italic face is shipped: `theme_cpb()` never combines bold and
+italic, and `cpb_register_fonts()` reuses the bold face for that slot.

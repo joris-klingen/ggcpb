@@ -20,9 +20,9 @@ theme_cpb(
 }
 \arguments{
 \item{base_family}{Font family for all text. Defaults to
-\code{\link[=cpb_font_family]{cpb_font_family()}}, which resolves to \code{"RijksoverheidSansText"}
-if the bundled font registered successfully, or \code{""} (the
-ggplot2 default family) otherwise.}
+\code{\link[=cpb_font_family]{cpb_font_family()}}: \code{"RijksoverheidSansText"}, the bundled
+\code{"Source Sans 3"} where that is not available, or \code{""} (the
+ggplot2 default family) if neither registered.}
 
 \item{background}{If \code{TRUE} (default), \code{plot.background} is filled
 with the CPB background colour (\code{cpb_tokens()$bg}). If \code{FALSE},

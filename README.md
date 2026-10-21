@@ -76,10 +76,15 @@ strict CPB half/full page widths.
 
 ## Fonts
 
-The four Rijksoverheid Sans Text TTFs ship in `inst/fonts/` and
-register automatically on load; if the files or a font backend are
-missing, the theme falls back to the ggplot2 default with a single
-warning. `cpb_register_fonts()` re-runs registration,
+The house font, Rijksoverheid Sans Text, may not be published, so it
+is not in this repository. 
+
+Without it, the bundled Source Sans 3 (SIL OFL 1.1, see `inst/fonts/`)
+stands in. Its text runs about 10-15% wider. `save_cpb()` and printing
+a chart then warn that the figure does not meet the Rijkshuisstijl.
+`options(ggcpb.font_warning = FALSE)` turns that off. If no font
+registers at all, the theme falls back to the ggplot2 default with a
+single warning. `cpb_register_fonts()` re-runs registration,
 `cpb_font_family()` reports the family in use.
 
 Point it at a directory to register your own fonts alongside the house
@@ -88,8 +93,6 @@ metadata, falling back to the file name:
 
 ```r
 cpb_register_fonts(path = "~/fonts", recursive = TRUE)
-#>                  family               faces n_files systemfonts sysfonts windows
-#> 1 RijksoverheidSansText plain, bold, italic       3        TRUE     TRUE   FALSE
 ```
 
 Registering a font does not by itself teach a graphics device about
@@ -109,19 +112,6 @@ the wrong size while the rest of the plot is fine:
 showtext::showtext_opts(dpi = 300)
 ggsave("fig.png", p, dpi = 300)
 showtext::showtext_opts(dpi = 96)   # back to screen
-```
-
-**Note:** confirm with
-CPB that the bundled TTFs may be redistributed in this repository; if
-not, register them by path against an internal copy instead:
-
-```r
-systemfonts::register_font(
-  name   = "RijksoverheidSansText",
-  plain  = "path/to/RijksoverheidSansText-Regular_2_0.ttf",
-  bold   = "path/to/RijksoverheidSansText-Bold_2_0.ttf",
-  italic = "path/to/RijksoverheidSansText-Italic_2_0.ttf"
-)
 ```
 
 ## Tests

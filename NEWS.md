@@ -1,3 +1,8 @@
+# ggcpb (development version)
+
+* Source Sans 3 is contained as the direct fallback font in the package. `save_cpb()` and printing a chart then warn that the figure
+  does not meet the Rijkshuisstijl.
+
 # ggcpb 0.2.0
 
 ## Changes

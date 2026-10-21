@@ -2,7 +2,7 @@
 % Please edit documentation in R/fonts.R
 \name{cpb_register_fonts}
 \alias{cpb_register_fonts}
-\title{Register the CPB "RijksoverheidSansText" font family}
+\title{Register the Rijkshuisstijl font family}
 \usage{
 cpb_register_fonts(
   path = NULL,
@@ -13,12 +13,12 @@ cpb_register_fonts(
 }
 \arguments{
 \item{path}{Optional single directory holding font files (\code{.ttf},
-\code{.otf}, \code{.ttc}) to register in addition to the bundled family. Each
+\code{.otf}, \code{.ttc}) to register in addition to the Rijkshuisstijl. Each
 file's family and face are read from its own metadata where
 possible, falling back to the file name, and the regular/bold/
 italic/bold-italic variants of one family are mapped onto the
 matching \code{\link[sysfonts:font_add]{sysfonts::font_add()}} slots. \code{NULL} (default) registers
-only the bundled font.}
+only the Rijkshuisstijl font.}
 
 \item{recursive}{If \code{TRUE}, search \code{path} recursively. Defaults to
 \code{FALSE}.}
@@ -42,7 +42,7 @@ carries a \code{showtext} attribute recording whether showtext
 rendering is on.
 }
 \description{
-Registers the bundled Rijksoverheid Sans Text font family with
+Registers Rijksoverheid Sans Text, with
 \pkg{systemfonts} (so \code{ragg}/\code{svglite}/\code{ggplot2} output picks it up)
 and \pkg{sysfonts} (the registry \pkg{showtext} draws from), and
 optionally turns \pkg{showtext} on so the font also renders on
@@ -51,10 +51,16 @@ is loaded, and safe to re-run on demand -- e.g. in a fresh parallel
 worker that does not inherit the main session's font registry.
 }
 \details{
-Registration never raises an error: if the bundled font files cannot
-be found, or a backend fails to register them, a single warning is
-issued and \code{\link[=cpb_font_family]{cpb_font_family()}} subsequently returns \code{""}, letting
-\code{\link[=theme_cpb]{theme_cpb()}} fall back to the ggplot2 default font.
+The default font is the Rijksoverheid font. The package will search
+in M-certain directories for this font. If the package can not find the font,
+Source Sans 3 serves as an open source default font. Its text runs about
+10-15\% wider, so a title or legend that only just fits may not, and
+such figures do not meet the Rijkshuisstijl: \code{\link[=save_cpb]{save_cpb()}} warns
+about that.
+
+If no font files can be found, a single warning is issued and
+\code{\link[=cpb_font_family]{cpb_font_family()}} subsequently returns \code{""}, letting \code{\link[=theme_cpb]{theme_cpb()}}
+fall back to the ggplot2 default font.
 }
 \section{Why registration alone is not enough}{
 
