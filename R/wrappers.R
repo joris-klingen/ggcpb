@@ -319,27 +319,30 @@ cpb_axis_ticks <- function(lo, hi, whole = FALSE, edge = TRUE, max_labels = 7) {
   out(c(lo + (0:(k - 1)) * span / k, hi))
 }
 
-# The same for a Date or POSIXct x. Dates on the first of a month step in
-# whole months; others in equal days (or seconds). When no equal month
-# step ends on hi (e.g. Jan-Dec: 11 months), a round step of 1, 2, 3, 6
-# or 12 (or more) months from lo is used and the last tick may stop
-# short of hi, rather than labelling only the two ends (#75).
+# The same for a Date or POSIXct x. Dates on the first of a month label
+# their first and last month, with calendar breaks in between: the
+# finest of every month, quarter, half year, year (or 2, 5, 10, ...
+# years) that leaves at most 4 between the ends. A break less than half
+# a step from either end is dropped, so labels don't crowd (#75).
+# Others step in equal days (or seconds).
 # @noRd
 cpb_time_ticks <- function(lo, hi, edge = TRUE) {
   first <- inherits(lo, "Date") && all(format(c(lo, hi), "%d") == "01")
   if (first) {
-    months <- function(d) as.integer(format(d, "%Y")) * 12L + as.integer(format(d, "%m"))
-    span <- months(hi) - months(lo)
-    tk <- cpb_axis_ticks(0, span, whole = TRUE, edge = TRUE, max_labels = 5)
-    n <- length(tk$breaks)
-    if (n < 2) return(list(breaks = lo, lo = lo, hi = hi))
-    step <- tk$breaks[2] - tk$breaks[1]
-    if (n == 2 && span >= 4) {
-      steps <- c(1, 2, 3, 6, 12, 24, 60, 120, 240, 600)
-      step <- steps[span %/% steps + 1 <= 5][1]
-      n <- span %/% step + 1
+    # months since year 0, so a step that divides 12 (or is a whole
+    # number of years) lands on calendar quarters, half years and years
+    months <- function(d) as.integer(format(d, "%Y")) * 12L + as.integer(format(d, "%m")) - 1L
+    a <- months(lo)
+    b <- months(hi)
+    if (b <= a) return(list(breaks = lo, lo = lo, hi = hi))
+    for (step in c(1, 3, 6, 12, 24, 60, 120, 240, 600)) {
+      from <- ceiling((a + 1) / step) * step
+      inner <- if (from < b) seq(from, b - 1, by = step) else numeric(0)
+      inner <- inner[inner - a >= step / 2 & b - inner >= step / 2]
+      if (length(inner) <= 4) break
     }
-    breaks <- seq(lo, by = paste(step, "months"), length.out = n)
+    m <- c(a, inner, b)
+    breaks <- as.Date(sprintf("%d-%02d-01", m %/% 12, m %% 12 + 1))
     return(list(breaks = breaks, lo = lo, hi = hi))
   }
   tk <- cpb_axis_ticks(as.numeric(lo), as.numeric(hi), whole = FALSE,
