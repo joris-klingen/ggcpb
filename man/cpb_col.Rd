@@ -38,6 +38,7 @@ cpb_col(
   value_labels = FALSE,
   x_lim = NULL,
   x_lim_follow_data = FALSE,
+  x_ticks_ends = FALSE,
   forecast_x = NULL,
   forecast_label = "raming",
   reverse_legend = TRUE,
@@ -249,7 +250,9 @@ axis would then leave no cue where the data starts and ends. Ticks
 are equally spaced and the first and last value are labelled; a
 whole-number \code{x} (a year) only gets whole-number steps. When no
 equal step fits, only the two ends are labelled (on bars the ticks
-run from the first value instead). With \code{x_lim} the exact limits
+run from the first value instead). A monthly date \code{x} in \code{\link[=cpb_col]{cpb_col()}},
+\code{\link[=cpb_area]{cpb_area()}} or \code{\link[=cpb_line]{cpb_line()}} gets calendar breaks instead (see their
+\code{x_ticks_ends}). With \code{x_lim} the exact limits
 are labelled and nothing goes beyond them (\code{x_lim_follow_data} is
 then ignored, as when \code{group} is mapped: the grouped layout needs
 its own fixed margin). Adding your own
@@ -257,6 +260,14 @@ its own fixed margin). Adding your own
 one entirely (ggplot2 keeps only one scale per aesthetic) -- add
 \code{expand = ggplot2::expansion(mult = 0)} to it to keep the flush
 behaviour.}
+
+\item{x_ticks_ends}{For a monthly date \code{x} (all dates on the 1st of
+a month, e.g. a \code{Date} or data.table \code{IDate}): the axis gets
+calendar breaks -- every month, quarter, half year, year or more
+years, at most 5 -- and the first and last month are only labelled
+when they fall on one. \code{TRUE} always labels the first and last
+month too, with at most 4 calendar breaks in between. Default
+\code{FALSE}. With \code{x_lim} both ends are always labelled.}
 
 \item{forecast_x}{Optional x value where the forecast window starts
 (vertical charts with a numeric/time x axis). Everything to its
