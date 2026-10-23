@@ -1,0 +1,614 @@
+---
+title: "Introduction to ggcpb"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
+vignette: >
+  %\VignetteIndexEntry{Introduction to ggcpb}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+# Figures are drawn on the real CPB canvas (half page is 7.5 cm, full
+# page is 15.5 cm) and only displayed smaller. Code is hidden by default
+# so that readers who do not use R see the figure and its parameters.
+knitr::opts_chunk$set(
+  echo = FALSE, message = FALSE, warning = FALSE,
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7.5 / 2.54,
+  fig.height = 7.5 / 2.54,
+  dpi = 300,
+  out.width = "100%",
+  dev = if (requireNamespace("ragg", quietly = TRUE)) "ragg_png" else "png",
+  dev.args = list(background = "#eef8ff")
+)
+```
+
+```{r setup, message = FALSE}
+library(ggcpb)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+set.seed(42)
+
+# Shows the parameters that build a figure, as a small table.
+ptab <- function(...) {
+  p <- list(...)
+  knitr::kable(data.frame(parameter = names(p), value = unlist(p),
+                          row.names = NULL),
+               align = c("l", "r"), format = "html",
+               table.attr = 'class="ptab"')
+}
+
+# One standard sentence under every figure.
+repro <- function(fun) {
+  cat("**How to reproduce this figure:** copy `data.csv`, `params.csv` and ",
+      "`run_import.bat` (Windows) or `run_import.command` (Mac) to a ",
+      "personal folder. Fill in the parameters above in `params.csv` and ",
+      "start the script. In R you can call `", fun, "()` instead. See ",
+      "section 1.4.\n", sep = "")
+}
+```
+
+<style>
+.figrow { display: flex; gap: 24px; align-items: flex-start; margin: 1em 0; }
+.figrow > * { flex: 1 1 0; min-width: 0; }
+.figrow table { font-size: 0.85em; }
+table.ptab { background: none; border-collapse: collapse; width: 100%; }
+table.ptab tr, table.ptab tr:nth-child(odd), table.ptab tr:nth-child(even),
+table.ptab th, table.ptab td { background: none; border: none; }
+table.ptab th, table.ptab td { border-bottom: 1px solid #bbb; padding: 4px 6px; }
+table.ptab th { border-top: 2px solid #bbb; }
+.figrow h4 { margin-top: 0; color: #c02a6a; }
+@media (max-width: 600px) { .figrow { display: block; } }
+</style>
+
+This vignette gives a short introduction to creating customizable
+CPB style figures with ggcpb.
+
+# What is ggcpb?
+
+ggcpb is the new version of James. It draws figures in the 
+CPB house style from Excel or from R. 
+
+
+## Why ggcpb instead of James?
+
+ggcpb is more future proof. It is built on ggplot2, the most widely
+used plotting package in R. This brings the following benefits:
+
+* **More possibilities.** Anything ggplot2 can do, ggcpb can do. If you
+  need an extra layer or a special annotation, you can add it. 
+  It allows for new figure types that were not possible with James,
+  such as a donut chart.
+* **Easier to maintain.** ggcpb adds a thin layer to a well tested
+  package.
+
+## What you need to know
+
+This is the general workflow to create figures with ggcpb. 
+
+1. Find the most recent ggcpb folder in `[path]`.
+2. Copy it to the place where you want to create figures.
+3. Open `data.csv` and `params.csv` in Excel. Fill in your data and
+   describe your figures.
+4. Start `run_import.bat` (Windows) by
+   double clicking it. Your figures appear in the folder `generated`.
+
+You do not need to know R to follow this workflow.
+
+## Use ggcpb in Excel
+
+Two files drive everything.
+
+* `params.csv` describes your figures. Each row forms one figure.
+  Each column holds the parameter settings for a specific figure. 
+* `data.csv` holds your data. The first row holds the column names. 
+  The following rows are the observations per column.
+
+*Please note*: The files must be saved as CSV, not as spreadsheet (`xlsx`).
+Excel can save a sheet as CSV via `File` -> `Save as` -> `CSV`.
+
+Run the script again after every change. This will update the figures. The
+import vignette gives a more detailed explanation
+and lists all settings per figure type.
+See [`vignette("import")`](import.html).
+
+## Use ggcpb in R
+
+Next to plotting Excel data with ggcpb, you can also plot data that
+you already have in R. The caption below each figure in this introduction
+shows the function to use. Load the package first.
+
+```{r library, eval = FALSE, echo = TRUE}
+library(ggcpb)
+```
+
+Each figure type has its own function.
+
+```{r functions, eval = FALSE, echo = TRUE}
+# Line chart
+cpb_line(data = df, x = year, y = value)
+# Bar chart
+cpb_col(data = df, x = year, y = value, fill = group)
+# Area chart
+cpb_area(data = df, x = year, y = value, fill = group)
+# Box plot
+cpb_box(data = df, x = group, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95)
+# Dot plot
+cpb_dot(data = df, x = term, y = estimate, lower = lower, upper = upper)
+# Donut chart
+cpb_donut(data = df, fill = group, y = share)
+# Scatter plot
+cpb_scatter(data = df, x = income, y = spending)
+# Histogram
+cpb_hist(data = df, x = duration)
+# Map
+cpb_map(data = df, region = code, value = share)
+```
+
+To export a figure, use `save_cpb()`. It writes the figure at the CPB
+page widths. Use `page = "half"` for 7.5 cm and `page = "full"` for
+15.5 cm.
+
+```{r save, eval = FALSE, echo = TRUE}
+save_cpb("zonnepanelen.png", p, page = "half")
+```
+
+The rest of this introduction assumes that you work in Excel.
+
+# Figure types
+
+Each figure below is combined with a feature that you can also use
+with several other plot types, if not all. The parameters and their 
+corresponding values are portrayed next to the figure. Other settings keep their default.
+
+It is possible to set the style for a whole publication. 
+Dutch is the default. An English report can use `style = english` 
+in `params.csv`, or `options(ggcpb.style = "english")` in R.
+
+## Line with forecast
+
+A line chart with a forecast window and an uncertainty band.
+
+```{r data-line}
+groei <- tibble(jaar = 2015:2027,
+                groei = round(rnorm(13, 1.5, 0.8), 1)) |>
+  mutate(marge = c(rep(0, 9), 0.4, 0.9, 1.4, 1.8),
+         lo = groei - marge, hi = groei + marge)
+```
+
+::: {.figrow}
+
+```{r line-forecast}
+cpb_line(groei, x = jaar, y = groei, ymin = lo, ymax = hi,
+  forecast_x = 2023.5,
+  title = "Economische groei met onzekerheid", ylab = "%") +
+  scale_x_continuous(breaks = seq(2015, 2027, 3), minor_breaks = 2015:2027,
+                     guide = guide_axis(minor.ticks = TRUE))
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-line}
+ptab(plot_type = "line", title = "Economische groei met onzekerheid",
+     x = "jaar", y = "groei", ymin = "lo", ymax = "hi",
+     forecast_x = 2023.5, ylab = "%")
+```
+
+</div>
+
+:::
+
+```{r, results = "asis"}
+repro("cpb_line")
+```
+
+## Columns with two axes
+
+Two series on one figure, with the second series on the right axis.
+The legend tells you which axis belongs to which series.
+
+```{r data-col}
+erfenissen <- expand_grid(
+  soort = factor(c("geen aangifte", "wel aangifte"),
+                 levels = c("geen aangifte", "wel aangifte")),
+  jaar  = 2015:2022
+) |>
+  mutate(mld = c(15.0, 15.3, 15.5, 16.3, 19.4, 20.5, 22.2, 23.0,
+                 5.8, 5.6, 5.6, 6.6, 6.4, 6.5, 6.8, 7.0)) |>
+  left_join(tibble(jaar = 2015:2022,
+                   heffing = c(1.7, 1.8, 1.8, 1.8, 2.3, 2.4, 2.5, 2.6)),
+            by = "jaar")
+```
+
+::: {.figrow}
+
+```{r col-secaxis, warning = FALSE}
+cpb_col(erfenissen, x = jaar, y = mld, fill = soort,
+  sec_y = heffing, sec_limits = c(0, 3),
+  sec_legend_label = "erfbelasting", sec_ylab = "mld euro",
+  title = "Erfenissen en erfbelasting", ylab = "mld euro")
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-col}
+ptab(plot_type = "col", title = "Erfenissen en erfbelasting",
+     x = "jaar", y = "mld", fill = "soort", sec_y = "heffing",
+     sec_limits = "0;3", sec_legend_label = "erfbelasting",
+     sec_ylab = "mld euro", ylab = "mld euro")
+```
+
+</div>
+
+:::
+
+```{r, results = "asis"}
+repro("cpb_col")
+```
+
+## Horizontal bars with chosen colours
+
+The colours decide the legend. Pick them with `colour_index`.
+
+```{r data-hbar}
+groepen <- c("tot 120% wml", "120% wml tot modaal", "1 tot 1,5x modaal",
+             "1,5 tot 2x modaal", "2 tot 3x modaal", "boven 3x modaal")
+zonnepanelen <- expand_grid(
+  jaar  = factor(c(2021, 2024), levels = c(2024, 2021)),
+  groep = factor(groepen, levels = rev(groepen))
+) |>
+  mutate(aandeel = c(10, 14, 19, 22, 26, 33,
+                     19, 25, 31, 38, 47, 59))
+```
+
+::: {.figrow}
+
+```{r col-horizontal}
+cpb_col(zonnepanelen, x = groep, y = aandeel, fill = jaar,
+  position = "dodge", orientation = "horizontal",
+  colour_index = c(2, 1), value_limits = c(0, 70), width = 0.85,
+  title = "Zonnepanelen naar inkomen",
+  ylab  = "inkomensgroep", xlab = "aandeel binnen inkomensgroep (%)")
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-hbar}
+ptab(plot_type = "col", title = "Zonnepanelen naar inkomen",
+     x = "groep", y = "aandeel", fill = "jaar", position = "dodge",
+     orientation = "horizontal", colour_index = "2;1",
+     value_limits = "0;70", ylab = "inkomensgroep",
+     xlab = "aandeel binnen inkomensgroep (%)")
+```
+
+</div>
+
+:::
+
+```{r, results = "asis"}
+repro("cpb_col")
+```
+
+## Line with markers in English
+
+A line with markers suits a few ordered categories. This figure uses
+the English style.
+
+```{r data-points}
+leeftijden <- c("20 to 30", "30 to 40", "40 to 50", "50 to 60", "60 to 70")
+tarieven <- expand_grid(
+  erfenis  = factor(c("10,000 euro", "100,000 euro"),
+                    levels = c("10,000 euro", "100,000 euro")),
+  leeftijd = factor(leeftijden, levels = leeftijden)
+) |>
+  mutate(tarief = c(14.5, 12.5, 13.5, 10.5, 8.5,
+                    21.5, 18.5, 18.5, 17.5, 17.5))
+```
+
+::: {.figrow}
+
+```{r line-points}
+cpb_line(tarieven, x = leeftijd, y = tarief, colour = erfenis,
+  points = TRUE, value_limits = c(0, 30), style = "english",
+  title = "Preferred tax rate by age", ylab = "% average rate")
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-points}
+ptab(plot_type = "line", title = "Preferred tax rate by age",
+     x = "leeftijd", y = "tarief", colour = "erfenis", points = "TRUE",
+     value_limits = "0;30", style = "english", ylab = "% average rate")
+```
+
+</div>
+
+:::
+
+```{r, results = "asis"}
+repro("cpb_line")
+```
+
+## Boxplot
+
+A box shows the 25th to 75th percentile. The line in the box is the
+median. The whiskers run from the 5th to the 95th percentile.
+
+```{r data-box}
+raw <- tibble(
+  groep      = factor(rep(groepen, each = 400), levels = rev(groepen)),
+  koopkracht = rnorm(2400, mean = rep(c(-3, -1.5, 0, 1, 2, 3.5), each = 400),
+                     sd = 2)
+)
+kk <- raw |>
+  summarise(p5 = quantile(koopkracht, 0.05), p25 = quantile(koopkracht, 0.25),
+            p50 = quantile(koopkracht, 0.50), p75 = quantile(koopkracht, 0.75),
+            p95 = quantile(koopkracht, 0.95), .by = groep)
+```
+
+::: {.figrow}
+
+```{r box}
+cpb_box(kk, x = groep,
+  p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+  orientation = "horizontal",
+  title = "Koopkracht per inkomensgroep",
+  subtitle = "inkomensgroep", ylab = "% koopkrachtmutatie")
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-box}
+ptab(plot_type = "box", title = "Koopkracht per inkomensgroep",
+     x = "groep", p5 = "p5", p25 = "p25", p50 = "p50", p75 = "p75",
+     p95 = "p95", orientation = "horizontal",
+     subtitle = "inkomensgroep", ylab = "% koopkrachtmutatie")
+```
+
+</div>
+
+:::
+
+```{r, results = "asis"}
+repro("cpb_box")
+```
+
+More box plot styles are in [`vignette("boxplots")`](boxplots.html).
+
+## Donut chart
+
+Individual categories add up to 100% in the donut chart. 
+Categories don't need to be expressed as percentages.
+Any numerical values will work, as the donut chart 
+automatically calculates the proportions.
+
+```{r data-donut}
+bronnen <- c("gas", "elektriciteit", "warmte", "overig")
+energie <- tibble(bron = factor(bronnen, levels = bronnen),
+                  aandeel = c(45, 30, 15, 10))
+```
+
+::: {.figrow}
+
+```{r donut, warning = FALSE}
+cpb_donut(energie, fill = bron, y = aandeel,
+  colour_index = c(6, 5, 2, 4),
+  title = "Energiemix van huishoudens")
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-donut}
+ptab(plot_type = "donut", title = "Energiemix van huishoudens",
+     fill = "bron", y = "aandeel", colour_index = "6;5;2;4")
+```
+
+</div>
+
+:::
+
+```{r, results = "asis"}
+repro("cpb_donut")
+```
+
+## Dot plot
+
+A dot plot shows an estimate with its interval.
+
+```{r data-dot}
+termen <- c("Werken ontmoedigd", "Ongelijkheid", "Hard werken loont",
+            "Leeftijd", "Geslacht", "Kinderen")
+schatting <- tibble(
+  term = factor(termen, levels = termen),
+  blok = factor(rep(c("Percepties", "Achtergrond"), each = 3),
+                levels = c("Percepties", "Achtergrond")),
+  coef = c(3.2, 2.9, -2.0, 3.5, 0.4, -1.4),
+  lo   = c(-0.3, 2.1, -3.0, 2.6, -1.3, -3.3),
+  hi   = c(6.6, 3.6, -1.1, 4.3, 2.2, 0.6)
+)
+```
+
+::: {.figrow}
+
+```{r dot}
+cpb_dot(schatting, x = term, y = coef, lower = lo, upper = hi,
+  group = blok,
+  title = "Samenhang met voorkeurstarieven",
+  xlab  = "%punt verandering")
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-dot}
+ptab(plot_type = "dot", title = "Samenhang met voorkeurstarieven",
+     x = "term", y = "coef", lower = "lo", upper = "hi", group = "blok",
+     xlab = "%punt verandering")
+```
+
+</div>
+
+:::
+
+```{r, results = "asis"}
+repro("cpb_dot")
+```
+
+## Scatter plot
+
+```{r data-scatter}
+hh <- tibble(inkomen = round(rlnorm(400, log(2500), 0.35))) |>
+  mutate(energierekening = round(90 + 0.04 * inkomen + rnorm(n(), 0, 35)))
+```
+
+::: {.figrow}
+
+```{r scatter}
+cpb_scatter(hh, x = inkomen, y = energierekening,
+  title = "Energierekening naar inkomen",
+  ylab  = "euro per maand",
+  xlab  = "besteedbaar inkomen (euro per maand)",
+  x_labels = label_euro_nl())
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-scatter}
+ptab(plot_type = "scatter", title = "Energierekening naar inkomen",
+     x = "inkomen", y = "energierekening", ylab = "euro per maand",
+     xlab = "besteedbaar inkomen (euro per maand)")
+```
+
+</div>
+
+:::
+
+```{r, results = "asis"}
+repro("cpb_scatter")
+```
+
+## Histogram
+
+```{r data-hist}
+duur <- tibble(maanden = round(rgamma(1200, 8, 0.6)))
+```
+
+::: {.figrow}
+
+```{r hist}
+cpb_hist(duur, x = maanden, binwidth = 2,
+  title = "Verdeling van de duur", ylab = "aantal",
+  xlab  = "duur (maanden)")
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-hist}
+ptab(plot_type = "hist", title = "Verdeling van de duur",
+     x = "maanden", binwidth = 2, ylab = "aantal",
+     xlab = "duur (maanden)")
+```
+
+</div>
+
+:::
+
+```{r, results = "asis"}
+repro("cpb_hist")
+```
+
+# Ggplot2 base allows for endless possibilities
+
+Every ggcpb figure is a real ggplot2 object. This means you can add
+to it with `+`. Each added piece changes the figure a little.
+
+The next figure has a sharp rise between 2020 and 2021. We add a
+reference line, and a text along the diagonal in dark pink italic
+letters. The position comes from the coordinates of the data. The
+`angle` follows the slope of the line.
+
+```{r diagonal, echo = TRUE, out.width = "50%"}
+stijging <- tibble(jaar = 2017:2024,
+                   waarde = c(2.1, 2.3, 2.0, 1.9, 6.4, 6.8, 6.5, 6.6))
+
+cpb_line(stijging, x = jaar, y = waarde,
+  title = "Een scherpe stijging", ylab = "%") +
+  geom_hline(yintercept = 6, linetype = "dashed", linewidth = 0.3) +
+  annotate("text", x = 2020.2, y = 4.2, label = "scherpe stijging",
+           angle = 72, colour = "#a0004e", fontface = "italic",
+           size = 2.4, family = cpb_font_family())
+```
+
+
+You can stack as many pieces as you need. More patterns are in
+[`vignette("annotation")`](annotation.html).
+
+## Classed map
+
+The maps can display municipalities or provinces 
+on bundled generalised CBS/Kadaster boundaries.
+The following map colours each Dutch municipality by class. 
+The function `cpb_cut()` makes the classes, 
+and `label_pct_nl()` writes them as percentages. 
+Maps are drawn in R. The boundaries come with the package.
+
+```{r data-map, echo = TRUE}
+gemeenten <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
+  mutate(aandeel = runif(n(), 5, 75),
+         klasse  = cpb_cut(aandeel, breaks = c(0, 20, 30, 40, 50, 60, Inf),
+                           labeller = label_pct_nl()))
+```
+
+::: {.figrow}
+
+```{r map, warning = FALSE}
+cpb_map(gemeenten, region = code, value = klasse,
+  palette = "blues",
+  title = "Aandeel huishoudens met zonnepanelen",
+  legend_title = "aandeel")
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-map}
+ptab(`function` = "cpb_map", title = "Aandeel huishoudens met zonnepanelen",
+     region = "code", value = "cpb_cut(aandeel, labeller = label_pct_nl())",
+     palette = "blues", legend_title = "aandeel")
+```
+
+</div>
+
+:::
+
+Maps currently have no `params.csv` route. Call `cpb_map()` in R, as
+described above. More options are in
+[`vignette("maps")`](maps.html).
+
+# Questions and feedback
+
+Do you have a question, a remark or an idea? Please contact
+[initial] [surname].
