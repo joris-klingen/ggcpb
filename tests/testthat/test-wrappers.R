@@ -2140,8 +2140,16 @@ test_that("cpb_axis_ticks() gives equal steps, with the ends labelled", {
   expect_equal(range(br), c(1.3, 7.8))
   expect_equal(length(unique(round(diff(br), 9))), 1)
   # months
+  # no equal month step fits: a round step from the first month (#75)
   d <- as.Date(c("2020-01-01", "2021-06-01"))
-  expect_equal(cpb_time_ticks(d[1], d[2])$breaks, d)
+  expect_equal(cpb_time_ticks(d[1], d[2])$breaks,
+               as.Date(c("2020-01-01", "2020-07-01", "2021-01-01")))
+  d <- data.table::as.IDate(c("2020-01-01", "2024-12-01"))
+  expect_equal(cpb_date_labels(cpb_time_ticks(d[1], d[2])$breaks),
+               as.character(2020:2024))
+  d <- as.Date(c("2024-01-01", "2024-12-01"))
+  expect_equal(cpb_date_labels(cpb_time_ticks(d[1], d[2])$breaks),
+               c("2024-01", "2024-04", "2024-07", "2024-10"))
   d <- as.Date(c("2020-01-01", "2021-01-01"))
   tk <- cpb_time_ticks(d[1], d[2])
   expect_equal(range(tk$breaks), d)
@@ -2169,7 +2177,8 @@ test_that("every continuous axis and colour bar labels its first and last value"
   expect_equal(x_labels(cpb_line(yrs, x = x, y = y, x_lim = c(2001, 2024))), c("2001", "2024"))
 
   mon <- data.frame(x = seq(as.Date("2020-01-01"), by = "month", length.out = 18), y = 1:18)
-  expect_equal(x_labels(cpb_line(mon, x = x, y = y)), c("2020-01", "2021-06"))
+  # no equal month step fits 18 months: round steps from the first (#75)
+  expect_equal(x_labels(cpb_line(mon, x = x, y = y)), c("2020-01", "2020-07", "2021-01"))
 
   sc <- data.frame(x = c(1.3, 2.9, 4.1, 7.8), y = c(0.3, 1.4, 0.9, 2.2))
   expect_equal(first_last(x_labels(cpb_scatter(sc, x = x, y = y, x_lim_follow_data = TRUE))),

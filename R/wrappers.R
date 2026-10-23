@@ -320,17 +320,26 @@ cpb_axis_ticks <- function(lo, hi, whole = FALSE, edge = TRUE, max_labels = 7) {
 }
 
 # The same for a Date or POSIXct x. Dates on the first of a month step in
-# whole months; others in equal days (or seconds).
+# whole months; others in equal days (or seconds). When no equal month
+# step ends on hi (e.g. Jan-Dec: 11 months), a round step of 1, 2, 3, 6
+# or 12 (or more) months from lo is used and the last tick may stop
+# short of hi, rather than labelling only the two ends (#75).
 # @noRd
 cpb_time_ticks <- function(lo, hi, edge = TRUE) {
   first <- inherits(lo, "Date") && all(format(c(lo, hi), "%d") == "01")
   if (first) {
     months <- function(d) as.integer(format(d, "%Y")) * 12L + as.integer(format(d, "%m"))
-    tk <- cpb_axis_ticks(0, months(hi) - months(lo), whole = TRUE, edge = edge,
-                         max_labels = 5)
+    span <- months(hi) - months(lo)
+    tk <- cpb_axis_ticks(0, span, whole = TRUE, edge = TRUE, max_labels = 5)
     n <- length(tk$breaks)
     if (n < 2) return(list(breaks = lo, lo = lo, hi = hi))
-    breaks <- seq(lo, by = paste(tk$breaks[2] - tk$breaks[1], "months"), length.out = n)
+    step <- tk$breaks[2] - tk$breaks[1]
+    if (n == 2 && span >= 4) {
+      steps <- c(1, 2, 3, 6, 12, 24, 60, 120, 240, 600)
+      step <- steps[span %/% steps + 1 <= 5][1]
+      n <- span %/% step + 1
+    }
+    breaks <- seq(lo, by = paste(step, "months"), length.out = n)
     return(list(breaks = breaks, lo = lo, hi = hi))
   }
   tk <- cpb_axis_ticks(as.numeric(lo), as.numeric(hi), whole = FALSE,
