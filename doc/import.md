@@ -71,6 +71,11 @@ refers to variables by their column names. For example, if a parameter
 contains `jaar`, `cpb_import_csv()` looks for a column named `jaar` in
 the dataset of that figure.
 
+Text columns keep the order of the rows. The first group in the file is
+the first on the axis and in the legend. A number used as `fill`,
+`group` or `colour` (a year, for example) is treated as a category. A
+numeric `colour` in a scatter plot keeps its colour gradient.
+
 Save datasets from Excel as `CSV UTF-8 (comma delimited)`.
 
 # The parameter file

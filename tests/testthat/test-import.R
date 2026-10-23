@@ -354,3 +354,23 @@ test_that("cpb_import_run lists skipped figures and still saves the others", {
   expect_true(file.exists(file.path(dir, "generated", "a.png")))
   expect_match(paste(out, collapse = "\n"), "b.csv")
 })
+
+test_that("text columns keep the order of the rows, and a numeric fill becomes a category", {
+  params_csv <- local_figs(
+    c("plot_type,x,y,fill", "col,groep,waarde,jaar"),
+    data_lines = c("groep,jaar,waarde",
+                   "zeta,2024,1", "alfa,2024,2", "zeta,2021,3", "alfa,2021,4")
+  )
+  p <- cpb_import_csv(params_csv)
+
+  expect_equal(levels(p$data$groep), c("zeta", "alfa"))
+  expect_s3_class(p$data$jaar, "factor")
+  expect_equal(levels(p$data$jaar), c("2024", "2021"))
+})
+
+test_that("a numeric scatter colour stays a number", {
+  params_csv <- local_figs(c("plot_type,x,y,colour", "scatter,jaar,mld,heffing"))
+  p <- cpb_import_csv(params_csv)
+
+  expect_true(is.numeric(p$data$heffing))
+})

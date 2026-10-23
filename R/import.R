@@ -123,6 +123,12 @@ cpb_import_read_data <- function(path, sep) {
     }
   }
 
+  # Text columns keep the order their values first appear in, so the row
+  # order in the CSV is the order of the categories on the axis and in the
+  # legend (read.csv would leave them to sort alphabetically).
+  chr <- vapply(data_df, is.character, logical(1))
+  data_df[chr] <- lapply(data_df[chr], function(x) factor(x, levels = unique(x)))
+
   data_df
 }
 
@@ -230,6 +236,16 @@ cpb_import_build_one <- function(params, data_df, extra_params) {
       " -- ignored, its own default is used instead.",
       call. = FALSE
     )
+  }
+
+  # a number used to split series (a year as `fill`) is a category, not a
+  # gradient. Only a scatter `colour` keeps its numeric gradient.
+  category_args <- c("fill", "group", "facet", if (plot_type != "scatter") "colour")
+  for (nm in intersect(names(params), category_args)) {
+    col <- params[[nm]]
+    if (col %in% names(data_df) && is.numeric(data_df[[col]])) {
+      data_df[[col]] <- factor(data_df[[col]], levels = unique(data_df[[col]]))
+    }
   }
 
   args <- list(data = data_df)
@@ -531,11 +547,11 @@ cpb_import_run <- function(dir = ".", page = "half") {
   if (!file.exists(params_csv)) {
     stop("params.csv was not found in ", normalizePath(dir), ".", call. = FALSE)
   }
-  skipped <- character(0)
+  warns <- character(0)
   figs <- withCallingHandlers(
     cpb_import_csv(params_csv = params_csv, simplify = FALSE),
     warning = function(w) {
-      skipped <<- c(skipped, conditionMessage(w))
+      warns <<- c(warns, conditionMessage(w))
       invokeRestart("muffleWarning")
     }
   )
@@ -548,9 +564,10 @@ cpb_import_run <- function(dir = ".", page = "half") {
   }
 
   cat("\nDone. ", length(paths), " figure(s) saved in the generated folder.\n", sep = "")
-  if (length(skipped)) {
-    cat("\n", length(skipped), " figure(s) skipped:\n", sep = "")
-    cat(paste0("  ", skipped), sep = "\n")
+  if (length(warns)) {
+    n_skipped <- sum(grepl("-- skipped\\.$", warns))
+    cat("\n", n_skipped, " figure(s) skipped. All warnings:\n", sep = "")
+    cat(paste0("  ", warns), sep = "\n")
     cat("\nSee params_log.txt for details.\n")
   }
   invisible(paths)
