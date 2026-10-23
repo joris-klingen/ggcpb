@@ -8,35 +8,46 @@ library(ggcpb)
 # Introduction
 
 Most figures in this package are built by calling one of its functions
-directly in R code. This vignette describes an alternative based on two
-CSV files, a data file and a parameter file.
-
-The data file contains the data used in the figures. The parameter file
-specifies which figures to create and how they should be configured. The
-`cpb_import_csv()` function reads both files and creates the figures.
+directly in R code. This vignette describes an alternative based on CSV
+files. The datasets are CSV files in a folder named `data`. One
+parameter file, `params.csv`, specifies which figures to create and how
+they should be configured. The `cpb_import_csv()` function reads them
+and creates the figures.
 
 This approach is useful when figure specifications need to be kept
 separate from R code, for example when the data and figure settings are
 maintained outside an R script.
 
-# The data file
+# The figure folder
 
-The data file can be any CSV file containing the variables needed by the
-figures. For this example, the package includes
-`import_example_data.csv`.
+A figure folder holds `params.csv` and a `data` folder. The function
+`autogenerate_plots()` creates a ready to use example. It is used
+throughout this vignette.
 
 ``` r
-data_csv <- system.file(
-  "extdata",
-  "import_example_data.csv",
-  package = "ggcpb"
-)
+figure_dir <- file.path(tempdir(), "figures")
+autogenerate_plots(figure_dir)
+params_csv <- file.path(figure_dir, "params.csv")
 ```
 
-The file can be read in the usual way:
+``` r
+list.files(figure_dir, recursive = TRUE)
+#> [1] "data/koopkracht.csv"   "data/werkloosheid.csv" "params.csv"           
+#> [4] "run_import.bat"        "run_import.command"    "run_import.R"
+```
+
+In normal use, the folder lives somewhere you can write to, and the
+launcher scripts (`run_import.bat` and `run_import.command`) run
+everything for you. See “Run the import without opening R” below.
+
+# The data files
+
+Each dataset is a CSV file in the `data` folder. It can have any name
+and holds the variables needed by the figures. The first row holds the
+column names. The package example has two datasets.
 
 ``` r
-read.csv(data_csv)
+read.csv(file.path(figure_dir, "data", "koopkracht.csv"))
 #>    jaar           groep koopkracht werkloosheid
 #> 1  2021       werkenden        0.3          3.4
 #> 2  2021 gepensioneerden       -0.2          3.4
@@ -58,43 +69,35 @@ read.csv(data_csv)
 The important point for the import method is that the parameter file
 refers to variables by their column names. For example, if a parameter
 contains `jaar`, `cpb_import_csv()` looks for a column named `jaar` in
-the data file.
+the dataset of that figure.
+
+Save datasets from Excel as `CSV UTF-8 (comma delimited)`.
 
 # The parameter file
 
 The parameter file determines which figures are created. Each figure has
 a `plot_type` and an `id`, together with the settings required for that
-plot type.
-
-The example parameter file is `import_example_params.csv`.
-
-``` r
-params_csv <- system.file(
-  "extdata",
-  "import_example_params.csv",
-  package = "ggcpb"
-)
-```
+plot type. The parameter `data` names the dataset of the figure.
 
 This example uses the horizontal layout:
 
-    plot_type,id,title,x,y,fill,ylab,position,sec_y,sec_type,sec_legend_label,sec_ylab,create
-    col,koopkracht,Koopkrachtontwikkeling naar groep,jaar,koopkracht,groep,% mutatie,dodge,werkloosheid,line,werkloosheid,%,y
-    line,werkloosheid,Werkloosheid,jaar,werkloosheid,,%,,,,,,y
+    plot_type,id,title,x,y,fill,ylab,position,sec_y,sec_type,sec_legend_label,sec_ylab,create,data
+    col,koopkracht,Koopkrachtontwikkeling naar groep,jaar,koopkracht,groep,% mutatie,dodge,werkloosheid,line,werkloosheid,%,y,koopkracht.csv
+    line,werkloosheid,Werkloosheid,jaar,werkloosheid,,%,,,,,,y,werkloosheid.csv
 
 The same content, split on the comma and shown as a table:
 
-| plot_type | id | title | x | y | fill | ylab | position | sec_y | sec_type | sec_legend_label | sec_ylab | create |
-|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|
-| col | koopkracht | Koopkrachtontwikkeling naar groep | jaar | koopkracht | groep | % mutatie | dodge | werkloosheid | line | werkloosheid | % | y |
-| line | werkloosheid | Werkloosheid | jaar | werkloosheid |  | % |  |  |  |  |  | y |
+| plot_type | id | title | x | y | fill | ylab | position | sec_y | sec_type | sec_legend_label | sec_ylab | create | data |
+|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|
+| col | koopkracht | Koopkrachtontwikkeling naar groep | jaar | koopkracht | groep | % mutatie | dodge | werkloosheid | line | werkloosheid | % | y | koopkracht.csv |
+| line | werkloosheid | Werkloosheid | jaar | werkloosheid |  | % |  |  |  |  |  | y | werkloosheid.csv |
 
 Each row describes one figure. The column names are parameter names.
 
-Some parameters refer to columns in the data file. For example:
+Some parameters refer to columns in the dataset. For example:
 
 - `x`, `y`, `fill` and `sec_y` are column references.
-- `title`, `ylab` and `position` are literal values.
+- `title`, `ylab`, `position` and `data` are literal values.
 
 The distinction is important. `y,koopkracht` means that the `y` variable
 should be taken from the `koopkracht` column, while `ylab,% mutatie`
@@ -102,17 +105,17 @@ supplies the text `% mutatie` directly.
 
 # Creating the figures
 
-Once the two files are available, pass them to `cpb_import_csv()`:
+Pass the parameter file to `cpb_import_csv()`. The datasets are read
+from the `data` folder next to it:
 
 ``` r
-tmp_params <- tempfile(fileext = ".csv")
-file.copy(params_csv, tmp_params, overwrite = TRUE)
-
-figs <- cpb_import_csv(data_csv, tmp_params)
+figs <- cpb_import_csv(params_csv)
 ```
 
 When the parameter file contains multiple figures, `cpb_import_csv()`
-returns a named list. The names come from the `id` parameter.
+returns a named list. The names come from the datasets. Here the two
+figures use different datasets, so they are called `koopkracht` and
+`werkloosheid`.
 
 The `koopkracht` figure has a second value axis (`sec_y`), and its right
 side caption is only placed exactly by `save_cpb()`. Printed directly,
@@ -136,78 +139,10 @@ figs$werkloosheid
 
 <img src="import_files/figure-gfm/fig-werkloosheid-1.png" alt="" width="350px" />
 
-In normal use, the data and parameter files can be stored in an ordinary
-writable folder. The temporary copy above is only needed here because
-the example parameter file is part of the installed package.
-
-# One figure per parameter file
-
-There is a second parameter file layout for cases where one parameter
-file describes a single figure.
-
-In the horizontal layout, each row is a figure and each column is a
-parameter. In the vertical layout, each row is a parameter and the two
-columns contain the parameter name and its value.
-
-For example, the following describes a line chart:
-
-``` r
-params_vertical <- tempfile(fileext = ".csv")
-
-writeLines(c(
-  "plot_type,line",
-  "title,Werkloosheid",
-  "x,jaar",
-  "y,werkloosheid",
-  "ylab,%"
-), params_vertical)
-
-cat(readLines(params_vertical), sep = "\n")
-#> plot_type,line
-#> title,Werkloosheid
-#> x,jaar
-#> y,werkloosheid
-#> ylab,%
-```
-
-The first column contains the parameter names:
-
-```
-plot_type
-title
-x
-y
-ylab
-```
-
-The second column contains their values:
-
-```
-line
-Werkloosheid
-jaar
-werkloosheid
-%
-```
-
-This layout can be convenient when a figure has many parameters, because
-each setting has its own row.
-
-When the parameter file describes one figure, `cpb_import_csv()` returns
-that figure directly rather than a named list.
-
-``` r
-fig_vertical <- cpb_import_csv(data_csv, params_vertical)
-```
-
-<img src="import_files/figure-gfm/vertical-build-show-1.png" alt="" width="350px" />
-
 # Several datasets
 
-So far one data file served every figure. A figure folder can hold many
-datasets instead. Put each dataset in a folder named `data`, next to
-`params.csv`. Any file name works. The parameter `data` names the
-dataset of a figure.
+The parameter `data` names the dataset of a figure, relative to the
+`data` folder next to `params.csv`.
 
 | `data`           | What happens                                |
 |------------------|---------------------------------------------|
@@ -215,12 +150,6 @@ dataset of a figure.
 | `a.csv;b.csv`    | One figure is made from each named dataset. |
 | blank            | The figure uses `data/data.csv`.            |
 | column absent    | The same as blank.                          |
-
-Call `cpb_import_csv()` with the parameter file only:
-
-``` r
-figs <- cpb_import_csv(params_csv = "params.csv")
-```
 
 The figures are named after their dataset. If several figures use the
 same dataset, the row number in `params.csv` is added to the name. The
@@ -233,7 +162,51 @@ the other rows are still created. With `data` set to `a.csv;b.csv;c.csv`
 and no `b.csv`, you get figures for `a.csv` and `c.csv`, and a warning
 about `b.csv`.
 
-Save datasets as `CSV UTF-8 (comma delimited)` in Excel.
+# One figure per parameter file
+
+There is a second parameter file layout for cases where one parameter
+file describes a single figure.
+
+In the horizontal layout, each row is a figure and each column is a
+parameter. In the vertical layout, each row is a parameter and the two
+columns contain the parameter name and its value.
+
+For example, the following describes a line chart. It can be saved in
+the same folder, so it finds the same `data` folder:
+
+``` r
+params_vertical <- file.path(figure_dir, "params_vertical.csv")
+
+writeLines(c(
+  "plot_type,line",
+  "title,Werkloosheid",
+  "data,werkloosheid.csv",
+  "x,jaar",
+  "y,werkloosheid",
+  "ylab,%"
+), params_vertical)
+
+cat(readLines(params_vertical), sep = "\n")
+#> plot_type,line
+#> title,Werkloosheid
+#> data,werkloosheid.csv
+#> x,jaar
+#> y,werkloosheid
+#> ylab,%
+```
+
+The first column contains the parameter names and the second column
+their values. This layout can be convenient when a figure has many
+parameters, because each setting has its own row.
+
+When the parameter file describes one figure, `cpb_import_csv()` returns
+that figure directly rather than a named list.
+
+``` r
+fig_vertical <- cpb_import_csv(params_vertical)
+```
+
+<img src="import_files/figure-gfm/vertical-build-show-1.png" alt="" width="350px" />
 
 # Handling problems
 
@@ -243,7 +216,7 @@ If a parameter is not valid for the selected `plot_type`, it is ignored
 and the default is used. These cases produce a warning.
 
 If a figure cannot be created, for example because a column referenced
-by a parameter does not exist in the data file, that figure is skipped.
+by a parameter does not exist in the dataset, that figure is skipped.
 Other figures in the same parameter file are still created.
 
 Each call to `cpb_import_csv()` also writes a log file next to the
@@ -315,16 +288,16 @@ to, so a table for one `plot_type` does not necessarily match another.
 | setting | kind | default | example |
 |:---|:---|:---|:---|
 | axis_text_size | literal | 7 | 7 |
-| facet | column (from data_csv) |  | region |
+| facet | column (from dataset) |  | region |
 | facet_ncol | literal |  | 2 |
 | facet_scales | literal | fixed | fixed |
-| fill | column (from data_csv) |  | group |
+| fill | column (from dataset) |  | group |
 | fill_colour | literal |  | \#005faf |
 | forecast_label | literal | raming | raming |
 | forecast_x | literal |  | 2025 |
 | grid_colour | literal | black | black |
 | grid_linewidth | literal | 0.1 | 0.1 |
-| group | column (from data_csv) |  | sector |
+| group | column (from dataset) |  | sector |
 | group_gap | literal | 0.8 | 0.8 |
 | minor | literal | FALSE | FALSE |
 | orientation | literal | vertical/horizontal (default: vertical) | vertical/horizontal (default: vertical) |
@@ -343,7 +316,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_scale_auto | literal | TRUE | TRUE |
 | sec_symbol_size | literal | 1.6 | 1.6 |
 | sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
-| sec_y | column (from data_csv) |  | unemployment |
+| sec_y | column (from dataset) |  | unemployment |
 | sec_ylab | literal |  | unit of the right axis |
 | ticks | literal | TRUE | TRUE |
 | value_accuracy | literal |  | 0.1 |
@@ -351,11 +324,11 @@ to, so a table for one `plot_type` does not necessarily match another.
 | value_crop | literal | FALSE | FALSE |
 | value_labels | literal | FALSE | FALSE |
 | value_limits | literal |  | 0;100 |
-| x | column (from data_csv) | (required) | year |
+| x | column (from dataset) | (required) | year |
 | x_lim | literal |  | 2015;2025 |
 | x_lim_follow_data | literal | FALSE | FALSE |
 | xlab | literal |  | unit below the x axis |
-| y | column (from data_csv) | (required) | purchasing_power |
+| y | column (from dataset) | (required) | purchasing_power |
 | ylab | literal |  | % change |
 | zeroline | literal | TRUE | TRUE |
 
@@ -364,10 +337,10 @@ to, so a table for one `plot_type` does not necessarily match another.
 | setting | kind | default | example |
 |:---|:---|:---|:---|
 | axis_text_size | literal | 7 | 7 |
-| facet | column (from data_csv) |  | region |
+| facet | column (from dataset) |  | region |
 | facet_ncol | literal |  | 2 |
 | facet_scales | literal | fixed | fixed |
-| fill | column (from data_csv) | (required) | group |
+| fill | column (from dataset) | (required) | group |
 | forecast_label | literal | raming | raming |
 | forecast_x | literal |  | 2025 |
 | grid_colour | literal | black | black |
@@ -387,18 +360,18 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_scale_auto | literal | TRUE | TRUE |
 | sec_symbol_size | literal | 1.6 | 1.6 |
 | sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
-| sec_y | column (from data_csv) |  | unemployment |
+| sec_y | column (from dataset) |  | unemployment |
 | sec_ylab | literal |  | unit of the right axis |
 | ticks | literal | TRUE | TRUE |
 | value_accuracy | literal |  | 0.1 |
 | value_breaks | literal |  | 0;25;50;75;100 |
 | value_crop | literal | FALSE | FALSE |
 | value_limits | literal |  | 0;100 |
-| x | column (from data_csv) | (required) | year |
+| x | column (from dataset) | (required) | year |
 | x_lim | literal |  | 2015;2025 |
 | x_lim_follow_data | literal | FALSE | FALSE |
 | xlab | literal |  | unit below the x axis |
-| y | column (from data_csv) | (required) | purchasing_power |
+| y | column (from dataset) | (required) | purchasing_power |
 | ylab | literal |  | % change |
 | zeroline | literal | TRUE | TRUE |
 
@@ -407,8 +380,8 @@ to, so a table for one `plot_type` does not necessarily match another.
 | setting | kind | default | example |
 |:---|:---|:---|:---|
 | axis_text_size | literal | 7 | 7 |
-| colour | column (from data_csv) |  | group |
-| facet | column (from data_csv) |  | region |
+| colour | column (from dataset) |  | group |
+| facet | column (from dataset) |  | region |
 | facet_ncol | literal |  | 2 |
 | facet_scales | literal | fixed | fixed |
 | forecast_label | literal | raming | raming |
@@ -433,7 +406,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_scale_auto | literal | TRUE | TRUE |
 | sec_symbol_size | literal | 1.6 | 1.6 |
 | sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
-| sec_y | column (from data_csv) |  | unemployment |
+| sec_y | column (from dataset) |  | unemployment |
 | sec_ylab | literal |  | unit of the right axis |
 | symbol_size | literal | 1.1 | 1.1 |
 | ticks | literal | TRUE | TRUE |
@@ -441,14 +414,14 @@ to, so a table for one `plot_type` does not necessarily match another.
 | value_breaks | literal |  | 0;25;50;75;100 |
 | value_crop | literal | FALSE | FALSE |
 | value_limits | literal |  | 0;100 |
-| x | column (from data_csv) | (required) | year |
+| x | column (from dataset) | (required) | year |
 | x_lim | literal |  | 2015;2025 |
 | x_lim_follow_data | literal | TRUE | TRUE |
 | xlab | literal |  | unit below the x axis |
-| y | column (from data_csv) | (required) | purchasing_power |
+| y | column (from dataset) | (required) | purchasing_power |
 | ylab | literal |  | % change |
-| ymax | column (from data_csv) |  | upper_bound |
-| ymin | column (from data_csv) |  | lower_bound |
+| ymax | column (from dataset) |  | upper_bound |
+| ymin | column (from dataset) |  | lower_bound |
 | zeroline | literal |  | TRUE |
 
 **Table A5. Parameters specific to `box`**
@@ -459,25 +432,25 @@ to, so a table for one `plot_type` does not necessarily match another.
 | box_labels | literal |  | TRUE |
 | box_style | literal | ggcpb/james/modern/dot (default: ggcpb) | ggcpb/james/modern/dot (default: ggcpb) |
 | dot_labels | literal |  | p5:bottom 5%;p95:top 5% |
-| facet | column (from data_csv) |  | region |
+| facet | column (from dataset) |  | region |
 | facet_ncol | literal |  | 2 |
 | facet_scales | literal | fixed | fixed |
-| fill | column (from data_csv) |  | group |
+| fill | column (from dataset) |  | group |
 | fill_colour | literal |  | \#005faf |
 | grid_colour | literal | black | black |
 | grid_linewidth | literal | 0.1 | 0.1 |
-| group | column (from data_csv) |  | sector |
+| group | column (from dataset) |  | sector |
 | group_gap | literal | 0.7 | 0.7 |
 | label_accuracy | literal | 0.1 | 0.1 |
 | linewidth | literal | 0.25 | 0.25 |
-| mean | column (from data_csv) |  | mean |
+| mean | column (from dataset) |  | mean |
 | minor | literal | FALSE | FALSE |
 | orientation | literal | vertical/horizontal (default: vertical) | vertical/horizontal (default: vertical) |
-| p25 | column (from data_csv) | (required) | p25 |
-| p5 | column (from data_csv) | (required) | p5 |
-| p50 | column (from data_csv) | (required) | p50 |
-| p75 | column (from data_csv) | (required) | p75 |
-| p95 | column (from data_csv) | (required) | p95 |
+| p25 | column (from dataset) | (required) | p25 |
+| p5 | column (from dataset) | (required) | p5 |
+| p50 | column (from dataset) | (required) | p50 |
+| p75 | column (from dataset) | (required) | p75 |
+| p95 | column (from dataset) | (required) | p95 |
 | pct_axis | literal | FALSE | FALSE |
 | reverse_legend | literal | FALSE | FALSE |
 | sec_accuracy | literal |  | 0.1 |
@@ -492,7 +465,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_scale_auto | literal | TRUE | TRUE |
 | sec_symbol_size | literal | 1.6 | 1.6 |
 | sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
-| sec_y | column (from data_csv) |  | unemployment |
+| sec_y | column (from dataset) |  | unemployment |
 | sec_ylab | literal |  | unit of the right axis |
 | ticks | literal | TRUE | TRUE |
 | value_accuracy | literal |  | 0.1 |
@@ -501,7 +474,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | value_crop | literal | FALSE | FALSE |
 | value_limits | literal |  | 0;100 |
 | width | literal | 0.5 | 0.5 |
-| x | column (from data_csv) | (required) | year |
+| x | column (from dataset) | (required) | year |
 | x_lim | literal |  | 2015;2025 |
 | x_lim_follow_data | literal | TRUE | TRUE |
 | xlab | literal |  | unit below the x axis |
@@ -514,16 +487,16 @@ to, so a table for one `plot_type` does not necessarily match another.
 |:---|:---|:---|:---|
 | axis_text_size | literal | 7 | 7 |
 | cap_width | literal | 0.25 | 0.25 |
-| colour | column (from data_csv) |  | group |
-| facet | column (from data_csv) |  | region |
+| colour | column (from dataset) |  | group |
+| facet | column (from dataset) |  | region |
 | facet_ncol | literal |  | 2 |
 | facet_scales | literal | fixed | fixed |
 | grid_colour | literal | black | black |
 | grid_linewidth | literal | 0.1 | 0.1 |
-| group | column (from data_csv) |  | sector |
+| group | column (from dataset) |  | sector |
 | group_gap | literal | 0.7 | 0.7 |
 | linewidth | literal | 0.4 | 0.4 |
-| lower | column (from data_csv) | (required) | lower_bound |
+| lower | column (from dataset) | (required) | lower_bound |
 | minor | literal | FALSE | FALSE |
 | orientation | literal | horizontal/vertical (default: horizontal) | horizontal/vertical (default: horizontal) |
 | pct_axis | literal | FALSE | FALSE |
@@ -540,91 +513,91 @@ to, so a table for one `plot_type` does not necessarily match another.
 | sec_scale_auto | literal | TRUE | TRUE |
 | sec_symbol_size | literal | symbol_size | symbol_size |
 | sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
-| sec_y | column (from data_csv) |  | unemployment |
+| sec_y | column (from dataset) |  | unemployment |
 | sec_ylab | literal |  | unit of the right axis |
 | symbol_colour | literal |  | \#e6006e |
 | symbol_size | literal | 1.4 | 1.4 |
 | ticks | literal | TRUE | TRUE |
-| upper | column (from data_csv) | (required) | upper_bound |
+| upper | column (from dataset) | (required) | upper_bound |
 | value_accuracy | literal |  | 0.1 |
 | value_breaks | literal |  | 0;25;50;75;100 |
 | value_crop | literal | FALSE | FALSE |
 | value_limits | literal |  | 0;100 |
-| x | column (from data_csv) | (required) | year |
+| x | column (from dataset) | (required) | year |
 | x_lim | literal |  | 2015;2025 |
 | x_lim_follow_data | literal | TRUE | TRUE |
 | xlab | literal |  | unit below the x axis |
-| y | column (from data_csv) | (required) | purchasing_power |
+| y | column (from dataset) | (required) | purchasing_power |
 | ylab | literal |  | % change |
 | zeroline | literal |  | TRUE |
 
 **Table A7. Parameters specific to `scatter`**
 
-| setting           | kind                   | default    | example               |
-|:------------------|:-----------------------|:-----------|:----------------------|
-| axis_text_size    | literal                | 7          | 7                     |
-| colour            | column (from data_csv) |            | group                 |
-| facet             | column (from data_csv) |            | region                |
-| facet_ncol        | literal                |            | 2                     |
-| facet_scales      | literal                | fixed      | fixed                 |
-| forecast_label    | literal                | raming     | raming                |
-| forecast_x        | literal                |            | 2025                  |
-| grid_colour       | literal                | black      | black                 |
-| grid_linewidth    | literal                | 0.1        | 0.1                   |
-| minor             | literal                | FALSE      | FALSE                 |
-| pct_axis          | literal                | FALSE      | FALSE                 |
-| reverse_legend    | literal                | FALSE      | FALSE                 |
-| symbol_colour     | literal                |            | \#e6006e              |
-| symbol_size       | literal                | 0.8        | 0.8                   |
-| ticks             | literal                | TRUE       | TRUE                  |
-| value_accuracy    | literal                |            | 0.1                   |
-| value_breaks      | literal                |            | 0;25;50;75;100        |
-| value_crop        | literal                | FALSE      | FALSE                 |
-| value_limits      | literal                |            | 0;100                 |
-| x                 | column (from data_csv) | (required) | year                  |
-| x_lim             | literal                |            | 2015;2025             |
-| x_lim_follow_data | literal                | FALSE      | FALSE                 |
-| xlab              | literal                |            | unit below the x axis |
-| y                 | column (from data_csv) | (required) | purchasing_power      |
-| ylab              | literal                |            | % change              |
-| zeroline          | literal                |            | TRUE                  |
+| setting           | kind                  | default    | example               |
+|:------------------|:----------------------|:-----------|:----------------------|
+| axis_text_size    | literal               | 7          | 7                     |
+| colour            | column (from dataset) |            | group                 |
+| facet             | column (from dataset) |            | region                |
+| facet_ncol        | literal               |            | 2                     |
+| facet_scales      | literal               | fixed      | fixed                 |
+| forecast_label    | literal               | raming     | raming                |
+| forecast_x        | literal               |            | 2025                  |
+| grid_colour       | literal               | black      | black                 |
+| grid_linewidth    | literal               | 0.1        | 0.1                   |
+| minor             | literal               | FALSE      | FALSE                 |
+| pct_axis          | literal               | FALSE      | FALSE                 |
+| reverse_legend    | literal               | FALSE      | FALSE                 |
+| symbol_colour     | literal               |            | \#e6006e              |
+| symbol_size       | literal               | 0.8        | 0.8                   |
+| ticks             | literal               | TRUE       | TRUE                  |
+| value_accuracy    | literal               |            | 0.1                   |
+| value_breaks      | literal               |            | 0;25;50;75;100        |
+| value_crop        | literal               | FALSE      | FALSE                 |
+| value_limits      | literal               |            | 0;100                 |
+| x                 | column (from dataset) | (required) | year                  |
+| x_lim             | literal               |            | 2015;2025             |
+| x_lim_follow_data | literal               | FALSE      | FALSE                 |
+| xlab              | literal               |            | unit below the x axis |
+| y                 | column (from dataset) | (required) | purchasing_power      |
+| ylab              | literal               |            | % change              |
+| zeroline          | literal               |            | TRUE                  |
 
 **Table A8. Parameters specific to `hist`**
 
-| setting           | kind                   | default    | example               |
-|:------------------|:-----------------------|:-----------|:----------------------|
-| axis_text_size    | literal                | 7          | 7                     |
-| bins              | literal                |            | 30                    |
-| binwidth          | literal                |            | 5                     |
-| facet             | column (from data_csv) |            | region                |
-| facet_ncol        | literal                |            | 2                     |
-| facet_scales      | literal                | fixed      | fixed                 |
-| fill              | column (from data_csv) |            | group                 |
-| fill_colour       | literal                |            | \#005faf              |
-| grid_colour       | literal                | black      | black                 |
-| grid_linewidth    | literal                | 0.1        | 0.1                   |
-| minor             | literal                | FALSE      | FALSE                 |
-| outline           | literal                | white      | white                 |
-| position          | literal                | stack      | stack                 |
-| reverse_legend    | literal                | TRUE       | TRUE                  |
-| ticks             | literal                | TRUE       | TRUE                  |
-| value_accuracy    | literal                |            | 0.1                   |
-| value_breaks      | literal                |            | 0;25;50;75;100        |
-| value_crop        | literal                | FALSE      | FALSE                 |
-| value_limits      | literal                |            | 0;100                 |
-| x                 | column (from data_csv) | (required) | year                  |
-| x_lim             | literal                |            | 2015;2025             |
-| x_lim_follow_data | literal                | FALSE      | FALSE                 |
-| xlab              | literal                |            | unit below the x axis |
-| ylab              | literal                |            | % change              |
-| zeroline          | literal                | TRUE       | TRUE                  |
+| setting           | kind                  | default    | example               |
+|:------------------|:----------------------|:-----------|:----------------------|
+| axis_text_size    | literal               | 7          | 7                     |
+| bins              | literal               |            | 30                    |
+| binwidth          | literal               |            | 5                     |
+| facet             | column (from dataset) |            | region                |
+| facet_ncol        | literal               |            | 2                     |
+| facet_scales      | literal               | fixed      | fixed                 |
+| fill              | column (from dataset) |            | group                 |
+| fill_colour       | literal               |            | \#005faf              |
+| grid_colour       | literal               | black      | black                 |
+| grid_linewidth    | literal               | 0.1        | 0.1                   |
+| minor             | literal               | FALSE      | FALSE                 |
+| outline           | literal               | white      | white                 |
+| position          | literal               | stack      | stack                 |
+| reverse_legend    | literal               | TRUE       | TRUE                  |
+| ticks             | literal               | TRUE       | TRUE                  |
+| value_accuracy    | literal               |            | 0.1                   |
+| value_breaks      | literal               |            | 0;25;50;75;100        |
+| value_crop        | literal               | FALSE      | FALSE                 |
+| value_limits      | literal               |            | 0;100                 |
+| x                 | column (from dataset) | (required) | year                  |
+| x_lim             | literal               |            | 2015;2025             |
+| x_lim_follow_data | literal               | FALSE      | FALSE                 |
+| xlab              | literal               |            | unit below the x axis |
+| ylab              | literal               |            | % change              |
+| zeroline          | literal               | TRUE       | TRUE                  |
 
 **Table A9. Parameters specific to `donut`**
 
 | setting | kind | default | example |
 |:---|:---|:---|:---|
-| fill | column (from data_csv) | (required) | group |
-| label | column (from data_csv) |  | name |
+| fill | column (from dataset) | (required) | group |
+| label | column (from dataset) |  | name |
 | label_accuracy | literal | 1 | 1 |
 | label_colour | literal | black | black |
 | label_style | literal | wedge/leader (default: wedge) | wedge/leader (default: wedge) |
@@ -634,7 +607,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | reverse_legend | literal | FALSE | FALSE |
 | ring_width | literal | 0.6 | 0.6 |
 | wedge_labels | literal | TRUE | TRUE |
-| y | column (from data_csv) | (required) | purchasing_power |
+| y | column (from dataset) | (required) | purchasing_power |
 
 A parameter of kind `column` takes a column name from the data file. A
 parameter of kind `literal` takes a value directly from the parameter

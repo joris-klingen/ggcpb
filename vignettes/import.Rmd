@@ -49,57 +49,58 @@ library(ggcpb)
 
 Most figures in this package are built by calling one of its
 functions directly in R code. This vignette describes an alternative
-based on two CSV files, a data file and a parameter file.
-
-The data file contains the data used in the figures. The parameter
-file specifies which figures to create and how they should be
-configured. The `cpb_import_csv()` function reads both files and creates
-the figures.
+based on CSV files. The datasets are CSV files in a folder named
+`data`. One parameter file, `params.csv`, specifies which figures to
+create and how they should be configured. The `cpb_import_csv()`
+function reads them and creates the figures.
 
 This approach is useful when figure specifications need to be kept
 separate from R code, for example when the data and figure settings
 are maintained outside an R script.
 
-# The data file
+# The figure folder
 
-The data file can be any CSV file containing the variables needed by
-the figures. For this example, the package includes
-`import_example_data.csv`.
+A figure folder holds `params.csv` and a `data` folder. The function
+`autogenerate_plots()` creates a ready to use example. It is used
+throughout this vignette.
 
-```{r data-path}
-data_csv <- system.file(
-  "extdata",
-  "import_example_data.csv",
-  package = "ggcpb"
-)
+```{r kit, results = "hide"}
+figure_dir <- file.path(tempdir(), "figures")
+autogenerate_plots(figure_dir)
+params_csv <- file.path(figure_dir, "params.csv")
 ```
 
-The file can be read in the usual way:
+```{r kit-files}
+list.files(figure_dir, recursive = TRUE)
+```
+
+In normal use, the folder lives somewhere you can write to, and the
+launcher scripts (`run_import.bat` and `run_import.command`) run
+everything for you. See "Run the import without opening R" below.
+
+# The data files
+
+Each dataset is a CSV file in the `data` folder. It can have any name
+and holds the variables needed by the figures. The first row holds the
+column names. The package example has two datasets.
 
 ```{r data-frame}
-read.csv(data_csv)
+read.csv(file.path(figure_dir, "data", "koopkracht.csv"))
 ```
 
 The important point for the import method is that the parameter file
 refers to variables by their column names. For example, if a
 parameter contains `jaar`, `cpb_import_csv()` looks for a column named
-`jaar` in the data file.
+`jaar` in the dataset of that figure.
+
+Save datasets from Excel as `CSV UTF-8 (comma delimited)`.
 
 # The parameter file
 
 The parameter file determines which figures are created. Each figure
 has a `plot_type` and an `id`, together with the settings required
-for that plot type.
-
-The example parameter file is `import_example_params.csv`.
-
-```{r params-path}
-params_csv <- system.file(
-  "extdata",
-  "import_example_params.csv",
-  package = "ggcpb"
-)
-```
+for that plot type. The parameter `data` names the dataset of the
+figure.
 
 This example uses the horizontal layout:
 
@@ -115,10 +116,10 @@ knitr::kable(read.csv(params_csv, stringsAsFactors = FALSE))
 
 Each row describes one figure. The column names are parameter names.
 
-Some parameters refer to columns in the data file. For example:
+Some parameters refer to columns in the dataset. For example:
 
 * `x`, `y`, `fill` and `sec_y` are column references.
-* `title`, `ylab` and `position` are literal values.
+* `title`, `ylab`, `position` and `data` are literal values.
 
 The distinction is important. `y,koopkracht` means that the `y`
 variable should be taken from the `koopkracht` column, while
@@ -126,17 +127,17 @@ variable should be taken from the `koopkracht` column, while
 
 # Creating the figures
 
-Once the two files are available, pass them to `cpb_import_csv()`:
+Pass the parameter file to `cpb_import_csv()`. The datasets are read
+from the `data` folder next to it:
 
 ```{r build, results = "hide"}
-tmp_params <- tempfile(fileext = ".csv")
-file.copy(params_csv, tmp_params, overwrite = TRUE)
-
-figs <- cpb_import_csv(data_csv, tmp_params)
+figs <- cpb_import_csv(params_csv)
 ```
 
 When the parameter file contains multiple figures, `cpb_import_csv()`
-returns a named list. The names come from the `id` parameter.
+returns a named list. The names come from the datasets. Here the two
+figures use different datasets, so they are called `koopkracht` and
+`werkloosheid`.
 
 The `koopkracht` figure has a second value axis (`sec_y`), and its
 right side caption is only placed exactly by `save_cpb()`. Printed
@@ -160,76 +161,10 @@ save_cpb(path, figs$koopkracht, page = "half")
 figs$werkloosheid
 ```
 
-In normal use, the data and parameter files can be stored in an
-ordinary writable folder. The temporary copy above is only needed
-here because the example parameter file is part of the installed
-package.
-
-# One figure per parameter file
-
-There is a second parameter file layout for cases where one parameter
-file describes a single figure.
-
-In the horizontal layout, each row is a figure and each column is a
-parameter. In the vertical layout, each row is a parameter and the
-two columns contain the parameter name and its value.
-
-For example, the following describes a line chart:
-
-```{r vertical}
-params_vertical <- tempfile(fileext = ".csv")
-
-writeLines(c(
-  "plot_type,line",
-  "title,Werkloosheid",
-  "x,jaar",
-  "y,werkloosheid",
-  "ylab,%"
-), params_vertical)
-
-cat(readLines(params_vertical), sep = "\n")
-```
-
-The first column contains the parameter names:
-
-```text
-plot_type
-title
-x
-y
-ylab
-```
-
-The second column contains their values:
-
-```text
-line
-Werkloosheid
-jaar
-werkloosheid
-%
-```
-
-This layout can be convenient when a figure has many parameters,
-because each setting has its own row.
-
-When the parameter file describes one figure, `cpb_import_csv()` returns
-that figure directly rather than a named list.
-
-```{r vertical-build, results = "hide"}
-fig_vertical <- cpb_import_csv(data_csv, params_vertical)
-```
-
-```{r vertical-build-show, echo = FALSE}
-fig_vertical
-```
-
 # Several datasets
 
-So far one data file served every figure. A figure folder can hold
-many datasets instead. Put each dataset in a folder named `data`,
-next to `params.csv`. Any file name works. The parameter `data` names
-the dataset of a figure.
+The parameter `data` names the dataset of a figure, relative to the
+`data` folder next to `params.csv`.
 
 | `data` | What happens |
 |---|---|
@@ -237,12 +172,6 @@ the dataset of a figure.
 | `a.csv;b.csv` | One figure is made from each named dataset. |
 | blank | The figure uses `data/data.csv`. |
 | column absent | The same as blank. |
-
-Call `cpb_import_csv()` with the parameter file only:
-
-```{r several, eval = FALSE}
-figs <- cpb_import_csv(params_csv = "params.csv")
-```
 
 The figures are named after their dataset. If several figures use the
 same dataset, the row number in `params.csv` is added to the name. The
@@ -255,7 +184,47 @@ and the other rows are still created. With `data` set to
 `a.csv;b.csv;c.csv` and no `b.csv`, you get figures for `a.csv` and
 `c.csv`, and a warning about `b.csv`.
 
-Save datasets as `CSV UTF-8 (comma delimited)` in Excel.
+# One figure per parameter file
+
+There is a second parameter file layout for cases where one parameter
+file describes a single figure.
+
+In the horizontal layout, each row is a figure and each column is a
+parameter. In the vertical layout, each row is a parameter and the
+two columns contain the parameter name and its value.
+
+For example, the following describes a line chart. It can be saved in
+the same folder, so it finds the same `data` folder:
+
+```{r vertical}
+params_vertical <- file.path(figure_dir, "params_vertical.csv")
+
+writeLines(c(
+  "plot_type,line",
+  "title,Werkloosheid",
+  "data,werkloosheid.csv",
+  "x,jaar",
+  "y,werkloosheid",
+  "ylab,%"
+), params_vertical)
+
+cat(readLines(params_vertical), sep = "\n")
+```
+
+The first column contains the parameter names and the second column
+their values. This layout can be convenient when a figure has many
+parameters, because each setting has its own row.
+
+When the parameter file describes one figure, `cpb_import_csv()` returns
+that figure directly rather than a named list.
+
+```{r vertical-build, results = "hide"}
+fig_vertical <- cpb_import_csv(params_vertical)
+```
+
+```{r vertical-build-show, echo = FALSE}
+fig_vertical
+```
 
 # Handling problems
 
@@ -266,7 +235,7 @@ If a parameter is not valid for the selected `plot_type`, it is
 ignored and the default is used. These cases produce a warning.
 
 If a figure cannot be created, for example because a column
-referenced by a parameter does not exist in the data file, that
+referenced by a parameter does not exist in the dataset, that
 figure is skipped. Other figures in the same parameter file are still
 created.
 

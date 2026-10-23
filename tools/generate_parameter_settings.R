@@ -13,7 +13,7 @@ plot_types <- names(cpb_import_col_args)
 
 # Shown for a "column" kind parameter with no example of its own
 # below: always a plausible, generic column name, since the real one
-# depends entirely on data_csv. Keyed by parameter name, not
+# depends entirely on the dataset. Keyed by parameter name, not
 # plot_type + parameter, since the same name (x, fill, sec_y, ...)
 # means the same thing across every wrapper that has it.
 column_examples <- c(
@@ -139,7 +139,7 @@ for (pt in plot_types) {
 
     rows[[length(rows) + 1]] <- data.frame(
       plot_type = pt, param = nm,
-      kind = if (is_column) "column (from data_csv)" else "literal",
+      kind = if (is_column) "column (from dataset)" else "literal",
       default = default$text, example = example,
       stringsAsFactors = FALSE
     )

@@ -92,11 +92,11 @@ cpb_import_sep_hint <- function(path, sep, actual_cols) {
 # does not say why ("more columns than column names", for an extra
 # line above the header). Both are caught here and re-raised with a
 # message that names the actual, likely cause instead.
-cpb_import_read_data <- function(data_csv, sep) {
+cpb_import_read_data <- function(path, sep) {
   data_df <- tryCatch(
-    utils::read.csv(data_csv, check.names = FALSE, stringsAsFactors = FALSE, sep = sep),
+    utils::read.csv(path, check.names = FALSE, stringsAsFactors = FALSE, sep = sep),
     error = function(e) {
-      stop("Could not read `data_csv` (", conditionMessage(e), "). Check that ",
+      stop("Could not read the dataset (", conditionMessage(e), "). Check that ",
         "every row has the same number of fields, and that the very first ",
         "row is the header row naming each column, with nothing (no title, ",
         "no blank line) above it.",
@@ -107,19 +107,19 @@ cpb_import_read_data <- function(data_csv, sep) {
 
   looks_numeric <- grepl("^-?[0-9]+(\\.[0-9]+)?$", trimws(names(data_df)))
   if (any(looks_numeric)) {
-    stop("The first row of `data_csv` does not look like column names ",
+    stop("The first row of the dataset does not look like column names ",
       "(found ", paste0("\"", names(data_df)[looks_numeric], "\"", collapse = ", "),
       "). `cpb_import_csv()` always reads the first row as the header; check ",
       "that a real header row is there, and that no other line comes ",
-      "before it.", cpb_import_sep_hint(data_csv, sep, ncol(data_df)),
+      "before it.", cpb_import_sep_hint(path, sep, ncol(data_df)),
       call. = FALSE
     )
   }
 
   if (ncol(data_df) == 1) {
-    hint <- cpb_import_sep_hint(data_csv, sep, ncol(data_df))
+    hint <- cpb_import_sep_hint(path, sep, ncol(data_df))
     if (nzchar(hint)) {
-      stop("`data_csv` was read as a single column.", hint, call. = FALSE)
+      stop("The dataset was read as a single column.", hint, call. = FALSE)
     }
   }
 
@@ -258,12 +258,12 @@ cpb_import_build_one <- function(params, data_df, extra_params) {
 # triggered from a scheduled task or a .bat file may never show its
 # console at all, or may discard stderr entirely, so the log file is
 # the only outcome record guaranteed to survive an unattended run.
-cpb_import_write_log <- function(params_csv, data_csv, entries) {
+cpb_import_write_log <- function(params_csv, data_dir, entries) {
   log_path <- paste0(tools::file_path_sans_ext(params_csv), "_log.txt")
 
   header <- c(
     paste0("ggcpb cpb_import_csv log -- ", format(Sys.time(), "%Y-%m-%d %H:%M:%S")),
-    paste0("data:   ", data_csv),
+    paste0("data:   ", data_dir),
     paste0("params: ", params_csv),
     ""
   )
@@ -328,7 +328,7 @@ cpb_import_write_log <- function(params_csv, data_csv, entries) {
 #' `"hist"` -- i.e. the `cpb_*()` name without the prefix), plus whichever
 #' of that wrapper's own arguments the figure needs. Column-referencing
 #' arguments (`x`, `y`, `fill`, `colour`, `p5`..`p95`, `sec_y`, ...) take
-#' a column name from `data_csv`; everything else (`title`, `ylab`,
+#' a column name from the dataset; everything else (`title`, `ylab`,
 #' `palette`, `pct_axis`, `sec_type`, ...) is a literal value. A cell
 #' containing `;` becomes a vector (e.g. `colour_index` = `"6;2"` becomes
 #' `c(6, 2)`). Blank
@@ -358,11 +358,10 @@ cpb_import_write_log <- function(params_csv, data_csv, entries) {
 #' reference or literal, and its default), see
 #' `system.file("extdata", "parameter_settings.csv", package = "ggcpb")`.
 #'
-#' @param data_csv Optional path to one data CSV, used by every figure that
-#'   has no `data` parameter. Leave it out to read `data/data.csv` next
-#'   to `params_csv` instead. Read with `read.csv(check.names = FALSE)`,
-#'   so column names are kept exactly as written (spaces and all).
-#' @param params_csv Path to the parameters CSV (see Details).
+#' @param params_csv Path to the parameters CSV (see Details). The datasets
+#'   are read from the `data` folder next to it, with
+#'   `read.csv(check.names = FALSE)`, so column names are kept exactly as
+#'   written (spaces and all).
 #' @param sep Field separator for both CSVs; defaults to `,`.
 #' @param ... Optional overrides applied to every figure, taking
 #'   priority over `params_csv` -- actual R values (not CSV strings),
@@ -377,20 +376,13 @@ cpb_import_write_log <- function(params_csv, data_csv, entries) {
 #' @examples
 #' \dontrun{
 #' # datasets in ./data, named in the `data` column of params.csv
-#' ps <- cpb_import_csv(params_csv = "params.csv")
+#' ps <- cpb_import_csv("params.csv")
 #' ps$koopkracht
-#'
-#' # one data file for every figure
-#' p <- cpb_import_csv("data.csv", "params.csv")
 #' }
 #' @export
-cpb_import_csv <- function(data_csv = NULL, params_csv, sep = ",", ...,
-                           simplify = TRUE) {
+cpb_import_csv <- function(params_csv, sep = ",", ..., simplify = TRUE) {
   if (!file.exists(params_csv)) {
     stop("Parameters CSV file not found: ", params_csv, call. = FALSE)
-  }
-  if (!is.null(data_csv) && !file.exists(data_csv)) {
-    stop("Data CSV file not found: ", data_csv, call. = FALSE)
   }
   data_dir <- file.path(dirname(params_csv), "data")
   extra_params <- list(...)
@@ -424,14 +416,6 @@ cpb_import_csv <- function(data_csv = NULL, params_csv, sep = ",", ...,
       files <- trimws(strsplit(params[["data"]], ";", fixed = TRUE)[[1]])
       files <- unique(files[nzchar(files)])
     }
-    if (!length(files) && !is.null(data_csv)) {
-      # an explicit data_csv serves every figure without a `data` of its own
-      items[[length(items) + 1]] <- list(
-        row = i, params = params, label = label, path = data_csv,
-        file = NULL
-      )
-      next
-    }
     if (!length(files)) files <- "data.csv"
     for (f in files) {
       items[[length(items) + 1]] <- list(
@@ -443,10 +427,8 @@ cpb_import_csv <- function(data_csv = NULL, params_csv, sep = ",", ...,
 
   # a dataset used by more than one figure gets the params row number
   # added to its name, so no figure overwrites another
-  stems <- vapply(items, function(it) {
-    if (is.null(it$file)) NA_character_ else tools::file_path_sans_ext(it$file)
-  }, character(1))
-  shared <- unique(stems[!is.na(stems) & duplicated(stems)])
+  stems <- vapply(items, function(it) tools::file_path_sans_ext(it$file), character(1))
+  shared <- unique(stems[duplicated(stems)])
 
   cache <- new.env(parent = emptyenv())
   read_cached <- function(path) {
@@ -461,7 +443,7 @@ cpb_import_csv <- function(data_csv = NULL, params_csv, sep = ",", ...,
 
   plots <- list()
   for (it in items) {
-    entry_label <- if (is.null(it$file)) it$label else paste0(it$label, " [", it$file, "]")
+    entry_label <- paste0(it$label, " [", it$file, "]")
     skip <- function(detail) {
       warning("Figure ", it$row, " \"", entry_label, "\": ", detail,
         " -- skipped.",
@@ -506,19 +488,13 @@ cpb_import_csv <- function(data_csv = NULL, params_csv, sep = ",", ...,
       plot_type = built$plot_type, unknown = built$unknown
     )
 
-    fig_id <- if (is.null(it$file)) {
-      gsub("[[:punct:] ]+", "-", it$label)
-    } else {
-      stem <- tools::file_path_sans_ext(it$file)
-      if (stem %in% shared) paste0(stem, "_", it$row) else stem
-    }
+    stem <- tools::file_path_sans_ext(it$file)
+    fig_id <- if (stem %in% shared) paste0(stem, "_", it$row) else stem
     plots[[fig_id]] <- built$plot
   }
 
   entries <- entries[order(vapply(entries, function(e) e$row, numeric(1)))]
-  log_path <- cpb_import_write_log(
-    params_csv, if (is.null(data_csv)) data_dir else data_csv, entries
-  )
+  log_path <- cpb_import_write_log(params_csv, data_dir, entries)
 
   # a partial batch (some figures built, some skipped or failed) is a
   # legitimate, useful result and must not error -- but coming back

@@ -4,15 +4,13 @@
 \alias{cpb_import_csv}
 \title{Import a plot (or set of plots) from a data CSV and a parameters CSV}
 \usage{
-cpb_import_csv(data_csv = NULL, params_csv, sep = ",", ..., simplify = TRUE)
+cpb_import_csv(params_csv, sep = ",", ..., simplify = TRUE)
 }
 \arguments{
-\item{data_csv}{Optional path to one data CSV, used by every figure that
-has no \code{data} parameter. Leave it out to read \code{data/data.csv} next
-to \code{params_csv} instead. Read with \code{read.csv(check.names = FALSE)},
-so column names are kept exactly as written (spaces and all).}
-
-\item{params_csv}{Path to the parameters CSV (see Details).}
+\item{params_csv}{Path to the parameters CSV (see Details). The datasets
+are read from the \code{data} folder next to it, with
+\code{read.csv(check.names = FALSE)}, so column names are kept exactly as
+written (spaces and all).}
 
 \item{sep}{Field separator for both CSVs; defaults to \verb{,}.}
 
@@ -55,7 +53,7 @@ dataset, the row number in \code{params_csv} (header excluded) is added:
 \code{"hist"} -- i.e. the \verb{cpb_*()} name without the prefix), plus whichever
 of that wrapper's own arguments the figure needs. Column-referencing
 arguments (\code{x}, \code{y}, \code{fill}, \code{colour}, \code{p5}..\code{p95}, \code{sec_y}, ...) take
-a column name from \code{data_csv}; everything else (\code{title}, \code{ylab},
+a column name from the dataset; everything else (\code{title}, \code{ylab},
 \code{palette}, \code{pct_axis}, \code{sec_type}, ...) is a literal value. A cell
 containing \verb{;} becomes a vector (e.g. \code{colour_index} = \code{"6;2"} becomes
 \code{c(6, 2)}). Blank
@@ -90,10 +88,7 @@ reference or literal, and its default), see
 \examples{
 \dontrun{
 # datasets in ./data, named in the `data` column of params.csv
-ps <- cpb_import_csv(params_csv = "params.csv")
+ps <- cpb_import_csv("params.csv")
 ps$koopkracht
-
-# one data file for every figure
-p <- cpb_import_csv("data.csv", "params.csv")
 }
 }

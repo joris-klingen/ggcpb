@@ -1,6 +1,7 @@
 # ggcpb (development version)
 
-* The CSV import reads several datasets. Datasets live in a `data` folder next to `params.csv`, and the new `data` parameter names them per figure (`koopkracht.csv`, or `a.csv;b.csv` for one figure per file). A blank `data` uses `data/data.csv`. A missing dataset is skipped with a warning and the rest is still built. Figures are named after their dataset. `cpb_import_csv()` no longer needs `data_csv`, and the new `cpb_import_run()` is what the launchers run. The kit now keeps `data.csv` in `data/`.
+* The CSV import reads several datasets. Datasets live in a `data` folder next to `params.csv`, and the new `data` parameter names them per figure (`koopkracht.csv`, or `a.csv;b.csv` for one figure per file). A blank `data` uses `data/data.csv`. A missing dataset is skipped with a warning and the rest is still built. Figures are named after their dataset, with the params row number added when several figures share one. The new `cpb_import_run()` is what the launchers run.
+* **Breaking:** `cpb_import_csv()` no longer takes `data_csv`. Call `cpb_import_csv("params.csv")`. The example files `import_example_data.csv` and `import_example_params.csv` are removed. `autogenerate_plots()` is the example now, with datasets in `data/`.
 
 * Source Sans 3 is contained as the direct fallback font in the package. `save_cpb()` and printing a chart then warn that the figure
   does not meet the Rijkshuisstijl.
