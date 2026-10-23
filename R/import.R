@@ -24,7 +24,7 @@ cpb_import_known_names <- function() {
   wrapper_names <- unlist(lapply(names(cpb_import_col_args), function(pt) {
     names(formals(get(paste0("cpb_", pt), mode = "function")))
   }))
-  unique(c("plot_type", "create", "id", wrapper_names))
+  unique(c("plot_type", "create", "id", "data", wrapper_names))
 }
 
 # One string value from a CSV cell -> an R value. A value containing ";"
@@ -221,6 +221,7 @@ cpb_import_build_one <- function(params, data_df, extra_params) {
   params[["plot_type"]] <- NULL
   params[["create"]] <- NULL
   params[["id"]] <- NULL
+  params[["data"]] <- NULL
 
   unknown <- setdiff(names(params), valid_args)
   if (length(unknown)) {
@@ -267,8 +268,8 @@ cpb_import_write_log <- function(params_csv, data_csv, entries) {
     ""
   )
 
-  body <- unlist(lapply(seq_along(entries), function(i) {
-    e <- entries[[i]]
+  body <- unlist(lapply(entries, function(e) {
+    i <- e$row
     lines <- if (e$status == "skipped") {
       paste0("Figure ", i, " \"", e$label, "\": skipped (", e$detail, ")")
     } else {
@@ -304,10 +305,23 @@ cpb_import_write_log <- function(params_csv, data_csv, entries) {
 
 #' Import a plot (or set of plots) from a data CSV and a parameters CSV
 #'
-#' A CSV-only alternative to an Excel workbook: `data_csv` holds the
-#' plain series data (long format -- one row per x/series combination),
-#' and `params_csv` names which `cpb_col()`/`cpb_area()`/... wrapper to
-#' call for each figure and its arguments, in one of two layouts.
+#' A CSV-only alternative to an Excel workbook: the datasets are plain CSV
+#' files (long format -- one row per x/series combination) in a `data`
+#' folder next to `params_csv`, and `params_csv` names which
+#' `cpb_col()`/`cpb_area()`/... wrapper to call for each figure and its
+#' arguments, in one of two layouts.
+#'
+#' Each figure names its dataset in the `data` parameter. `data` =
+#' `koopkracht.csv` reads `data/koopkracht.csv`, relative to the folder
+#' holding `params_csv`. `data` = `a.csv;b.csv` builds the figure once per
+#' file. A blank or absent `data` reads `data/data.csv`. A dataset that
+#' is missing or cannot be read is skipped with a warning, and every other
+#' figure (and every other dataset in the same list) is still built.
+#'
+#' Figures in the returned list are named after their dataset
+#' (`koopkracht` for `koopkracht.csv`). When several figures use the same
+#' dataset, the row number in `params_csv` (header excluded) is added:
+#' `koopkracht_1`, `koopkracht_3`.
 #'
 #' `params_csv` needs a `plot_type` field naming the wrapper to use
 #' (`"col"`, `"area"`, `"line"`, `"box"`, `"dot"`, `"scatter"`, or
@@ -344,35 +358,41 @@ cpb_import_write_log <- function(params_csv, data_csv, entries) {
 #' reference or literal, and its default), see
 #' `system.file("extdata", "parameter_settings.csv", package = "ggcpb")`.
 #'
-#' @param data_csv Path to the data CSV. Read with
-#'   `read.csv(check.names = FALSE)`, so column names are kept exactly
-#'   as written (spaces and all).
+#' @param data_csv Optional path to one data CSV, used by every figure that
+#'   has no `data` parameter. Leave it out to read `data/data.csv` next
+#'   to `params_csv` instead. Read with `read.csv(check.names = FALSE)`,
+#'   so column names are kept exactly as written (spaces and all).
 #' @param params_csv Path to the parameters CSV (see Details).
 #' @param sep Field separator for both CSVs; defaults to `,`.
 #' @param ... Optional overrides applied to every figure, taking
 #'   priority over `params_csv` -- actual R values (not CSV strings),
 #'   e.g. `legend = "right"`.
+#' @param simplify If `TRUE` (default), a single figure is returned as a
+#'   `ggplot` rather than a list of one. Set `FALSE` to always get the
+#'   named list.
 #' @return A single `ggplot` object if `params_csv` defines one figure,
 #'   or a named list of them (named from each figure's `id`, else
 #'   `title`, else `"figure_1"`, `"figure_2"`, ...) if it defines
 #'   several. Also writes a run log as a side effect -- see Details.
 #' @examples
 #' \dontrun{
-#' p <- cpb_import_csv("data.csv", "params.csv")
-#' p
-#'
-#' ps <- cpb_import_csv("data.csv", "params_multi.csv")
+#' # datasets in ./data, named in the `data` column of params.csv
+#' ps <- cpb_import_csv(params_csv = "params.csv")
 #' ps$koopkracht
+#'
+#' # one data file for every figure
+#' p <- cpb_import_csv("data.csv", "params.csv")
 #' }
 #' @export
-cpb_import_csv <- function(data_csv, params_csv, sep = ",", ...) {
-  if (!file.exists(data_csv)) {
-    stop("Data CSV file not found: ", data_csv, call. = FALSE)
-  }
+cpb_import_csv <- function(data_csv = NULL, params_csv, sep = ",", ...,
+                           simplify = TRUE) {
   if (!file.exists(params_csv)) {
     stop("Parameters CSV file not found: ", params_csv, call. = FALSE)
   }
-  data_df <- cpb_import_read_data(data_csv, sep)
+  if (!is.null(data_csv) && !file.exists(data_csv)) {
+    stop("Data CSV file not found: ", data_csv, call. = FALSE)
+  }
+  data_dir <- file.path(dirname(params_csv), "data")
   extra_params <- list(...)
 
   figs <- cpb_import_read_params(params_csv, sep)
@@ -380,8 +400,8 @@ cpb_import_csv <- function(data_csv, params_csv, sep = ",", ...) {
     stop("`params_csv` defines no figures.", call. = FALSE)
   }
 
-  plots <- list()
-  entries <- vector("list", length(figs))
+  entries <- list()
+  items <- list()
   for (i in seq_along(figs)) {
     params <- figs[[i]]
     label <- params[["id"]]
@@ -391,12 +411,75 @@ cpb_import_csv <- function(data_csv, params_csv, sep = ",", ...) {
 
     create <- params[["create"]]
     create <- if (is.null(create)) "y" else tolower(trimws(create))
-
     if (create %in% c("n", "no", "false", "f")) {
-      entries[[i]] <- list(
-        label = label, status = "skipped",
+      entries[[length(entries) + 1]] <- list(
+        row = i, label = label, status = "skipped",
         detail = paste0("create = ", create)
       )
+      next
+    }
+
+    files <- character(0)
+    if (!is.null(params[["data"]])) {
+      files <- trimws(strsplit(params[["data"]], ";", fixed = TRUE)[[1]])
+      files <- unique(files[nzchar(files)])
+    }
+    if (!length(files) && !is.null(data_csv)) {
+      # an explicit data_csv serves every figure without a `data` of its own
+      items[[length(items) + 1]] <- list(
+        row = i, params = params, label = label, path = data_csv,
+        file = NULL
+      )
+      next
+    }
+    if (!length(files)) files <- "data.csv"
+    for (f in files) {
+      items[[length(items) + 1]] <- list(
+        row = i, params = params, label = label,
+        path = file.path(data_dir, f), file = f
+      )
+    }
+  }
+
+  # a dataset used by more than one figure gets the params row number
+  # added to its name, so no figure overwrites another
+  stems <- vapply(items, function(it) {
+    if (is.null(it$file)) NA_character_ else tools::file_path_sans_ext(it$file)
+  }, character(1))
+  shared <- unique(stems[!is.na(stems) & duplicated(stems)])
+
+  cache <- new.env(parent = emptyenv())
+  read_cached <- function(path) {
+    if (is.null(cache[[path]])) {
+      cache[[path]] <- tryCatch(
+        list(df = cpb_import_read_data(path, sep)),
+        error = function(e) list(error = conditionMessage(e))
+      )
+    }
+    cache[[path]]
+  }
+
+  plots <- list()
+  for (it in items) {
+    entry_label <- if (is.null(it$file)) it$label else paste0(it$label, " [", it$file, "]")
+    skip <- function(detail) {
+      warning("Figure ", it$row, " \"", entry_label, "\": ", detail,
+        " -- skipped.",
+        call. = FALSE
+      )
+      entries[[length(entries) + 1]] <<- list(
+        row = it$row, label = entry_label, status = "skipped",
+        detail = detail
+      )
+    }
+
+    if (!file.exists(it$path)) {
+      skip(paste0("dataset not found: ", it$path))
+      next
+    }
+    data <- read_cached(it$path)
+    if (!is.null(data$error)) {
+      skip(paste0("error: ", data$error))
       next
     }
 
@@ -404,39 +487,38 @@ cpb_import_csv <- function(data_csv, params_csv, sep = ",", ...) {
     # other cpb_*() argument validation failure) must not take the
     # whole batch down with it, in an unattended run especially -- one
     # broken figure among twenty should still leave the other nineteen
-    # built. Recorded the same way an explicit create = "n" skip is,
-    # with the actual error message as the detail (not just a pointer
-    # to the console warning() below, which an unattended run may
-    # never show -- the log has to carry the real reason on its own).
+    # built. The real error message goes in the log, not just the
+    # console warning(), which an unattended run may never show.
     build_error <- NULL
     built <- tryCatch(
-      cpb_import_build_one(params, data_df, extra_params),
+      cpb_import_build_one(it$params, data$df, extra_params),
       error = function(e) {
         build_error <<- conditionMessage(e)
         NULL
       }
     )
     if (!is.null(build_error)) {
-      warning("Figure ", i, " \"", label, "\": ", build_error,
-        " -- skipped.",
-        call. = FALSE
-      )
-      entries[[i]] <- list(
-        label = label, status = "skipped",
-        detail = paste0("error: ", build_error)
-      )
+      skip(paste0("error: ", build_error))
       next
     }
-    entries[[i]] <- list(
-      label = label, status = "built",
+    entries[[length(entries) + 1]] <- list(
+      row = it$row, label = entry_label, status = "built",
       plot_type = built$plot_type, unknown = built$unknown
     )
 
-    fig_id <- gsub("[[:punct:] ]+", "-", label)
+    fig_id <- if (is.null(it$file)) {
+      gsub("[[:punct:] ]+", "-", it$label)
+    } else {
+      stem <- tools::file_path_sans_ext(it$file)
+      if (stem %in% shared) paste0(stem, "_", it$row) else stem
+    }
     plots[[fig_id]] <- built$plot
   }
 
-  log_path <- cpb_import_write_log(params_csv, data_csv, entries)
+  entries <- entries[order(vapply(entries, function(e) e$row, numeric(1)))]
+  log_path <- cpb_import_write_log(
+    params_csv, if (is.null(data_csv)) data_dir else data_csv, entries
+  )
 
   # a partial batch (some figures built, some skipped or failed) is a
   # legitimate, useful result and must not error -- but coming back
@@ -445,14 +527,57 @@ cpb_import_csv <- function(data_csv, params_csv, sep = ",", ...) {
   # since an unattended run may never show this console error either
   if (!length(plots)) {
     detail <- vapply(entries, function(e) paste0("\"", e$label, "\": ", e$detail), character(1))
-    stop("No figures were built from `params_csv` (", length(figs),
+    stop("No figures were built from `params_csv` (", length(entries),
       " figure(s) defined, all skipped) -- ", paste(detail, collapse = "; "),
       ". See the run log: ", log_path,
       call. = FALSE
     )
   }
 
-  if (length(plots) == 1) plots[[1]] else plots
+  if (simplify && length(plots) == 1) plots[[1]] else plots
+}
+
+#' Build and save every figure of a figure folder
+#'
+#' What the `run_import.bat` / `run_import.command` launchers run. Reads
+#' `params.csv` in `dir`, builds the figures with [cpb_import_csv()] (datasets
+#' from `dir/data`), and saves each as a PNG in `dir/generated`, named after
+#' its dataset. A PNG that already exists is replaced. Datasets or figures
+#' that fail are skipped, listed at the end, and written to
+#' `params_log.txt`.
+#'
+#' @param dir The figure folder, holding `params.csv` and `data/`.
+#' @param page Page width passed to [save_cpb()].
+#' @return Invisibly, the paths of the PNGs written.
+#' @export
+cpb_import_run <- function(dir = ".", page = "half") {
+  params_csv <- file.path(dir, "params.csv")
+  if (!file.exists(params_csv)) {
+    stop("params.csv was not found in ", normalizePath(dir), ".", call. = FALSE)
+  }
+  skipped <- character(0)
+  figs <- withCallingHandlers(
+    cpb_import_csv(params_csv = params_csv, simplify = FALSE),
+    warning = function(w) {
+      skipped <<- c(skipped, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    }
+  )
+
+  out_dir <- file.path(dir, "generated")
+  if (!dir.exists(out_dir)) dir.create(out_dir)
+  paths <- file.path(out_dir, paste0(gsub("[^A-Za-z0-9_-]+", "_", names(figs)), ".png"))
+  for (i in seq_along(figs)) {
+    save_cpb(paths[[i]], figs[[i]], page = page)
+  }
+
+  cat("\nDone. ", length(paths), " figure(s) saved in the generated folder.\n", sep = "")
+  if (length(skipped)) {
+    cat("\n", length(skipped), " figure(s) skipped:\n", sep = "")
+    cat(paste0("  ", skipped), sep = "\n")
+    cat("\nSee params_log.txt for details.\n")
+  }
+  invisible(paths)
 }
 
 #' Copy a ready-to-run figure-generating kit to a folder

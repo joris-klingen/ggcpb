@@ -224,6 +224,39 @@ fig_vertical <- cpb_import_csv(data_csv, params_vertical)
 fig_vertical
 ```
 
+# Several datasets
+
+So far one data file served every figure. A figure folder can hold
+many datasets instead. Put each dataset in a folder named `data`,
+next to `params.csv`. Any file name works. The parameter `data` names
+the dataset of a figure.
+
+| `data` | What happens |
+|---|---|
+| `koopkracht.csv` | The figure uses `data/koopkracht.csv`. |
+| `a.csv;b.csv` | One figure is made from each named dataset. |
+| blank | The figure uses `data/data.csv`. |
+| column absent | The same as blank. |
+
+Call `cpb_import_csv()` with the parameter file only:
+
+```{r several, eval = FALSE}
+figs <- cpb_import_csv(params_csv = "params.csv")
+```
+
+The figures are named after their dataset. If several figures use the
+same dataset, the row number in `params.csv` is added to the name. The
+header is not counted, so the first figure is row 1. For example,
+`koopkracht_1` and `koopkracht_3`.
+
+A named dataset that does not exist is skipped with a warning. Nothing
+falls back to another dataset. The other datasets in the same list
+and the other rows are still created. With `data` set to
+`a.csv;b.csv;c.csv` and no `b.csv`, you get figures for `a.csv` and
+`c.csv`, and a warning about `b.csv`.
+
+Save datasets as `CSV UTF-8 (comma delimited)` in Excel.
+
 # Handling problems
 
 A parameter can be left blank. In that case, the default value is
@@ -248,17 +281,20 @@ The same CSV based method can also be used without opening R.
 The `autogenerate_plots()` function creates a ready to use folder
 containing:
 
-* a data file
-* a parameter file
+* a `data` folder with the datasets
+* a parameter file, `params.csv`
 * a script for Windows (a `.bat` file)
 * a script for a Mac (a `.command` file)
 
-After editing the data and parameter files, run the appropriate
-script. It reads both files and saves the resulting figures as
-images.
+After editing the datasets and the parameter file, run the
+appropriate script. It reads `params.csv`, builds every figure and
+saves the images in the folder `generated`. Each image is named after
+its dataset.
 
-Running the script again after changing either CSV file produces
-updated figures.
+Running the script again produces updated figures. Images with the
+same name are replaced. A dataset or figure that fails is skipped and
+listed at the end, and in `params_log.txt`. The other figures are
+still saved.
 
 R and `ggcpb` must still be installed on the computer running the
 script.

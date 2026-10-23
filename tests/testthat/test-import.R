@@ -179,8 +179,9 @@ test_that("autogenerate_plots copies every kit file into a new folder", {
   expect_true(dir.exists(kit_dir))
   expect_setequal(list.files(dest), list.files(kit_dir))
 
-  # the two data files ship ready to run as-is
-  p <- cpb_import_csv(file.path(dest, "data.csv"), file.path(dest, "params.csv"))
+  # the example datasets ship ready to run as-is
+  expect_true(file.exists(file.path(dest, "data", "data.csv")))
+  p <- cpb_import_csv(params_csv = file.path(dest, "params.csv"))
   expect_type(p, "list")
 })
 
@@ -221,7 +222,7 @@ test_that("cpb_import_csv errors clearly when data_csv has no header row", {
   data_csv <- local_params_csv(c("2020,A,2.0", "2021,B,3.0"))
   params_csv <- local_params_csv(c("plot_type,line", "x,jaar", "y,koopkracht"))
 
-  expect_error(cpb_import_csv(data_csv, params_csv), "does not look like column names")
+  expect_error(suppressWarnings(cpb_import_csv(data_csv, params_csv)), "does not look like column names")
 })
 
 test_that("cpb_import_csv errors clearly on a stray line above data_csv's header", {
@@ -230,21 +231,21 @@ test_that("cpb_import_csv errors clearly on a stray line above data_csv's header
   ))
   params_csv <- local_params_csv(c("plot_type,line", "x,jaar", "y,koopkracht"))
 
-  expect_error(cpb_import_csv(data_csv, params_csv), "no title, no blank line")
+  expect_error(suppressWarnings(cpb_import_csv(data_csv, params_csv)), "no title, no blank line")
 })
 
 test_that("cpb_import_csv errors clearly when data_csv uses tabs but sep is a comma", {
   data_csv <- local_params_csv(c("jaar\tgroep\tkoopkracht", "2020\tA\t2.0", "2021\tB\t3.0"))
   params_csv <- local_params_csv(c("plot_type,line", "x,jaar", "y,koopkracht"))
 
-  expect_error(cpb_import_csv(data_csv, params_csv), "might use a tab instead")
+  expect_error(suppressWarnings(cpb_import_csv(data_csv, params_csv)), "might use a tab instead")
 })
 
 test_that("cpb_import_csv errors clearly when params_csv uses tabs but sep is a comma", {
   data_csv <- local_data_csv()
   params_csv <- local_params_csv(c("plot_type\tline", "x\tjaar", "y\tmld"))
 
-  expect_error(cpb_import_csv(data_csv, params_csv), "might use a tab instead")
+  expect_error(suppressWarnings(cpb_import_csv(data_csv, params_csv)), "might use a tab instead")
 })
 
 test_that("cpb_import_csv reads both files fine when sep matches a tab-separated pair", {
@@ -252,4 +253,118 @@ test_that("cpb_import_csv reads both files fine when sep matches a tab-separated
   params_csv <- local_params_csv(c("plot_type\tline", "x\tjaar", "y\tkoopkracht"))
 
   expect_no_error(cpb_import_csv(data_csv, params_csv, sep = "\t"))
+})
+
+# --- several datasets: params.csv plus a data/ folder -------------------
+
+local_kit <- function(params, datasets = c("koopkracht.csv", "werkloosheid.csv", "data.csv")) {
+  dir <- withr::local_tempdir(.local_envir = parent.frame())
+  dir.create(file.path(dir, "data"))
+  for (f in datasets) {
+    writeLines(c(
+      "jaar,groep,waarde",
+      "2020,A,2.0", "2020,B,3.0", "2021,A,2.5", "2021,B,3.2"
+    ), file.path(dir, "data", f))
+  }
+  writeLines(params, file.path(dir, "params.csv"))
+  dir
+}
+
+test_that("each figure reads the dataset named in `data`, and is named after it", {
+  dir <- local_kit(c(
+    "plot_type,id,x,y,data",
+    "line,a,jaar,waarde,koopkracht.csv",
+    "line,b,jaar,waarde,werkloosheid.csv"
+  ))
+  ps <- cpb_import_csv(params_csv = file.path(dir, "params.csv"))
+  expect_named(ps, c("koopkracht", "werkloosheid"))
+})
+
+test_that("a blank or absent `data` reads data/data.csv", {
+  dir <- local_kit(c("plot_type,x,y,data", "line,jaar,waarde,"))
+  p <- cpb_import_csv(params_csv = file.path(dir, "params.csv"))
+  expect_s3_class(p, "ggplot")
+
+  dir <- local_kit(c("plot_type,x,y", "line,jaar,waarde"))
+  ps <- cpb_import_csv(params_csv = file.path(dir, "params.csv"), simplify = FALSE)
+  expect_named(ps, "data")
+})
+
+test_that("a missing data/data.csv skips the figure with a warning, never another dataset", {
+  dir <- local_kit(c("plot_type,x,y", "line,jaar,waarde"), datasets = "koopkracht.csv")
+  expect_error(
+    suppressWarnings(cpb_import_csv(params_csv = file.path(dir, "params.csv"))),
+    "dataset not found"
+  )
+  expect_warning(
+    try(cpb_import_csv(params_csv = file.path(dir, "params.csv")), silent = TRUE),
+    "dataset not found"
+  )
+})
+
+test_that("a list in `data` builds one figure per file, and one missing file does not cancel the rest", {
+  dir <- local_kit(
+    c(
+      "plot_type,id,x,y,data",
+      "line,a,jaar,waarde,a.csv;b.csv;c.csv",
+      "line,later,jaar,waarde,d.csv"
+    ),
+    datasets = c("a.csv", "c.csv", "d.csv")
+  )
+  params_csv <- file.path(dir, "params.csv")
+  expect_warning(
+    ps <- cpb_import_csv(params_csv = params_csv),
+    "b.csv"
+  )
+  expect_named(ps, c("a", "c", "d"))
+  log <- paste(readLines(file.path(dir, "params_log.txt")), collapse = "\n")
+  expect_match(log, "skipped \\(dataset not found")
+})
+
+test_that("a dataset used by several rows gets the params row number in its name", {
+  dir <- local_kit(c(
+    "plot_type,id,x,y,data",
+    "line,a,jaar,waarde,koopkracht.csv",
+    "line,b,jaar,waarde,werkloosheid.csv",
+    "col,c,jaar,waarde,koopkracht.csv"
+  ))
+  ps <- cpb_import_csv(params_csv = file.path(dir, "params.csv"))
+  expect_named(ps, c("koopkracht_1", "werkloosheid", "koopkracht_3"))
+})
+
+test_that("other CSV files in data/ are ignored unless named", {
+  dir <- local_kit(
+    c("plot_type,x,y,data", "line,jaar,waarde,koopkracht.csv"),
+    datasets = c("koopkracht.csv", "backup.csv")
+  )
+  p <- cpb_import_csv(params_csv = file.path(dir, "params.csv"))
+  expect_s3_class(p, "ggplot")
+})
+
+test_that("running the import twice replaces the PNGs instead of duplicating them", {
+  skip_on_cran()
+  dir <- withr::local_tempdir()
+  autogenerate_plots(dir)
+  png_files <- function() list.files(file.path(dir, "generated"), pattern = "[.]png$")
+
+  utils::capture.output(cpb_import_run(dir))
+  first <- png_files()
+  expect_gt(length(first), 0)
+  old <- file.info(file.path(dir, "generated", first))$mtime
+
+  Sys.sleep(1.1)
+  utils::capture.output(cpb_import_run(dir))
+  expect_equal(png_files(), first)
+  new <- file.info(file.path(dir, "generated", first))$mtime
+  expect_true(all(new > old))
+})
+
+test_that("cpb_import_run lists skipped figures and still saves the others", {
+  dir <- local_kit(
+    c("plot_type,id,x,y,data", "line,a,jaar,waarde,a.csv;b.csv"),
+    datasets = "a.csv"
+  )
+  out <- utils::capture.output(cpb_import_run(dir))
+  expect_true(file.exists(file.path(dir, "generated", "a.png")))
+  expect_match(paste(out, collapse = "\n"), "b.csv")
 })

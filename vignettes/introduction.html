@@ -412,8 +412,8 @@ know</h2>
 <ol style="list-style-type: decimal">
 <li>Find the most recent ggcpb folder in <code>[path]</code>.</li>
 <li>Copy it to the place where you want to create figures.</li>
-<li>Open <code>data.csv</code> and <code>params.csv</code> in Excel.
-Fill in your data and describe your figures.</li>
+<li>Put your datasets in the folder <code>data</code>. Open
+<code>params.csv</code> in Excel and describe your figures.</li>
 <li>Start <code>run_import.bat</code> (Windows) by double clicking it.
 Your figures appear in the folder <code>generated</code>.</li>
 </ol>
@@ -422,17 +422,26 @@ Your figures appear in the folder <code>generated</code>.</li>
 <div id="use-ggcpb-in-excel" class="section level2" number="1.3">
 <h2><span class="header-section-number">1.3</span> Use ggcpb in
 Excel</h2>
-<p>Two files drive everything.</p>
+<p>One parameter file and one or more datasets drive everything.</p>
 <ul>
 <li><code>params.csv</code> describes your figures. Each row forms one
-figure. Each column holds the parameter settings for a specific
-figure.</li>
-<li><code>data.csv</code> holds your data. The first row holds the
-column names. The following rows are the observations per column.</li>
+figure. Each column holds the parameter settings for a specific figure.
+The column <code>data</code> names the dataset of the figure.</li>
+<li>The folder <code>data</code> holds your datasets. Each dataset is
+its own CSV file with any name, such as <code>koopkracht.csv</code>. The
+first row holds the column names. The following rows are the
+observations per column.</li>
 </ul>
+<p>Leave <code>data</code> blank to use <code>data/data.csv</code>.
+Write <code>a.csv;b.csv</code> to draw the same figure for both
+datasets. A figure is saved under the name of its dataset, so
+<code>koopkracht.csv</code> gives <code>koopkracht.png</code>. If two
+figures use the same dataset, the row number is added, such as
+<code>koopkracht_1.png</code>.</p>
 <p><em>Please note</em>: The files must be saved as CSV, not as
-spreadsheet (<code>xlsx</code>). Excel can save a sheet as CSV via
-<code>File</code> -&gt; <code>Save as</code> -&gt; <code>CSV</code>.</p>
+spreadsheet (<code>xlsx</code>). In Excel, choose <code>File</code>
+-&gt; <code>Save as</code> -&gt;
+<code>CSV UTF-8 (comma delimited)</code>.</p>
 <p>Run the script again after every change. This will update the
 figures. The import vignette gives a more detailed explanation and lists
 all settings per figure type. See <a href="import.html"><code>vignette(&quot;import&quot;)</code></a>.</p>
@@ -568,7 +577,7 @@ ylab
 </div>
 </div>
 <p><strong>How to reproduce this figure:</strong> copy
-<code>data.csv</code>, <code>params.csv</code> and
+<code>params.csv</code>, the folder <code>data</code> and
 <code>run_import.bat</code> (Windows) or <code>run_import.command</code>
 (Mac) to a personal folder. Fill in the parameters above in
 <code>params.csv</code> and start the script. In R you can call
@@ -680,7 +689,7 @@ mld euro
 </div>
 </div>
 <p><strong>How to reproduce this figure:</strong> copy
-<code>data.csv</code>, <code>params.csv</code> and
+<code>params.csv</code>, the folder <code>data</code> and
 <code>run_import.bat</code> (Windows) or <code>run_import.command</code>
 (Mac) to a personal folder. Fill in the parameters above in
 <code>params.csv</code> and start the script. In R you can call
@@ -800,7 +809,7 @@ aandeel binnen inkomensgroep (%)
 </div>
 </div>
 <p><strong>How to reproduce this figure:</strong> copy
-<code>data.csv</code>, <code>params.csv</code> and
+<code>params.csv</code>, the folder <code>data</code> and
 <code>run_import.bat</code> (Windows) or <code>run_import.command</code>
 (Mac) to a personal folder. Fill in the parameters above in
 <code>params.csv</code> and start the script. In R you can call
@@ -904,7 +913,7 @@ ylab
 </div>
 </div>
 <p><strong>How to reproduce this figure:</strong> copy
-<code>data.csv</code>, <code>params.csv</code> and
+<code>params.csv</code>, the folder <code>data</code> and
 <code>run_import.bat</code> (Windows) or <code>run_import.command</code>
 (Mac) to a personal folder. Fill in the parameters above in
 <code>params.csv</code> and start the script. In R you can call
@@ -1023,7 +1032,7 @@ ylab
 </div>
 </div>
 <p><strong>How to reproduce this figure:</strong> copy
-<code>data.csv</code>, <code>params.csv</code> and
+<code>params.csv</code>, the folder <code>data</code> and
 <code>run_import.bat</code> (Windows) or <code>run_import.command</code>
 (Mac) to a personal folder. Fill in the parameters above in
 <code>params.csv</code> and start the script. In R you can call
@@ -1096,7 +1105,7 @@ colour_index
 </div>
 </div>
 <p><strong>How to reproduce this figure:</strong> copy
-<code>data.csv</code>, <code>params.csv</code> and
+<code>params.csv</code>, the folder <code>data</code> and
 <code>run_import.bat</code> (Windows) or <code>run_import.command</code>
 (Mac) to a personal folder. Fill in the parameters above in
 <code>params.csv</code> and start the script. In R you can call
@@ -1190,7 +1199,7 @@ xlab
 </div>
 </div>
 <p><strong>How to reproduce this figure:</strong> copy
-<code>data.csv</code>, <code>params.csv</code> and
+<code>params.csv</code>, the folder <code>data</code> and
 <code>run_import.bat</code> (Windows) or <code>run_import.command</code>
 (Mac) to a personal folder. Fill in the parameters above in
 <code>params.csv</code> and start the script. In R you can call
@@ -1267,7 +1276,7 @@ besteedbaar inkomen (euro per maand)
 </div>
 </div>
 <p><strong>How to reproduce this figure:</strong> copy
-<code>data.csv</code>, <code>params.csv</code> and
+<code>params.csv</code>, the folder <code>data</code> and
 <code>run_import.bat</code> (Windows) or <code>run_import.command</code>
 (Mac) to a personal folder. Fill in the parameters above in
 <code>params.csv</code> and start the script. In R you can call
@@ -1344,7 +1353,7 @@ duur (maanden)
 </div>
 </div>
 <p><strong>How to reproduce this figure:</strong> copy
-<code>data.csv</code>, <code>params.csv</code> and
+<code>params.csv</code>, the folder <code>data</code> and
 <code>run_import.bat</code> (Windows) or <code>run_import.command</code>
 (Mac) to a personal folder. Fill in the parameters above in
 <code>params.csv</code> and start the script. In R you can call

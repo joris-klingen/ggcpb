@@ -3,10 +3,9 @@
 # This script is started by run_import.bat on Windows or
 # run_import.command on Mac. It is not normally opened by hand.
 #
-# It reads data.csv and params.csv from its own folder, builds every
-# figure described in params.csv, and saves each one as a PNG file in
-# a folder named generated, created next to this script if it does
-# not exist yet.
+# It reads params.csv from its own folder, builds every figure described
+# there from the datasets in the data folder, and saves each one as a PNG
+# file in a folder named generated. A PNG that already exists is replaced.
 
 # Rscript does not set the working directory to the folder the script
 # lives in, unlike opening a file in RStudio. The folder is instead
@@ -22,11 +21,8 @@ find_script_dir <- function() {
 }
 
 script_dir <- find_script_dir()
-data_csv <- file.path(script_dir, "data.csv")
-params_csv <- file.path(script_dir, "params.csv")
-out_dir <- file.path(script_dir, "generated")
 
-cat("Looking for data.csv and params.csv in:\n")
+cat("Looking for params.csv and the data folder in:\n")
 cat(script_dir, "\n\n")
 
 result <- tryCatch({
@@ -34,28 +30,7 @@ result <- tryCatch({
     stop("The ggcpb package is not installed. Install it in R first, ",
       "then run this script again.")
   }
-  if (!file.exists(data_csv)) {
-    stop("data.csv was not found in this folder.")
-  }
-  if (!file.exists(params_csv)) {
-    stop("params.csv was not found in this folder.")
-  }
-
-  figs <- ggcpb::cpb_import_csv(data_csv, params_csv)
-  if (ggplot2::is.ggplot(figs)) {
-    figs <- list(figuur_1 = figs)
-  }
-
-  if (!dir.exists(out_dir)) {
-    dir.create(out_dir)
-  }
-
-  for (nm in names(figs)) {
-    file_name <- paste0(gsub("[^A-Za-z0-9_-]+", "_", nm), ".png")
-    ggcpb::save_cpb(file.path(out_dir, file_name), figs[[nm]], page = "half")
-  }
-
-  cat("\nDone. ", length(figs), " figure(s) saved in the generated folder.\n", sep = "")
+  ggcpb::cpb_import_run(script_dir)
   "ok"
 }, error = function(e) {
   cat("Something went wrong and no figures were saved.\n\n")

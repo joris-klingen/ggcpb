@@ -110,7 +110,17 @@ for (pt in plot_types) {
   col_args <- cpb_import_col_args[[pt]]
   for (nm in names(f)) {
     # a function cannot be given in a CSV
-    if (nm %in% c("data", "...", "x_labels")) next
+    if (nm %in% c("...", "x_labels")) next
+    if (nm == "data") {
+      # in a CSV `data` is not the data frame but the dataset file name(s)
+      # inside the data folder, so it is a literal here
+      rows[[length(rows) + 1]] <- data.frame(
+        plot_type = pt, param = "data", kind = "literal",
+        default = "data.csv", example = "koopkracht.csv;werkloosheid.csv",
+        stringsAsFactors = FALSE
+      )
+      next
+    }
     is_column <- nm %in% col_args
     default <- fmt_default(f[[nm]])
 

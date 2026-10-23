@@ -4,12 +4,13 @@
 \alias{cpb_import_csv}
 \title{Import a plot (or set of plots) from a data CSV and a parameters CSV}
 \usage{
-cpb_import_csv(data_csv, params_csv, sep = ",", ...)
+cpb_import_csv(data_csv = NULL, params_csv, sep = ",", ..., simplify = TRUE)
 }
 \arguments{
-\item{data_csv}{Path to the data CSV. Read with
-\code{read.csv(check.names = FALSE)}, so column names are kept exactly
-as written (spaces and all).}
+\item{data_csv}{Optional path to one data CSV, used by every figure that
+has no \code{data} parameter. Leave it out to read \code{data/data.csv} next
+to \code{params_csv} instead. Read with \code{read.csv(check.names = FALSE)},
+so column names are kept exactly as written (spaces and all).}
 
 \item{params_csv}{Path to the parameters CSV (see Details).}
 
@@ -18,6 +19,10 @@ as written (spaces and all).}
 \item{...}{Optional overrides applied to every figure, taking
 priority over \code{params_csv} -- actual R values (not CSV strings),
 e.g. \code{legend = "right"}.}
+
+\item{simplify}{If \code{TRUE} (default), a single figure is returned as a
+\code{ggplot} rather than a list of one. Set \code{FALSE} to always get the
+named list.}
 }
 \value{
 A single \code{ggplot} object if \code{params_csv} defines one figure,
@@ -26,12 +31,25 @@ or a named list of them (named from each figure's \code{id}, else
 several. Also writes a run log as a side effect -- see Details.
 }
 \description{
-A CSV-only alternative to an Excel workbook: \code{data_csv} holds the
-plain series data (long format -- one row per x/series combination),
-and \code{params_csv} names which \code{cpb_col()}/\code{cpb_area()}/... wrapper to
-call for each figure and its arguments, in one of two layouts.
+A CSV-only alternative to an Excel workbook: the datasets are plain CSV
+files (long format -- one row per x/series combination) in a \code{data}
+folder next to \code{params_csv}, and \code{params_csv} names which
+\code{cpb_col()}/\code{cpb_area()}/... wrapper to call for each figure and its
+arguments, in one of two layouts.
 }
 \details{
+Each figure names its dataset in the \code{data} parameter. \code{data} =
+\code{koopkracht.csv} reads \code{data/koopkracht.csv}, relative to the folder
+holding \code{params_csv}. \code{data} = \verb{a.csv;b.csv} builds the figure once per
+file. A blank or absent \code{data} reads \code{data/data.csv}. A dataset that
+is missing or cannot be read is skipped with a warning, and every other
+figure (and every other dataset in the same list) is still built.
+
+Figures in the returned list are named after their dataset
+(\code{koopkracht} for \code{koopkracht.csv}). When several figures use the same
+dataset, the row number in \code{params_csv} (header excluded) is added:
+\code{koopkracht_1}, \code{koopkracht_3}.
+
 \code{params_csv} needs a \code{plot_type} field naming the wrapper to use
 (\code{"col"}, \code{"area"}, \code{"line"}, \code{"box"}, \code{"dot"}, \code{"scatter"}, or
 \code{"hist"} -- i.e. the \verb{cpb_*()} name without the prefix), plus whichever
@@ -71,10 +89,11 @@ reference or literal, and its default), see
 }
 \examples{
 \dontrun{
-p <- cpb_import_csv("data.csv", "params.csv")
-p
-
-ps <- cpb_import_csv("data.csv", "params_multi.csv")
+# datasets in ./data, named in the `data` column of params.csv
+ps <- cpb_import_csv(params_csv = "params.csv")
 ps$koopkracht
+
+# one data file for every figure
+p <- cpb_import_csv("data.csv", "params.csv")
 }
 }
