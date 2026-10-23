@@ -1,8 +1,9 @@
 # import.R
 #
 # Standalone CSV import: builds ready-to-use ggplot objects from a plain
-# data.csv (the actual series data) and a params.csv (one row/column per
-# figure, naming which cpb_*() wrapper to call and its arguments).
+# datasets in a data folder and a params.csv (column 1 holds the parameter
+# names, every other column is one figure, naming which cpb_*() wrapper
+# to call and its arguments).
 
 # which args of each wrapper are column refs (not literal values),
 # keyed by plot_type (the cpb_ name without its prefix)
@@ -16,16 +17,6 @@ cpb_import_col_args <- list(
   hist    = c("x", "fill", "facet"),
   donut   = c("fill", "y", "label")
 )
-
-# The full set of recognised parameter names (plot_type, create, id, every
-# wrapper's own arguments, plus the CSV-facing renames), used to tell
-# params.csv's two layouts apart -- see cpb_import_read_params().
-cpb_import_known_names <- function() {
-  wrapper_names <- unlist(lapply(names(cpb_import_col_args), function(pt) {
-    names(formals(get(paste0("cpb_", pt), mode = "function")))
-  }))
-  unique(c("plot_type", "create", "id", "data", wrapper_names))
-}
 
 # One string value from a CSV cell -> an R value. A value containing ";"
 # becomes a vector, each piece coerced the same way (so "6;2" becomes the
@@ -132,74 +123,54 @@ cpb_import_read_data <- function(path, sep) {
   data_df
 }
 
-# Reads params.csv in either of its two layouts and returns one named list
-# of (still all-character) parameters per figure, in file order. Blank
-# cells are dropped entirely, so a missing value never shadows the
-# wrapper's own default.
+# Reads params.csv and returns one named list of (still all-character)
+# parameters per figure, in file order. Column 1 holds the parameter names,
+# one per row; every other column holds one figure's values. Blank cells
+# are dropped entirely, so a missing value never shadows the wrapper's own
+# default. A column without any value is returned as an empty list, so a
+# figure keeps the number of its column.
 #
-# Vertical (meta-tab style): column 1 holds parameter names, one row
-# each; columns 2..N hold one figure's values apiece.
-# Horizontal (key-value table): row 1 holds parameter names as column
-# headers; every other row is one figure.
-#
-# The two are told apart with a simple vote: read the file both ways, and
-# see which candidate's "parameter name" column (the header row for
-# horizontal, the first column for vertical) mostly matches known
-# parameter names. The other candidate, read the wrong way round, ends
-# up with a "parameter name" column full of plain data values (column
-# names from data.csv, "line"/"box", ...) that don't match anything.
+# Rows may have fewer fields than the widest row (trailing commas can be
+# left out), so the width is counted first rather than guessed from the
+# first lines.
 cpb_import_read_params <- function(params_csv, sep) {
-  known <- cpb_import_known_names()
-
   read_error <- function(e) {
-    stop("Could not read `params_csv` (", conditionMessage(e), "). Check ",
-      "that every row has the same number of fields.",
+    stop("Could not read `params_csv` (", conditionMessage(e), ").",
       call. = FALSE
     )
   }
-  raw_h <- tryCatch(
-    utils::read.csv(params_csv,
-      header = TRUE, check.names = FALSE,
-      stringsAsFactors = FALSE, sep = sep
-    ),
+  width <- tryCatch(
+    max(utils::count.fields(params_csv, sep = sep, quote = "\"",
+                            blank.lines.skip = TRUE), 0, na.rm = TRUE),
     error = read_error
   )
-  raw_v <- tryCatch(
-    utils::read.csv(params_csv,
-      header = FALSE, check.names = FALSE,
-      stringsAsFactors = FALSE, sep = sep
-    ),
-    error = read_error
-  )
-
-  score_h <- mean(tolower(trimws(names(raw_h))) %in% known)
-  score_v <- mean(tolower(trimws(as.character(raw_v[[1]]))) %in% known)
-
-  if (max(score_h, score_v) == 0 || score_h == score_v) {
-    stop("Could not tell whether `params_csv` is in the vertical or ",
-      "horizontal layout -- make sure it has a `plot_type` field, either ",
-      "as a column header, or as a value in the first column.",
-      cpb_import_sep_hint(params_csv, sep, ncol(raw_h)),
+  if (width < 2) {
+    stop("`params_csv` needs the parameter names in column 1 and one ",
+      "column of values for every figure.",
+      cpb_import_sep_hint(params_csv, sep, max(width, 1)),
       call. = FALSE
     )
   }
+  raw <- tryCatch(
+    utils::read.csv(params_csv,
+      header = FALSE, check.names = FALSE, stringsAsFactors = FALSE,
+      sep = sep, fill = TRUE, col.names = paste0("V", seq_len(width))
+    ),
+    error = read_error
+  )
 
-  if (score_h > score_v) {
-    names(raw_h) <- tolower(trimws(names(raw_h)))
-    lapply(seq_len(nrow(raw_h)), function(i) {
-      vals <- vapply(raw_h[i, , drop = FALSE], as.character, character(1))
-      keep <- !is.na(vals) & nzchar(trimws(vals))
-      as.list(vals[keep])
-    })
-  } else {
-    param_names <- tolower(trimws(as.character(raw_v[[1]])))
-    n_figs <- ncol(raw_v) - 1
-    lapply(seq_len(n_figs), function(i) {
-      vals <- as.character(raw_v[[i + 1]])
-      keep <- !is.na(vals) & nzchar(trimws(vals))
-      stats::setNames(as.list(vals[keep]), param_names[keep])
-    })
+  param_names <- tolower(trimws(as.character(raw[[1]])))
+  if (!"plot_type" %in% param_names) {
+    stop("`params_csv` needs a `plot_type` row: put `plot_type` in column 1 ",
+      "and the type of each figure (`line`, `col`, ...) next to it.",
+      call. = FALSE
+    )
   }
+  lapply(seq_len(width - 1), function(i) {
+    vals <- as.character(raw[[i + 1]])
+    keep <- !is.na(vals) & nzchar(trimws(vals)) & nzchar(param_names)
+    stats::setNames(as.list(vals[keep]), param_names[keep])
+  })
 }
 
 # Turns one figure's (all-character) parameter list into a finished
@@ -336,7 +307,8 @@ cpb_import_write_log <- function(params_csv, data_dir, entries) {
 #'
 #' Figures in the returned list are named after their dataset
 #' (`koopkracht` for `koopkracht.csv`). When several figures use the same
-#' dataset, the row number in `params_csv` (header excluded) is added:
+#' dataset, the figure number in `params_csv` (the first figure column is
+#' 1) is added:
 #' `koopkracht_1`, `koopkracht_3`.
 #'
 #' `params_csv` needs a `plot_type` field naming the wrapper to use
@@ -354,12 +326,9 @@ cpb_import_write_log <- function(params_csv, data_dir, entries) {
 #' `warning()` is still raised for each one). Set `create` to
 #' `"n"`/`"no"`/`"false"`/`"f"` to skip a figure entirely.
 #'
-#' `params_csv` can be laid out either way, and the layout is detected
-#' automatically:
-#' * **Vertical** (meta-tab style): column 1 holds parameter names, one
-#'   row each; columns 2..N hold one figure's values apiece.
-#' * **Horizontal** (key-value table): row 1 holds parameter names as
-#'   column headers; every other row is one figure.
+#' In `params_csv` column 1 holds the parameter names, one per row. Every
+#' other column is one figure. Fields at the end of a row can be left
+#' out when they are blank.
 #'
 #' Every call also (over)writes a plain-text run log next to
 #' `params_csv`, named `<params_csv>_log.txt`: one line per figure
@@ -404,7 +373,7 @@ cpb_import_csv <- function(params_csv, sep = ",", ..., simplify = TRUE) {
   extra_params <- list(...)
 
   figs <- cpb_import_read_params(params_csv, sep)
-  if (!length(figs)) {
+  if (!any(lengths(figs) > 0)) {
     stop("`params_csv` defines no figures.", call. = FALSE)
   }
 
@@ -412,6 +381,7 @@ cpb_import_csv <- function(params_csv, sep = ",", ..., simplify = TRUE) {
   items <- list()
   for (i in seq_along(figs)) {
     params <- figs[[i]]
+    if (!length(params)) next # an empty column is not a figure
     label <- params[["id"]]
     if (is.null(label)) label <- params[["title"]]
     if (is.null(label)) label <- paste0("figure_", i)
@@ -444,7 +414,7 @@ cpb_import_csv <- function(params_csv, sep = ",", ..., simplify = TRUE) {
     }
   }
 
-  # a dataset used by more than one figure gets the params row number
+  # a dataset used by more than one figure gets its figure number
   # added to its name, so no figure overwrites another
   stems <- vapply(items, function(it) tools::file_path_sans_ext(it$file), character(1))
   shared <- unique(stems[duplicated(stems)])

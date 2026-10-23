@@ -1,3 +1,14 @@
-plot_type,id,title,x,y,fill,ylab,position,sec_y,sec_type,sec_legend_label,sec_ylab,create,data
-col,koopkracht,Koopkrachtontwikkeling naar groep,jaar,koopkracht,groep,% mutatie,dodge,werkloosheid,line,werkloosheid,%,y,koopkracht
-line,werkloosheid,Werkloosheid,jaar,werkloosheid,,%,,,,,,y,werkloosheid
+plot_type,col,line
+id,koopkracht,werkloosheid
+title,Koopkrachtontwikkeling naar groep,Werkloosheid
+x,jaar,jaar
+y,koopkracht,werkloosheid
+fill,groep
+ylab,% mutatie,%
+position,dodge
+sec_y,werkloosheid
+sec_type,line
+sec_legend_label,werkloosheid
+sec_ylab,%
+create,y,y
+data,koopkracht,werkloosheid

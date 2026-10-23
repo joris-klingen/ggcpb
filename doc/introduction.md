@@ -51,9 +51,9 @@ You do not need to know R to follow this workflow.
 
 One parameter file and one or more datasets drive everything.
 
-- `params.csv` describes your figures. Each row forms one figure. Each
-  column holds the parameter settings for a specific figure. The column
-  `data` names the dataset of the figure.
+- `params.csv` describes your figures. Column 1 holds the parameter
+  names, such as `title`, `x` and `data`. Every other column describes
+  one figure. The row `data` names the dataset of the figure.
 - The folder `data` holds your datasets. Each dataset is its own CSV
   file with any name, such as `koopkracht.csv`. The first row holds the
   column names. The following rows are the observations per column.
@@ -62,7 +62,7 @@ Write the dataset name without `.csv`, such as `koopkracht`. Leave
 `data` blank to use `data/data.csv`. Write `a;b` to draw the same figure
 for both datasets. A figure is saved under the name of its dataset, so
 `koopkracht` gives `koopkracht.png`. If two figures use the same
-dataset, the row number is added, such as `koopkracht_1.png`.
+dataset, the figure number is added, such as `koopkracht_1.png`.
 
 *Please note*: The files must be saved as CSV, not as spreadsheet
 (`xlsx`). In Excel, choose `File` -\> `Save as` -\>

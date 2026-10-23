@@ -84,29 +84,53 @@ The parameter file determines which figures are created. Each figure has
 a `plot_type` and an `id`, together with the settings required for that
 plot type. The parameter `data` names the dataset of the figure.
 
-This example uses the horizontal layout:
+The first column holds the parameter names. Every other column describes
+one figure. This is the example file:
 
-    plot_type,id,title,x,y,fill,ylab,position,sec_y,sec_type,sec_legend_label,sec_ylab,create,data
-    col,koopkracht,Koopkrachtontwikkeling naar groep,jaar,koopkracht,groep,% mutatie,dodge,werkloosheid,line,werkloosheid,%,y,koopkracht
-    line,werkloosheid,Werkloosheid,jaar,werkloosheid,,%,,,,,,y,werkloosheid
+    plot_type,col,line
+    id,koopkracht,werkloosheid
+    title,Koopkrachtontwikkeling naar groep,Werkloosheid
+    x,jaar,jaar
+    y,koopkracht,werkloosheid
+    fill,groep
+    ylab,% mutatie,%
+    position,dodge
+    sec_y,werkloosheid
+    sec_type,line
+    sec_legend_label,werkloosheid
+    sec_ylab,%
+    create,y,y
+    data,koopkracht,werkloosheid
 
 The same content, split on the comma and shown as a table:
 
-| plot_type | id | title | x | y | fill | ylab | position | sec_y | sec_type | sec_legend_label | sec_ylab | create | data |
-|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|
-| col | koopkracht | Koopkrachtontwikkeling naar groep | jaar | koopkracht | groep | % mutatie | dodge | werkloosheid | line | werkloosheid | % | y | koopkracht |
-| line | werkloosheid | Werkloosheid | jaar | werkloosheid |  | % |  |  |  |  |  | y | werkloosheid |
+| parameter        | figure.1                          | figure.2     |
+|:-----------------|:----------------------------------|:-------------|
+| plot_type        | col                               | line         |
+| id               | koopkracht                        | werkloosheid |
+| title            | Koopkrachtontwikkeling naar groep | Werkloosheid |
+| x                | jaar                              | jaar         |
+| y                | koopkracht                        | werkloosheid |
+| fill             | groep                             |              |
+| ylab             | % mutatie                         | %            |
+| position         | dodge                             |              |
+| sec_y            | werkloosheid                      |              |
+| sec_type         | line                              |              |
+| sec_legend_label | werkloosheid                      |              |
+| sec_ylab         | %                                 |              |
+| create           | y                                 | y            |
+| data             | koopkracht                        | werkloosheid |
 
-Each row describes one figure. The column names are parameter names.
+A cell can be left blank. Fields at the end of a row can be left out.
 
 Some parameters refer to columns in the dataset. For example:
 
 - `x`, `y`, `fill` and `sec_y` are column references.
 - `title`, `ylab`, `position` and `data` are literal values.
 
-The distinction is important. `y,koopkracht` means that the `y` variable
-should be taken from the `koopkracht` column, while `ylab,% mutatie`
-supplies the text `% mutatie` directly.
+The distinction is important. The cell next to `y` says `koopkracht`, so
+the `y` variable is taken from the `koopkracht` column. The cell next to
+`ylab` says `% mutatie`, so that text is used directly.
 
 # Creating the figures
 
@@ -158,9 +182,9 @@ The parameter `data` names the dataset of a figure, relative to the
 | column absent    | The same as blank.                          |
 
 The figures are named after their dataset. If several figures use the
-same dataset, the row number in `params.csv` is added to the name. The
-header is not counted, so the first figure is row 1. For example,
-`koopkracht_1.png` and `koopkracht_3.png`.
+same dataset, the figure number is added to the name. The first figure
+column in `params.csv` is number 1. For example, `koopkracht_1.png` and
+`koopkracht_3.png`.
 
 A named dataset that does not exist in the `data` folder is skipped with
 a warning. Nothing falls back to another dataset. The other datasets in
@@ -168,20 +192,15 @@ the same list and the other rows are still created. With `data` set to
 `a;b;c` and no `b.csv`, you get figures for `a` and `c`, and a warning
 about `b.csv`.
 
-# One figure per parameter file
+# A parameter file with one figure
 
-There is a second parameter file layout for cases where one parameter
-file describes a single figure.
-
-In the horizontal layout, each row is a figure and each column is a
-parameter. In the vertical layout, each row is a parameter and the two
-columns contain the parameter name and its value.
-
-For example, the following describes a line chart. It can be saved in
-the same folder, so it finds the same `data` folder:
+A parameter file can describe a single figure. It then has one column of
+values next to the parameter names. For example, the following describes
+a line chart. It can be saved in the same folder, so it finds the same
+`data` folder:
 
 ``` r
-params_vertical <- file.path(figure_dir, "params_vertical.csv")
+params_one <- file.path(figure_dir, "params_one.csv")
 
 writeLines(c(
   "plot_type,line",
@@ -190,9 +209,9 @@ writeLines(c(
   "x,jaar",
   "y,werkloosheid",
   "ylab,%"
-), params_vertical)
+), params_one)
 
-cat(readLines(params_vertical), sep = "\n")
+cat(readLines(params_one), sep = "\n")
 #> plot_type,line
 #> title,Werkloosheid
 #> data,werkloosheid
@@ -201,18 +220,15 @@ cat(readLines(params_vertical), sep = "\n")
 #> ylab,%
 ```
 
-The first column contains the parameter names and the second column
-their values. This layout can be convenient when a figure has many
-parameters, because each setting has its own row.
-
 When the parameter file describes one figure, `cpb_import_csv()` returns
-that figure directly rather than a named list.
+that figure directly rather than a named list. Use `simplify = FALSE` to
+always get a named list.
 
 ``` r
-fig_vertical <- cpb_import_csv(params_vertical)
+fig_one <- cpb_import_csv(params_one)
 ```
 
-<img src="import_files/figure-gfm/vertical-build-show-1.png" alt="" width="350px" />
+<img src="import_files/figure-gfm/one-figure-show-1.png" alt="" width="350px" />
 
 # Handling problems
 

@@ -1,9 +1,9 @@
 # ggcpb (development version)
 
-* The CSV import reads several datasets. Datasets live in a `data` folder next to `params.csv`, and the new `data` parameter names them per figure (`koopkracht`, or `a;b` for one figure per file, the `.csv` is optional). A blank `data` uses `data/data.csv`. A missing dataset is skipped with a warning and the rest is still built. Figures are named after their dataset, with the params row number added when several figures share one. The new `cpb_import_run()` is what `run_import.bat` and `run_import.command` start.
+* The CSV import reads several datasets. Datasets live in a `data` folder next to `params.csv`, and the new `data` parameter names them per figure (`koopkracht`, or `a;b` for one figure per file, the `.csv` is optional). A blank `data` uses `data/data.csv`. A missing dataset is skipped with a warning and the rest is still built. Figures are named after their dataset, with the figure number added when several figures share one. The new `cpb_import_run()` is what `run_import.bat` and `run_import.command` start.
 * In the CSV import, text columns keep the order of the rows (not alphabetical), and a numeric `fill`, `group`, `facet` or `colour` is a category (a scatter `colour` stays numeric).
 * `inst/examples/` holds the figures of the introduction vignette as a figure folder: `data/`, `params.csv` and the generated PNGs in `generated/`.
-* **Breaking:** `cpb_import_csv()` no longer takes `data_csv`. Call `cpb_import_csv("params.csv")`. The example files `import_example_data.csv` and `import_example_params.csv` are removed. `autogenerate_plots()` is the example now, with datasets in `data/`.
+* **Breaking:** `params.csv` has one layout. Column 1 holds the parameter names and every other column is one figure. The layout with one row per figure no longer works. `cpb_import_csv()` no longer takes `data_csv`. Call `cpb_import_csv("params.csv")`. The example files `import_example_data.csv` and `import_example_params.csv` are removed. `autogenerate_plots()` is the example now, with datasets in `data/`.
 
 * Source Sans 3 is contained as the direct fallback font in the package. `save_cpb()` and printing a chart then warn that the figure
   does not meet the Rijkshuisstijl.

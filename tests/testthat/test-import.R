@@ -18,7 +18,7 @@ local_figs <- function(params_lines, data_lines = default_data) {
   file.path(dir, "params.csv")
 }
 
-test_that("cpb_import_csv builds a single figure from a vertical params.csv", {
+test_that("cpb_import_csv builds a single figure from a one column params.csv", {
   params_csv <- local_figs(c(
     "plot_type,line",
     "title,Testfiguur",
@@ -36,19 +36,20 @@ test_that("cpb_import_csv builds a single figure from a vertical params.csv", {
   expect_true(!is.null(p$scales$get_scales("colour")))
 })
 
-test_that("cpb_import_csv builds several figures from a horizontal params.csv, skipping create = n", {
+test_that("cpb_import_csv builds several figures, skipping create = n", {
   params_csv <- local_figs(c(
-    "plot_type,title,x,y,create",
-    "col,Eerste,jaar,mld,y",
-    "col,Overgeslagen,jaar,mld,n",
-    "line,Tweede,jaar,mld,yes"
+    "plot_type,col,col,line",
+    "title,Eerste,Overgeslagen,Tweede",
+    "x,jaar,jaar,jaar",
+    "y,mld,mld,mld",
+    "create,y,n,yes"
   ))
 
   ps <- cpb_import_csv(params_csv)
 
   expect_type(ps, "list")
   expect_length(ps, 2)
-  # one dataset, two figures: the params row number is added to the name
+  # one dataset, two figures: the figure number is added to the name
   expect_named(ps, c("data_1", "data_3"))
   expect_true(inherits(ps$data_1$layers[[1]]$geom, "GeomCol"))
   expect_true(inherits(ps$data_3$layers[[1]]$geom, "GeomLine"))
@@ -96,9 +97,11 @@ test_that("cpb_import_csv drops unrecognised parameter names, warning instead of
 
 test_that("cpb_import_csv always (over)writes a run log next to params_csv", {
   params_csv <- local_figs(c(
-    "plot_type,title,x,y,create",
-    "col,Eerste,jaar,mld,y",
-    "col,Overgeslagen,jaar,mld,n"
+    "plot_type,col,col",
+    "title,Eerste,Overgeslagen",
+    "x,jaar,jaar",
+    "y,mld,mld",
+    "create,y,n"
   ))
   log_path <- paste0(tools::file_path_sans_ext(params_csv), "_log.txt")
 
@@ -131,9 +134,10 @@ test_that("cpb_import_csv skips (warning) rather than crashes on one bad figure,
   # others built -- an unattended batch must not lose everything over
   # one broken row
   params_csv <- local_figs(c(
-    "plot_type,title,x,y",
-    "line,Goed,jaar,mld",
-    "line,Kapot,jaar,doesnotexist"
+    "plot_type,line,line",
+    "title,Goed,Kapot",
+    "x,jaar,jaar",
+    "y,mld,doesnotexist"
   ))
   expect_warning(cpb_import_csv(params_csv), "not a column in the data")
   ps <- suppressWarnings(cpb_import_csv(params_csv))
@@ -258,26 +262,28 @@ local_kit <- function(params, datasets = c("koopkracht.csv", "werkloosheid.csv",
 
 test_that("each figure reads the dataset named in `data`, and is named after it", {
   dir <- local_kit(c(
-    "plot_type,id,x,y,data",
-    "line,a,jaar,waarde,koopkracht.csv",
-    "line,b,jaar,waarde,werkloosheid.csv"
+    "plot_type,line,line",
+    "id,a,b",
+    "x,jaar,jaar",
+    "y,waarde,waarde",
+    "data,koopkracht.csv,werkloosheid.csv"
   ))
   ps <- cpb_import_csv(params_csv = file.path(dir, "params.csv"))
   expect_named(ps, c("koopkracht", "werkloosheid"))
 })
 
 test_that("a blank or absent `data` reads data/data.csv", {
-  dir <- local_kit(c("plot_type,x,y,data", "line,jaar,waarde,"))
+  dir <- local_kit(c("plot_type,line", "x,jaar", "y,waarde", "data,"))
   p <- cpb_import_csv(params_csv = file.path(dir, "params.csv"))
   expect_s3_class(p, "ggplot")
 
-  dir <- local_kit(c("plot_type,x,y", "line,jaar,waarde"))
+  dir <- local_kit(c("plot_type,line", "x,jaar", "y,waarde"))
   ps <- cpb_import_csv(params_csv = file.path(dir, "params.csv"), simplify = FALSE)
   expect_named(ps, "data")
 })
 
 test_that("a missing data/data.csv skips the figure with a warning, never another dataset", {
-  dir <- local_kit(c("plot_type,x,y", "line,jaar,waarde"), datasets = "koopkracht.csv")
+  dir <- local_kit(c("plot_type,line", "x,jaar", "y,waarde"), datasets = "koopkracht.csv")
   expect_error(
     suppressWarnings(cpb_import_csv(params_csv = file.path(dir, "params.csv"))),
     "dataset not found"
@@ -291,9 +297,11 @@ test_that("a missing data/data.csv skips the figure with a warning, never anothe
 test_that("a list in `data` builds one figure per file, and one missing file does not cancel the rest", {
   dir <- local_kit(
     c(
-      "plot_type,id,x,y,data",
-      "line,a,jaar,waarde,a.csv;b.csv;c.csv",
-      "line,later,jaar,waarde,d.csv"
+      "plot_type,line,line",
+      "id,a,later",
+      "x,jaar,jaar",
+      "y,waarde,waarde",
+      "data,a.csv;b.csv;c.csv,d.csv"
     ),
     datasets = c("a.csv", "c.csv", "d.csv")
   )
@@ -307,12 +315,13 @@ test_that("a list in `data` builds one figure per file, and one missing file doe
   expect_match(log, "skipped \\(dataset not found")
 })
 
-test_that("a dataset used by several rows gets the params row number in its name", {
+test_that("a dataset used by several figures gets the figure number in its name", {
   dir <- local_kit(c(
-    "plot_type,id,x,y,data",
-    "line,a,jaar,waarde,koopkracht.csv",
-    "line,b,jaar,waarde,werkloosheid.csv",
-    "col,c,jaar,waarde,koopkracht.csv"
+    "plot_type,line,line,col",
+    "id,a,b,c",
+    "x,jaar,jaar,jaar",
+    "y,waarde,waarde,waarde",
+    "data,koopkracht.csv,werkloosheid.csv,koopkracht.csv"
   ))
   ps <- cpb_import_csv(params_csv = file.path(dir, "params.csv"))
   expect_named(ps, c("koopkracht_1", "werkloosheid", "koopkracht_3"))
@@ -320,7 +329,7 @@ test_that("a dataset used by several rows gets the params row number in its name
 
 test_that("other CSV files in data/ are ignored unless named", {
   dir <- local_kit(
-    c("plot_type,x,y,data", "line,jaar,waarde,koopkracht.csv"),
+    c("plot_type,line", "x,jaar", "y,waarde", "data,koopkracht.csv"),
     datasets = c("koopkracht.csv", "backup.csv")
   )
   p <- cpb_import_csv(params_csv = file.path(dir, "params.csv"))
@@ -347,7 +356,7 @@ test_that("running the import twice replaces the PNGs instead of duplicating the
 
 test_that("cpb_import_run lists skipped figures and still saves the others", {
   dir <- local_kit(
-    c("plot_type,id,x,y,data", "line,a,jaar,waarde,a.csv;b.csv"),
+    c("plot_type,line", "id,a", "x,jaar", "y,waarde", "data,a.csv;b.csv"),
     datasets = "a.csv"
   )
   out <- utils::capture.output(cpb_import_run(dir))
@@ -357,7 +366,7 @@ test_that("cpb_import_run lists skipped figures and still saves the others", {
 
 test_that("text columns keep the order of the rows, and a numeric fill becomes a category", {
   params_csv <- local_figs(
-    c("plot_type,x,y,fill", "col,groep,waarde,jaar"),
+    c("plot_type,col", "x,groep", "y,waarde", "fill,jaar"),
     data_lines = c("groep,jaar,waarde",
                    "zeta,2024,1", "alfa,2024,2", "zeta,2021,3", "alfa,2021,4")
   )
@@ -369,7 +378,7 @@ test_that("text columns keep the order of the rows, and a numeric fill becomes a
 })
 
 test_that("a numeric scatter colour stays a number", {
-  params_csv <- local_figs(c("plot_type,x,y,colour", "scatter,jaar,mld,heffing"))
+  params_csv <- local_figs(c("plot_type,scatter", "x,jaar", "y,mld", "colour,heffing"))
   p <- cpb_import_csv(params_csv)
 
   expect_true(is.numeric(p$data$heffing))
@@ -377,12 +386,45 @@ test_that("a numeric scatter colour stays a number", {
 
 test_that("the .csv extension in `data` is optional", {
   dir <- local_kit(c(
-    "plot_type,id,x,y,data",
-    "line,a,jaar,waarde,koopkracht",
-    "line,b,jaar,waarde,werkloosheid.csv",
-    "line,c,jaar,waarde,koopkracht.CSV;werkloosheid"
+    "plot_type,line,line,line",
+    "id,a,b,c",
+    "x,jaar,jaar,jaar",
+    "y,waarde,waarde,waarde",
+    "data,koopkracht,werkloosheid.csv,koopkracht.CSV;werkloosheid"
   ))
   ps <- cpb_import_csv(file.path(dir, "params.csv"))
   # `koopkracht` and `koopkracht.CSV` are the same dataset, so it is shared
   expect_named(ps, c("koopkracht_1", "werkloosheid_2", "koopkracht_3", "werkloosheid_3"))
+})
+
+test_that("figures keep the number of their column, and an empty column is not a figure", {
+  dir <- local_kit(c(
+    "plot_type,line,,col",
+    "id,a,,c",
+    "x,jaar,,jaar",
+    "y,waarde,,waarde",
+    "data,koopkracht,,koopkracht"
+  ))
+  ps <- cpb_import_csv(file.path(dir, "params.csv"))
+  expect_named(ps, c("koopkracht_1", "koopkracht_3"))
+})
+
+test_that("rows may stop early, and a later row may be wider than the first ones", {
+  dir <- local_kit(c(
+    "plot_type,line",
+    "x,jaar",
+    "y,waarde",
+    "data,koopkracht",
+    "ylab,%,%",
+    "title,Eerste,Tweede"
+  ))
+  # the 5th and 6th rows have a second value, but no figure there has a plot_type
+  ps <- suppressWarnings(cpb_import_csv(file.path(dir, "params.csv")))
+  expect_s3_class(ps, "ggplot")
+  expect_equal(ps$labels$title, "Eerste")
+})
+
+test_that("a params.csv without a plot_type row is refused", {
+  dir <- local_kit(c("x,jaar", "y,waarde"))
+  expect_error(cpb_import_csv(file.path(dir, "params.csv")), "plot_type")
 })

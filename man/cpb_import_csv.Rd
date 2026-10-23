@@ -45,8 +45,11 @@ figure (and every other dataset in the same list) is still built.
 
 Figures in the returned list are named after their dataset
 (\code{koopkracht} for \code{koopkracht.csv}). When several figures use the same
-dataset, the row number in \code{params_csv} (header excluded) is added:
+dataset, the figure number in \code{params_csv} (the first figure column is
+\enumerate{
+\item is added:
 \code{koopkracht_1}, \code{koopkracht_3}.
+}
 
 \code{params_csv} needs a \code{plot_type} field naming the wrapper to use
 (\code{"col"}, \code{"area"}, \code{"line"}, \code{"box"}, \code{"dot"}, \code{"scatter"}, or
@@ -63,14 +66,9 @@ applies, so a typo or a stray column never breaks the import (a
 \code{warning()} is still raised for each one). Set \code{create} to
 \code{"n"}/\code{"no"}/\code{"false"}/\code{"f"} to skip a figure entirely.
 
-\code{params_csv} can be laid out either way, and the layout is detected
-automatically:
-\itemize{
-\item \strong{Vertical} (meta-tab style): column 1 holds parameter names, one
-row each; columns 2..N hold one figure's values apiece.
-\item \strong{Horizontal} (key-value table): row 1 holds parameter names as
-column headers; every other row is one figure.
-}
+In \code{params_csv} column 1 holds the parameter names, one per row. Every
+other column is one figure. Fields at the end of a row can be left
+out when they are blank.
 
 Every call also (over)writes a plain-text run log next to
 \code{params_csv}, named \verb{<params_csv>_log.txt}: one line per figure

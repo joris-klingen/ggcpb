@@ -1,10 +1,33 @@
-"plot_type","id","data","title","x","y","ymin","ymax","forecast_x","ylab","fill","sec_y","sec_limits","sec_legend_label","sec_ylab","position","orientation","colour_index","value_limits","xlab","colour","points","style","p5","p25","p50","p75","p95","subtitle","lower","upper","group","binwidth"
-"line","line-forecast","line-forecast","Economische groei met onzekerheid","jaar","groei","lo","hi","2023.5","%","","","","","","","","","","","","","","","","","","","","","","",""
-"col","col-secaxis","col-secaxis","Erfenissen en erfbelasting","jaar","mld","","","","mld euro","soort","heffing","0;3","erfbelasting","mld euro","","","","","","","","","","","","","","","","","",""
-"col","col-horizontal","col-horizontal","Zonnepanelen naar inkomen","groep","aandeel","","","","inkomensgroep","jaar","","","","","dodge","horizontal","2;1","0;70","aandeel binnen inkomensgroep (%)","","","","","","","","","","","","",""
-"line","line-points","line-points","Preferred tax rate by age","leeftijd","tarief","","","","% average rate","","","","","","","","","0;30","","erfenis","TRUE","english","","","","","","","","","",""
-"box","box","box","Koopkracht per inkomensgroep","groep","","","","","% koopkrachtmutatie","","","","","","","horizontal","","","","","","","p5","p25","p50","p75","p95","inkomensgroep","","","",""
-"donut","donut","donut","Energiemix van huishoudens","","aandeel","","","","","bron","","","","","","","6;5;2;4","","","","","","","","","","","","","","",""
-"dot","dot","dot","Samenhang met voorkeurstarieven","term","coef","","","","","","","","","","","","","","%punt verandering","","","","","","","","","","lo","hi","blok",""
-"scatter","scatter","scatter","Energierekening naar inkomen","inkomen","energierekening","","","","euro per maand","","","","","","","","","","besteedbaar inkomen (euro per maand)","","","","","","","","","","","","",""
-"hist","hist","hist","Verdeling van de duur","maanden","","","","","aantal","","","","","","","","","","duur (maanden)","","","","","","","","","","","","","2"
+plot_type,line,col,col,line,box,donut,dot,scatter,hist
+id,line-forecast,col-secaxis,col-horizontal,line-points,box,donut,dot,scatter,hist
+data,line-forecast,col-secaxis,col-horizontal,line-points,box,donut,dot,scatter,hist
+title,Economische groei met onzekerheid,Erfenissen en erfbelasting,Zonnepanelen naar inkomen,Preferred tax rate by age,Koopkracht per inkomensgroep,Energiemix van huishoudens,Samenhang met voorkeurstarieven,Energierekening naar inkomen,Verdeling van de duur
+x,jaar,jaar,groep,leeftijd,groep,,term,inkomen,maanden
+y,groei,mld,aandeel,tarief,,aandeel,coef,energierekening
+ymin,lo
+ymax,hi
+forecast_x,2023.5
+ylab,%,mld euro,inkomensgroep,% average rate,% koopkrachtmutatie,,,euro per maand,aantal
+fill,,soort,jaar,,,bron
+sec_y,,heffing
+sec_limits,,0;3
+sec_legend_label,,erfbelasting
+sec_ylab,,mld euro
+position,,,dodge
+orientation,,,horizontal,,horizontal
+colour_index,,,2;1,,,6;5;2;4
+value_limits,,,0;70,0;30
+xlab,,,aandeel binnen inkomensgroep (%),,,,%punt verandering,besteedbaar inkomen (euro per maand),duur (maanden)
+colour,,,,erfenis
+points,,,,TRUE
+style,,,,english
+p5,,,,,p5
+p25,,,,,p25
+p50,,,,,p50
+p75,,,,,p75
+p95,,,,,p95
+subtitle,,,,,inkomensgroep
+lower,,,,,,,lo
+upper,,,,,,,hi
+group,,,,,,,blok
+binwidth,,,,,,,,,2

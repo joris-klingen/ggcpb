@@ -423,9 +423,10 @@ Your figures appear in the folder <code>generated</code>.</li>
 Excel</h2>
 <p>One parameter file and one or more datasets drive everything.</p>
 <ul>
-<li><code>params.csv</code> describes your figures. Each row forms one
-figure. Each column holds the parameter settings for a specific figure.
-The column <code>data</code> names the dataset of the figure.</li>
+<li><code>params.csv</code> describes your figures. Column 1 holds the
+parameter names, such as <code>title</code>, <code>x</code> and
+<code>data</code>. Every other column describes one figure. The row
+<code>data</code> names the dataset of the figure.</li>
 <li>The folder <code>data</code> holds your datasets. Each dataset is
 its own CSV file with any name, such as <code>koopkracht.csv</code>. The
 first row holds the column names. The following rows are the
@@ -436,7 +437,7 @@ observations per column.</li>
 <code>data/data.csv</code>. Write <code>a;b</code> to draw the same
 figure for both datasets. A figure is saved under the name of its
 dataset, so <code>koopkracht</code> gives <code>koopkracht.png</code>.
-If two figures use the same dataset, the row number is added, such as
+If two figures use the same dataset, the figure number is added, such as
 <code>koopkracht_1.png</code>.</p>
 <p><em>Please note</em>: The files must be saved as CSV, not as
 spreadsheet (<code>xlsx</code>). In Excel, choose <code>File</code>
