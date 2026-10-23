@@ -9,6 +9,7 @@ Rplots.pdf
 inst/examples/output
 inst/autogenerate_plots/generated
 inst/autogenerate_plots/params_log.txt
+inst/examples/params_log.txt
 # tools/render_vignettes.R writes doc/*.md and doc/*_files/ -- those
 # are deliberately tracked (so GitHub can render them with figures);
 # the throwaway HTML/R/Rmd copies devtools::build_vignettes() also
