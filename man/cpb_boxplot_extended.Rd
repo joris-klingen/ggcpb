@@ -218,7 +218,9 @@ axis would then leave no cue where the data starts and ends. Ticks
 are equally spaced and the first and last value are labelled; a
 whole-number \code{x} (a year) only gets whole-number steps. When no
 equal step fits, only the two ends are labelled (on bars the ticks
-run from the first value instead). With \code{x_lim} the exact limits
+run from the first value instead). A monthly date \code{x} in \code{\link[=cpb_col]{cpb_col()}},
+\code{\link[=cpb_area]{cpb_area()}} or \code{\link[=cpb_line]{cpb_line()}} gets calendar breaks instead (see their
+\code{x_ticks_ends}). With \code{x_lim} the exact limits
 are labelled and nothing goes beyond them (\code{x_lim_follow_data} is
 then ignored, as when \code{group} is mapped: the grouped layout needs
 its own fixed margin). Adding your own

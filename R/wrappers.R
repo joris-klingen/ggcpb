@@ -319,14 +319,16 @@ cpb_axis_ticks <- function(lo, hi, whole = FALSE, edge = TRUE, max_labels = 7) {
   out(c(lo + (0:(k - 1)) * span / k, hi))
 }
 
-# The same for a Date or POSIXct x. Dates on the first of a month label
-# their first and last month, with calendar breaks in between: the
-# finest of every month, quarter, half year, year (or 2, 5, 10, ...
-# years) that leaves at most 4 between the ends. A break less than half
-# a step from either end is dropped, so labels don't crowd (#75).
-# Others step in equal days (or seconds).
+# The same for a Date or POSIXct x. Dates on the first of a month get
+# calendar breaks: the finest of every month, quarter, half year, year
+# (or 2, 5, 10, ... years) that gives at most 5. The axis still runs to
+# the first and last month, which are only labelled when they fall on a
+# break (#75). With `ends` they always are, with at most 4 breaks in
+# between; a break less than half a step from either end is then
+# dropped, so labels don't crowd. Others step in equal days (or
+# seconds), both ends labelled.
 # @noRd
-cpb_time_ticks <- function(lo, hi, edge = TRUE) {
+cpb_time_ticks <- function(lo, hi, edge = TRUE, ends = FALSE) {
   first <- inherits(lo, "Date") && all(format(c(lo, hi), "%d") == "01")
   if (first) {
     # months since year 0, so a step that divides 12 (or is a whole
@@ -335,13 +337,21 @@ cpb_time_ticks <- function(lo, hi, edge = TRUE) {
     a <- months(lo)
     b <- months(hi)
     if (b <= a) return(list(breaks = lo, lo = lo, hi = hi))
-    for (step in c(1, 3, 6, 12, 24, 60, 120, 240, 600)) {
-      from <- ceiling((a + 1) / step) * step
-      inner <- if (from < b) seq(from, b - 1, by = step) else numeric(0)
-      inner <- inner[inner - a >= step / 2 & b - inner >= step / 2]
-      if (length(inner) <= 4) break
+    calendar <- function(step, from, to) {
+      from <- ceiling(from / step) * step
+      if (from <= to) seq(from, to, by = step) else numeric(0)
     }
-    m <- c(a, inner, b)
+    for (step in c(1, 3, 6, 12, 24, 60, 120, 240, 600)) {
+      if (ends) {
+        m <- calendar(step, a + 1, b - 1)
+        m <- m[m - a >= step / 2 & b - m >= step / 2]
+        if (length(m) <= 4) break
+      } else {
+        m <- calendar(step, a, b)
+        if (length(m) <= 5) break
+      }
+    }
+    if (ends) m <- c(a, m, b)
     breaks <- as.Date(sprintf("%d-%02d-01", m %/% 12, m %% 12 + 1))
     return(list(breaks = breaks, lo = lo, hi = hi))
   }
@@ -356,8 +366,8 @@ cpb_time_ticks <- function(lo, hi, edge = TRUE) {
 # The ticks and axis range of a numeric, Date or POSIXct x, shared by
 # cpb_x_scale() and cpb_x_flush_xlim() so they cannot disagree.
 # @noRd
-cpb_x_ticks <- function(xvals, lo, hi, edge) {
-  if (inherits(xvals, c("Date", "POSIXt"))) return(cpb_time_ticks(lo, hi, edge))
+cpb_x_ticks <- function(xvals, lo, hi, edge, ends = FALSE) {
+  if (inherits(xvals, c("Date", "POSIXt"))) return(cpb_time_ticks(lo, hi, edge, ends))
   whole <- all(c(xvals, lo, hi) == round(c(xvals, lo, hi)), na.rm = TRUE)
   cpb_axis_ticks(lo, hi, whole, edge)
 }
@@ -408,7 +418,8 @@ cpb_date_labels <- function(x) {
 # strips its default padding, clipping markers/labels at the first/last
 # category (a real bug, previously found and fixed) -- so it keeps the
 # more limited, collision-prone scale-based flush instead.
-cpb_x_scale <- function(p, x, data, flush, domain = NULL, bars = FALSE) {
+cpb_x_scale <- function(p, x, data, flush, domain = NULL, bars = FALSE,
+                        ends = FALSE) {
   xvals <- rlang::eval_tidy(x, data)
   user_lim <- !is.null(domain)
   if (is.null(domain)) domain <- xvals
@@ -418,8 +429,9 @@ cpb_x_scale <- function(p, x, data, flush, domain = NULL, bars = FALSE) {
   # comes from the coord (cpb_x_flush_xlim()), as for a numeric x.
   if (inherits(xvals, c("Date", "POSIXt")) || is.numeric(xvals)) {
     edge <- user_lim || !bars
+    # an explicit x_lim is always labelled at both ends
     tk <- cpb_x_ticks(xvals, min(domain, na.rm = TRUE), max(domain, na.rm = TRUE),
-                      edge)
+                      edge, ends = ends || user_lim)
     if (inherits(xvals, "Date")) {
       p + ggplot2::scale_x_date(breaks = tk$breaks, labels = cpb_date_labels)
     } else if (inherits(xvals, "POSIXt")) {
@@ -1418,7 +1430,9 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   are equally spaced and the first and last value are labelled; a
 #'   whole-number `x` (a year) only gets whole-number steps. When no
 #'   equal step fits, only the two ends are labelled (on bars the ticks
-#'   run from the first value instead). With `x_lim` the exact limits
+#'   run from the first value instead). A monthly date `x` in [cpb_col()],
+#'   [cpb_area()] or [cpb_line()] gets calendar breaks instead (see their
+#'   `x_ticks_ends`). With `x_lim` the exact limits
 #'   are labelled and nothing goes beyond them (`x_lim_follow_data` is
 #'   then ignored, as when `group` is mapped: the grouped layout needs
 #'   its own fixed margin). Adding your own
@@ -1426,6 +1440,13 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   one entirely (ggplot2 keeps only one scale per aesthetic) -- add
 #'   `expand = ggplot2::expansion(mult = 0)` to it to keep the flush
 #'   behaviour.
+#' @param x_ticks_ends For a monthly date `x` (all dates on the 1st of
+#'   a month, e.g. a `Date` or data.table `IDate`): the axis gets
+#'   calendar breaks -- every month, quarter, half year, year or more
+#'   years, at most 5 -- and the first and last month are only labelled
+#'   when they fall on one. `TRUE` always labels the first and last
+#'   month too, with at most 4 calendar breaks in between. Default
+#'   `FALSE`. With `x_lim` both ends are always labelled.
 #' @param palette CPB palette to use for `fill`; one of
 #'   `"qualitative"` (default), `"discr"`, `"sequential"`
 #'   (pink ramp), `\"blues\"` (blue ramp) or `\"extended\"`
@@ -1560,6 +1581,7 @@ cpb_col <- function(data, x, y, fill = NULL,
                      value_labels = FALSE,
                      x_lim = NULL,
                      x_lim_follow_data = FALSE,
+                     x_ticks_ends = FALSE,
                      forecast_x = NULL,
                      forecast_label = "raming",
                      reverse_legend = TRUE,
@@ -1765,7 +1787,8 @@ cpb_col <- function(data, x, y, fill = NULL,
     )
   }
   if (do_flush) {
-    p <- cpb_x_scale(p, x, data, flush = isTRUE(x_lim_follow_data), bars = TRUE)
+    p <- cpb_x_scale(p, x, data, flush = isTRUE(x_lim_follow_data), bars = TRUE,
+                     ends = x_ticks_ends)
   } else if (!is.null(x_lim) && !has_group) {
     p <- cpb_x_scale(p, x, data, flush = FALSE, domain = x_lim)
   }
@@ -1902,6 +1925,7 @@ cpb_area <- function(data, x, y, fill,
                       value_crop = FALSE,
                       x_lim = NULL,
                       x_lim_follow_data = FALSE,
+                      x_ticks_ends = FALSE,
                       forecast_x = NULL,
                       forecast_label = "raming",
                       reverse_legend = TRUE,
@@ -1998,7 +2022,7 @@ cpb_area <- function(data, x, y, fill,
     )
   }
   if (do_flush) {
-    p <- cpb_x_scale(p, x, data, flush = isTRUE(x_lim_follow_data))
+    p <- cpb_x_scale(p, x, data, flush = isTRUE(x_lim_follow_data), ends = x_ticks_ends)
   } else if (!is.null(x_lim)) {
     p <- cpb_x_scale(p, x, data, flush = FALSE, domain = x_lim)
   }
@@ -2140,6 +2164,7 @@ cpb_line <- function(data, x, y, colour = NULL,
                       value_crop = FALSE,
                       x_lim = NULL,
                       x_lim_follow_data = TRUE,
+                      x_ticks_ends = FALSE,
                       ymin = NULL,
                       ymax = NULL,
                       forecast_x = NULL,
@@ -2382,7 +2407,7 @@ cpb_line <- function(data, x, y, colour = NULL,
     )
   }
   if (do_flush) {
-    p <- cpb_x_scale(p, x, data, flush = isTRUE(x_lim_follow_data))
+    p <- cpb_x_scale(p, x, data, flush = isTRUE(x_lim_follow_data), ends = x_ticks_ends)
   } else if (!is.null(x_lim)) {
     p <- cpb_x_scale(p, x, data, flush = FALSE, domain = x_lim)
   }
