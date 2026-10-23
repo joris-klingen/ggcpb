@@ -1754,8 +1754,3 @@ aandeel
 
 Maps currently have no `params.csv` route. Call `cpb_map()` in R, as
 described above. More options are in [`vignette("maps")`](maps.md).
-
-# Questions and feedback
-
-Do you have a question, a remark or an idea? Please contact \[initial\]
-\[surname\].

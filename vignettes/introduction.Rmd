@@ -615,8 +615,3 @@ ptab(`function` = "cpb_map", title = "Aandeel huishoudens met zonnepanelen",
 Maps currently have no `params.csv` route. Call `cpb_map()` in R, as
 described above. More options are in
 [`vignette("maps")`](maps.html).
-
-# Questions and feedback
-
-Do you have a question, a remark or an idea? Please contact
-[initial] [surname].
