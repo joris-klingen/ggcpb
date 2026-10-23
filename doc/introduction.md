@@ -58,11 +58,11 @@ One parameter file and one or more datasets drive everything.
   file with any name, such as `koopkracht.csv`. The first row holds the
   column names. The following rows are the observations per column.
 
-Leave `data` blank to use `data/data.csv`. Write `a.csv;b.csv` to draw
-the same figure for both datasets. A figure is saved under the name of
-its dataset, so `koopkracht.csv` gives `koopkracht.png`. If two figures
-use the same dataset, the row number is added, such as
-`koopkracht_1.png`.
+Write the dataset name without `.csv`, such as `koopkracht`. Leave
+`data` blank to use `data/data.csv`. Write `a;b` to draw the same figure
+for both datasets. A figure is saved under the name of its dataset, so
+`koopkracht` gives `koopkracht.png`. If two figures use the same
+dataset, the row number is added, such as `koopkracht_1.png`.
 
 *Please note*: The files must be saved as CSV, not as spreadsheet
 (`xlsx`). In Excel, choose `File` -\> `Save as` -\>

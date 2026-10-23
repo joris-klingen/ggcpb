@@ -87,15 +87,15 @@ plot type. The parameter `data` names the dataset of the figure.
 This example uses the horizontal layout:
 
     plot_type,id,title,x,y,fill,ylab,position,sec_y,sec_type,sec_legend_label,sec_ylab,create,data
-    col,koopkracht,Koopkrachtontwikkeling naar groep,jaar,koopkracht,groep,% mutatie,dodge,werkloosheid,line,werkloosheid,%,y,koopkracht.csv
-    line,werkloosheid,Werkloosheid,jaar,werkloosheid,,%,,,,,,y,werkloosheid.csv
+    col,koopkracht,Koopkrachtontwikkeling naar groep,jaar,koopkracht,groep,% mutatie,dodge,werkloosheid,line,werkloosheid,%,y,koopkracht
+    line,werkloosheid,Werkloosheid,jaar,werkloosheid,,%,,,,,,y,werkloosheid
 
 The same content, split on the comma and shown as a table:
 
 | plot_type | id | title | x | y | fill | ylab | position | sec_y | sec_type | sec_legend_label | sec_ylab | create | data |
 |:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|
-| col | koopkracht | Koopkrachtontwikkeling naar groep | jaar | koopkracht | groep | % mutatie | dodge | werkloosheid | line | werkloosheid | % | y | koopkracht.csv |
-| line | werkloosheid | Werkloosheid | jaar | werkloosheid |  | % |  |  |  |  |  | y | werkloosheid.csv |
+| col | koopkracht | Koopkrachtontwikkeling naar groep | jaar | koopkracht | groep | % mutatie | dodge | werkloosheid | line | werkloosheid | % | y | koopkracht |
+| line | werkloosheid | Werkloosheid | jaar | werkloosheid |  | % |  |  |  |  |  | y | werkloosheid |
 
 Each row describes one figure. The column names are parameter names.
 
@@ -147,14 +147,15 @@ figs$werkloosheid
 # Several datasets
 
 The parameter `data` names the dataset of a figure, relative to the
-`data` folder next to `params.csv`.
+`data` folder next to `params.csv`. The extension `.csv` is optional, so
+`koopkracht` and `koopkracht.csv` are the same dataset.
 
-| `data`           | What happens                                |
-|------------------|---------------------------------------------|
-| `koopkracht.csv` | The figure uses `data/koopkracht.csv`.      |
-| `a.csv;b.csv`    | One figure is made from each named dataset. |
-| blank            | The figure uses `data/data.csv`.            |
-| column absent    | The same as blank.                          |
+| `data`        | What happens                                |
+|---------------|---------------------------------------------|
+| `koopkracht`  | The figure uses `data/koopkracht.csv`.      |
+| `a;b`         | One figure is made from each named dataset. |
+| blank         | The figure uses `data/data.csv`.            |
+| column absent | The same as blank.                          |
 
 The figures are named after their dataset. If several figures use the
 same dataset, the row number in `params.csv` is added to the name. The
@@ -163,9 +164,8 @@ header is not counted, so the first figure is row 1. For example,
 
 A named dataset that does not exist is skipped with a warning. Nothing
 falls back to another dataset. The other datasets in the same list and
-the other rows are still created. With `data` set to `a.csv;b.csv;c.csv`
-and no `b.csv`, you get figures for `a.csv` and `c.csv`, and a warning
-about `b.csv`.
+the other rows are still created. With `data` set to `a;b;c` and no
+`b.csv`, you get figures for `a` and `c`, and a warning about `b.csv`.
 
 # One figure per parameter file
 
@@ -185,7 +185,7 @@ params_vertical <- file.path(figure_dir, "params_vertical.csv")
 writeLines(c(
   "plot_type,line",
   "title,Werkloosheid",
-  "data,werkloosheid.csv",
+  "data,werkloosheid",
   "x,jaar",
   "y,werkloosheid",
   "ylab,%"
@@ -194,7 +194,7 @@ writeLines(c(
 cat(readLines(params_vertical), sep = "\n")
 #> plot_type,line
 #> title,Werkloosheid
-#> data,werkloosheid.csv
+#> data,werkloosheid
 #> x,jaar
 #> y,werkloosheid
 #> ylab,%
@@ -277,7 +277,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | setting | kind | default | example |
 |:---|:---|:---|:---|
 | colour_index | literal |  | 2;6 |
-| data | literal | data.csv | koopkracht.csv;werkloosheid.csv |
+| data | literal | data | koopkracht;werkloosheid |
 | flush_legend | literal | TRUE | TRUE |
 | legend | literal | bottom | bottom |
 | legend_ncol | literal |  | 2 |

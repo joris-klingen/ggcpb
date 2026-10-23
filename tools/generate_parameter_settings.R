@@ -116,7 +116,7 @@ for (pt in plot_types) {
       # inside the data folder, so it is a literal here
       rows[[length(rows) + 1]] <- data.frame(
         plot_type = pt, param = "data", kind = "literal",
-        default = "data.csv", example = "koopkracht.csv;werkloosheid.csv",
+        default = "data", example = "koopkracht;werkloosheid",
         stringsAsFactors = FALSE
       )
       next

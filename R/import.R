@@ -327,10 +327,10 @@ cpb_import_write_log <- function(params_csv, data_dir, entries) {
 #' `cpb_col()`/`cpb_area()`/... wrapper to call for each figure and its
 #' arguments, in one of two layouts.
 #'
-#' Each figure names its dataset in the `data` parameter. `data` =
-#' `koopkracht.csv` reads `data/koopkracht.csv`, relative to the folder
-#' holding `params_csv`. `data` = `a.csv;b.csv` builds the figure once per
-#' file. A blank or absent `data` reads `data/data.csv`. A dataset that
+#' Each figure names its dataset in the `data` parameter, with or without
+#' the `.csv` extension. `data` = `koopkracht` reads `data/koopkracht.csv`,
+#' relative to the folder holding `params_csv`. `data` = `a;b` builds the
+#' figure once per file. A blank or absent `data` reads `data/data.csv`. A dataset that
 #' is missing or cannot be read is skipped with a warning, and every other
 #' figure (and every other dataset in the same list) is still built.
 #'
@@ -430,7 +430,10 @@ cpb_import_csv <- function(params_csv, sep = ",", ..., simplify = TRUE) {
     files <- character(0)
     if (!is.null(params[["data"]])) {
       files <- trimws(strsplit(params[["data"]], ";", fixed = TRUE)[[1]])
-      files <- unique(files[nzchar(files)])
+      files <- files[nzchar(files)]
+      # the extension is optional: `koopkracht` and `koopkracht.csv` are one dataset
+      files <- unique(ifelse(grepl("[.]csv$", files, ignore.case = TRUE),
+                             files, paste0(files, ".csv")))
     }
     if (!length(files)) files <- "data.csv"
     for (f in files) {

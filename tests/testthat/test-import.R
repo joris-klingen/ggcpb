@@ -374,3 +374,15 @@ test_that("a numeric scatter colour stays a number", {
 
   expect_true(is.numeric(p$data$heffing))
 })
+
+test_that("the .csv extension in `data` is optional", {
+  dir <- local_kit(c(
+    "plot_type,id,x,y,data",
+    "line,a,jaar,waarde,koopkracht",
+    "line,b,jaar,waarde,werkloosheid.csv",
+    "line,c,jaar,waarde,koopkracht.CSV;werkloosheid"
+  ))
+  ps <- cpb_import_csv(file.path(dir, "params.csv"))
+  # `koopkracht` and `koopkracht.CSV` are the same dataset, so it is shared
+  expect_named(ps, c("koopkracht_1", "werkloosheid_2", "koopkracht_3", "werkloosheid_3"))
+})

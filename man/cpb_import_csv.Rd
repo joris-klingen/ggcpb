@@ -36,10 +36,10 @@ folder next to \code{params_csv}, and \code{params_csv} names which
 arguments, in one of two layouts.
 }
 \details{
-Each figure names its dataset in the \code{data} parameter. \code{data} =
-\code{koopkracht.csv} reads \code{data/koopkracht.csv}, relative to the folder
-holding \code{params_csv}. \code{data} = \verb{a.csv;b.csv} builds the figure once per
-file. A blank or absent \code{data} reads \code{data/data.csv}. A dataset that
+Each figure names its dataset in the \code{data} parameter, with or without
+the \code{.csv} extension. \code{data} = \code{koopkracht} reads \code{data/koopkracht.csv},
+relative to the folder holding \code{params_csv}. \code{data} = \verb{a;b} builds the
+figure once per file. A blank or absent \code{data} reads \code{data/data.csv}. A dataset that
 is missing or cannot be read is skipped with a warning, and every other
 figure (and every other dataset in the same list) is still built.
 

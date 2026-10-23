@@ -169,12 +169,13 @@ figs$werkloosheid
 # Several datasets
 
 The parameter `data` names the dataset of a figure, relative to the
-`data` folder next to `params.csv`.
+`data` folder next to `params.csv`. The extension `.csv` is optional,
+so `koopkracht` and `koopkracht.csv` are the same dataset.
 
 | `data` | What happens |
 |---|---|
-| `koopkracht.csv` | The figure uses `data/koopkracht.csv`. |
-| `a.csv;b.csv` | One figure is made from each named dataset. |
+| `koopkracht` | The figure uses `data/koopkracht.csv`. |
+| `a;b` | One figure is made from each named dataset. |
 | blank | The figure uses `data/data.csv`. |
 | column absent | The same as blank. |
 
@@ -186,8 +187,8 @@ header is not counted, so the first figure is row 1. For example,
 A named dataset that does not exist is skipped with a warning. Nothing
 falls back to another dataset. The other datasets in the same list
 and the other rows are still created. With `data` set to
-`a.csv;b.csv;c.csv` and no `b.csv`, you get figures for `a.csv` and
-`c.csv`, and a warning about `b.csv`.
+`a;b;c` and no `b.csv`, you get figures for `a` and `c`, and a
+warning about `b.csv`.
 
 # One figure per parameter file
 
@@ -207,7 +208,7 @@ params_vertical <- file.path(figure_dir, "params_vertical.csv")
 writeLines(c(
   "plot_type,line",
   "title,Werkloosheid",
-  "data,werkloosheid.csv",
+  "data,werkloosheid",
   "x,jaar",
   "y,werkloosheid",
   "ylab,%"
