@@ -11,8 +11,8 @@ autogenerate_plots(dest, overwrite = FALSE)
 
 \item{overwrite}{If \code{FALSE} (default), the function stops instead of
 replacing any file already present in \code{dest}. Set to \code{TRUE} to
-replace them (e.g. to update the launcher after a package update,
-without touching an already-edited \code{data.csv}/\code{params.csv} -- copy
+replace them (e.g. to update the start script after a package update,
+without touching an already-edited \code{params.csv} or \code{data} folder -- copy
 to an empty folder first in that case, then move just the two
 scripts over by hand).}
 }
@@ -21,19 +21,19 @@ Invisibly, \code{dest}.
 }
 \description{
 \code{cpb_import_csv()} itself still needs R to be started by hand. This copies
-a small kit to \code{dest}: an example \code{data.csv} and \code{params.csv}, a
-\code{run_import.R} script that reads them and saves each figure as a PNG
-in a \code{generated} subfolder, and two launchers that run it with a
+a small kit to \code{dest}: an example \code{params.csv}, a \code{data} folder with
+example datasets, a \code{run_import.R} script that reads them and saves each figure as a PNG
+in a \code{generated} subfolder, and two start scripts that run it with a
 double click instead of opening R at all -- \code{run_import.bat} on
 Windows, \code{run_import.command} on a Mac. R itself, and the ggcpb
-package, still need to be installed on the machine the launcher runs
-on; the launcher only skips having to open R and type a command by
+package, still need to be installed on the machine the start script runs
+on; the start script only skips having to open R and type a command by
 hand each time.
 }
 \details{
-The example \code{data.csv} and \code{params.csv} are meant to be replaced.
+The example \code{params.csv} and datasets are meant to be replaced.
 Edit them (a plain text editor or a spreadsheet program both work),
-keep the same file names, and the launcher builds whatever figures
+keep \code{params.csv} and the \code{data} folder where they are, and the start script builds whatever figures
 the new \code{params.csv} describes on the next run.
 }
 \examples{

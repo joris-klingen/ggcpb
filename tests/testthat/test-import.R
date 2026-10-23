@@ -174,7 +174,7 @@ test_that("autogenerate_plots copies every kit file into a new folder", {
 })
 
 test_that("autogenerate_plots keeps run_import.command executable", {
-  # run_import.command is a Mac-only double-click launcher, and the
+  # run_import.command is a Mac-only double-click start script, and the
   # executable bit this checks is a POSIX permission concept Windows
   # doesn't have -- file.info()$mode reads back something else there
   # regardless of what Sys.chmod() was asked to do, which isn't a real

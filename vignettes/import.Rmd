@@ -75,7 +75,7 @@ list.files(figure_dir, recursive = TRUE)
 ```
 
 In normal use, the folder lives somewhere you can write to, and the
-launcher scripts (`run_import.bat` and `run_import.command`) run
+start scripts (`run_import.bat` and `run_import.command`) run
 everything for you. See "Run the import without opening R" below.
 
 # The data files
@@ -172,7 +172,7 @@ The parameter `data` names the dataset of a figure, relative to the
 `data` folder next to `params.csv`. The extension `.csv` is optional,
 so `koopkracht` and `koopkracht.csv` are the same dataset.
 
-| `data` | What happens |
+| `data` parameter | What happens |
 |---|---|
 | `koopkracht` | The figure uses `data/koopkracht.csv`. |
 | `a;b` | One figure is made from each named dataset. |
@@ -182,9 +182,10 @@ so `koopkracht` and `koopkracht.csv` are the same dataset.
 The figures are named after their dataset. If several figures use the
 same dataset, the row number in `params.csv` is added to the name. The
 header is not counted, so the first figure is row 1. For example,
-`koopkracht_1` and `koopkracht_3`.
+`koopkracht_1.png` and `koopkracht_3.png`.
 
-A named dataset that does not exist is skipped with a warning. Nothing
+A named dataset that does not exist in the `data` folder is skipped
+with a warning. Nothing
 falls back to another dataset. The other datasets in the same list
 and the other rows are still created. With `data` set to
 `a;b;c` and no `b.csv`, you get figures for `a` and `c`, and a

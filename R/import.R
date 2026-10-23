@@ -534,7 +534,7 @@ cpb_import_csv <- function(params_csv, sep = ",", ..., simplify = TRUE) {
 
 #' Build and save every figure of a figure folder
 #'
-#' What the `run_import.bat` / `run_import.command` launchers run. Reads
+#' What `run_import.bat` and `run_import.command` start. Reads
 #' `params.csv` in `dir`, builds the figures with [cpb_import_csv()] (datasets
 #' from `dir/data`), and saves each as a PNG in `dir/generated`, named after
 #' its dataset. A PNG that already exists is replaced. Datasets or figures
@@ -579,25 +579,25 @@ cpb_import_run <- function(dir = ".", page = "half") {
 #' Copy a ready-to-run figure-generating kit to a folder
 #'
 #' `cpb_import_csv()` itself still needs R to be started by hand. This copies
-#' a small kit to `dest`: an example `data.csv` and `params.csv`, a
-#' `run_import.R` script that reads them and saves each figure as a PNG
-#' in a `generated` subfolder, and two launchers that run it with a
+#' a small kit to `dest`: an example `params.csv`, a `data` folder with
+#' example datasets, a `run_import.R` script that reads them and saves each figure as a PNG
+#' in a `generated` subfolder, and two start scripts that run it with a
 #' double click instead of opening R at all -- `run_import.bat` on
 #' Windows, `run_import.command` on a Mac. R itself, and the ggcpb
-#' package, still need to be installed on the machine the launcher runs
-#' on; the launcher only skips having to open R and type a command by
+#' package, still need to be installed on the machine the start script runs
+#' on; the start script only skips having to open R and type a command by
 #' hand each time.
 #'
-#' The example `data.csv` and `params.csv` are meant to be replaced.
+#' The example `params.csv` and datasets are meant to be replaced.
 #' Edit them (a plain text editor or a spreadsheet program both work),
-#' keep the same file names, and the launcher builds whatever figures
+#' keep `params.csv` and the `data` folder where they are, and the start script builds whatever figures
 #' the new `params.csv` describes on the next run.
 #'
 #' @param dest Destination folder. Created if it does not exist yet.
 #' @param overwrite If `FALSE` (default), the function stops instead of
 #'   replacing any file already present in `dest`. Set to `TRUE` to
-#'   replace them (e.g. to update the launcher after a package update,
-#'   without touching an already-edited `data.csv`/`params.csv` -- copy
+#'   replace them (e.g. to update the start script after a package update,
+#'   without touching an already-edited `params.csv` or `data` folder -- copy
 #'   to an empty folder first in that case, then move just the two
 #'   scripts over by hand).
 #' @return Invisibly, `dest`.
@@ -632,7 +632,7 @@ autogenerate_plots <- function(dest, overwrite = FALSE) {
   file.copy(list.files(kit_dir, full.names = TRUE), dest,
             overwrite = TRUE, recursive = TRUE)
 
-  # a Mac launcher has to keep its executable bit to double-click at
+  # a Mac start script has to keep its executable bit to double-click at
   # all; file.copy() does not promise to carry permissions over, so it
   # is set again explicitly on the copy
   command_file <- file.path(dest, "run_import.command")
