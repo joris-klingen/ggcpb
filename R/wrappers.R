@@ -344,7 +344,9 @@ cpb_time_ticks <- function(lo, hi, edge = TRUE) {
   }
   tk <- cpb_axis_ticks(as.numeric(lo), as.numeric(hi), whole = FALSE,
                        edge = edge, max_labels = 5)
-  back <- if (inherits(lo, "Date")) as.Date else function(x) as.POSIXct(x, tz = attr(lo, "tzone") %||% "")
+  # no `%||%`: base R only has it from 4.4
+  tz <- if (is.null(attr(lo, "tzone"))) "" else attr(lo, "tzone")
+  back <- if (inherits(lo, "Date")) as.Date else function(x) as.POSIXct(x, tz = tz)
   list(breaks = back(tk$breaks), lo = lo, hi = hi)
 }
 
