@@ -318,6 +318,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | x | column (from data_csv) | (required) | year |
 | x_lim | literal |  | 2015;2025 |
 | x_lim_follow_data | literal | FALSE | FALSE |
+| x_ticks_ends | literal | FALSE | FALSE |
 | xlab | literal |  | unit below the x axis |
 | y | column (from data_csv) | (required) | purchasing_power |
 | ylab | literal |  | % change |
@@ -361,6 +362,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | x | column (from data_csv) | (required) | year |
 | x_lim | literal |  | 2015;2025 |
 | x_lim_follow_data | literal | FALSE | FALSE |
+| x_ticks_ends | literal | FALSE | FALSE |
 | xlab | literal |  | unit below the x axis |
 | y | column (from data_csv) | (required) | purchasing_power |
 | ylab | literal |  | % change |
@@ -408,6 +410,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | x | column (from data_csv) | (required) | year |
 | x_lim | literal |  | 2015;2025 |
 | x_lim_follow_data | literal | TRUE | TRUE |
+| x_ticks_ends | literal | FALSE | FALSE |
 | xlab | literal |  | unit below the x axis |
 | y | column (from data_csv) | (required) | purchasing_power |
 | ylab | literal |  | % change |

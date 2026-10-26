@@ -1,5 +1,12 @@
-# ggcpb (development version)
+# ggcpb 0.2.1
 
+* A monthly date `x` axis (all dates on the 1st of a month, incl.
+  data.table's `IDate`) gets calendar breaks: month, quarter, half year,
+  year or more years, at most 5. Before, typical Jan-Dec data often
+  labelled only its first and last month (#75).
+* `x_ticks_ends = TRUE` in `cpb_col()`, `cpb_area()` and `cpb_line()`
+  also labels the first and last month of such an axis.
+* A POSIXct `x` axis no longer errors on R < 4.4.
 * Source Sans 3 is contained as the direct fallback font in the package. `save_cpb()` and printing a chart then warn that the figure
   does not meet the Rijkshuisstijl.
 

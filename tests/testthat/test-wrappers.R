@@ -2140,8 +2140,24 @@ test_that("cpb_axis_ticks() gives equal steps, with the ends labelled", {
   expect_equal(range(br), c(1.3, 7.8))
   expect_equal(length(unique(round(diff(br), 9))), 1)
   # months
-  d <- as.Date(c("2020-01-01", "2021-06-01"))
-  expect_equal(cpb_time_ticks(d[1], d[2])$breaks, d)
+  # months: calendar breaks, at most 5 (#75)
+  lab <- function(lo, hi, ends = FALSE) cpb_date_labels(cpb_time_ticks(lo, hi, ends = ends)$breaks)
+  d <- data.table::as.IDate(c("2020-01-01", "2024-12-01"))
+  expect_equal(lab(d[1], d[2]), as.character(2020:2024))
+  expect_equal(lab(as.Date("2024-01-01"), as.Date("2024-12-01")),
+               c("2024-01", "2024-04", "2024-07", "2024-10"))
+  expect_equal(lab(as.Date("2020-01-01"), as.Date("2021-06-01")),
+               c("2020-01", "2020-07", "2021-01"))
+  expect_equal(lab(as.Date("2000-01-01"), as.Date("2024-12-01")),
+               as.character(seq(2000, 2020, 5)))
+  # x_ticks_ends: first and last too, calendar breaks in between
+  expect_equal(lab(as.Date("2020-01-01"), as.Date("2021-06-01"), TRUE),
+               c("2020-01", "2020-07", "2021-01", "2021-06"))
+  expect_equal(lab(d[1], d[2], TRUE), c(paste0(2020:2024, "-01"), "2024-12"))
+  expect_equal(lab(as.Date("2020-01-01"), as.Date("2025-01-01"), TRUE), as.character(2020:2025))
+  # a break too close to an end is dropped
+  expect_equal(lab(as.Date("2020-03-01"), as.Date("2021-02-01"), TRUE),
+               c("2020-03", "2020-07", "2020-10", "2021-02"))
   d <- as.Date(c("2020-01-01", "2021-01-01"))
   tk <- cpb_time_ticks(d[1], d[2])
   expect_equal(range(tk$breaks), d)
@@ -2169,7 +2185,15 @@ test_that("every continuous axis and colour bar labels its first and last value"
   expect_equal(x_labels(cpb_line(yrs, x = x, y = y, x_lim = c(2001, 2024))), c("2001", "2024"))
 
   mon <- data.frame(x = seq(as.Date("2020-01-01"), by = "month", length.out = 18), y = 1:18)
-  expect_equal(x_labels(cpb_line(mon, x = x, y = y)), c("2020-01", "2021-06"))
+  # months: calendar breaks (#75); x_ticks_ends adds the first and last
+  expect_equal(x_labels(cpb_line(mon, x = x, y = y)), c("2020-01", "2020-07", "2021-01"))
+  expect_equal(x_labels(cpb_line(mon, x = x, y = y, x_ticks_ends = TRUE)),
+               c("2020-01", "2020-07", "2021-01", "2021-06"))
+  expect_equal(x_labels(cpb_col(mon, x = x, y = y, x_ticks_ends = TRUE)),
+               c("2020-01", "2020-07", "2021-01", "2021-06"))
+  expect_equal(x_labels(cpb_area(transform(mon, g = "a"), x = x, y = y, fill = g,
+                                 x_ticks_ends = TRUE)),
+               c("2020-01", "2020-07", "2021-01", "2021-06"))
 
   sc <- data.frame(x = c(1.3, 2.9, 4.1, 7.8), y = c(0.3, 1.4, 0.9, 2.2))
   expect_equal(first_last(x_labels(cpb_scatter(sc, x = x, y = y, x_lim_follow_data = TRUE))),
