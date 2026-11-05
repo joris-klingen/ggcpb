@@ -346,9 +346,9 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <ul>
 <li><a href="#why-ggcpb-instead-of-james" id="toc-why-ggcpb-instead-of-james"><span class="toc-section-number">1.1</span> Why ggcpb instead of
 James?</a></li>
-<li><a href="#what-you-need-to-know" id="toc-what-you-need-to-know"><span class="toc-section-number">1.2</span> What you need to know</a></li>
-<li><a href="#use-ggcpb-in-excel" id="toc-use-ggcpb-in-excel"><span class="toc-section-number">1.3</span> Use ggcpb in Excel</a></li>
-<li><a href="#use-ggcpb-in-r" id="toc-use-ggcpb-in-r"><span class="toc-section-number">1.4</span> Use ggcpb in R</a></li>
+<li><a href="#what-you-need-to-know-to-use-ggcpb-in-excel" id="toc-what-you-need-to-know-to-use-ggcpb-in-excel"><span class="toc-section-number">1.2</span> What you need to know to use ggcpb
+in Excel</a></li>
+<li><a href="#use-ggcpb-in-r" id="toc-use-ggcpb-in-r"><span class="toc-section-number">1.3</span> Use ggcpb in R</a></li>
 </ul></li>
 <li><a href="#figure-types" id="toc-figure-types"><span class="toc-section-number">2</span> Figure types</a>
 <ul>
@@ -420,10 +420,11 @@ such as a donut chart.</li>
 well tested package.</li>
 </ul>
 </div>
-<div id="what-you-need-to-know" class="section level2" number="1.2">
-<h2><span class="header-section-number">1.2</span> What you need to
-know</h2>
-<p>This is the general workflow to create figures with ggcpb.</p>
+<div id="what-you-need-to-know-to-use-ggcpb-in-excel" class="section level2" number="1.2">
+<h2><span class="header-section-number">1.2</span> What you need to know
+to use ggcpb in Excel</h2>
+<p>This is the general workflow to create figures with ggcpb without
+using R:</p>
 <ol style="list-style-type: decimal">
 <li>Find the most recent ggcpb folder in <code>[path]</code>.</li>
 <li>Copy it to the place where you want to create figures.</li>
@@ -432,12 +433,8 @@ know</h2>
 <li>Start <code>run_import.bat</code> (Windows) by double clicking it.
 Your figures appear in the folder <code>generated</code>.</li>
 </ol>
-<p>You do not need to know R to follow this workflow.</p>
-</div>
-<div id="use-ggcpb-in-excel" class="section level2" number="1.3">
-<h2><span class="header-section-number">1.3</span> Use ggcpb in
-Excel</h2>
-<p>One parameter file and one or more datasets drive everything.</p>
+<p>You do not need to know R to follow this workflow. One parameter file
+and one or more datasets drive everything.</p>
 <ul>
 <li><code>params.csv</code> describes your figures. Column 1 holds the
 parameter names, such as <code>title</code>, <code>x</code> and
@@ -464,8 +461,8 @@ spreadsheet (<code>xlsx</code>). In Excel, choose <code>File</code>
 figures. The import vignette gives a more detailed explanation and lists
 all settings per figure type. See <a href="import.html"><code>vignette(&quot;import&quot;)</code></a>.</p>
 </div>
-<div id="use-ggcpb-in-r" class="section level2" number="1.4">
-<h2><span class="header-section-number">1.4</span> Use ggcpb in R</h2>
+<div id="use-ggcpb-in-r" class="section level2" number="1.3">
+<h2><span class="header-section-number">1.3</span> Use ggcpb in R</h2>
 <p>Next to plotting Excel data with ggcpb, you can also plot data that
 you already have in R. The caption below each figure in this
 introduction shows the function to use. Load the packages first.</p>
@@ -600,7 +597,7 @@ ylab
 least <code>line-forecast.csv</code> and <code>run_import.bat</code>
 (Windows) to a personal folder. Fill in the parameters above in
 <code>params.csv</code> and start the script. In R you can call
-<code>cpb_line()</code> instead. See section 1.4 and the example code at
+<code>cpb_line()</code> instead. See section 1.3 and the example code at
 the end.</p>
 </div>
 <div id="columns-with-two-axes" class="section level2" number="2.2">
@@ -713,7 +710,7 @@ mld euro
 least <code>col-secaxis.csv</code> and <code>run_import.bat</code>
 (Windows) to a personal folder. Fill in the parameters above in
 <code>params.csv</code> and start the script. In R you can call
-<code>cpb_col()</code> instead. See section 1.4 and the example code at
+<code>cpb_col()</code> instead. See section 1.3 and the example code at
 the end.</p>
 </div>
 <div id="horizontal-bars-with-chosen-colours" class="section level2" number="2.3">
@@ -834,7 +831,7 @@ aandeel binnen inkomensgroep (%)
 least <code>col-horizontal.csv</code> and <code>run_import.bat</code>
 (Windows) to a personal folder. Fill in the parameters above in
 <code>params.csv</code> and start the script. In R you can call
-<code>cpb_col()</code> instead. See section 1.4 and the example code at
+<code>cpb_col()</code> instead. See section 1.3 and the example code at
 the end.</p>
 </div>
 <div id="line-with-markers-in-english" class="section level2" number="2.4">
@@ -939,7 +936,7 @@ ylab
 least <code>line-points.csv</code> and <code>run_import.bat</code>
 (Windows) to a personal folder. Fill in the parameters above in
 <code>params.csv</code> and start the script. In R you can call
-<code>cpb_line()</code> instead. See section 1.4 and the example code at
+<code>cpb_line()</code> instead. See section 1.3 and the example code at
 the end.</p>
 </div>
 <div id="boxplot" class="section level2" number="2.5">
@@ -1059,7 +1056,7 @@ ylab
 least <code>box.csv</code> and <code>run_import.bat</code> (Windows) to
 a personal folder. Fill in the parameters above in
 <code>params.csv</code> and start the script. In R you can call
-<code>cpb_box()</code> instead. See section 1.4 and the example code at
+<code>cpb_box()</code> instead. See section 1.3 and the example code at
 the end.</p>
 <p>More box plot styles are in <a href="boxplots.html"><code>vignette(&quot;boxplots&quot;)</code></a>.</p>
 </div>
@@ -1133,7 +1130,7 @@ colour_index
 least <code>donut.csv</code> and <code>run_import.bat</code> (Windows)
 to a personal folder. Fill in the parameters above in
 <code>params.csv</code> and start the script. In R you can call
-<code>cpb_donut()</code> instead. See section 1.4 and the example code
+<code>cpb_donut()</code> instead. See section 1.3 and the example code
 at the end.</p>
 </div>
 <div id="dot-plot" class="section level2" number="2.7">
@@ -1228,7 +1225,7 @@ xlab
 least <code>dot.csv</code> and <code>run_import.bat</code> (Windows) to
 a personal folder. Fill in the parameters above in
 <code>params.csv</code> and start the script. In R you can call
-<code>cpb_dot()</code> instead. See section 1.4 and the example code at
+<code>cpb_dot()</code> instead. See section 1.3 and the example code at
 the end.</p>
 </div>
 <div id="scatter-plot" class="section level2" number="2.8">
@@ -1306,7 +1303,7 @@ besteedbaar inkomen (euro per maand)
 least <code>scatter.csv</code> and <code>run_import.bat</code> (Windows)
 to a personal folder. Fill in the parameters above in
 <code>params.csv</code> and start the script. In R you can call
-<code>cpb_scatter()</code> instead. See section 1.4 and the example code
+<code>cpb_scatter()</code> instead. See section 1.3 and the example code
 at the end.</p>
 </div>
 <div id="histogram" class="section level2" number="2.9">
@@ -1384,7 +1381,7 @@ duur (maanden)
 least <code>hist.csv</code> and <code>run_import.bat</code> (Windows) to
 a personal folder. Fill in the parameters above in
 <code>params.csv</code> and start the script. In R you can call
-<code>cpb_hist()</code> instead. See section 1.4 and the example code at
+<code>cpb_hist()</code> instead. See section 1.3 and the example code at
 the end.</p>
 </div>
 </div>
