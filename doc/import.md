@@ -361,6 +361,7 @@ types**</span>
 | x | (required) | year |
 | x_lim |  | 2015;2025 |
 | x_lim_follow_data | FALSE | FALSE |
+| x_ticks_ends | FALSE | FALSE |
 | xlab |  | unit below the x axis |
 | y | (required) | purchasing_power |
 | ylab |  | % change |
@@ -407,6 +408,7 @@ types**</span>
 | x | (required) | year |
 | x_lim |  | 2015;2025 |
 | x_lim_follow_data | FALSE | FALSE |
+| x_ticks_ends | FALSE | FALSE |
 | xlab |  | unit below the x axis |
 | y | (required) | purchasing_power |
 | ylab |  | % change |
@@ -457,6 +459,7 @@ types**</span>
 | x | (required) | year |
 | x_lim |  | 2015;2025 |
 | x_lim_follow_data | TRUE | TRUE |
+| x_ticks_ends | FALSE | FALSE |
 | xlab |  | unit below the x axis |
 | y | (required) | purchasing_power |
 | ylab |  | % change |
