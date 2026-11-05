@@ -36,7 +36,9 @@
 #' cpb_pal("sequential")(5)
 #' cpb_pal("qualitative", reverse = TRUE)(3)
 #' @export
-cpb_pal <- function(palette = c("qualitative", "discr", "sequential", "blues", "extended"), reverse = FALSE) {
+cpb_pal <- function(palette = c("qualitative", "discr", "sequential",
+                                "blues", "extended"),
+                    reverse = FALSE) {
   palette <- match.arg(palette)
   cols <- cpb_palette_colours(palette)
   # the qualitative swatches are stored in their own (CPB source-script)
@@ -73,7 +75,9 @@ cpb_pal <- function(palette = c("qualitative", "discr", "sequential", "blues", "
         warning(
           "cpb_pal(): the '", palette, "' palette only has ", length(cols),
           " colours; recycling to fill ", n, " requested levels.",
-          if (!identical(palette, "extended")) ' Use palette = "extended" for up to 20 colours.',
+          if (!identical(palette, "extended")) {
+            ' Use palette = "extended" for up to 20 colours.'
+          },
           call. = FALSE
         )
         cols <- rep_len(cols, n)
@@ -106,7 +110,10 @@ cpb_pal <- function(palette = c("qualitative", "discr", "sequential", "blues", "
 #' cpb_cols(1:3, palette = "discr")
 #' cpb_cols("apple", "sun", palette = "extended")
 #' @export
-cpb_cols <- function(..., palette = c("qualitative", "discr", "sequential", "extended"), reverse = FALSE) {
+cpb_cols <- function(...,
+                     palette = c("qualitative", "discr", "sequential",
+                                 "extended"),
+                     reverse = FALSE) {
   palette <- match.arg(palette)
   cols <- cpb_palette_colours(palette)
   if (isTRUE(reverse)) cols <- rev(cols)
@@ -118,15 +125,19 @@ cpb_cols <- function(..., palette = c("qualitative", "discr", "sequential", "ext
   if (is.character(idx) && !is.null(names(cols))) {
     unknown <- setdiff(idx, names(cols))
     if (length(unknown)) {
-      stop("cpb_cols(): unknown colour name(s) ", paste0("'", unknown, "'", collapse = ", "),
-           "; the '", palette, "' palette has ", paste(names(cols), collapse = ", "), ".",
+      stop("cpb_cols(): unknown colour name(s) ",
+           paste0("'", unknown, "'", collapse = ", "),
+           "; the '", palette, "' palette has ",
+           paste(names(cols), collapse = ", "), ".",
            call. = FALSE)
     }
     return(cols[idx])
   }
   if (!is.numeric(idx)) {
-    stop("cpb_cols(): indices passed via ... must be numeric positions into the palette",
-         if (!is.null(names(cols))) " or colour names" else "", ".", call. = FALSE)
+    stop("cpb_cols(): indices passed via ... must be numeric positions ",
+         "into the palette",
+         if (!is.null(names(cols))) " or colour names" else "", ".",
+         call. = FALSE)
   }
   if (any(idx < 1 | idx > length(cols))) {
     stop(
@@ -175,8 +186,9 @@ cpb_resolve_index <- function(value, palette, palette_supplied,
 
   if (is.character(value)) {
     if (length(value) != 1L || is.na(value)) {
-      stop("`", arg, "` must be a single keyword (", 
-           paste0("\"", names(cpb_index_keywords)[1:2], "\"", collapse = " or "),
+      stop("`", arg, "` must be a single keyword (",
+           paste0("\"", names(cpb_index_keywords)[1:2], "\"",
+                  collapse = " or "),
            ") or a vector of palette positions.", call. = FALSE)
     }
     if (!value %in% names(cpb_index_keywords)) {
@@ -196,7 +208,7 @@ cpb_resolve_index <- function(value, palette, palette_supplied,
 
   if (is.numeric(value)) {
     if (!length(value) || anyNA(value) || any(value < 1) ||
-        any(value != round(value))) {
+          any(value != round(value))) {
       stop("`", arg, "` must be positive whole numbers giving palette ",
            "positions, e.g. c(2, 5, 6).", call. = FALSE)
     }

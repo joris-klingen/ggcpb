@@ -36,8 +36,8 @@ the remaining swatches. No argument needed.
 
 ``` r
 cpb_line(groei, x = jaar, y = waarde, colour = reeks,
-  title = "Default series colours",
-  ylab  = "%")
+         title = "Default series colours",
+         ylab  = "%")
 ```
 
 <img src="colours_files/figure-gfm/default-line-1.png" alt="" width="350px" />
@@ -47,8 +47,8 @@ same series agree:
 
 ``` r
 cpb_col(tw, x = jaar, y = waarde, fill = sector,
-  title = "Default fill colours",
-  ylab  = "mld euro")
+        title = "Default fill colours",
+        ylab  = "mld euro")
 ```
 
 <img src="colours_files/figure-gfm/default-col-1.png" alt="" width="350px" />
@@ -59,8 +59,8 @@ as the first series of a multi-series one.
 
 ``` r
 cpb_line(filter(groei, reeks == "tfp"), x = jaar, y = waarde,
-  title = "A single series is always primary blue",
-  ylab  = "%")
+         title = "A single series is always primary blue",
+         ylab  = "%")
 ```
 
 <img src="colours_files/figure-gfm/single-1.png" alt="" width="350px" />
@@ -84,18 +84,18 @@ third, quieter series:
 
 ``` r
 cpb_line(groei, x = jaar, y = waarde, colour = reeks,
-  colour_index = c(7, 5, 4),
-  title = "Chosen by position: c(7, 5, 4)",
-  ylab  = "%")
+         colour_index = c(7, 5, 4),
+         title = "Chosen by position: c(7, 5, 4)",
+         ylab  = "%")
 ```
 
 <img src="colours_files/figure-gfm/positions-line-1.png" alt="" width="350px" />
 
 ``` r
 cpb_col(tw, x = jaar, y = waarde, fill = sector,
-  colour_index = c(6, 5, 2, 4),
-  title = "Chosen by position: c(6, 5, 2, 4)",
-  ylab  = "mld euro")
+        colour_index = c(6, 5, 2, 4),
+        title = "Chosen by position: c(6, 5, 2, 4)",
+        ylab  = "mld euro")
 ```
 
 <img src="colours_files/figure-gfm/positions-col-1.png" alt="" width="350px" />
@@ -137,9 +137,9 @@ intensiteit <- expand_grid(jaar   = 2024:2027,
   mutate(n = round(runif(n(), 40, 220)))
 
 cpb_col(intensiteit, x = jaar, y = n, fill = klasse,
-  colour_index = "continuous",
-  title = "Ordered classes take the ramp",
-  ylab  = "aantal personen, x 1000")
+        colour_index = "continuous",
+        title = "Ordered classes take the ramp",
+        ylab  = "aantal personen, x 1000")
 ```
 
 <img src="colours_files/figure-gfm/continuous-col-1.png" alt="" width="350px" />
@@ -150,9 +150,9 @@ visible in the code:
 
 ``` r
 cpb_col(tw, x = jaar, y = waarde, fill = sector,
-  colour_index = "discrete",
-  title = "The default, named explicitly",
-  ylab  = "mld euro")
+        colour_index = "discrete",
+        title = "The default, named explicitly",
+        ylab  = "mld euro")
 ```
 
 <img src="colours_files/figure-gfm/discrete-keyword-1.png" alt="" width="350px" />
@@ -169,10 +169,10 @@ at once:
 
 ``` r
 cpb_col(intensiteit, x = jaar, y = n, fill = klasse,
-  palette    = "blues",
-  colour_index = c(2, 3, 4, 5, 6),
-  title = "Positions out of a named palette",
-  ylab  = "aantal personen, x 1000")
+        palette    = "blues",
+        colour_index = c(2, 3, 4, 5, 6),
+        title = "Positions out of a named palette",
+        ylab  = "aantal personen, x 1000")
 ```
 
 <img src="colours_files/figure-gfm/palette-plus-positions-1.png" alt="" width="350px" />
@@ -184,8 +184,8 @@ plain `ggplot` objects, so an ordinary scale still applies:
 
 ``` r
 cpb_line(groei, x = jaar, y = waarde, colour = reeks,
-  title = "A manual scale still works",
-  ylab  = "%") +
+         title = "A manual scale still works",
+         ylab  = "%") +
   scale_colour_manual(values = c("#005faf", "#96827d", "#64504b"))
 #> Scale for colour is already present.
 #> Adding another scale for colour, which will replace the existing scale.
@@ -199,9 +199,9 @@ all:
 
 ``` r
 cpb_line(filter(groei, reeks == "tfp"), x = jaar, y = waarde,
-  line_colour = cpb_cols(3),
-  title = "A single series in a chosen swatch",
-  ylab  = "%")
+         line_colour = cpb_cols(3),
+         title = "A single series in a chosen swatch",
+         ylab  = "%")
 ```
 
 <img src="colours_files/figure-gfm/single-colour-1.png" alt="" width="350px" />

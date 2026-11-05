@@ -1,5 +1,6 @@
 test_that("cpb_line(points = TRUE) leaves room for the markers", {
-  d <- data.frame(x = 1:10, y = c(1.2, 2.4, 1.8, 3.1, 2.2, -0.6, 3.4, 2.9, 1.1, 2.6))
+  d <- data.frame(x = 1:10,
+                  y = c(1.2, 2.4, 1.8, 3.1, 2.2, -0.6, 3.4, 2.9, 1.1, 2.6))
 
   rng <- function(p) {
     pp <- ggplot2::ggplot_build(p)$layout$panel_params[[1]]
@@ -36,8 +37,9 @@ test_that("the point margin (via clip) survives a user-supplied x scale", {
   expect_equal(xr, c(1, 10))
 })
 
-test_that("value_limits narrower than the data widens the axis, it does not crop", {
-  d <- data.frame(x = 1:10, y = c(1.2, 2.4, 1.8, 3.1, 2.2, -0.6, 3.4, 2.9, 1.1, 2.6))
+test_that("value_limits narrower than the data widen the axis, no cropping", {
+  d <- data.frame(x = 1:10,
+                  y = c(1.2, 2.4, 1.8, 3.1, 2.2, -0.6, 3.4, 2.9, 1.1, 2.6))
   # value_limits asks for the span the axis must *at least* cover. The
   # data runs past it at both ends, so the breaks are extended outward
   # in their own step rather than the ends being hidden -- nothing is
@@ -49,7 +51,11 @@ test_that("value_limits narrower than the data widens the axis, it does not crop
   b <- ggplot2::ggplot_build(p)
   expect_equal(b$layout$coord$clip, "off")
 
-  line_y <- b$data[[which(vapply(p$layers, function(l) inherits(l$geom, "GeomLine"), TRUE))]]$y
+  line_y <- b$data[[which(vapply(p$layers,
+                                 function(l) {
+                                   inherits(l$geom,
+                                            "GeomLine")
+                                 }, TRUE))]]$y
   expect_false(anyNA(line_y))
   expect_equal(line_y, d$y)
 
@@ -106,12 +112,17 @@ test_that("a stacked total a rounding error over 100 is drawn, not censored", {
 test_that("the axis covers every stack as ggplot2 draws it", {
   y_lims <- function(p) p$scales$get_scales("y")$limits
   top <- function(p) {
-    l <- which(vapply(p$layers, function(l) inherits(l$geom, c("GeomCol", "GeomArea")), TRUE))
+    l <- which(vapply(p$layers,
+                      function(l) {
+                        inherits(l$geom,
+                                 c("GeomCol", "GeomArea"))
+                      }, TRUE))
     max(suppressWarnings(ggplot2::layer_data(p, l))$ymax, na.rm = TRUE)
   }
 
   # an NA segment does not hide the rest of its column
-  col_na <- data.frame(x = rep(c("a", "b"), each = 2), s = rep(c("s1", "s2"), 2),
+  col_na <- data.frame(x = rep(c("a", "b"), each = 2),
+                       s = rep(c("s1", "s2"), 2),
                        y = c(10, 20, 50, NA))
   p <- cpb_col(col_na, x = x, y = y, fill = s)
   expect_gte(y_lims(p)[2], 50)
@@ -124,7 +135,8 @@ test_that("the axis covers every stack as ggplot2 draws it", {
   expect_gte(y_lims(p)[2], 67.5)
 
   # facets stack per panel, not across panels
-  fac <- data.frame(x = rep(c("a", "b"), 4), s = rep(c("s1", "s1", "s2", "s2"), 2),
+  fac <- data.frame(x = rep(c("a", "b"), 4),
+                    s = rep(c("s1", "s1", "s2", "s2"), 2),
                     j = rep(c("2020", "2021"), each = 4), y = rep(c(10, 20), 4))
   expect_equal(y_lims(cpb_col(fac, x = x, y = y, fill = s, facet = j))[2], 40)
   expect_equal(y_lims(cpb_area(transform(fac, x = rep(1:2, 4)), x = x, y = y,
@@ -133,26 +145,37 @@ test_that("the axis covers every stack as ggplot2 draws it", {
 
 test_that("value_crop makes value_limits a window and warns", {
   d <- data.frame(x = c("a", "b", "c"), y = c(1, 2, 4))
-  expect_warning(p <- cpb_col(d, x = x, y = y, value_limits = c(0, 3), value_crop = TRUE),
+  expect_warning(p <- cpb_col(d, x = x, y = y, value_limits = c(0, 3),
+                              value_crop = TRUE),
                  "not all data is shown")
   b <- ggplot2::ggplot_build(p)
   expect_equal(b$layout$panel_params[[1]]$y$continuous_range, c(0, 3))
   expect_equal(b$layout$panel_params[[1]]$y$get_breaks(), c(0, 1, 2, 3))
   expect_equal(b$layout$coord$clip, "on")
   # horizontal, line and scatter crop the same way
-  expect_warning(cpb_col(d, x = x, y = y, value_limits = c(0, 3), value_crop = TRUE,
+  expect_warning(cpb_col(d, x = x, y = y, value_limits = c(0, 3),
+                         value_crop = TRUE,
                          orientation = "horizontal"), "not all data")
   dl <- data.frame(x = 1:3, y = c(1, 2, 4))
-  expect_warning(cpb_line(dl, x = x, y = y, value_limits = c(0, 3), value_crop = TRUE), "not all data")
-  expect_warning(cpb_scatter(dl, x = x, y = y, value_limits = c(0, 3), value_crop = TRUE), "not all data")
+  expect_warning(
+    cpb_line(dl, x = x, y = y, value_limits = c(0, 3), value_crop = TRUE),
+    "not all data"
+  )
+  expect_warning(
+    cpb_scatter(dl, x = x, y = y, value_limits = c(0, 3), value_crop = TRUE),
+    "not all data"
+  )
   # nothing outside the window: no warning
-  expect_no_warning(cpb_line(dl, x = x, y = y, value_limits = c(0, 5), value_crop = TRUE))
-  expect_error(cpb_line(dl, x = x, y = y, value_crop = TRUE), "needs `value_limits`")
+  expect_no_warning(cpb_line(dl, x = x, y = y, value_limits = c(0, 5),
+                             value_crop = TRUE))
+  expect_error(cpb_line(dl, x = x, y = y, value_crop = TRUE),
+               "needs `value_limits`")
 })
 
 test_that("value_crop works for histograms", {
   d <- data.frame(v = rep(1:5, times = c(30, 5, 3, 2, 1)))
-  expect_warning(p <- cpb_hist(d, x = v, value_limits = c(0, 10), value_crop = TRUE),
+  expect_warning(p <- cpb_hist(d, x = v, value_limits = c(0, 10),
+                               value_crop = TRUE),
                  "not all data")
   b <- ggplot2::ggplot_build(p)
   expect_equal(b$layout$panel_params[[1]]$y$continuous_range, c(0, 10))
@@ -172,27 +195,35 @@ test_that("value_crop crops cpb_dot and cpb_box, warns and renders", {
   for (orientation in c("vertical", "horizontal")) {
     expect_warning(
       p <- cpb_dot(dot_df, x = x, y = y, lower = lower, upper = upper,
-                   value_limits = c(0, 4), value_crop = TRUE, orientation = orientation),
-      "shows only 0 to 4, so not all data is shown (the data runs from 0.5 to 10)",
+                   value_limits = c(0, 4), value_crop = TRUE,
+                   orientation = orientation),
+      paste0("shows only 0 to 4, so not all data is shown ",
+             "(the data runs from 0.5 to 10)"),
       fixed = TRUE
     )
     b <- ggplot2::ggplot_build(p)
     expect_equal(value_range(b, orientation), c(0, 4))
     expect_equal(b$layout$coord$clip, "on")
-    expect_no_error(ggplot2::ggsave(tempfile(fileext = ".png"), p, width = 4, height = 3))
+    expect_no_error(ggplot2::ggsave(tempfile(fileext = ".png"), p, width = 4,
+                                    height = 3))
 
     expect_warning(
-      p <- cpb_box(box_df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-                   value_limits = c(0, 6), value_crop = TRUE, orientation = orientation),
+      p <- cpb_box(box_df, x = groep, p5 = p5, p25 = p25, p50 = p50,
+                   p75 = p75, p95 = p95,
+                   value_limits = c(0, 6), value_crop = TRUE,
+                   orientation = orientation),
       "shows only 0 to 6, so not all data is shown (the data runs from 1 to 9)",
       fixed = TRUE
     )
     b <- ggplot2::ggplot_build(p)
     expect_equal(value_range(b, orientation), c(0, 6))
     expect_equal(b$layout$coord$clip, "on")
-    expect_no_error(ggplot2::ggsave(tempfile(fileext = ".png"), p, width = 4, height = 3))
+    expect_no_error(ggplot2::ggsave(tempfile(fileext = ".png"), p, width = 4,
+                                    height = 3))
   }
   # data inside the window: no warning
-  expect_no_warning(cpb_box(box_df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75,
-                            p95 = p95, value_limits = c(0, 10), value_crop = TRUE))
+  expect_no_warning(cpb_box(box_df, x = groep, p5 = p5, p25 = p25,
+                            p50 = p50, p75 = p75,
+                            p95 = p95, value_limits = c(0, 10),
+                            value_crop = TRUE))
 })

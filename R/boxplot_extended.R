@@ -89,8 +89,10 @@
 #'   `NULL` (default) picks `"right"` when the value axis is at the
 #'   top, and `"left"` otherwise (`orientation = "vertical"`,
 #'   `value_axis = "bottom"`).
-#' @param style Formatting style: `"dutch"` (default, `.` thousands, `,` decimal)
-#'   or `"english"` (`,` thousands, `.` decimal, English forecast / axis labels).
+#' @param style Formatting style: `"dutch"` (default, `.` thousands, `,`
+#' decimal)
+#'   or `"english"` (`,` thousands, `.` decimal, English forecast / axis
+#'   labels).
 #'   Taken from `getOption("ggcpb.style")`, so an English report can set
 #'   `options(ggcpb.style = "english")` once rather than passing `style` to
 #'   every figure and risking a stray Dutch decimal comma.
@@ -107,67 +109,68 @@
 #'   p75 = p75, p95 = p95, ylab = "%-punt verandering")
 #' @export
 cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
-                                  mean = NULL,
-                                  fill = NULL,
-                                  fill_colour = NULL,
-                                  group = NULL,
-                                  group_gap = 0.7,
-                                  box_style = c("modern", "ggcpb", "james", "dot"),
-                                  dot_labels = NULL,
-                                  box_labels = NULL,
-                                  label_accuracy = 0.1,
-                                  width = 0.45,
-                                  linewidth = 0.25,
-                                  palette = "qualitative",
-                                  colour_index = NULL,
-                                  pct_axis = FALSE,
-                                  value_accuracy = NULL,
-                                  value_breaks = NULL,
-                                  value_limits = NULL,
-                                  value_crop = FALSE,
-                                  value_axis = NULL,
-                                  x_lim = NULL,
-                                  x_lim_follow_data = TRUE,
-                                  orientation = c("horizontal", "vertical"),
-                                  sec_y = NULL,
-                                  sec_type = c("line", "point", "col"),
-                                  sec_limits = NULL,
-                                  sec_legend_label = NULL,
-                                  sec_ylab = NULL,
-                                  sec_colour = NULL,
-                                  sec_linewidth = 0.55,
-                                  sec_points = FALSE,
-                                  sec_symbol_size = 1.6,
-                                  sec_col_width = 0.3,
-                                  sec_accuracy = NULL,
-                                  sec_scale_auto = TRUE,
-                                  sec_at = NULL,
-                                  sec_axis_labels = NULL,
-                                  facet = NULL,
-                                  facet_ncol = NULL,
-                                  facet_scales = "fixed",
-                                  legend = "bottom",
-                                  reverse_legend = FALSE,
-                                  legend_ncol = NULL,
-                                  legend_nrow = NULL,
-                                  minor = FALSE,
-                                  ticks = FALSE,
-                                  flush_legend = TRUE,
-                                  axis_text_size = 7,
-                                  grid_colour = "white",
-                                  grid_linewidth = 0.8,
-                                  title = NULL,
-                                  subtitle = NULL,
-                                  xlab = NULL,
-                                  ylab = NULL,
-                                  legend_title = NULL,
-                                  panel_fill = "#eef8ff",
-                                  value_axis_linewidth = 0.7,
-                                  zero_indicator = NULL,
-                                  zero_indicator_linewidth = 2,
-                                  ylab_position = NULL,
-                                  style = getOption("ggcpb.style", "dutch"),
-                                  ...) {
+                                 mean = NULL,
+                                 fill = NULL,
+                                 fill_colour = NULL,
+                                 group = NULL,
+                                 group_gap = 0.7,
+                                 box_style = c("modern", "ggcpb",
+                                               "james", "dot"),
+                                 dot_labels = NULL,
+                                 box_labels = NULL,
+                                 label_accuracy = 0.1,
+                                 width = 0.45,
+                                 linewidth = 0.25,
+                                 palette = "qualitative",
+                                 colour_index = NULL,
+                                 pct_axis = FALSE,
+                                 value_accuracy = NULL,
+                                 value_breaks = NULL,
+                                 value_limits = NULL,
+                                 value_crop = FALSE,
+                                 value_axis = NULL,
+                                 x_lim = NULL,
+                                 x_lim_follow_data = TRUE,
+                                 orientation = c("horizontal", "vertical"),
+                                 sec_y = NULL,
+                                 sec_type = c("line", "point", "col"),
+                                 sec_limits = NULL,
+                                 sec_legend_label = NULL,
+                                 sec_ylab = NULL,
+                                 sec_colour = NULL,
+                                 sec_linewidth = 0.55,
+                                 sec_points = FALSE,
+                                 sec_symbol_size = 1.6,
+                                 sec_col_width = 0.3,
+                                 sec_accuracy = NULL,
+                                 sec_scale_auto = TRUE,
+                                 sec_at = NULL,
+                                 sec_axis_labels = NULL,
+                                 facet = NULL,
+                                 facet_ncol = NULL,
+                                 facet_scales = "fixed",
+                                 legend = "bottom",
+                                 reverse_legend = FALSE,
+                                 legend_ncol = NULL,
+                                 legend_nrow = NULL,
+                                 minor = FALSE,
+                                 ticks = FALSE,
+                                 flush_legend = TRUE,
+                                 axis_text_size = 7,
+                                 grid_colour = "white",
+                                 grid_linewidth = 0.8,
+                                 title = NULL,
+                                 subtitle = NULL,
+                                 xlab = NULL,
+                                 ylab = NULL,
+                                 legend_title = NULL,
+                                 panel_fill = "#eef8ff",
+                                 value_axis_linewidth = 0.7,
+                                 zero_indicator = NULL,
+                                 zero_indicator_linewidth = 2,
+                                 ylab_position = NULL,
+                                 style = getOption("ggcpb.style", "dutch"),
+                                 ...) {
   style <- match.arg(style, c("dutch", "english"))
   box_style <- match.arg(box_style)
   orientation <- match.arg(orientation)
@@ -181,7 +184,8 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
   if (is.null(ylab_position)) {
     # on the right, the caption reads as the top value axis's own title
     # rather than as part of the plot title above it
-    ylab_position <- if (orientation == "horizontal" && value_axis == "top") "right" else "left"
+    ylab_position <- if (orientation == "horizontal" &&
+                           value_axis == "top") "right" else "left"
   } else {
     ylab_position <- match.arg(ylab_position, c("left", "middle", "right"))
   }
@@ -195,11 +199,13 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
     label_accuracy = label_accuracy, width = width, linewidth = linewidth,
     palette = palette, colour_index = colour_index,
     pct_axis = pct_axis, value_accuracy = value_accuracy,
-    value_breaks = value_breaks, value_limits = value_limits, value_crop = value_crop,
+    value_breaks = value_breaks, value_limits = value_limits,
+    value_crop = value_crop,
     value_axis = value_axis, x_lim = x_lim,
     x_lim_follow_data = x_lim_follow_data, orientation = orientation,
     sec_y = {{ sec_y }}, sec_type = sec_type, sec_limits = sec_limits,
-    sec_legend_label = sec_legend_label, sec_ylab = sec_ylab, sec_colour = sec_colour,
+    sec_legend_label = sec_legend_label, sec_ylab = sec_ylab,
+    sec_colour = sec_colour,
     sec_linewidth = sec_linewidth, sec_points = sec_points,
     sec_symbol_size = sec_symbol_size, sec_col_width = sec_col_width,
     sec_accuracy = sec_accuracy, sec_scale_auto = sec_scale_auto,
@@ -230,20 +236,27 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
     }
     theme_extra <- ggplot2::theme(
       axis.line.x.top    = value_axis_line,
-      axis.line.x.bottom = if (value_axis == "bottom") value_axis_line else ggplot2::element_blank(),
+      axis.line.x.bottom = if (value_axis == "bottom") {
+        value_axis_line
+      } else {
+        ggplot2::element_blank()
+      },
       axis.line.y        = ggplot2::element_blank(),
-      panel.grid.major.x = ggplot2::element_line(colour = grid_colour, linewidth = grid_linewidth),
+      panel.grid.major.x = ggplot2::element_line(colour = grid_colour,
+                                                 linewidth = grid_linewidth),
       panel.grid.major.y = ggplot2::element_blank()
     )
   } else {
     # the vertical case has no published example to check this
     # against; mapped by the same left-right/top-bottom symmetry as
     # the horizontal case above, on a best-effort basis
-    value_axis_line <- ggplot2::element_line(colour = "black", linewidth = value_axis_linewidth)
+    value_axis_line <- ggplot2::element_line(colour = "black",
+                                             linewidth = value_axis_linewidth)
     theme_extra <- ggplot2::theme(
       axis.line.y         = value_axis_line,
       axis.line.x         = ggplot2::element_blank(),
-      panel.grid.major.y  = ggplot2::element_line(colour = grid_colour, linewidth = grid_linewidth),
+      panel.grid.major.y  = ggplot2::element_line(colour = grid_colour,
+                                                  linewidth = grid_linewidth),
       panel.grid.major.x  = ggplot2::element_blank()
     )
   }
@@ -289,7 +302,8 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
     # category labels and, per box, a full whisker-to-whisker span) is
     # rarely legible split across a half page's 7.5 cm. save_cpb()
     # warns using this when asked to.
-    attr(p, "cpb_half_page_unsuitable") <- "an extended boxplot faceted into multiple panels"
+    attr(p, "cpb_half_page_unsuitable") <-
+      "an extended boxplot faceted into multiple panels"
   }
 
   if (is.null(zero_indicator)) {

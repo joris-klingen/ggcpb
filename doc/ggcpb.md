@@ -45,10 +45,10 @@ kk <- tibble(
 )
 
 p <- cpb_col(kk, x = groep, y = koopkracht,
-  orientation = "horizontal",
-  title = "Koopkracht naar inkomensgroep",
-  ylab  = "inkomensgroep",
-  xlab  = "% koopkrachtmutatie")
+             orientation = "horizontal",
+             title = "Koopkracht naar inkomensgroep",
+             ylab  = "inkomensgroep",
+             xlab  = "% koopkrachtmutatie")
 p
 ```
 

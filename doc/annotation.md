@@ -47,9 +47,9 @@ groeipad <- tibble(jaar = 2015:2027,
          lo = groei - marge, hi = groei + marge)
 
 cpb_line(groeipad, x = jaar, y = groei, ymin = lo, ymax = hi,
-  forecast_x = 2023.5,
-  title = "Economische groei met onzekerheid",
-  ylab  = "%") +
+         forecast_x = 2023.5,
+         title = "Economische groei met onzekerheid",
+         ylab  = "%") +
   scale_x_continuous(breaks = seq(2015, 2027, 3), minor_breaks = 2015:2027,
                      guide = guide_axis(minor.ticks = TRUE))
 #> Scale for x is already present.
@@ -74,17 +74,18 @@ labels:
 - Forecast window labels change from `"raming"` to `"forecast"`.
 
 ``` r
-# English style: decimal point (1.5), forecast label ("forecast") and dual axis ("(left axis)" / "(right axis)")
+# English style: decimal point (1.5), forecast label ("forecast")
+# and dual axis ("(left axis)" / "(right axis)")
 groeipad_sec <- dplyr::mutate(
   groeipad,
   inflatie = c(1.2, 1.4, 1.8, 1.5, 2.1, 2.7, 3.8, 4.2, 2.8, 2.1, 1.9, 1.8, 1.7)
 )
 
 cpb_line(groeipad_sec, x = jaar, y = groei, ymin = lo, ymax = hi,
-  sec_y = inflatie, forecast_x = 2023.5,
-  value_accuracy = 0.1, sec_accuracy = 0.1, style = "english",
-  title = "Economic growth and inflation forecast",
-  ylab = "%", sec_ylab = "%") +
+         sec_y = inflatie, forecast_x = 2023.5,
+         value_accuracy = 0.1, sec_accuracy = 0.1, style = "english",
+         title = "Economic growth and inflation forecast",
+         ylab = "%", sec_ylab = "%") +
   scale_x_continuous(breaks = seq(2015, 2027, 3), minor_breaks = 2015:2027,
                      guide = guide_axis(minor.ticks = TRUE))
 #> Scale for x is already present.
@@ -104,17 +105,18 @@ series:
 componenten <- c("kapitaal/uren", "arbeidssamenstelling", "tfp")
 dec <- expand_grid(jaar = 2000:2024,
                    # reversed levels stack the first component nearest zero
-                   component = factor(componenten, levels = rev(componenten))) |>
+                   component = factor(componenten,
+                                      levels = rev(componenten))) |>
   mutate(bijdrage = round(rnorm(n(), mean = 0.4, sd = 0.9), 1))
 totaal <- dec |>
   summarise(bijdrage = sum(bijdrage), .by = jaar)
 
 cpb_col(dec, x = jaar, y = bijdrage, fill = component,
-  position = "stack",
-  colour_index = c(2, 5, 6),
-  width    = 0.75,
-  title    = "Opbouw productiviteitsgroei",
-  ylab     = "%") +
+        position = "stack",
+        colour_index = c(2, 5, 6),
+        width    = 0.75,
+        title    = "Opbouw productiviteitsgroei",
+        ylab     = "%") +
   geom_line(
     data    = totaal,
     mapping = aes(x = jaar, y = bijdrage, colour = "arbeidsproductiviteit"),
@@ -141,10 +143,10 @@ so this histogram has the same panel height as a figure with a legend:
 duur <- tibble(maanden = round(rgamma(1200, 8, 0.6)))
 
 cpb_hist(duur, x = maanden, binwidth = 2,
-  legend = "filled-empty",
-  title  = "Verdeling van de duur",
-  ylab   = "aantal",
-  xlab   = "duur (maanden)")
+         legend = "filled-empty",
+         title  = "Verdeling van de duur",
+         ylab   = "aantal",
+         xlab   = "duur (maanden)")
 ```
 
 <img src="annotation_files/figure-gfm/filled-empty-1.png" alt="" width="350px" />
@@ -162,13 +164,13 @@ horizontal bar chart:
 
 ``` r
 cpb_col(auto, x = inkomensgroep, y = share,
-  orientation  = "horizontal",
-  pct_axis     = TRUE,
-  value_limits = c(0, 70),
-  width        = 0.6,
-  title = "Aandeel huishoudens zonder auto naar inkomen",
-  ylab  = "inkomensgroep",
-  xlab  = "huishoudens zonder auto") +
+        orientation  = "horizontal",
+        pct_axis     = TRUE,
+        value_limits = c(0, 70),
+        width        = 0.6,
+        title = "Aandeel huishoudens zonder auto naar inkomen",
+        ylab  = "inkomensgroep",
+        xlab  = "huishoudens zonder auto") +
   geom_hline(yintercept = 24, linetype = "dashed",
              colour = "#666666", linewidth = 0.4) +
   annotate("text", x = 6.45, y = 24, label = "landelijk gemiddelde",
@@ -186,8 +188,8 @@ hand, as an alternative to the `forecast_x` argument above:
 
 ``` r
 cpb_line(bbp, x = jaar, y = index,
-  title = "Bruto binnenlands product",
-  ylab  = "index (2015 = 100)") +
+         title = "Bruto binnenlands product",
+         ylab  = "index (2015 = 100)") +
   annotate("rect", xmin = 2024.5, xmax = Inf, ymin = -Inf, ymax = Inf,
            fill = "white", alpha = 0.4) +
   annotate("text", x = 2026, y = 104, label = "raming",

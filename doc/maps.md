@@ -38,9 +38,9 @@ gemeenten <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
                            labeller = label_pct_nl()))
 
 cpb_map(gemeenten, region = code, value = klasse,
-  palette = "blues",
-  title   = "Aandeel huishoudens met zonnepanelen",
-  legend_title = "aandeel")
+        palette = "blues",
+        title   = "Aandeel huishoudens met zonnepanelen",
+        legend_title = "aandeel")
 ```
 
 <img src="maps_files/figure-gfm/map-classed-1.png" alt="" width="350px" />
@@ -64,8 +64,8 @@ gemeenten_ct <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
   mutate(index = rnorm(n(), 100, 15))
 
 cpb_map(gemeenten_ct, region = code, value = index,
-  title    = "Voorbeeldindex per gemeente",
-  subtitle = "index (Nederland = 100)")
+        title    = "Voorbeeldindex per gemeente",
+        subtitle = "index (Nederland = 100)")
 ```
 
 <img src="maps_files/figure-gfm/map-gemeente-1.png" alt="" width="350px" />
@@ -86,8 +86,8 @@ provincies <- tibble(naam = unique(cpb_nl_geo("provincie")$name)) |>
   ))
 
 cpb_map(provincies, region = naam, value = klasse, level = "provincie",
-  colour_index = c(2, 6),
-  title = "Groei ten opzichte van het\nlandelijk gemiddelde")
+        colour_index = c(2, 6),
+        title = "Groei ten opzichte van het\nlandelijk gemiddelde")
 ```
 
 <img src="maps_files/figure-gfm/map-provincie-1.png" alt="" width="350px" />

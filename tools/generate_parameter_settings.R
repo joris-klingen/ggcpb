@@ -1,4 +1,4 @@
-# tools/generate_parameter_settings.R
+# Regenerates the parameter reference.
 #
 # Regenerates inst/extdata/parameter_settings.csv from the cpb_*()
 # wrappers' own formals(), so the reference file can never silently
@@ -89,7 +89,7 @@ fmt_default <- function(val) {
     return(list(
       kind = "enum",
       text = paste0(paste(evaluated, collapse = "/"),
-        " (default: ", evaluated[[1]], ")"),
+                    " (default: ", evaluated[[1]], ")"),
       is_blank = FALSE
     ))
   }
@@ -148,11 +148,13 @@ for (pt in plot_types) {
 
 out <- do.call(rbind, rows)
 write.csv(out, "inst/extdata/parameter_settings.csv", row.names = FALSE)
-cat("Wrote inst/extdata/parameter_settings.csv (", nrow(out), " rows).\n", sep = "")
+cat("Wrote inst/extdata/parameter_settings.csv (", nrow(out),
+    " rows).\n", sep = "")
 
-missing_example <- out[!nzchar(out$example), c("plot_type", "param", "kind", "default")]
+missing_example <- out[!nzchar(out$example),
+                       c("plot_type", "param", "kind", "default")]
 if (nrow(missing_example)) {
   cat("\nNo example value for these (add one to column_examples or ",
-    "literal_examples in this script):\n", sep = "")
+      "literal_examples in this script):\n", sep = "")
   print(missing_example, row.names = FALSE)
 }

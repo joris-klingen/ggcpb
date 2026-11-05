@@ -73,16 +73,16 @@
 #'   theme_cpb(orientation = "horizontal")
 #' @export
 theme_cpb <- function(base_family = cpb_font_family(),
-                       background = TRUE,
-                       orientation = c("vertical", "horizontal"),
-                       grid = c("value", "both", "none", "x", "y"),
-                       legend = "bottom",
-                       minor = FALSE,
-                       ticks = TRUE,
-                       flush_legend = TRUE,
-                       axis_text_size = 7,
-                       grid_colour = "black",
-                       grid_linewidth = 0.1) {
+                      background = TRUE,
+                      orientation = c("vertical", "horizontal"),
+                      grid = c("value", "both", "none", "x", "y"),
+                      legend = "bottom",
+                      minor = FALSE,
+                      ticks = TRUE,
+                      flush_legend = TRUE,
+                      axis_text_size = 7,
+                      grid_colour = "black",
+                      grid_linewidth = 0.1) {
   orientation <- match.arg(orientation)
   grid <- match.arg(grid)
 
@@ -125,10 +125,13 @@ theme_cpb <- function(base_family = cpb_font_family(),
   theme_args <- list(
     plot.title.position = "plot",
 
-    plot.title    = ggplot2::element_text(face = "bold", hjust = 0, size = cpb_title_pt),
-    plot.subtitle = ggplot2::element_text(face = "italic", hjust = 0, size = cpb_font_pt),
+    plot.title    = ggplot2::element_text(face = "bold", hjust = 0,
+                                          size = cpb_title_pt),
+    plot.subtitle = ggplot2::element_text(face = "italic", hjust = 0,
+                                          size = cpb_font_pt),
 
-    axis.title = ggplot2::element_text(face = "italic", hjust = 1, size = cpb_font_pt),
+    axis.title = ggplot2::element_text(face = "italic", hjust = 1,
+                                       size = cpb_font_pt),
     axis.text  = ggplot2::element_text(colour = "black", size = axis_text_size),
     # ggplot2's own theme_grey() left-aligns a secondary axis's tick
     # labels (hjust = 0: text starts flush against the axis, ragged on
@@ -143,16 +146,35 @@ theme_cpb <- function(base_family = cpb_font_family(),
     # because theme_minimal() changed it in ggplot2 4.0 (2.2 pt in 3.5,
     # 4.95 pt in 4.x); spelled out, a figure lays out the same on either.
     # x tick labels: 0.15 cm from the panel
-    axis.text.x.bottom = ggplot2::element_text(margin = ggplot2::margin(t = cpb_x_lab_gap_cm, unit = "cm"), inherit.blank = TRUE),
-    axis.text.x.top    = ggplot2::element_text(vjust = 1, margin = ggplot2::margin(b = cpb_x_lab_gap_cm, unit = "cm"), inherit.blank = TRUE),
+    axis.text.x.bottom = ggplot2::element_text(
+      margin = ggplot2::margin(t = cpb_x_lab_gap_cm, unit = "cm"),
+      inherit.blank = TRUE
+    ),
+    axis.text.x.top    = ggplot2::element_text(
+      vjust = 1, margin = ggplot2::margin(b = cpb_x_lab_gap_cm, unit = "cm"),
+      inherit.blank = TRUE
+    ),
     # y tick labels sit 1.5% of the figure width from the panel. This
     # is the half-page value, save_cpb() sets it for the actual width.
-    axis.text.y.left   = ggplot2::element_text(margin = ggplot2::margin(r = cpb_y_lab_gap_cm(cpb_page_width_cm[["half"]]), unit = "cm"), inherit.blank = TRUE),
-    axis.text.y.right  = ggplot2::element_text(hjust = 0, margin = ggplot2::margin(l = cpb_y_lab_gap_cm(cpb_page_width_cm[["half"]]), unit = "cm"), inherit.blank = TRUE),
+    axis.text.y.left   = ggplot2::element_text(
+      margin = ggplot2::margin(
+        r = cpb_y_lab_gap_cm(cpb_page_width_cm[["half"]]), unit = "cm"
+      ),
+      inherit.blank = TRUE
+    ),
+    axis.text.y.right  = ggplot2::element_text(
+      hjust = 0,
+      margin = ggplot2::margin(
+        l = cpb_y_lab_gap_cm(cpb_page_width_cm[["half"]]), unit = "cm"
+      ),
+      inherit.blank = TRUE
+    ),
 
     # "filled-empty": no legend drawn, its space kept (see cpb_figure_bottom())
-    legend.position   = if (identical(legend, "filled-empty")) "none" else legend,
-    legend.title      = ggplot2::element_text(face = "italic", size = cpb_font_pt),
+    legend.position   = if (identical(legend,
+                                      "filled-empty")) "none" else legend,
+    legend.title      = ggplot2::element_text(face = "italic",
+                                              size = cpb_font_pt),
     # the label sits close to its key (~3.5 pt vs the ggplot2 default
     # of ~5.5 pt), matching published output
     legend.text       = ggplot2::element_text(
@@ -168,7 +190,8 @@ theme_cpb <- function(base_family = cpb_font_family(),
     # title sits *below* its panel (the wrappers set
     # strip.position = "bottom"); "outside" places it below the axis
     # text, so the caption reads as a title for the complete mini-figure
-    strip.text       = ggplot2::element_text(face = "bold", hjust = 0, size = cpb_font_pt),
+    strip.text       = ggplot2::element_text(face = "bold", hjust = 0,
+                                             size = cpb_font_pt),
     strip.background = ggplot2::element_blank(),
     strip.placement  = "outside",
     panel.spacing    = grid::unit(0.8, "lines"),
@@ -181,8 +204,10 @@ theme_cpb <- function(base_family = cpb_font_family(),
     # Left: 0.45 cm to the titles and tick labels. Right: 0.635 cm to
     # the panel. With a right axis save_cpb() and print() make the
     # right side mirror the left.
-    plot.margin = grid::unit.c(grid::unit(10, "pt"), grid::unit(cpb_margin_east_cm, "cm"),
-                               grid::unit(8, "pt"), grid::unit(cpb_labels_margin_cm, "cm")),
+    plot.margin = grid::unit.c(grid::unit(10, "pt"),
+                               grid::unit(cpb_margin_east_cm, "cm"),
+                               grid::unit(8, "pt"),
+                               grid::unit(cpb_labels_margin_cm, "cm")),
 
     plot.background = plot_bg
   )
@@ -202,7 +227,11 @@ theme_cpb <- function(base_family = cpb_font_family(),
     theme_args$axis.ticks.length <- grid::unit(2.2, "pt")
     # ggplot2 3.5 still reserves the tick length on an axis whose ticks
     # are blank (4.x does not), which nudged the panel inward there
-    untick <- if (orientation == "vertical") "axis.ticks.length.y" else "axis.ticks.length.x"
+    untick <- if (orientation == "vertical") {
+      "axis.ticks.length.y"
+    } else {
+      "axis.ticks.length.x"
+    }
     theme_args[[untick]] <- grid::unit(0, "pt")
   } else {
     theme_args$axis.ticks.length <- grid::unit(0, "pt")

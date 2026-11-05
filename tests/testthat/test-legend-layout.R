@@ -10,8 +10,8 @@
 # legend to the *plot* edge instead, which nothing inside the panel can
 # move. These tests render real PNGs and check the pixels.
 
-# Every plot below maps a series to CPB primary blue (cpb_cols(6),
-# #005faf) that ends up as the *first* (top-left) legend entry. The
+# Every plot below maps a series to the CPB primary blue
+# (colour 6, #005faf) that ends up as the *first* (top-left) legend entry. The
 # legend is the fixed legend grid (see cpb_figure_bottom()): its first row is
 # centred 1.3 cm above the figure's bottom edge, further
 # entries go below it (3 per column) and then into new columns to the
@@ -46,7 +46,7 @@ key_w_px  <- 0.30 / 2.54 * 96
 # figure's bottom edge, key 0.8 x 0.315 cm tall
 key_bottom_px <- (1.3 - 0.8 * 0.315 / 2) / 2.54 * 96
 
-test_that("flush legend lands on the same pixel across chart types and label lengths", {
+test_that("flush legend lands on one pixel across types and labels", {
   skip_if_not_installed("ragg")
   skip_if_not_installed("png")
   skip_if_not_installed("withr")
@@ -76,14 +76,18 @@ test_that("flush legend lands on the same pixel across chart types and label len
   # legend entry in every variant, so the lowest blue pixel is comparable
   rect_variants <- list(
     col_vertical   = cpb_col(short2, x = x, y = y, fill = g, position = "dodge",
-                             reverse_legend = FALSE, colour_index = c(6, 2), title = "t"),
-    col_horizontal = cpb_col(long_cats, x = x, y = y, fill = g, position = "dodge",
+                             reverse_legend = FALSE, colour_index = c(6, 2),
+                             title = "t"),
+    col_horizontal = cpb_col(long_cats, x = x, y = y, fill = g,
+                             position = "dodge",
                              orientation = "horizontal", reverse_legend = FALSE,
                              colour_index = c(6, 2), title = "t"),
     col_five       = cpb_col(five, x = x, y = y, fill = g, position = "dodge",
-                             reverse_legend = FALSE, colour_index = c(6, 2, 3, 4, 5), title = "t"),
+                             reverse_legend = FALSE,
+                             colour_index = c(6, 2, 3, 4, 5), title = "t"),
     box            = cpb_box(box_df,
-                             x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+                             x = x, p5 = p5, p25 = p25, p50 = p50,
+                             p75 = p75, p95 = p95,
                              fill = g, reverse_legend = FALSE,
                              colour_index = c(6, 2), title = "t")
   )
@@ -92,9 +96,12 @@ test_that("flush legend lands on the same pixel across chart types and label len
   # within their own family
   line_variants <- list(
     line_short = cpb_line(short2, x = as.integer(factor(x)), y = y, colour = g,
-                          colour_index = c(6, 2), reverse_legend = FALSE, title = "t"),
-    line_long  = cpb_line(long_cats, x = as.integer(factor(x)), y = y, colour = g,
-                          colour_index = c(6, 2), reverse_legend = FALSE, title = "t")
+                          colour_index = c(6, 2), reverse_legend = FALSE,
+                          title = "t"),
+    line_long  = cpb_line(long_cats, x = as.integer(factor(x)),
+                          y = y, colour = g,
+                          colour_index = c(6, 2), reverse_legend = FALSE,
+                          title = "t")
   )
 
   rect_pos <- lapply(rect_variants, legend_key_px)
@@ -118,14 +125,16 @@ test_that("flush legend lands on the same pixel across chart types and label len
   # one solid spot: the first key row is identical whether the legend
   # holds 2 or 5 items, per glyph family ...
   expect_lte(diff(range(rect_bottoms)), 2)
-  expect_lte(abs(mean(vapply(rect_pos, `[[`, numeric(1), "bottom_off")) - key_bottom_px), 2)
+  expect_lte(abs(mean(vapply(rect_pos,
+                             `[[`, numeric(1), "bottom_off")) - key_bottom_px),
+             2)
   expect_lte(diff(range(line_bottoms)), 2)
   # ... and the families differ by at most half a key (the stroke
   # centring), i.e. the legend *block* itself is anchored
   expect_lte(abs(mean(rect_bottoms) - mean(line_bottoms)), key_h_px / 2 + 2)
 })
 
-test_that("legend key pixel is invariant to legend-label length and item count", {
+test_that("legend key pixel is fixed across label length and item count", {
   skip_if_not_installed("ragg")
   skip_if_not_installed("png")
   skip_if_not_installed("withr")
@@ -160,7 +169,8 @@ test_that("legend key pixel is invariant to legend-label length and item count",
       g = factor(rep(labs, 2), levels = labs),
       y = rep(seq_len(n), 2)
     )
-    cpb_col(df, x = x, y = y, fill = g, position = "dodge", reverse_legend = FALSE,
+    cpb_col(df, x = x, y = y, fill = g, position = "dodge",
+            reverse_legend = FALSE,
             colour_index = c(6, 2, 3, 4, 5, 1, 7, 8)[seq_len(n)], title = "t")
   })
   names(count_variants) <- paste0("n", counts)
@@ -213,10 +223,12 @@ test_that("legend key pixel is invariant to chart type", {
     hist           = cpb_hist(hist_df, x = v, fill = g, binwidth = 1,
                               colour_index = c(6, 2), title = "t"),
     box            = cpb_box(box_df,
-                             x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+                             x = x, p5 = p5, p25 = p25, p50 = p50,
+                             p75 = p75, p95 = p95,
                              fill = g, reverse_legend = TRUE,
                              colour_index = c(6, 2), title = "t"),
-    col_facet      = cpb_col(transform(cat2, f = rep(c("paneel 1", "paneel 2"), 2)),
+    col_facet      = cpb_col(transform(cat2,
+                                       f = rep(c("paneel 1", "paneel 2"), 2)),
                              x = x, y = y, fill = g, position = "dodge",
                              facet = f, colour_index = c(6, 2), title = "t")
   )
@@ -230,7 +242,8 @@ test_that("legend key pixel is invariant to chart type", {
   # directions, so neither its left nor its bottom pixel is the box edge
   point_variants <- list(
     scatter = cpb_scatter(num2, x = x, y = y, colour = g,
-                          colour_index = c(6, 2), reverse_legend = TRUE, title = "t")
+                          colour_index = c(6, 2), reverse_legend = TRUE,
+                          title = "t")
   )
 
   rect_pos  <- lapply(rect_variants, legend_key_px)
@@ -248,7 +261,8 @@ test_that("legend key pixel is invariant to chart type", {
   rect_bottoms <- vapply(rect_pos, `[[`, numeric(1), "bottom_off")
   expect_lte(diff(range(rect_bottoms)), 2)
   # line key: same anchored key box, stroke centring explains the shift
-  expect_lte(abs(line_pos$line$bottom_off - mean(rect_bottoms)), key_h_px / 2 + 2)
+  expect_lte(abs(line_pos$line$bottom_off - mean(rect_bottoms)),
+             key_h_px / 2 + 2)
 
   # scatter key: the point must fall inside the same anchored key box
   expect_gte(point_pos$scatter$left, mean(rect_lefts) - 1)
@@ -257,7 +271,7 @@ test_that("legend key pixel is invariant to chart type", {
   expect_lte(point_pos$scatter$bottom_off, mean(rect_bottoms) + key_h_px + 1)
 })
 
-test_that("legend key pixel is invariant to canvas size and titles/axis titles", {
+test_that("legend key pixel is fixed across canvas size and titles", {
   skip_if_not_installed("ragg")
   skip_if_not_installed("png")
   skip_if_not_installed("withr")
@@ -307,13 +321,20 @@ test_that("legend key pixel is invariant to canvas size and titles/axis titles",
 test_that("legend_ncol lays the keys out in columns and keeps reverse_legend", {
   d <- data.frame(x = rep(1:4, 6), y = seq_len(24) / 24,
                   g = rep(letters[1:6], each = 4))
-  params <- function(p, aes) ggplot2::ggplot_build(p)$plot$guides$get_params(aes)
+  params <- function(p,
+                     aes) {
+    ggplot2::ggplot_build(p)$plot$guides$get_params(aes)
+  }
 
   # every wrapper takes the argument, on whichever aesthetic it keys on
-  expect_equal(params(cpb_line(d, x, y, colour = g, legend_ncol = 2), "colour")$ncol, 2)
-  expect_equal(params(cpb_col(d, x, y, fill = g, legend_ncol = 2), "fill")$ncol, 2)
-  expect_equal(params(cpb_area(d, x, y, fill = g, legend_ncol = 3), "fill")$ncol, 3)
-  expect_equal(params(cpb_scatter(d, x, y, colour = g, legend_ncol = 2), "colour")$ncol, 2)
+  expect_equal(params(cpb_line(d, x, y, colour = g, legend_ncol = 2),
+                      "colour")$ncol, 2)
+  expect_equal(params(cpb_col(d, x, y, fill = g, legend_ncol = 2),
+                      "fill")$ncol, 2)
+  expect_equal(params(cpb_area(d, x, y, fill = g, legend_ncol = 3),
+                      "fill")$ncol, 3)
+  expect_equal(params(cpb_scatter(d, x, y, colour = g, legend_ncol = 2),
+                      "colour")$ncol, 2)
   expect_equal(params(cpb_dot(d, x, y, lower = y, upper = y, colour = g,
                               legend_ncol = 2), "colour")$ncol, 2)
 
@@ -327,7 +348,8 @@ test_that("legend_ncol lays the keys out in columns and keeps reverse_legend", {
   expect_true(both$reverse)
 
   # a numeric colour draws a colourbar, which takes neither setting
-  num <- d; num$n <- seq_len(24)
+  num <- d
+  num$n <- seq_len(24)
   expect_s3_class(cpb_scatter(num, x, y, colour = n, legend_ncol = 2), "ggplot")
 })
 
@@ -345,12 +367,16 @@ test_that("a level with no observations still gets a coloured legend glyph", {
     suppressMessages(ggplot2::ggsave(f, p, width = 4, height = 2.6, dpi = 150,
                                      device = ragg::agg_png))
     im <- png::readPNG(f)[, , 1:3]
-    hex <- toupper(apply(im, c(1, 2), function(q) grDevices::rgb(q[1], q[2], q[3])))
+    hex <- toupper(apply(im, c(1, 2),
+                         function(q) grDevices::rgb(q[1], q[2], q[3])))
     any(hex == toupper(lightest))
   }
-  blues <- function(p) suppressMessages(
-    p + scale_fill_cpb_d(palette = "blues", drop = FALSE) +
-        scale_colour_cpb_d(palette = "blues", drop = FALSE))
+  blues <- function(p) {
+    suppressMessages(
+      p + scale_fill_cpb_d(palette = "blues", drop = FALSE) +
+        scale_colour_cpb_d(palette = "blues", drop = FALSE)
+    )
+  }
 
   expect_true(drawn(blues(cpb_col(d, x, y, fill = g))))
   expect_true(drawn(blues(cpb_area(d, x, y, fill = g))))

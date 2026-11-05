@@ -14,7 +14,8 @@ label_number_nl(
 \item{accuracy}{Accuracy passed to \code{\link[scales:label_number]{scales::label_number()}}; \code{NULL}
 (default) automatically calculates the required decimal precision.}
 
-\item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
+\item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,}
+decimal)
 or \code{"english"} (\verb{,} thousands, \code{.} decimal). Taken from
 \code{getOption("ggcpb.style")}, so an English report can set
 \code{options(ggcpb.style = "english")} once rather than passing \code{style}

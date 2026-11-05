@@ -62,15 +62,17 @@ test_that("save_cpb saves a cpb_map() at the page's size, in proportion", {
   im <- png::readPNG(path)
   # ... with the map in proportion: its drawing area has the boundaries'
   # own height / width, and fits inside the page
-  for (size in list(c(7.5, 7.5), c(15.5, 7.5), c(7.5, 20)) ) {
-    panel <- cpb_map_panel_size(p, attr(p, "cpb_map_aspect"), size[1] / 2.54, size[2] / 2.54)
+  for (size in list(c(7.5, 7.5), c(15.5, 7.5), c(7.5, 20))) {
+    panel <- cpb_map_panel_size(p, attr(p, "cpb_map_aspect"), size[1] / 2.54,
+                                size[2] / 2.54)
     expect_equal(panel[2] / panel[1], attr(p, "cpb_map_aspect"))
     expect_lt(panel[1], size[1] / 2.54)
     expect_lt(panel[2], size[2] / 2.54)
   }
 
   # preset = "map": as wide as the page allows, as tall as that takes
-  msg_map <- testthat::capture_output(save_cpb(path, p, page = "half", preset = "map"))
+  msg_map <- testthat::capture_output(save_cpb(path, p, page = "half",
+                                               preset = "map"))
   expect_false(grepl("2.95 x 2.95 in", msg_map, fixed = TRUE))
   expect_gt(nrow(png::readPNG(path)), nrow(im))
 
@@ -79,11 +81,12 @@ test_that("save_cpb saves a cpb_map() at the page's size, in proportion", {
   expect_match(msg2, "2.95 x 3 in", fixed = TRUE)
 })
 
-test_that("save_cpb stops on a title too long for the page (lock), not when wrapped", {
+test_that("save_cpb stops on a title too long for the page, not when wrapped", {
   skip_if_not_installed("ragg")
   df <- data.frame(x = c("a", "b"), y = 1:2)
   path <- withr::local_tempfile(fileext = ".png")
-  long <- "Een uitzonderlijk lange titel die zeker niet op een halve pagina past"
+  long <- paste0("Een uitzonderlijk lange titel die zeker niet ",
+                 "op een halve pagina past")
 
   # A long single-line title on a half page is an error with lock (the
   # default) and a warning without. Both suggest \n.
@@ -92,7 +95,8 @@ test_that("save_cpb stops on a title too long for the page (lock), not when wrap
     "\\\\n"
   )
   expect_warning(
-    save_cpb(path, cpb_col(df, x = x, y = y, title = long), page = "half", lock = FALSE),
+    save_cpb(path, cpb_col(df, x = x, y = y, title = long), page = "half",
+             lock = FALSE),
     "\\\\n"
   )
   # the same length split over two lines fits -> no warning
@@ -108,7 +112,7 @@ test_that("save_cpb stops on a title too long for the page (lock), not when wrap
   expect_no_warning(save_cpb(path, cpb_col(df, x = x, y = y), page = "half"))
 })
 
-test_that("save_cpb warns when the category labels are too long to sit side by side", {
+test_that("save_cpb warns when category labels are too long side by side", {
   path <- withr::local_tempfile(fileext = ".png")
   groepen <- c("tot 120% wml", "120% wml - mod.", "1 - 1,5x mod.",
                "1,5 - 2x mod.", "2 - 3x mod.", "boven 3x mod.")
@@ -122,7 +126,8 @@ test_that("save_cpb warns when the category labels are too long to sit side by s
   expect_no_warning(save_cpb(path, cpb_col(long, x = g, y = y), page = "full"))
   # horizontal puts the categories on the axis that has the room
   expect_no_warning(
-    save_cpb(path, cpb_col(long, x = g, y = y, orientation = "horizontal"), page = "half")
+    save_cpb(path, cpb_col(long, x = g, y = y, orientation = "horizontal"),
+             page = "half")
   )
   # breaking a label over two lines is the documented fix, and works:
   # each label is measured by its longest line, not its total length
@@ -133,16 +138,18 @@ test_that("save_cpb warns when the category labels are too long to sit side by s
                           "1,5 - 2x\nmod.", "2 - 3x\nmod.", "boven 3x\nmod.")),
     y = 1:6
   )
-  expect_no_warning(save_cpb(path, cpb_col(wrapped, x = g, y = y), page = "half"))
+  expect_no_warning(save_cpb(path, cpb_col(wrapped, x = g, y = y),
+                             page = "half"))
   # short category names, and a numeric axis, are left alone
   short <- data.frame(g = c("a", "b", "c"), y = 1:3)
   expect_no_warning(save_cpb(path, cpb_col(short, x = g, y = y), page = "half"))
   expect_no_warning(
-    save_cpb(path, cpb_line(data.frame(x = 2015:2027, y = 1:13), x = x, y = y), page = "half")
+    save_cpb(path, cpb_line(data.frame(x = 2015:2027, y = 1:13), x = x, y = y),
+             page = "half")
   )
 })
 
-test_that("save_cpb warns when a plot's own type is not suitable for a half page", {
+test_that("save_cpb warns when the plot type does not suit a half page", {
   path <- withr::local_tempfile(fileext = ".png")
 
   d <- data.frame(bron = factor(c("a", "b")), share = c(60, 40))
@@ -176,7 +183,7 @@ test_that("save_cpb warns when a plot's own type is not suitable for a half page
   expect_no_warning(save_cpb(path, ordinary, page = "half"))
 })
 
-test_that("save_cpb keeps sec_y's own colour intact when a layer is inserted ahead of it", {
+test_that("save_cpb keeps sec_y's colour when a layer is inserted", {
   # cpb_take_sec_ylab() (removing the wrapper's approximate sec_ylab
   # placeholder layer, so save_cpb()'s own exact one replaces it, see
   # cpb_add_sec_ylab_grob()) used to look that layer up by the
@@ -189,7 +196,8 @@ test_that("save_cpb keeps sec_y's own colour intact when a layer is inserted ahe
   # against, warning "No shared levels found ...").
   d <- data.frame(x = 1:3, y = 1:3, z = c(5, 6, 7))
   p <- cpb_line(d, x = x, y = y, sec_y = z, sec_ylab = "n")
-  p$layers <- c(list(ggplot2::geom_hline(yintercept = 0, colour = "white")), p$layers)
+  p$layers <- c(list(ggplot2::geom_hline(yintercept = 0,
+                                         colour = "white")), p$layers)
 
   path <- withr::local_tempfile(fileext = ".png")
   warnings <- character(0)
@@ -203,8 +211,10 @@ test_that("save_cpb keeps sec_y's own colour intact when a layer is inserted ahe
   expect_false(any(grepl("shared levels", warnings, fixed = TRUE)))
 
   b <- ggplot2::ggplot_build(p)
-  is_line <- vapply(p$layers, function(l) inherits(l$geom, "GeomLine"), logical(1))
-  sec_line_idx <- which(is_line)[[2]] # the first GeomLine is the inserted hline's sibling primary line
+  is_line <- vapply(p$layers,
+                    function(l) inherits(l$geom, "GeomLine"), logical(1))
+  # the first GeomLine is the inserted hline's sibling primary line
+  sec_line_idx <- which(is_line)[[2]]
   expect_false(anyNA(b$data[[sec_line_idx]]$colour))
 })
 
@@ -218,7 +228,10 @@ test_that("a right axis mirrors the left margin", {
   }
   ragg::agg_png(withr::local_tempfile(fileext = ".png"))
   withr::defer(grDevices::dev.off())
-  d <- data.frame(x = 2016:2022, y = c(18, 20, 19, 18, 17, 17, 19), z = c(1.9, 1.8, 1.6, 1.7, 1.6, 1.5, 1.6))
+  d <- data.frame(
+    x = 2016:2022, y = c(18, 20, 19, 18, 17, 17, 19),
+    z = c(1.9, 1.8, 1.6, 1.7, 1.6, 1.5, 1.6)
+  )
 
   # no right axis: nothing to mirror, the panel ends margin_east from the edge
   g <- ggplot2::ggplotGrob(cpb_col(d, x = x, y = y, title = "t", ylab = "l"))
@@ -234,7 +247,7 @@ test_that("a right axis mirrors the left margin", {
   }
 })
 
-test_that("save_cpb draws sec_ylab on ylab's row, 0.45 cm from the figure's right edge", {
+test_that("save_cpb draws sec_ylab on the ylab row, 0.45 cm from edge", {
   # cpb_place_sec_ylab() (see save.R): right-aligned 0.45 cm from the
   # figure edge, not on the "axis-r" labels.
   d <- data.frame(x = 1:5, y = 1:5, z = c(10, 12, 11, 13, 12))
@@ -266,7 +279,7 @@ test_that("save_cpb draws sec_ylab on ylab's row, 0.45 cm from the figure's righ
   expect_equal(grob$vjust, 1)
 })
 
-test_that("a bare print() also draws sec_ylab exactly, not the approximate placeholder", {
+test_that("a bare print() also draws sec_ylab exactly, not the placeholder", {
   # print.cpb_plot() (see save.R) places sec_ylab itself now, so no
   # "approximate placement" warning either.
   d <- data.frame(x = 1:5, y = 1:5, z = c(10, 12, 11, 13, 12))
@@ -278,7 +291,7 @@ test_that("a bare print() also draws sec_ylab exactly, not the approximate place
   grDevices::dev.off()
 })
 
-test_that("print.cpb_plot warns distinctly when the exact draw errors unexpectedly", {
+test_that("print.cpb_plot warns when the exact draw errors unexpectedly", {
   # An unexpected error (a real bug) must not look like the ordinary
   # "only exact through save_cpb()" case. Otherwise print() and
   # save_cpb() could silently disagree with no visible sign why.
@@ -299,7 +312,8 @@ test_that("print.cpb_plot warns distinctly when the exact draw errors unexpected
 
 test_that("save_cpb() without a plot saves the wrapper's own, marked plot", {
   d <- data.frame(x = rep(1:3, 2), y = 1:6, g = rep(c("a", "b"), each = 3))
-  for (p in list(cpb_line(d, x = x, y = y, colour = g), cpb_col(d, x = x, y = y, fill = g))) {
+  for (p in list(cpb_line(d, x = x, y = y, colour = g),
+                 cpb_col(d, x = x, y = y, fill = g))) {
     expect_identical(attr(ggplot2::last_plot(), "cpb_legend"), "bottom")
   }
 })
@@ -319,9 +333,10 @@ test_that("print() sets last_plot() and honours newpage/vp like ggplot2", {
   expect_true("keep-me" %in% grid::grid.ls(print = FALSE)$name)
 })
 
-test_that("a caption is drawn as a footnote at the bottom right, not under the axis", {
+test_that("a caption is drawn as a footnote at the bottom right", {
   d <- data.frame(x = rep(1:3, 2), y = 1:6, g = rep(c("a", "b"), each = 3))
-  p <- cpb_line(d, x = x, y = y, colour = g, xlab = "jaar") + ggplot2::labs(caption = "Bron: CPB")
+  p <- cpb_line(d, x = x, y = y, colour = g, xlab = "jaar") +
+    ggplot2::labs(caption = "Bron: CPB")
   g <- cpb_figure_bottom(ggplot2::ggplotGrob(p), "bottom")
   expect_s3_class(g$grobs[[which(g$layout$name == "caption")]], "zeroGrob")
   foot <- g$grobs[[which(g$layout$name == "cpb-caption")]]
@@ -330,20 +345,24 @@ test_that("a caption is drawn as a footnote at the bottom right, not under the a
   expect_equal(foot$gp$fontsize, 7 * 0.85)
 })
 
-test_that("the tick-label gap follows the figure width, only with theme_cpb()'s gap", {
+test_that("the tick-label gap follows the figure width", {
   gap <- function(p) {
-    as.numeric(grid::convertWidth(p$theme$axis.text.y.left$margin[2], "cm", valueOnly = TRUE))
+    as.numeric(grid::convertWidth(p$theme$axis.text.y.left$margin[2], "cm",
+                                  valueOnly = TRUE))
   }
   d <- data.frame(x = 1:3, y = 1:3)
   p <- cpb_line(d, x = x, y = y)
   expect_equal(gap(cpb_scale_y_lab_gap(p, 15.5)), 0.015 * 15.5)
   plain <- ggplot2::ggplot(d, ggplot2::aes(x, y)) + ggplot2::geom_point()
   expect_identical(cpb_scale_y_lab_gap(plain, 15.5), plain)
-  own <- p + ggplot2::theme(axis.text.y.left = ggplot2::element_text(margin = ggplot2::margin(r = 0.5, unit = "cm")))
+  own_margin <- ggplot2::margin(r = 0.5, unit = "cm")
+  own <- p + ggplot2::theme(
+    axis.text.y.left = ggplot2::element_text(margin = own_margin)
+  )
   expect_equal(gap(cpb_scale_y_lab_gap(own, 15.5)), 0.5)
 })
 
-test_that("cpb_align_value_axis_title nudges a flush-right value-axis title to match the outermost tick label", {
+test_that("cpb_align_value_axis_title nudges a flush-right axis title", {
   # theme_cpb()'s axis.title is anchored flush with the *panel* edge
   # (hjust = 1), but every wrapper's value axis is flush too (the
   # highest break sits exactly on the panel edge, no expansion) and
@@ -351,11 +370,13 @@ test_that("cpb_align_value_axis_title nudges a flush-right value-axis title to m
   # label's own text overhangs the panel edge by half its width, and a
   # title anchored to the bare edge lands short of it by that much.
   d <- data.frame(
-    groep = factor(c("a", "b", "c", "d"), levels = c("a", "b", "c", "d")),
+    groep = factor(c("a", "b", "c", "d"),
+                   levels = c("a", "b", "c", "d")),
     val = c(10, 25, 47, 63)
   )
   p <- cpb_col(d, x = groep, y = val, orientation = "horizontal",
-               xlab = "aandeel binnen inkomensgroep (%)", pct_axis = TRUE)
+               xlab = "aandeel binnen inkomensgroep (%)",
+               pct_axis = TRUE)
   g <- ggplot2::ggplotGrob(p)
 
   title_idx <- which(g$layout$name == "xlab-b")
@@ -378,12 +399,13 @@ test_that("cpb_align_value_axis_title nudges a flush-right value-axis title to m
     grid::grobWidth(grid::textGrob(last_label, gp = tick_text$gp)),
     "in", valueOnly = TRUE
   ) / 2
-  actual_shift <- grid::convertWidth(after$x, "in", valueOnly = TRUE) -
+  actual_shift <- grid::convertWidth(after$x, "in",
+                                     valueOnly = TRUE) -
     grid::convertWidth(grid::unit(1, "npc"), "in", valueOnly = TRUE)
   expect_equal(actual_shift, expected_shift, tolerance = 1e-6)
 })
 
-test_that("cpb_align_value_axis_title is a no-op when there is no value-axis title to align", {
+test_that("cpb_align_value_axis_title needs a value-axis title", {
   d <- data.frame(
     groep = factor(c("a", "b", "c", "d"), levels = c("a", "b", "c", "d")),
     val = c(10, 25, 47, 63)
@@ -396,7 +418,7 @@ test_that("cpb_align_value_axis_title is a no-op when there is no value-axis tit
   expect_identical(g2, g)
 })
 
-test_that("save_cpb aligns the value-axis title without a panel_size or sec_y set", {
+test_that("save_cpb aligns the value-axis title without panel_size or sec_y", {
   # exercises the branch in save_cpb() that has to build the grob to
   # check whether cpb_align_value_axis_title() applies, with neither
   # panel_size nor sec_y actually requesting the grob path
@@ -411,7 +433,7 @@ test_that("save_cpb aligns the value-axis title without a panel_size or sec_y se
   expect_true(file.exists(path))
 })
 
-test_that("cpb_donut()/cpb_map() tag their plot with class \"cpb_plot\", a plain ggplot does not", {
+test_that("cpb_donut and cpb_map tag their plot as cpb_plot", {
   d <- data.frame(bron = factor(c("a", "b")), share = c(60, 40))
   expect_true(inherits(cpb_donut(d, fill = bron, y = share), "cpb_plot"))
 
@@ -419,13 +441,14 @@ test_that("cpb_donut()/cpb_map() tag their plot with class \"cpb_plot\", a plain
   expect_false(inherits(df, "cpb_plot"))
 })
 
-test_that("the \"cpb_plot\" class (and so the warning) survives an ordinary + theme() call", {
+test_that("the cpb_plot class (and its warning) survives a + theme() call", {
   d <- data.frame(bron = factor(c("a", "b")), share = c(60, 40))
-  p <- cpb_donut(d, fill = bron, y = share) + ggplot2::theme(legend.position = "none")
+  p <- cpb_donut(d, fill = bron, y = share) +
+    ggplot2::theme(legend.position = "none")
   expect_true(inherits(p, "cpb_plot"))
 })
 
-test_that("print.cpb_plot() warns that a bare print shows an approximate placement", {
+test_that("print.cpb_plot warns about an approximate placement", {
   # rlang::warn(.frequency = "once") tracks each distinct .frequency_id
   # globally for the R session, not per test -- a fresh, distinct
   # colour/fill combination keeps this test's warning independent of
@@ -440,10 +463,12 @@ test_that("print.cpb_plot() warns that a bare print shows an approximate placeme
   expect_no_warning(print(cpb_donut(d, fill = bron, y = share)))
   # a pinned ring may not fit the size print() lands on
   p <- cpb_donut(d, fill = bron, y = share, panel_size = 1.8)
-  expect_warning(print(p), "only render\\(s\\) exactly when written out through save_cpb\\(\\)")
+  expect_warning(print(p),
+                 paste0("only render\\(s\\) exactly when written out ",
+                        "through save_cpb\\(\\)"))
 })
 
-test_that("a printed cpb_donut has its title and legend at the figure's edges, like a saved one", {
+test_that("a printed cpb_donut has title and legend at the figure edges", {
   d <- data.frame(bron = factor(letters[1:4]), share = c(40, 30, 20, 10))
   p <- cpb_donut(d, fill = bron, y = share, title = "Titel")
   printed <- withr::local_tempfile(fileext = ".png")
@@ -455,14 +480,20 @@ test_that("a printed cpb_donut has its title and legend at the figure's edges, l
   # first inked column: the title's left edge, 0.45 cm in, on both
   first_ink <- function(f) {
     im <- png::readPNG(f)
-    min(which(apply(im[, , 1:3], 2, function(col) any(abs(col - rep(im[1, 1, 1:3], each = nrow(im))) > 0.3))))
+    diffs <- apply(
+      im[, , 1:3], 2, function(col) {
+        any(abs(col - rep(im[1, 1, 1:3],
+                          each = nrow(im))) > 0.3)
+      }
+    )
+    min(which(diffs))
   }
   expect_equal(first_ink(printed), first_ink(saved), tolerance = 1)
   expect_lt(first_ink(printed) / 300 * 2.54, 0.55)
   expect_equal(dim(png::readPNG(saved))[2], floor(15.5 / 2.54 * 300))
 })
 
-test_that("save_cpb() never triggers print.cpb_plot()'s warning, on either its fast or grob path", {
+test_that("save_cpb never triggers the warning of print.cpb_plot()", {
   d <- data.frame(bron = factor(c("a", "b")), share = c(60, 40))
   p <- cpb_donut(d, fill = bron, y = share)
   path <- withr::local_tempfile(fileext = ".png")
@@ -484,20 +515,25 @@ test_that("save_cpb() never triggers print.cpb_plot()'s warning, on either its f
   expect_no_warning(save_cpb(path2, m, page = "half", height = 3))
 })
 
-test_that("the plot area ends a fixed 2.3 cm (1.25 cm without a legend) above the figure bottom", {
+test_that("the plot area ends 2.3 cm (1.25 without legend) above the bottom", {
   ragg::agg_png(withr::local_tempfile(fileext = ".png"))
   withr::defer(grDevices::dev.off())
   below_cm <- function(p) {
-    g <- cpb_figure_bottom(ggplot2::ggplotGrob(p), attr(p, "cpb_legend"), attr(p, "cpb_legend_grid"))
+    g <- cpb_figure_bottom(
+      ggplot2::ggplotGrob(p), attr(p, "cpb_legend"), attr(p, "cpb_legend_grid")
+    )
     g <- cpb_resolve_gtable_units(g, 7.5 / 2.54, 7.5 / 2.54)
     h <- grid::convertHeight(g$heights, "cm", valueOnly = TRUE)
     sum(h[(max(g$layout$b[grepl("^panel", g$layout$name)]) + 1):length(h)])
   }
   d <- data.frame(x = rep(1:4, 2), y = 1:8, g = rep(c("a", "b"), each = 4))
-  expect_equal(below_cm(cpb_line(d, x = x, y = y, colour = g)), 2.3, tolerance = 1e-6)
-  expect_equal(below_cm(cpb_line(d, x = x, y = y, colour = g, legend = "filled-empty")), 2.3,
+  expect_equal(below_cm(cpb_line(d, x = x, y = y, colour = g)), 2.3,
                tolerance = 1e-6)
-  expect_equal(below_cm(cpb_line(d, x = x, y = y, colour = g, legend = "none")), 1.25,
+  expect_equal(below_cm(cpb_line(d, x = x, y = y, colour = g,
+                                 legend = "filled-empty")), 2.3,
+               tolerance = 1e-6)
+  expect_equal(below_cm(cpb_line(d, x = x, y = y, colour = g,
+                                 legend = "none")), 1.25,
                tolerance = 1e-6)
 })
 
@@ -512,19 +548,22 @@ test_that("save_cpb stops on a legend too wide for the page (lock)", {
   expect_no_error(save_cpb(path, p, page = "full"))
 })
 
-test_that("the figure top is fixed: plot area 1.3 cm down, titles at fixed heights", {
+test_that("the figure top is fixed: plot area 1.3 cm down, titles fixed", {
   d <- data.frame(x = 1:5, y = 1:5, z = c(10, 12, 11, 13, 12))
   top <- function(...) {
-    p <- cpb_line(d, x = x, y = y, sec_y = z, ylab = "links", sec_ylab = "rechts", ...)
+    p <- cpb_line(d, x = x, y = y, sec_y = z, ylab = "links",
+                  sec_ylab = "rechts", ...)
     taken <- cpb_take_sec_ylab(p)
-    g <- cpb_figure_top(cpb_figure_bottom(ggplot2::ggplotGrob(taken$plot), "bottom"), taken$label)
+    g <- cpb_figure_top(cpb_figure_bottom(ggplot2::ggplotGrob(taken$plot),
+                                          "bottom"), taken$label)
     panel_t <- min(g$layout$t[grepl("^panel", g$layout$name)])
     from_top <- function(name) {
       grob <- g$grobs[[which(g$layout$name == name)]]
       grid::convertY(grid::unit(1, "npc") - grob$y, "cm", valueOnly = TRUE)
     }
     list(g = g, from_top = from_top,
-         north = grid::convertHeight(sum(g$heights[seq_len(panel_t - 1)]), "cm", valueOnly = TRUE))
+         north = grid::convertHeight(sum(g$heights[seq_len(panel_t - 1)]), "cm",
+                                     valueOnly = TRUE))
   }
   path <- withr::local_tempfile(fileext = ".png")
   ragg::agg_png(path, width = 7.5, height = 7.5, units = "cm", res = 72)
@@ -550,7 +589,7 @@ test_that("the figure top is fixed: plot area 1.3 cm down, titles at fixed heigh
   expect_equal(two$from_top("sec-ylab"), 1.3 - 0.35)
 })
 
-test_that("page = \"small\" saves a 6.8 x 6.8 cm figure; half stays the default", {
+test_that("page = small saves a 6.8 x 6.8 cm figure, half stays default", {
   d <- data.frame(x = 1:5, y = 1:5, g = rep(c("a", "b"), length.out = 5))
   p <- cpb_line(d, x = x, y = y, colour = g, title = "Titel", ylab = "%")
   path <- withr::local_tempfile(fileext = ".png")
@@ -565,10 +604,11 @@ test_that("page = \"small\" saves a 6.8 x 6.8 cm figure; half stays the default"
   expect_equal(dim(png::readPNG(path))[2:1], c(px(6.8), px(6.8)))
   # the tick-label gap follows the width: 1.5% of 6.8 cm
   gap <- cpb_scale_y_lab_gap(p, 6.8)$theme$axis.text.y.left$margin[2]
-  expect_equal(as.numeric(grid::convertWidth(gap, "cm", valueOnly = TRUE)), 0.015 * 6.8)
+  expect_equal(as.numeric(grid::convertWidth(gap, "cm", valueOnly = TRUE)),
+               0.015 * 6.8)
 })
 
-test_that("a default cpb_donut is as tall as the page; a fixed panel_size sets its own height", {
+test_that("a default cpb_donut is page high, a panel_size sets its height", {
   d <- data.frame(g = factor(letters[1:6]), v = 1:6)
   path <- withr::local_tempfile(fileext = ".png")
   rows <- function(p, ...) {
@@ -577,22 +617,35 @@ test_that("a default cpb_donut is as tall as the page; a fixed panel_size sets i
   }
   px <- function(cm) cm / 2.54 * 300
   # with or without a title, on any page: the ring fills what is left
-  expect_equal(rows(cpb_donut(d, fill = g, y = v, title = "t")), px(7.5), tolerance = 0.005)
+  expect_equal(rows(cpb_donut(d, fill = g, y = v, title = "t")), px(7.5),
+               tolerance = 0.005)
   expect_equal(rows(cpb_donut(d, fill = g, y = v)), px(7.5), tolerance = 0.005)
-  expect_equal(rows(cpb_donut(d, fill = g, y = v, title = "t"), page = "small"), px(6.8), tolerance = 0.005)
+  expect_equal(
+    rows(cpb_donut(d, fill = g, y = v, title = "t"), page = "small"), px(6.8),
+    tolerance = 0.005
+  )
   # pinned ring: the fixed top (1.3 cm) + ring + bottom (2.3 cm)
-  expect_equal(rows(cpb_donut(d, fill = g, y = v, title = "t", panel_size = 1.8)),
+  expect_equal(rows(cpb_donut(d, fill = g, y = v, title = "t",
+                              panel_size = 1.8)),
                px(1.3 + 1.8 * 2.54 + 2.3), tolerance = 0.005)
 })
 
-test_that("a printed cpb_map has its title and bottom legend at the figure's left edge", {
+test_that("a printed cpb_map has title and bottom legend at the left edge", {
   geo <- cpb_nl_geo("provincie")
   d <- data.frame(region = unique(geo$name))
   d$value <- factor(rep_len(c("laag", "hoog"), nrow(d)))
-  p <- cpb_map(d, region = region, value = value, level = "provincie", title = "Kaart", legend = "bottom")
+  p <- cpb_map(
+    d, region = region, value = value, level = "provincie", title = "Kaart",
+    legend = "bottom"
+  )
   first_ink_cm <- function(f) {
     im <- png::readPNG(f)
-    cols <- apply(im[, , 1:3], 2, function(col) any(abs(col - rep(im[1, 1, 1:3], each = nrow(im))) > 0.3))
+    cols <- apply(
+      im[, , 1:3], 2, function(col) {
+        any(abs(col - rep(im[1, 1, 1:3],
+                          each = nrow(im))) > 0.3)
+      }
+    )
     min(which(cols)) / 300 * 2.54
   }
   # also on a page much wider than the map itself
@@ -605,11 +658,12 @@ test_that("a printed cpb_map has its title and bottom legend at the figure's lef
   }
 })
 
-test_that("cpb_map's legend inside the panel lines up with the title, not with the map", {
+test_that("cpb_map's legend inside the panel lines up with the title", {
   geo <- cpb_nl_geo("provincie")
   d <- data.frame(region = unique(geo$name))
   d$value <- factor(rep_len(c("laag", "hoog"), nrow(d)))
-  p <- cpb_map(d, region = region, value = value, level = "provincie", title = "Kaart")
+  p <- cpb_map(d, region = region, value = value, level = "provincie",
+               title = "Kaart")
   # on a page much wider than the map, where the map itself sits well in
   path <- withr::local_tempfile(fileext = ".png")
   ragg::agg_png(path, width = 15.5, height = 7.5, units = "cm", res = 300)
@@ -617,7 +671,13 @@ test_that("cpb_map's legend inside the panel lines up with the title, not with t
   grDevices::dev.off()
   im <- png::readPNG(path)
   first_ink_cm <- function(rows) {
-    cols <- apply(im[rows, , 1:3], 2, function(col) any(abs(col - rep(im[1, 1, 1:3], each = length(rows))) > 0.25))
+    cols <- apply(
+      im[rows, , 1:3], 2,
+      function(col) {
+        any(abs(col - rep(im[1, 1, 1:3],
+                          each = length(rows))) > 0.25)
+      }
+    )
     min(which(cols)) / 300 * 2.54
   }
   title <- first_ink_cm(30:80)
@@ -629,7 +689,9 @@ test_that("cpb_map's legend inside the panel lines up with the title, not with t
 test_that("save_cpb warns for a title of more than two lines, not for two", {
   d <- data.frame(x = 1:3, y = 1:3)
   path <- withr::local_tempfile(fileext = ".png")
-  expect_no_warning(save_cpb(path, cpb_line(d, x = x, y = y, title = "een\ntwee")))
-  expect_warning(save_cpb(path, cpb_line(d, x = x, y = y, title = "een\ntwee\ndrie")),
+  expect_no_warning(save_cpb(path,
+                             cpb_line(d, x = x, y = y, title = "een\ntwee")))
+  expect_warning(save_cpb(path,
+                          cpb_line(d, x = x, y = y, title = "een\ntwee\ndrie")),
                  "more than two lines")
 })

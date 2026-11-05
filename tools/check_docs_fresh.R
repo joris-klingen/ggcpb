@@ -32,7 +32,8 @@ pkg_root <- normalizePath(file.path(dirname(sub(
 devtools::load_all(pkg_root, quiet = TRUE)
 
 if (!ggcpb:::cpb_utf8_locale()) {
-  for (loc in c("C.UTF-8", "en_US.UTF-8", "nl_NL.UTF-8", "English_United States.utf8")) {
+  for (loc in c("C.UTF-8", "en_US.UTF-8", "nl_NL.UTF-8",
+                "English_United States.utf8")) {
     if (suppressWarnings(Sys.setlocale("LC_CTYPE", loc)) != "") break
   }
 }
@@ -74,8 +75,10 @@ for (rmd in list.files(file.path(pkg_root, "vignettes"),
     stale <- c(stale, paste0(name, ": doc/", name, ".md does not exist yet"))
     next
   }
-  if (!identical(readLines(new_md, warn = FALSE), readLines(old_md, warn = FALSE))) {
-    stale <- c(stale, paste0(name, ": doc/", name, ".md text differs from a fresh render"))
+  if (!identical(readLines(new_md, warn = FALSE),
+                 readLines(old_md, warn = FALSE))) {
+    stale <- c(stale, paste0(name, ": doc/", name,
+                             ".md text differs from a fresh render"))
     next
   }
 
@@ -95,7 +98,8 @@ for (rmd in list.files(file.path(pkg_root, "vignettes"),
 
 if (length(stale)) {
   message("\ndoc/ is stale:\n  - ", paste(stale, collapse = "\n  - "))
-  message("\nFix: Rscript tools/render_vignettes.R, review the diff, commit doc/.")
+  message("\nFix: Rscript tools/render_vignettes.R, review the diff, ",
+          "commit doc/.")
   quit(status = 1)
 }
 

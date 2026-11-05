@@ -123,7 +123,8 @@ cpb_map <- function(data, region, value,
                     legend_title = NULL,
                     style = getOption("ggcpb.style", "dutch"),
                     ...) {
-  .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette), "colour_index")
+  .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette),
+                                "colour_index")
   index <- .cpb_idx$index
   palette <- .cpb_idx$palette
   style <- match.arg(style, c("dutch", "english"))
@@ -141,7 +142,8 @@ cpb_map <- function(data, region, value,
   geo_key <- if (by_code >= by_name) geo$code else geo$name
   unmatched <- setdiff(keys, geo_key)
   if (length(unmatched)) {
-    warning("ggcpb: ", length(unmatched), " region(s) in `data` not found on the ",
+    warning("ggcpb: ", length(unmatched),
+            " region(s) in `data` not found on the ",
             level, " map (", paste(utils::head(unmatched, 5), collapse = ", "),
             if (length(unmatched) > 5) ", ..." else "",
             "); check the level and the region codes/names.", call. = FALSE)
@@ -185,7 +187,8 @@ cpb_map <- function(data, region, value,
     scale_fill_cpb_d(palette = palette, na.value = na_fill)
   }
   if (!is.numeric(vals)) {
-    p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol, legend_nrow)
+    p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol,
+                              legend_nrow)
   }
   if (is.numeric(vals)) {
     # a compact colourbar, thin like the legend keys; vertical when the

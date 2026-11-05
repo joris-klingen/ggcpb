@@ -105,7 +105,8 @@ cpb_font_from_name <- function(file) {
   stem <- tools::file_path_sans_ext(basename(file))
   # drop a trailing version suffix such as "_2_0"
   stem <- sub("[_-][0-9]+([_.-][0-9]+)*$", "", stem)
-  face_pat <- "[ _-]?(BoldItalic|BoldOblique|Italic|Oblique|Bold|Regular|Book|Roman)$"
+  face_pat <- paste0("[ _-]?(BoldItalic|BoldOblique|Italic|Oblique|Bold|",
+                     "Regular|Book|Roman)$")
   m <- regmatches(stem, regexpr(face_pat, stem, ignore.case = TRUE))
   token <- tolower(gsub("[ _-]", "", m))
   face <- cpb_font_face(
@@ -164,7 +165,7 @@ cpb_read_fonts <- function(files) {
       # slot, which is the only weight theme_cpb() asks for
       face   = cpb_font_face(
         bold   = as.character(info$weight[[1]]) %in%
-                   c("bold", "ultrabold", "heavy"),
+          c("bold", "ultrabold", "heavy"),
         italic = isTRUE(info$italic[[1]])
       ),
       stringsAsFactors = FALSE
@@ -186,10 +187,11 @@ cpb_register_windows_font <- function(family) {
   if (!identical(.Platform$OS.type, "windows")) return(FALSE)
   tryCatch({
     # fetched at run time so the call does not exist on other platforms
-    windowsFonts <- get("windowsFonts", envir = asNamespace("grDevices"))
-    windowsFont  <- get("windowsFont",  envir = asNamespace("grDevices"))
-    args <- stats::setNames(list(windowsFont(family)), family)
-    do.call(windowsFonts, args)
+    ns <- asNamespace("grDevices")
+    windows_fonts <- get("windowsFonts", envir = ns)
+    windows_font <- get("windowsFont", envir = ns)
+    args <- stats::setNames(list(windows_font(family)), family)
+    do.call(windows_fonts, args)
     TRUE
   }, error = function(e) FALSE)
 }
@@ -252,7 +254,7 @@ cpb_register_family <- function(family, faces, windows_device = TRUE) {
 #' is loaded, and safe to re-run on demand -- e.g. in a fresh parallel
 #' worker that does not inherit the main session's font registry.
 #'
-#' The default font is the Rijksoverheid font. The package will search 
+#' The default font is the Rijksoverheid font. The package will search
 #' in M-certain directories for this font. If the package can not find the font,
 #' Source Sans 3 serves as an open source default font. Its text runs about
 #' 10-15% wider, so a title or legend that only just fits may not, and
@@ -469,7 +471,8 @@ cpb_check_house_font <- function(plot, once = FALSE) {
   rlang::warn(
     paste0(
       "ggcpb: this plot does not meet the Rijkshuisstijl requirements, ",
-      "because it does not use the Rijkshuisstijl font (", cpb_house_family, ").",
+      "because it does not use the Rijkshuisstijl font (",
+      cpb_house_family, ").",
       if (!registered) " The font was not found. See ?cpb_register_fonts."
     ),
     .frequency = if (once) "once" else "always",

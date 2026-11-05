@@ -46,5 +46,6 @@
 #' @noRd
 cpb_utf8_locale <- function() {
   ctype <- Sys.getlocale("LC_CTYPE")
-  grepl("UTF-?8", ctype, ignore.case = TRUE) || identical(l10n_info()$`UTF-8`, TRUE)
+  grepl("UTF-?8", ctype, ignore.case = TRUE) ||
+    identical(l10n_info()$`UTF-8`, TRUE)
 }
