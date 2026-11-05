@@ -36,7 +36,9 @@
 #' cpb_pal("sequential")(5)
 #' cpb_pal("qualitative", reverse = TRUE)(3)
 #' @export
-cpb_pal <- function(palette = c("qualitative", "discr", "sequential", "blues", "extended"), reverse = FALSE) {
+cpb_pal <- function(palette = c("qualitative", "discr", "sequential",
+                                "blues", "extended"),
+                    reverse = FALSE) {
   palette <- match.arg(palette)
   cols <- cpb_palette_colours(palette)
   # the qualitative swatches are stored in their own (CPB source-script)
@@ -106,7 +108,9 @@ cpb_pal <- function(palette = c("qualitative", "discr", "sequential", "blues", "
 #' cpb_cols(1:3, palette = "discr")
 #' cpb_cols("apple", "sun", palette = "extended")
 #' @export
-cpb_cols <- function(..., palette = c("qualitative", "discr", "sequential", "extended"), reverse = FALSE) {
+cpb_cols <- function(...,
+                     palette = c("qualitative", "discr", "sequential", "extended"),
+                     reverse = FALSE) {
   palette <- match.arg(palette)
   cols <- cpb_palette_colours(palette)
   if (isTRUE(reverse)) cols <- rev(cols)

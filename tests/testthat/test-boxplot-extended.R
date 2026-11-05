@@ -8,7 +8,8 @@ local_boxplot_extended_data <- function() {
   )
 }
 
-test_that("cpb_boxplot_extended forwards every cpb_box() parameter it doesn't explicitly opt out of", {
+test_that(
+  "cpb_boxplot_extended forwards every cpb_box() parameter it doesn't explicitly opt out of", {
   # cpb_boxplot_extended() hand-mirrors cpb_box()'s own signature
   # (a manual {{ }} forward, not automatic ... passthrough for every
   # named argument -- cpb_box() has no ... of its own to fall back
@@ -119,7 +120,8 @@ test_that("cpb_boxplot_extended puts ylab's caption on the right by default", {
                          title = "Titel", ylab = "%", ...)
   }
   caption <- function(p) {
-    g <- cpb_figure_top(cpb_figure_bottom(ggplot2::ggplotGrob(p), "none"), NULL, attr(p, "cpb_ylab_position"))
+    g_bot <- cpb_figure_bottom(ggplot2::ggplotGrob(p), "none")
+    g <- cpb_figure_top(g_bot, NULL, attr(p, "cpb_ylab_position"))
     list(caption = g$grobs[[which(g$layout$name == "cpb-subtitle")]],
          title = g$grobs[[which(g$layout$name == "cpb-title")]])
   }
@@ -228,7 +230,8 @@ test_that("a faceted cpb_boxplot_extended gets one caption per panel, under its 
   d2$jaar <- rep(c(2025, 2026), each = 3)
   p <- cpb_boxplot_extended(d2, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                              facet = jaar, title = "Titel", ylab = "%")
-  g <- cpb_figure_top(cpb_figure_bottom(ggplot2::ggplotGrob(p), "none"), NULL, attr(p, "cpb_ylab_position"))
+  g_bot <- cpb_figure_bottom(ggplot2::ggplotGrob(p), "none")
+  g <- cpb_figure_top(g_bot, NULL, attr(p, "cpb_ylab_position"))
   lay <- g$layout
   caps <- lay[grepl("^cpb-subtitle-", lay$name), ]
   strips <- lay[grepl("^strip-t", lay$name), ]

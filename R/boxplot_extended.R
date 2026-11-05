@@ -230,7 +230,11 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
     }
     theme_extra <- ggplot2::theme(
       axis.line.x.top    = value_axis_line,
-      axis.line.x.bottom = if (value_axis == "bottom") value_axis_line else ggplot2::element_blank(),
+      axis.line.x.bottom = if (value_axis == "bottom") {
+        value_axis_line
+      } else {
+        ggplot2::element_blank()
+      },
       axis.line.y        = ggplot2::element_blank(),
       panel.grid.major.x = ggplot2::element_line(colour = grid_colour, linewidth = grid_linewidth),
       panel.grid.major.y = ggplot2::element_blank()

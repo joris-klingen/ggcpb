@@ -207,9 +207,13 @@ reisk_dt <- CJ(inkomensgroep = factor(inkomensgroepen, levels = rev(inkomensgroe
                groep         = factor(reisk_groepen, levels = rev(reisk_groepen)))
 reisk_basis <- c(3, 11, 23, 39, 55, 59)   # per income group, low -> high
 reisk_dt[, share := reisk_basis[match(inkomensgroep, inkomensgroepen)] +
-             fcase(groep == "alle huishoudens",   0,
-                   groep == "werkenden",          c(14, 17, 17, 12, 7, 4)[match(inkomensgroep, inkomensgroepen)],
-                   groep == "werkenden met auto", c(49, 48, 39, 25, 14, 8)[match(inkomensgroep, inkomensgroepen)])]
+             fcase(
+               groep == "alle huishoudens", 0,
+               groep == "werkenden",
+               c(14, 17, 17, 12, 7, 4)[match(inkomensgroep, inkomensgroepen)],
+               groep == "werkenden met auto",
+               c(49, 48, 39, 25, 14, 8)[match(inkomensgroep, inkomensgroepen)]
+             )]
 
 # energy share of the income effect by income group x year (style of
 # reference p10_img07): precomputed quantiles on a 0-100% scale, dodged

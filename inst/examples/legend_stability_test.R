@@ -144,7 +144,8 @@ for (n in c(1, 2, 3, 5, 8)) {
   variants[[length(variants) + 1]] <- variant(
     paste0("items_", n), "rect",
     cpb_col(df, x = x, y = y, fill = g, position = "dodge",
-            reverse_legend = FALSE, colour_index = c(6, 2, 3, 4, 5, 1, 7, 8)[seq_len(n)], title = "t")
+            reverse_legend = FALSE,
+            colour_index = c(6, 2, 3, 4, 5, 1, 7, 8)[seq_len(n)], title = "t")
   )
 }
 
@@ -154,7 +155,8 @@ variants <- c(variants, list(
           cpb_col(dodge_df(c("s1", "s2")), x = x, y = y, fill = g,
                   reverse_legend = FALSE, colour_index = c(6, 2), title = "t")),
   variant("type_area", "rect",
-          cpb_area(num_df, x = x, y = y, fill = g, reverse_legend = FALSE, colour_index = c(6, 2), title = "t")),
+          cpb_area(num_df, x = x, y = y, fill = g, reverse_legend = FALSE,
+                   colour_index = c(6, 2), title = "t")),
   variant("type_hist", "rect",
           cpb_hist(hist_df, x = v, fill = g, binwidth = 1,
                    reverse_legend = FALSE, colour_index = c(6, 2), title = "t")),

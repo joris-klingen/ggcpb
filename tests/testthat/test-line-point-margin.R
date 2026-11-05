@@ -143,8 +143,12 @@ test_that("value_crop makes value_limits a window and warns", {
   expect_warning(cpb_col(d, x = x, y = y, value_limits = c(0, 3), value_crop = TRUE,
                          orientation = "horizontal"), "not all data")
   dl <- data.frame(x = 1:3, y = c(1, 2, 4))
-  expect_warning(cpb_line(dl, x = x, y = y, value_limits = c(0, 3), value_crop = TRUE), "not all data")
-  expect_warning(cpb_scatter(dl, x = x, y = y, value_limits = c(0, 3), value_crop = TRUE), "not all data")
+  expect_warning(
+    cpb_line(dl, x = x, y = y, value_limits = c(0, 3), value_crop = TRUE), "not all data"
+  )
+  expect_warning(
+    cpb_scatter(dl, x = x, y = y, value_limits = c(0, 3), value_crop = TRUE), "not all data"
+  )
   # nothing outside the window: no warning
   expect_no_warning(cpb_line(dl, x = x, y = y, value_limits = c(0, 5), value_crop = TRUE))
   expect_error(cpb_line(dl, x = x, y = y, value_crop = TRUE), "needs `value_limits`")

@@ -56,7 +56,9 @@ test_that("cpb_line adds a colour scale only when colour is mapped", {
     waarde = 1:4
   )
   p2 <- cpb_line(df2, x = jaar, y = waarde, colour = g)
-  has_colour_scale <- any(vapply(p2$scales$scales, function(s) "colour" %in% s$aesthetics, logical(1)))
+  has_colour_scale <- any(
+    vapply(p2$scales$scales, function(s) "colour" %in% s$aesthetics, logical(1))
+  )
   expect_true(has_colour_scale)
 })
 
@@ -635,7 +637,9 @@ test_that("sec_type controls how sec_y is drawn, sharing one legend key", {
 
   # all three share one legend key (one colour scale), not one per geom
   p <- cpb_col(df, x = jaar, y = mld, sec_y = heffing, sec_type = "col")
-  n_colour_scales <- sum(vapply(p$scales$scales, function(s) "colour" %in% s$aesthetics, logical(1)))
+  n_colour_scales <- sum(
+    vapply(p$scales$scales, function(s) "colour" %in% s$aesthetics, logical(1))
+  )
   expect_equal(n_colour_scales, 1)
 })
 
@@ -742,23 +746,32 @@ test_that("legend_ncol lays the legend out in the requested number of columns", 
   cat_df <- data.frame(x = c("a", "b"), y = c(1, 2), g = c("s1", "s2"))
 
   # fill-based wrappers
-  expect_equal(cpb_col(cat_df, x = x, y = y, fill = g, legend_ncol = 2)$guides$guides$fill$params$ncol, 2)
-  expect_equal(cpb_area(num, x = x, y = y, fill = g, legend_ncol = 2)$guides$guides$fill$params$ncol, 2)
-  box_df <- data.frame(x = c("a", "b"), p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5, g = c("s1", "s2"))
+  p_col <- cpb_col(cat_df, x = x, y = y, fill = g, legend_ncol = 2)
+  expect_equal(p_col$guides$guides$fill$params$ncol, 2)
+  p_area <- cpb_area(num, x = x, y = y, fill = g, legend_ncol = 2)
+  expect_equal(p_area$guides$guides$fill$params$ncol, 2)
+  box_df <- data.frame(
+    x = c("a", "b"), p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5, g = c("s1", "s2")
+  )
   expect_equal(cpb_box(box_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                        fill = g, legend_ncol = 2)$guides$guides$fill$params$ncol, 2)
   expect_equal(cpb_hist(num, x = y, fill = g, legend_ncol = 2)$guides$guides$fill$params$ncol, 2)
 
   # colour-based wrappers
-  expect_equal(cpb_line(num, x = x, y = y, colour = g, legend_ncol = 3)$guides$guides$colour$params$ncol, 3)
-  expect_equal(cpb_scatter(num, x = x, y = y, colour = g, legend_ncol = 3)$guides$guides$colour$params$ncol, 3)
-  dot_df <- data.frame(x = c("a", "b"), y = c(1, 2), lower = c(0, 1), upper = c(2, 3), g = c("s1", "s2"))
+  p_line <- cpb_line(num, x = x, y = y, colour = g, legend_ncol = 3)
+  expect_equal(p_line$guides$guides$colour$params$ncol, 3)
+  p_scat <- cpb_scatter(num, x = x, y = y, colour = g, legend_ncol = 3)
+  expect_equal(p_scat$guides$guides$colour$params$ncol, 3)
+  dot_df <- data.frame(
+    x = c("a", "b"), y = c(1, 2), lower = c(0, 1), upper = c(2, 3), g = c("s1", "s2")
+  )
   expect_equal(cpb_dot(dot_df, x = x, y = y, lower = lower, upper = upper,
                        colour = g, legend_ncol = 3)$guides$guides$colour$params$ncol, 3)
 
   # a numeric colour column has an ordinary legend too, not a colour bar
   numc <- transform(num, g = as.numeric(factor(g)))
-  expect_equal(cpb_scatter(numc, x = x, y = y, colour = g, legend_ncol = 2)$guides$guides$colour$params$ncol, 2)
+  p_scat_num <- cpb_scatter(numc, x = x, y = y, colour = g, legend_ncol = 2)
+  expect_equal(p_scat_num$guides$guides$colour$params$ncol, 2)
 
   # NULL (default) is a no-op: no guides() call added at all
   expect_null(cpb_col(cat_df, x = x, y = y, fill = g, reverse_legend = FALSE)$guides$guides$fill)
@@ -780,24 +793,33 @@ test_that("legend_nrow lays the legend out in the requested number of rows", {
   cat_df <- data.frame(x = c("a", "b"), y = c(1, 2), g = c("s1", "s2"))
 
   # fill-based wrappers
-  expect_equal(cpb_col(cat_df, x = x, y = y, fill = g, legend_nrow = 2)$guides$guides$fill$params$nrow, 2)
-  expect_equal(cpb_area(num, x = x, y = y, fill = g, legend_nrow = 2)$guides$guides$fill$params$nrow, 2)
-  box_df <- data.frame(x = c("a", "b"), p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5, g = c("s1", "s2"))
+  p_col_row <- cpb_col(cat_df, x = x, y = y, fill = g, legend_nrow = 2)
+  expect_equal(p_col_row$guides$guides$fill$params$nrow, 2)
+  p_area_row <- cpb_area(num, x = x, y = y, fill = g, legend_nrow = 2)
+  expect_equal(p_area_row$guides$guides$fill$params$nrow, 2)
+  box_df <- data.frame(
+    x = c("a", "b"), p5 = 1, p25 = 2, p50 = 3, p75 = 4, p95 = 5, g = c("s1", "s2")
+  )
   expect_equal(cpb_box(box_df, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                        fill = g, legend_nrow = 2)$guides$guides$fill$params$nrow, 2)
   expect_equal(cpb_hist(num, x = y, fill = g, legend_nrow = 2)$guides$guides$fill$params$nrow, 2)
 
   # colour-based wrappers
-  expect_equal(cpb_line(num, x = x, y = y, colour = g, legend_nrow = 3)$guides$guides$colour$params$nrow, 3)
-  expect_equal(cpb_scatter(num, x = x, y = y, colour = g, legend_nrow = 3)$guides$guides$colour$params$nrow, 3)
-  dot_df <- data.frame(x = c("a", "b"), y = c(1, 2), lower = c(0, 1), upper = c(2, 3), g = c("s1", "s2"))
+  p_line_row <- cpb_line(num, x = x, y = y, colour = g, legend_nrow = 3)
+  expect_equal(p_line_row$guides$guides$colour$params$nrow, 3)
+  p_scat_row <- cpb_scatter(num, x = x, y = y, colour = g, legend_nrow = 3)
+  expect_equal(p_scat_row$guides$guides$colour$params$nrow, 3)
+  dot_df <- data.frame(
+    x = c("a", "b"), y = c(1, 2), lower = c(0, 1), upper = c(2, 3), g = c("s1", "s2")
+  )
   expect_equal(cpb_dot(dot_df, x = x, y = y, lower = lower, upper = upper,
                        colour = g, legend_nrow = 3)$guides$guides$colour$params$nrow, 3)
 
   # cpb_donut() has its own, shorter legend_ncol/legend_nrow docs --
   # still the same underlying guide_legend()
   donut_df <- data.frame(g = c("s1", "s2"), y = c(1, 2))
-  expect_equal(cpb_donut(donut_df, fill = g, y = y, legend_nrow = 1)$guides$guides$fill$params$nrow, 1)
+  p_donut_row <- cpb_donut(donut_df, fill = g, y = y, legend_nrow = 1)
+  expect_equal(p_donut_row$guides$guides$fill$params$nrow, 1)
 
   # legend_ncol and legend_nrow combine to pin both grid dimensions
   both <- cpb_col(cat_df, x = x, y = y, fill = g, legend_ncol = 2, legend_nrow = 1)
@@ -1346,7 +1368,8 @@ test_that("sec_y's default sec_limits use its own data range, not forced through
   expect_false(isTRUE(all.equal(line_default$data$cpb__sec, line_zero_forced$data$cpb__sec)))
 })
 
-test_that("sec_limits' non-zero-range check tolerates floating point noise, not just exact equality", {
+test_that(
+  "sec_limits' non-zero-range check tolerates floating point noise, not just exact equality", {
   df <- data.frame(jaar = 2018:2020, mld = c(10, 12, 9), heffing = c(1.2, 1.4, 1.1))
 
   # representable as unequal doubles, but the same value in every way
@@ -1611,14 +1634,24 @@ test_that("cpb_line honours sec_type/sec_points like the wrappers using cpb_sec_
 
   # sec_type was match.arg()'d and then ignored: "point"/"col" silently
   # drew a line like every other value
-  expect_true("GeomPoint" %in% geoms(cpb_line(d, x = jaar, y = prim, sec_y = sec, sec_type = "point")))
-  expect_true("GeomCol" %in% geoms(cpb_line(d, x = jaar, y = prim, sec_y = sec, sec_type = "col")))
-  expect_equal(sum(geoms(cpb_line(d, x = jaar, y = prim, sec_y = sec, sec_type = "line")) == "GeomLine"), 2)
+  expect_true(
+    "GeomPoint" %in% geoms(cpb_line(d, x = jaar, y = prim, sec_y = sec, sec_type = "point"))
+  )
+  expect_true(
+    "GeomCol" %in% geoms(cpb_line(d, x = jaar, y = prim, sec_y = sec, sec_type = "col"))
+  )
+  expect_equal(
+    sum(geoms(cpb_line(d, x = jaar, y = prim, sec_y = sec, sec_type = "line")) == "GeomLine"), 2
+  )
 
   # sec_points adds markers to the secondary line on its own ...
-  expect_true("GeomPoint" %in% geoms(cpb_line(d, x = jaar, y = prim, sec_y = sec, sec_points = TRUE)))
+  expect_true(
+    "GeomPoint" %in% geoms(cpb_line(d, x = jaar, y = prim, sec_y = sec, sec_points = TRUE))
+  )
   # ... and the primary `points` still puts them on both series, as before
-  expect_equal(sum(geoms(cpb_line(d, x = jaar, y = prim, sec_y = sec, points = TRUE)) == "GeomPoint"), 2)
+  expect_equal(
+    sum(geoms(cpb_line(d, x = jaar, y = prim, sec_y = sec, points = TRUE)) == "GeomPoint"), 2
+  )
 
   # cpb_line used to build its value scale twice over -- once for the
   # secondary mapping, once for the axis -- and the two were free to
@@ -1644,7 +1677,8 @@ test_that("cpb_add_sec_guides() -- shared by cpb_col/area/box -- is a no-op with
   expect_identical(cpb_add_sec_guides(p, FALSE, FALSE, NULL), p)
 })
 
-test_that("cpb_add_sec_guides() stacks the fill/colour guides and legend.box when sec_y is present", {
+test_that(
+  "cpb_add_sec_guides() stacks the fill/colour guides and legend.box when sec_y is present", {
   p <- ggplot2::ggplot() + ggplot2::geom_blank()
   out <- cpb_add_sec_guides(p, TRUE, reverse_legend = TRUE, legend_ncol = 2, legend_nrow = 1)
 
@@ -1781,7 +1815,8 @@ test_that("cpb_donut's legend_pct suffixes the fill legend with each share", {
   expect_equal(sc$labels(c("gas", "elektriciteit")), c("gas (75%)", "elektriciteit (25%)"))
 })
 
-test_that("cpb_donut's label_style = \"leader\" draws a tick, a fan-out path and text outside the ring", {
+test_that(
+  "cpb_donut's label_style = \"leader\" draws a tick, a fan-out path and text outside the ring", {
   df <- data.frame(bron = c("gas", "elektriciteit"), share = c(75, 25))
   p <- cpb_donut(df, fill = bron, y = share, label_style = "leader", leader_length = 0.2)
 
@@ -1866,7 +1901,8 @@ test_that("long category tick labels wrap instead of shrinking the panel", {
   expect_true(all(grepl("\n", labs_dot, fixed = TRUE)))
 })
 
-test_that("cpb_donut keeps legend labels single-line but wraps wedge labels (wedge and leader alike)", {
+test_that(
+  "cpb_donut keeps legend labels single-line but wraps wedge labels (wedge and leader alike)", {
   long_cats <- c("Een erg lange categorienaam die nooit helemaal past",
                  "Nog een categorienaam die veel te lang is voor de as")
   df <- data.frame(bron = long_cats, share = c(60, 40))
@@ -1999,7 +2035,10 @@ test_that("legend_title is the legend's first row, with at most 2 rows below", {
   # items start one legend line below the title: 5 items in 2 rows, 3 columns
   items <- g$grobs[[which(g$layout$name == "cpb-legend")]]
   labels <- Filter(function(k) inherits(k, "text"), items$children)
-  ys <- unique(vapply(labels, function(k) grid::convertY(grid::unit(1, "npc") - k$y, "cm", valueOnly = TRUE), numeric(1)))
+  ys <- unique(vapply(
+    labels, function(k) grid::convertY(grid::unit(1, "npc") - k$y, "cm", valueOnly = TRUE),
+    numeric(1)
+  ))
   expect_length(ys, 2)
   expect_error(cpb_line(d, x = x, y = y, colour = g, legend_title = "Reeks", legend_nrow = 3),
                "at most 2")
@@ -2010,7 +2049,8 @@ test_that("cpb_donut uses the fixed legend grid: 3 keys per column, never one ta
   p <- cpb_donut(d, fill = g, y = v, title = "t")
   expect_identical(attr(p, "cpb_legend"), "bottom")
   g <- cpb_figure_bottom(ggplot2::ggplotGrob(p), "bottom")
-  labels <- Filter(function(k) inherits(k, "text"), g$grobs[[which(g$layout$name == "cpb-legend")]]$children)
+  legend_grob <- g$grobs[[which(g$layout$name == "cpb-legend")]]
+  labels <- Filter(function(k) inherits(k, "text"), legend_grob$children)
   rows <- unique(vapply(labels, function(k) {
     round(grid::convertY(grid::unit(1, "npc") - k$y, "cm", valueOnly = TRUE), 4)
   }, numeric(1)))
@@ -2019,7 +2059,10 @@ test_that("cpb_donut uses the fixed legend grid: 3 keys per column, never one ta
 })
 
 test_that("cpb_donut leader labels of thin wedges at the top stay in the panel, on both sides", {
-  d <- data.frame(g = factor(letters[1:9], levels = letters[1:9]), v = c(1, 1, 1, 1, 1, 1, 20, 20, 54))
+  d <- data.frame(
+    g = factor(letters[1:9], levels = letters[1:9]),
+    v = c(1, 1, 1, 1, 1, 1, 20, 20, 54)
+  )
   p <- cpb_donut(d, fill = g, y = v, label_style = "leader")
   is_text <- vapply(p$layers, function(l) inherits(l$geom, "GeomText"), logical(1))
   labels <- p$layers[[which(is_text)]]$data
@@ -2032,7 +2075,11 @@ test_that("cpb_donut leader labels of thin wedges at the top stay in the panel, 
   height <- labels$x_text * cos(labels$y_text / total * 2 * pi)
   expect_true(all(abs(height) <= x_max))
   # a line across 12 o'clock is two pieces, never one path round the ring
-  is_path <- vapply(p$layers, function(l) inherits(l$geom, "GeomPath") && !inherits(l$geom, "GeomSegment"), logical(1))
+  is_path <- vapply(
+    p$layers,
+    function(l) inherits(l$geom, "GeomPath") && !inherits(l$geom, "GeomSegment"),
+    logical(1)
+  )
   paths <- p$layers[[which(is_path)[1]]]$data
   jumps <- tapply(paths$y, paths$grp, function(y) max(abs(diff(y))))
   expect_true(all(jumps < total / 2))
@@ -2098,7 +2145,10 @@ test_that("cpb_hist has value axis arguments for the histogram axis", {
 
   # the labels use the Dutch format
   big <- data.frame(x = rep(1, 1500))
-  labels <- function(...) ggplot2::ggplot_build(cpb_hist(big, x = x, binwidth = 1, ...))$layout$panel_params[[1]]$y$get_labels()
+  labels <- function(...) {
+    b <- ggplot2::ggplot_build(cpb_hist(big, x = x, binwidth = 1, ...))
+    b$layout$panel_params[[1]]$y$get_labels()
+  }
   expect_true("1.500" %in% labels())
   expect_true("1,500" %in% labels(style = "english"))
 })
@@ -2184,7 +2234,8 @@ test_that("every continuous axis and colour bar labels its first and last value"
 
   m <- data.frame(r = unique(cpb_nl_geo("provincie")$name))
   m$w <- seq(0.52, 1.18, length.out = nrow(m))
-  bar <- ggplot2::ggplot_build(cpb_map(m, region = r, value = w, level = "provincie"))$plot$guides$params[[1]]
+  map_p <- cpb_map(m, region = r, value = w, level = "provincie")
+  bar <- ggplot2::ggplot_build(map_p)$plot$guides$params[[1]]
   expect_equal(first_last(bar$key$.label), c("0,4", "1,2"))
   expect_equal(range(bar$decor$value), c(0.4, 1.2))
 })
@@ -2247,14 +2298,16 @@ test_that("a tick label names the value its tick sits at", {
     s <- runif(1, -3, 3) * base + base * runif(7, 0.5, 1.5)
     lim <- signif(range(s) + c(-1, 1) * diff(range(s)) * 0.1, 3)
     d <- data.frame(x = 2019:2025, y = c(2, 6, 4, 8, 5, 3, 7), s = s)
-    ax <- ggplot2::ggplot_build(cpb_line(d, x = x, y = y, sec_y = s, sec_limits = lim))$layout$panel_params[[1]]$y.sec
+    p_sec <- cpb_line(d, x = x, y = y, sec_y = s, sec_limits = lim)
+    ax <- ggplot2::ggplot_build(p_sec)$layout$panel_params[[1]]$y.sec
     true <- seq(lim[1], lim[2], length.out = length(ax$get_labels()))
     expect_lte(error(true, ax$get_labels()), 0.001)
   }
 
   # the scatter colour legend: equal steps between the data limits, exact labels
   d <- data.frame(x = 1:4, y = c(.1, .5, .3, .9), w = c(0.52, 0.8, 1.0, 1.18))
-  sc <- ggplot2::ggplot_build(cpb_scatter(d, x = x, y = y, colour = w))$plot$scales$get_scales("colour")
+  p_scat <- cpb_scatter(d, x = x, y = y, colour = w)
+  sc <- ggplot2::ggplot_build(p_scat)$plot$scales$get_scales("colour")
   br <- sc$get_breaks(range(d$w))
   expect_equal(range(br), range(d$w))
   expect_equal(sc$get_labels(br), c("0,52", "0,63", "0,74", "0,85", "0,96", "1,07", "1,18"))

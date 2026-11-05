@@ -204,7 +204,8 @@ test_that("save_cpb keeps sec_y's own colour intact when a layer is inserted ahe
 
   b <- ggplot2::ggplot_build(p)
   is_line <- vapply(p$layers, function(l) inherits(l$geom, "GeomLine"), logical(1))
-  sec_line_idx <- which(is_line)[[2]] # the first GeomLine is the inserted hline's sibling primary line
+  # the first GeomLine is the inserted hline's sibling primary line
+  sec_line_idx <- which(is_line)[[2]]
   expect_false(anyNA(b$data[[sec_line_idx]]$colour))
 })
 
@@ -218,7 +219,10 @@ test_that("a right axis mirrors the left margin", {
   }
   ragg::agg_png(withr::local_tempfile(fileext = ".png"))
   withr::defer(grDevices::dev.off())
-  d <- data.frame(x = 2016:2022, y = c(18, 20, 19, 18, 17, 17, 19), z = c(1.9, 1.8, 1.6, 1.7, 1.6, 1.5, 1.6))
+  d <- data.frame(
+    x = 2016:2022, y = c(18, 20, 19, 18, 17, 17, 19),
+    z = c(1.9, 1.8, 1.6, 1.7, 1.6, 1.5, 1.6)
+  )
 
   # no right axis: nothing to mirror, the panel ends margin_east from the edge
   g <- ggplot2::ggplotGrob(cpb_col(d, x = x, y = y, title = "t", ylab = "l"))
@@ -339,11 +343,15 @@ test_that("the tick-label gap follows the figure width, only with theme_cpb()'s 
   expect_equal(gap(cpb_scale_y_lab_gap(p, 15.5)), 0.015 * 15.5)
   plain <- ggplot2::ggplot(d, ggplot2::aes(x, y)) + ggplot2::geom_point()
   expect_identical(cpb_scale_y_lab_gap(plain, 15.5), plain)
-  own <- p + ggplot2::theme(axis.text.y.left = ggplot2::element_text(margin = ggplot2::margin(r = 0.5, unit = "cm")))
+  own <- p + ggplot2::theme(
+    axis.text.y.left = ggplot2::element_text(margin = ggplot2::margin(r = 0.5, unit = "cm"))
+  )
   expect_equal(gap(cpb_scale_y_lab_gap(own, 15.5)), 0.5)
 })
 
-test_that("cpb_align_value_axis_title nudges a flush-right value-axis title to match the outermost tick label", {
+test_that(
+  paste0("cpb_align_value_axis_title nudges a flush-right value-axis title ",
+         "to match the outermost tick label"), {
   # theme_cpb()'s axis.title is anchored flush with the *panel* edge
   # (hjust = 1), but every wrapper's value axis is flush too (the
   # highest break sits exactly on the panel edge, no expansion) and
@@ -455,7 +463,10 @@ test_that("a printed cpb_donut has its title and legend at the figure's edges, l
   # first inked column: the title's left edge, 0.45 cm in, on both
   first_ink <- function(f) {
     im <- png::readPNG(f)
-    min(which(apply(im[, , 1:3], 2, function(col) any(abs(col - rep(im[1, 1, 1:3], each = nrow(im))) > 0.3))))
+    diffs <- apply(
+      im[, , 1:3], 2, function(col) any(abs(col - rep(im[1, 1, 1:3], each = nrow(im))) > 0.3)
+    )
+    min(which(diffs))
   }
   expect_equal(first_ink(printed), first_ink(saved), tolerance = 1)
   expect_lt(first_ink(printed) / 300 * 2.54, 0.55)
@@ -488,7 +499,9 @@ test_that("the plot area ends a fixed 2.3 cm (1.25 cm without a legend) above th
   ragg::agg_png(withr::local_tempfile(fileext = ".png"))
   withr::defer(grDevices::dev.off())
   below_cm <- function(p) {
-    g <- cpb_figure_bottom(ggplot2::ggplotGrob(p), attr(p, "cpb_legend"), attr(p, "cpb_legend_grid"))
+    g <- cpb_figure_bottom(
+      ggplot2::ggplotGrob(p), attr(p, "cpb_legend"), attr(p, "cpb_legend_grid")
+    )
     g <- cpb_resolve_gtable_units(g, 7.5 / 2.54, 7.5 / 2.54)
     h <- grid::convertHeight(g$heights, "cm", valueOnly = TRUE)
     sum(h[(max(g$layout$b[grepl("^panel", g$layout$name)]) + 1):length(h)])
@@ -579,7 +592,9 @@ test_that("a default cpb_donut is as tall as the page; a fixed panel_size sets i
   # with or without a title, on any page: the ring fills what is left
   expect_equal(rows(cpb_donut(d, fill = g, y = v, title = "t")), px(7.5), tolerance = 0.005)
   expect_equal(rows(cpb_donut(d, fill = g, y = v)), px(7.5), tolerance = 0.005)
-  expect_equal(rows(cpb_donut(d, fill = g, y = v, title = "t"), page = "small"), px(6.8), tolerance = 0.005)
+  expect_equal(
+    rows(cpb_donut(d, fill = g, y = v, title = "t"), page = "small"), px(6.8), tolerance = 0.005
+  )
   # pinned ring: the fixed top (1.3 cm) + ring + bottom (2.3 cm)
   expect_equal(rows(cpb_donut(d, fill = g, y = v, title = "t", panel_size = 1.8)),
                px(1.3 + 1.8 * 2.54 + 2.3), tolerance = 0.005)
@@ -589,10 +604,14 @@ test_that("a printed cpb_map has its title and bottom legend at the figure's lef
   geo <- cpb_nl_geo("provincie")
   d <- data.frame(region = unique(geo$name))
   d$value <- factor(rep_len(c("laag", "hoog"), nrow(d)))
-  p <- cpb_map(d, region = region, value = value, level = "provincie", title = "Kaart", legend = "bottom")
+  p <- cpb_map(
+    d, region = region, value = value, level = "provincie", title = "Kaart", legend = "bottom"
+  )
   first_ink_cm <- function(f) {
     im <- png::readPNG(f)
-    cols <- apply(im[, , 1:3], 2, function(col) any(abs(col - rep(im[1, 1, 1:3], each = nrow(im))) > 0.3))
+    cols <- apply(
+      im[, , 1:3], 2, function(col) any(abs(col - rep(im[1, 1, 1:3], each = nrow(im))) > 0.3)
+    )
     min(which(cols)) / 300 * 2.54
   }
   # also on a page much wider than the map itself
@@ -617,7 +636,10 @@ test_that("cpb_map's legend inside the panel lines up with the title, not with t
   grDevices::dev.off()
   im <- png::readPNG(path)
   first_ink_cm <- function(rows) {
-    cols <- apply(im[rows, , 1:3], 2, function(col) any(abs(col - rep(im[1, 1, 1:3], each = length(rows))) > 0.25))
+    cols <- apply(
+      im[rows, , 1:3], 2,
+      function(col) any(abs(col - rep(im[1, 1, 1:3], each = length(rows))) > 0.25)
+    )
     min(which(cols)) / 300 * 2.54
   }
   title <- first_ink_cm(30:80)

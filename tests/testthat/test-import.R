@@ -37,7 +37,8 @@ test_that("cpb_import_csv builds a single figure from a vertical params.csv", {
   expect_true(!is.null(p$scales$get_scales("colour")))
 })
 
-test_that("cpb_import_csv builds several figures from a horizontal params.csv, skipping create = n", {
+test_that(
+  "cpb_import_csv builds several figures from a horizontal params.csv, skipping create = n", {
   data_csv <- local_data_csv()
   params_csv <- local_params_csv(c(
     "plot_type,title,x,y,create",
@@ -116,7 +117,9 @@ test_that("cpb_import_csv always (over)writes a run log next to params_csv", {
   expect_match(paste(log_lines, collapse = "\n"), "2 figure\\(s\\) read, 1 skipped, 1 built")
 })
 
-test_that("cpb_import_csv skips (warning) rather than crashes on one bad figure, but errors if that leaves nothing built", {
+test_that(
+  paste0("cpb_import_csv skips (warning) rather than crashes on one bad figure, ",
+         "but errors if that leaves nothing built"), {
   data_csv <- local_data_csv()
 
   # a single-figure params.csv where that one figure is unbuildable: a

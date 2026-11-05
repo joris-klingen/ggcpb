@@ -143,12 +143,24 @@ theme_cpb <- function(base_family = cpb_font_family(),
     # because theme_minimal() changed it in ggplot2 4.0 (2.2 pt in 3.5,
     # 4.95 pt in 4.x); spelled out, a figure lays out the same on either.
     # x tick labels: 0.15 cm from the panel
-    axis.text.x.bottom = ggplot2::element_text(margin = ggplot2::margin(t = cpb_x_lab_gap_cm, unit = "cm"), inherit.blank = TRUE),
-    axis.text.x.top    = ggplot2::element_text(vjust = 1, margin = ggplot2::margin(b = cpb_x_lab_gap_cm, unit = "cm"), inherit.blank = TRUE),
+    axis.text.x.bottom = ggplot2::element_text(
+      margin = ggplot2::margin(t = cpb_x_lab_gap_cm, unit = "cm"), inherit.blank = TRUE
+    ),
+    axis.text.x.top    = ggplot2::element_text(
+      vjust = 1, margin = ggplot2::margin(b = cpb_x_lab_gap_cm, unit = "cm"),
+      inherit.blank = TRUE
+    ),
     # y tick labels sit 1.5% of the figure width from the panel. This
     # is the half-page value, save_cpb() sets it for the actual width.
-    axis.text.y.left   = ggplot2::element_text(margin = ggplot2::margin(r = cpb_y_lab_gap_cm(cpb_page_width_cm[["half"]]), unit = "cm"), inherit.blank = TRUE),
-    axis.text.y.right  = ggplot2::element_text(hjust = 0, margin = ggplot2::margin(l = cpb_y_lab_gap_cm(cpb_page_width_cm[["half"]]), unit = "cm"), inherit.blank = TRUE),
+    axis.text.y.left   = ggplot2::element_text(
+      margin = ggplot2::margin(r = cpb_y_lab_gap_cm(cpb_page_width_cm[["half"]]), unit = "cm"),
+      inherit.blank = TRUE
+    ),
+    axis.text.y.right  = ggplot2::element_text(
+      hjust = 0,
+      margin = ggplot2::margin(l = cpb_y_lab_gap_cm(cpb_page_width_cm[["half"]]), unit = "cm"),
+      inherit.blank = TRUE
+    ),
 
     # "filled-empty": no legend drawn, its space kept (see cpb_figure_bottom())
     legend.position   = if (identical(legend, "filled-empty")) "none" else legend,

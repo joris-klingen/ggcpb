@@ -29,7 +29,8 @@ test_that("cpb_box()'s primary fill layer does not bleed into sec_y's colour gui
   )
   p <- cpb_box(d, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                fill = fill, box_style = "ggcpb", sec_y = z, sec_type = "line")
-  box_layer <- p$layers[[which(vapply(p$layers, function(l) inherits(l$geom, "GeomBoxplot"), TRUE))]]
+  is_box <- vapply(p$layers, function(l) inherits(l$geom, "GeomBoxplot"), TRUE)
+  box_layer <- p$layers[[which(is_box)]]
   expect_equal(box_layer$show.legend, c(fill = TRUE, colour = FALSE))
 })
 
@@ -37,7 +38,8 @@ test_that("cpb_dot()'s primary point layer keys on fill only, not sec_y's colour
   d <- data.frame(x = c("a", "b"), y = c(1, 2), lo = c(0, 1), hi = c(2, 3), z = c(5, 6))
   p <- cpb_dot(d, x = x, y = y, lower = lo, upper = hi, orientation = "vertical",
                sec_y = z, sec_type = "line")
-  point_layer <- p$layers[[which(vapply(p$layers, function(l) inherits(l$geom, "GeomPoint"), TRUE))]]
+  is_pt <- vapply(p$layers, function(l) inherits(l$geom, "GeomPoint"), TRUE)
+  point_layer <- p$layers[[which(is_pt)]]
   expect_equal(point_layer$show.legend, c(fill = TRUE, colour = FALSE))
 })
 
@@ -45,7 +47,8 @@ test_that("cpb_dot()'s primary point layer still gets its own key when colour is
   d <- data.frame(x = c("a", "b"), y = c(1, 2), lo = c(0, 1), hi = c(2, 3),
                    g = c("p", "q"))
   p <- cpb_dot(d, x = x, y = y, lower = lo, upper = hi, colour = g)
-  point_layer <- p$layers[[which(vapply(p$layers, function(l) inherits(l$geom, "GeomPoint"), TRUE))]]
+  is_pt <- vapply(p$layers, function(l) inherits(l$geom, "GeomPoint"), TRUE)
+  point_layer <- p$layers[[which(is_pt)]]
   expect_true(isTRUE(point_layer$show.legend))
 })
 
@@ -123,8 +126,9 @@ test_that("style = 'english' toggles English labels for secondary axis and forec
   p_en <- cpb_line(d, x = x, y = y, sec_y = z, forecast_x = 2023, style = "english")
 
   # forecast label text check
-  forecast_layer_nl <- p_nl$layers[[which(vapply(p_nl$layers, function(l) inherits(l$geom, "GeomText"), TRUE))]]
-  forecast_layer_en <- p_en$layers[[which(vapply(p_en$layers, function(l) inherits(l$geom, "GeomText"), TRUE))]]
+  is_text <- function(p) vapply(p$layers, function(l) inherits(l$geom, "GeomText"), TRUE)
+  forecast_layer_nl <- p_nl$layers[[which(is_text(p_nl))]]
+  forecast_layer_en <- p_en$layers[[which(is_text(p_en))]]
   expect_equal(forecast_layer_nl$aes_params$label, "raming")
   expect_equal(forecast_layer_en$aes_params$label, "forecast")
 })

@@ -126,8 +126,12 @@ cpb_scale_y_lab_gap <- function(plot, width_cm) {
   }
   gap_cm <- cpb_y_lab_gap_cm(width_cm)
   plot + ggplot2::theme(
-    axis.text.y.left  = ggplot2::element_text(margin = ggplot2::margin(r = gap_cm, unit = "cm"), inherit.blank = TRUE),
-    axis.text.y.right = ggplot2::element_text(margin = ggplot2::margin(l = gap_cm, unit = "cm"), inherit.blank = TRUE)
+    axis.text.y.left  = ggplot2::element_text(
+      margin = ggplot2::margin(r = gap_cm, unit = "cm"), inherit.blank = TRUE
+    ),
+    axis.text.y.right = ggplot2::element_text(
+      margin = ggplot2::margin(l = gap_cm, unit = "cm"), inherit.blank = TRUE
+    )
   )
 }
 
@@ -355,7 +359,9 @@ cpb_legend_items <- function(guide_box) {
       text <- cpb_find_grob(gd$grobs[[label_i[which.min(lay$l[label_i])]]], "text")
       if (is.null(text)) return(NA)
       items[[length(items) + 1]] <- list(
-        key = grid::gTree(children = do.call(grid::gList, gd$grobs[in_cell[order(lay$z[in_cell])]])),
+        key = grid::gTree(
+          children = do.call(grid::gList, gd$grobs[in_cell[order(lay$z[in_cell])]])
+        ),
         label = text$label, gp = text$gp
       )
     }
@@ -364,9 +370,9 @@ cpb_legend_items <- function(guide_box) {
   items
 }
 
-# The legend grid: `rows` items per column, filled column by column, from the top-left corner (`x`, `y`): symbol, a gap,
-# the label, and a fixed gap before the next column. Returns the grob
-# with its total width as attribute "cpb_width".
+# The legend grid: `rows` items per column, filled column by column, from the
+# top-left corner (`x`, `y`): symbol, a gap, the label, and a fixed gap before
+# the next column. Returns the grob with its total width as attribute "cpb_width".
 # @noRd
 cpb_legend_grid <- function(items, rows, x, y) {
   cm <- function(v) grid::unit(v, "cm")
@@ -377,7 +383,9 @@ cpb_legend_grid <- function(items, rows, x, y) {
     cm(sym[["width"]] + cpb_legend_symbol_txt_cm) + max(do.call(grid::unit.c, label_w[col_of == k]))
   })
   col_x <- list(x)
-  for (k in seq_along(col_w)[-1]) col_x[[k]] <- col_x[[k - 1]] + col_w[[k - 1]] + cm(cpb_legend_column_cm)
+  for (k in seq_along(col_w)[-1]) {
+    col_x[[k]] <- col_x[[k - 1]] + col_w[[k - 1]] + cm(cpb_legend_column_cm)
+  }
   children <- list()
   for (i in seq_along(items)) {
     cx <- col_x[[col_of[i] + 1]]
@@ -391,7 +399,8 @@ cpb_legend_grid <- function(items, rows, x, y) {
     ))
   }
   grob <- grid::gTree(children = do.call(grid::gList, children), name = "cpb-legend")
-  attr(grob, "cpb_width") <- sum(do.call(grid::unit.c, col_w)) + cm((length(col_w) - 1) * cpb_legend_column_cm)
+  attr(grob, "cpb_width") <- sum(do.call(grid::unit.c, col_w)) +
+    cm((length(col_w) - 1) * cpb_legend_column_cm)
   grob
 }
 
@@ -416,7 +425,11 @@ cpb_figure_bottom <- function(g, legend, legend_grid = NULL) {
   below <- (panel_b + 1):nrow(g)
 
   box_i <- which(g$layout$name == "guide-box-bottom")
-  items <- if (identical(legend, "bottom") && length(box_i)) cpb_legend_items(g$grobs[[box_i]]) else NULL
+  items <- if (identical(legend, "bottom") && length(box_i)) {
+    cpb_legend_items(g$grobs[[box_i]])
+  } else {
+    NULL
+  }
   has_legend <- !is.null(items) || identical(legend, "filled-empty")
   total <- cm(if (has_legend) cpb_margin_south_cm else cpb_margin_south_no_legend_cm)
 
@@ -488,7 +501,8 @@ cpb_figure_bottom <- function(g, legend, legend_grid = NULL) {
       grid_grob <- cpb_legend_grid(items, rows, x, y)
       legend_width <- attr(grid_grob, "cpb_width")
       if (!is.null(title)) {
-        legend_width <- max(legend_width, grid::grobWidth(grid::textGrob(title$label, gp = title$gp)))
+        title_width <- grid::grobWidth(grid::textGrob(title$label, gp = title$gp))
+        legend_width <- max(legend_width, title_width)
       }
       attr(g, "cpb_legend_width") <- legend_width
       g <- region(g, grid_grob, "cpb-legend")
@@ -579,9 +593,14 @@ cpb_figure_top <- function(g, sec_ylab = NULL, position = "left") {
       for (row in sort(unique(cells$t), decreasing = TRUE)) {
         g <- gtable::gtable_add_rows(g, cm(cpb_y_title_cm), pos = row)
         for (i in which(cells$t == row)) {
-          g <- gtable::gtable_add_grob(g, grid::textGrob(
-            subtitle$label, x = grid::unit(1, "npc"), hjust = 1, vjust = 0.5, gp = subtitle$gp
-          ), t = row + 1, l = cells$l[i], r = cells$r[i], clip = "off", name = paste0("cpb-subtitle-", i))
+          g <- gtable::gtable_add_grob(
+            g,
+            grid::textGrob(
+              subtitle$label, x = grid::unit(1, "npc"), hjust = 1, vjust = 0.5, gp = subtitle$gp
+            ),
+            t = row + 1, l = cells$l[i], r = cells$r[i], clip = "off",
+            name = paste0("cpb-subtitle-", i)
+          )
         }
       }
       g
@@ -632,7 +651,9 @@ cpb_fill_panel <- function(g, page_height) {
   panel <- which(g$layout$name == "panel")
   row <- g$layout$t[panel]
   col <- g$layout$l[panel]
-  size <- page_height - (sum(inches(g$heights, grid::convertHeight)) - inches(g$heights[row], grid::convertHeight))
+  size <- page_height - (
+    sum(inches(g$heights, grid::convertHeight)) - inches(g$heights[row], grid::convertHeight)
+  )
   delta <- (inches(g$widths[col], grid::convertWidth) - size) / 2
   g$heights[row] <- grid::unit(size, "in")
   g$widths[col] <- grid::unit(size, "in")
@@ -1058,7 +1079,10 @@ save_cpb <- function(filename,
     }
   }
 
-  tcat("ggcpb: wrote ", filename, " (", round(width, 2), " x ", round(height, 2), " in, ", dpi, " dpi)")
+  tcat(
+    "ggcpb: wrote ", filename,
+    " (", round(width, 2), " x ", round(height, 2), " in, ", dpi, " dpi)"
+  )
 
   invisible(filename)
 }
