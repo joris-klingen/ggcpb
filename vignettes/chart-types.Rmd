@@ -1,6 +1,8 @@
 ---
 title: "Chart types"
-output: rmarkdown::html_vignette
+output:
+  rmarkdown::html_vignette:
+    css: cpb.css
 vignette: >
   %\VignetteIndexEntry{Chart types}
   %\VignetteEngine{knitr::rmarkdown}

@@ -2,6 +2,7 @@
 title: "Introduction to ggcpb"
 output:
   rmarkdown::html_vignette:
+    css: cpb.css
     toc: true
     number_sections: true
 vignette: >

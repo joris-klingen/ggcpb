@@ -1,6 +1,8 @@
 ---
 title: "Setup"
-output: rmarkdown::html_vignette
+output:
+  rmarkdown::html_vignette:
+    css: cpb.css
 vignette: >
   %\VignetteIndexEntry{Setup}
   %\VignetteEngine{knitr::rmarkdown}

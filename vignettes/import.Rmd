@@ -2,6 +2,7 @@
 title: "Building figures from CSV files"
 output:
   rmarkdown::html_vignette:
+    css: cpb.css
     toc: true
     number_sections: true
 vignette: >
@@ -90,8 +91,8 @@ and holds the variables needed by the figures. The first row holds the
 column names. The package example has two datasets. One of the example
 datasets is shown here:
 
-```{r data-frame}
-read.csv(file.path(figure_dir, "data", "koopkracht.csv"))
+```{r data-frame, echo = FALSE}
+knitr::kable(read.csv(file.path(figure_dir, "data", "koopkracht.csv")))
 ```
 
 The parameter file refers to variables by their column names. 
