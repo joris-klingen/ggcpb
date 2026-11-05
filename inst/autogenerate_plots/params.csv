@@ -11,3 +11,4 @@ sec_legend_label,werkloosheid
 sec_ylab,%
 create,y,y
 data,koopkracht,werkloosheid
+style,,english

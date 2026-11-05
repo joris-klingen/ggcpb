@@ -1,6 +1,39 @@
 Introduction to ggcpb
 ================
 
+- [What is ggcpb?](#what-is-ggcpb)
+  - [Why ggcpb instead of James?](#why-ggcpb-instead-of-james)
+  - [What you need to know](#what-you-need-to-know)
+  - [Use ggcpb in Excel](#use-ggcpb-in-excel)
+  - [Use ggcpb in R](#use-ggcpb-in-r)
+- [Figure types](#figure-types)
+  - [Line with forecast](#line-with-forecast)
+  - [Columns with two axes](#columns-with-two-axes)
+  - [Horizontal bars with chosen
+    colours](#horizontal-bars-with-chosen-colours)
+  - [Line with markers in English](#line-with-markers-in-english)
+  - [Boxplot](#boxplot)
+  - [Donut chart](#donut-chart)
+  - [Dot plot](#dot-plot)
+  - [Scatter plot](#scatter-plot)
+  - [Histogram](#histogram)
+- [Ggplot2 base allows for endless
+  possibilities](#ggplot2-base-allows-for-endless-possibilities)
+  - [Classed map](#classed-map)
+- [Example code to create figures in
+  R](#example-code-to-create-figures-in-r)
+  - [Line with forecast](#line-with-forecast-1)
+  - [Columns with two axes](#columns-with-two-axes-1)
+  - [Horizontal bars with chosen
+    colours](#horizontal-bars-with-chosen-colours-1)
+  - [Line with markers in English](#line-with-markers-in-english-1)
+  - [Boxplot](#boxplot-1)
+  - [Donut](#donut)
+  - [Dot plot](#dot-plot-1)
+  - [Scatter plot](#scatter-plot-1)
+  - [Histogram](#histogram-1)
+  - [Classed map](#classed-map-1)
+
 <style>
 .figrow { display: flex; gap: 24px; align-items: flex-start; margin: 1em 0; }
 .figrow > * { flex: 1 1 0; min-width: 0; }

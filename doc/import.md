@@ -1,50 +1,64 @@
 Building figures from CSV files
 ================
 
+- [Introduction](#introduction)
+  - [How to create a figure without opening
+    R?](#how-to-create-a-figure-without-opening-r)
+- [The dataset](#the-dataset)
+- [The parameter file](#the-parameter-file)
+- [Creating the figures in R](#creating-the-figures-in-r)
+- [Several datasets](#several-datasets)
+- [A parameter file with one figure](#a-parameter-file-with-one-figure)
+- [Handling problems](#handling-problems)
+- [Appendix A: Parameters](#appendix-a-parameters)
+
 ``` r
 library(ggcpb)
 ```
 
 # Introduction
 
-Most figures in this package are built by calling one of its functions
-directly in R code. This vignette describes an alternative based on CSV
-files. The datasets are CSV files in a folder named `data`. One
-parameter file, `params.csv`, specifies which figures to create and how
-they should be configured. The `cpb_import_csv()` function reads them
-and creates the figures.
+Figures can be created directly with or without using R. This vignette
+described the method to create figures **using only Excel**.
 
-This approach is useful when figure specifications need to be kept
-separate from R code, for example when the data and figure settings are
-maintained outside an R script.
+To create a figure, you need:
 
-# The figure folder
+- a `params.csv` file
+  - this is the parameter file, which specifies which figures to create
+    and how they should be configured
+  - one `params.csv` can contain the parameters for several figures
+- a `data` folder with the dataset(s)
+  - each dataset is a CSV file
+- the `run_import.bat` script
 
-A figure folder holds `params.csv` and a `data` folder. The function
-`autogenerate_plots()` creates a ready to use example. It is used
-throughout this vignette.
+*Please note*: The datasets must be saved as CSV, not as spreadsheet
+(`xlsx`). In Excel, choose `File` -\> `Save as` -\>
+`CSV UTF-8 (comma delimited)`.
 
-``` r
-figure_dir <- file.path(tempdir(), "figures")
-autogenerate_plots(figure_dir)
-params_csv <- file.path(figure_dir, "params.csv")
-```
+## How to create a figure without opening R?
 
-``` r
-list.files(figure_dir, recursive = TRUE)
-#> [1] "data/koopkracht.csv"   "data/werkloosheid.csv" "params.csv"           
-#> [4] "run_import.bat"        "run_import.command"    "run_import.R"
-```
+The general workflow to create figures with ggcpb is as follows:
 
-In normal use, the folder lives somewhere you can write to, and the
-start scripts (`run_import.bat` and `run_import.command`) run everything
-for you. See “Run the import without opening R” below.
+1.  Find the most recent ggcpb folder in `[path]`.
+2.  Copy it to the place where you want to create figures.
+3.  Put your datasets in the folder `data`. Open `params.csv` in Excel
+    and add your parameters.
+4.  To create a figure, double clik on `run_import.bat`. This reads
+    `params.csv`, builds every figure and saves the images in the folder
+    `generated`. Each image is named after its dataset. Running the
+    script again produces updated figures. Images with the same name are
+    replaced. A dataset or figure that fails is skipped and listed at
+    the end, and in `params_log.txt`. The other figures are still saved.
 
-# The data files
+R and `ggcpb` must still be installed on the computer running the
+script.
+
+# The dataset
 
 Each dataset is a CSV file in the `data` folder. It can have any name
 and holds the variables needed by the figures. The first row holds the
-column names. The package example has two datasets.
+column names. The package example has two datasets. One of the example
+datasets is shown here:
 
 ``` r
 read.csv(file.path(figure_dir, "data", "koopkracht.csv"))
@@ -66,46 +80,23 @@ read.csv(file.path(figure_dir, "data", "koopkracht.csv"))
 #> 15 2025       uitkering       -0.6          3.7
 ```
 
-The important point for the import method is that the parameter file
-refers to variables by their column names. For example, if a parameter
-contains `jaar`, `cpb_import_csv()` looks for a column named `jaar` in
-the dataset of that figure.
-
-Text columns keep the order of the rows. The first group in the file is
-the first on the axis and in the legend. A number used as `fill`,
-`group` or `colour` (a year, for example) is treated as a category. A
-numeric `colour` in a scatter plot keeps its colour gradient.
-
-Save datasets from Excel as `CSV UTF-8 (comma delimited)`.
+The parameter file refers to variables by their column names.
+Categorical columns (e.g. `regio`, `geslacht`) keep the order of the
+rows in the created figure. So, the first group in the CSV-file
+(e.g. here `groep`) is the first on the axis and in the legend.
 
 # The parameter file
 
 The parameter file determines which figures are created. Each figure has
-a `plot_type` and an `id`, together with the settings required for that
-plot type. The parameter `data` names the dataset of the figure.
+a `plot_type`, together with the settings required for that plot type.
+The parameter `data` names the dataset of the figure.
 
 The first column holds the parameter names. Every other column describes
-one figure. This is the example file:
+one figure. This is the example parameter file. The first row, with the
+plot types, is the header.
 
-    plot_type,col,line
-    title,Koopkrachtontwikkeling naar groep,Werkloosheid
-    x,jaar,jaar
-    y,koopkracht,werkloosheid
-    fill,groep
-    ylab,% mutatie,%
-    position,dodge
-    sec_y,werkloosheid
-    sec_type,line
-    sec_legend_label,werkloosheid
-    sec_ylab,%
-    create,y,y
-    data,koopkracht,werkloosheid
-
-The same content, split on the comma and shown as a table:
-
-| parameter        | figure.1                          | figure.2     |
-|:-----------------|:----------------------------------|:-------------|
 | plot_type        | col                               | line         |
+|:-----------------|:----------------------------------|:-------------|
 | title            | Koopkrachtontwikkeling naar groep | Werkloosheid |
 | x                | jaar                              | jaar         |
 | y                | koopkracht                        | werkloosheid |
@@ -118,28 +109,29 @@ The same content, split on the comma and shown as a table:
 | sec_ylab         | %                                 |              |
 | create           | y                                 | y            |
 | data             | koopkracht                        | werkloosheid |
+| style            |                                   | english      |
 
-A cell can be left blank. Fields at the end of a row can be left out.
+This table shows that there are two figures. The first figure is a
+column chart (`plot_type` = `col`) that uses the `koopkracht` dataset
+(`data`) and that portrays `werkloosheid` on the second y-axis
+(`sec_y`). The second figure is a line chart (`plot_type` = `line`) that
+uses the `werkloosheid` dataset (`data`) and has no secondary y-axis. A
+parameter value can be left blank, such as `sec_y` in the second plot.
+Only the second figure sets `style` to `english`, so it gets English
+labels and number formats.
 
 The parameter `page` sets the page width a figure is saved at: `half`
-(7.5 cm, the default), `full` (15.5 cm) or `small`. Leave it out for
-`half`.
+(7.5 cm, the default), `full` (15.5 cm) or `small`. If left out, the
+default `half` is used.
 
-Some parameters refer to columns in the dataset. For example:
-
-- `x`, `y`, `fill` and `sec_y` are column references.
-- `title`, `ylab`, `position` and `data` are literal values.
-
-The distinction is important. The cell next to `y` says `koopkracht`, so
-the `y` variable is taken from the `koopkracht` column. The cell next to
-`ylab` says `% mutatie`, so that text is used directly.
-
-# Creating the figures
+# Creating the figures in R
 
 Pass the parameter file to `cpb_import_csv()`. The datasets are read
 from the `data` folder next to it:
 
 ``` r
+figure_dir <- file.path(tempdir(), "figures")
+params_csv <- file.path(figure_dir, "params.csv")
 figs <- cpb_import_csv(params_csv)
 ```
 
@@ -247,49 +239,16 @@ Each call to `cpb_import_csv()` also writes a log file next to the
 parameter file. The log records figures that were created or skipped and
 any parameter problems.
 
-# Run the import without opening R
-
-The same CSV based method can also be used without opening R.
-
-The `autogenerate_plots()` function creates a ready to use folder
-containing:
-
-- a `data` folder with the datasets
-- a parameter file, `params.csv`
-- a script for Windows (a `.bat` file)
-- a script for a Mac (a `.command` file)
-
-After editing the datasets and the parameter file, run the appropriate
-script. It reads `params.csv`, builds every figure and saves the images
-in the folder `generated`. Each image is named after its dataset.
-
-Running the script again produces updated figures. Images with the same
-name are replaced. A dataset or figure that fails is skipped and listed
-at the end, and in `params_log.txt`. The other figures are still saved.
-
-R and `ggcpb` must still be installed on the computer running the
-script.
-
-# Appendix A: Parameter values
+# Appendix A: Parameters
 
 The available parameters depend on the `plot_type`. The complete list is
 stored in `parameter_settings.csv`, and gives the available parameters,
 their kind, default values and examples.
 
-``` r
-ref_csv <- system.file(
-  "extdata",
-  "parameter_settings.csv",
-  package = "ggcpb"
-)
-```
-
-Many parameters are the same across every `plot_type`. To avoid
-repeating those in every table, Table A1 lists the parameters shared,
-with the same meaning and default, by all plot types. Table A2 onward
-each cover one `plot_type`, listing only what is not already in Table
-A1. A parameter is only listed for the plot types it actually applies
-to, so a table for one `plot_type` does not necessarily match another.
+Many parameters are the same across every `plot_type`. Table A1 lists
+the parameters shared, with the same meaning and default, by all plot
+types. Table A2 onward each cover one `plot_type`, listing only what is
+not already in Table A1.
 
 **Table A1. Shared parameters across all plot types**
 

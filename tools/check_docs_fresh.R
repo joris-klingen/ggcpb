@@ -57,9 +57,14 @@ for (rmd in list.files(file.path(pkg_root, "vignettes"),
 
   local_rmd <- file.path(tmp_dir, basename(rmd))
   file.copy(rmd, local_rmd, overwrite = TRUE)
+  front <- rmarkdown::yaml_front_matter(rmd)$output
+  has_toc <- is.list(front) &&
+    isTRUE(front[["rmarkdown::html_vignette"]]$toc)
   rmarkdown::render(
     local_rmd,
-    output_format = rmarkdown::github_document(html_preview = FALSE),
+    output_format = rmarkdown::github_document(
+      toc = has_toc, html_preview = FALSE
+    ),
     quiet         = TRUE
   )
   unlink(local_rmd)

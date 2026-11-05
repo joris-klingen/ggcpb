@@ -48,9 +48,15 @@ for (rmd in list.files(file.path(pkg_root, "vignettes"),
   # out relative (chart-types_files/...), not absolute
   local_rmd <- file.path(out_dir, basename(rmd))
   file.copy(rmd, local_rmd, overwrite = TRUE)
+  # a table of contents where the vignette itself has one
+  front <- rmarkdown::yaml_front_matter(rmd)$output
+  has_toc <- is.list(front) &&
+    isTRUE(front[["rmarkdown::html_vignette"]]$toc)
   rmarkdown::render(
     local_rmd,
-    output_format = rmarkdown::github_document(html_preview = FALSE),
+    output_format = rmarkdown::github_document(
+      toc = has_toc, html_preview = FALSE
+    ),
     quiet         = TRUE
   )
   unlink(local_rmd)
