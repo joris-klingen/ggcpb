@@ -1,14 +1,22 @@
 # TODO
 
 The package encodes a single CPB house style, calibrated against the
-published reference figures in `references/plots/` (see the smoke test
-`inst/examples/smoke_test_plots.R` for side-by-side recreations).
+published reference figures in `references/plots/`.
 
 **See `PLAN.md`** for the roadmap from the publication audit (CEP 2026,
 MEV 2026, zonnepanelen, erfbelasting) and which of its items were kept
 or dropped.
 
 ## Open items
+
+- **CSV import wishlist**: things an R figure can do that `params.csv`
+  cannot yet. `x_labels` (a formatter such as `label_euro_nl()`), classed
+  colours from `cpb_cut()` with a `labeller`, extra ggplot2 layers and
+  annotations (a text along a diagonal, a reference line), and maps.
+  Also a `page` column (`half` or `full`, default `half`) per figure.
+- **Introduction vignette**: show the R code of every figure in a final
+  section "Example code to create figures in R", taken from the same
+  chunks (`ref.label`) so it cannot drift from the figures.
 
 - **Dual-axis line charts** (from the audit): CEP fig 1.2-right draws
   two series on left/right axes with legend entries auto-suffixed

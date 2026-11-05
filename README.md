@@ -119,11 +119,3 @@ showtext::showtext_opts(dpi = 96)   # back to screen
 ```r
 devtools::test()
 ```
-
-A visual end-to-end check lives in `inst/examples/smoke_test_plots.R`,
-which renders every chart type against the published reference figures
-in `references/plots/`. Next to it, `inst/examples/legend_stability_test.R`
-sweeps legend-label lengths, category-label lengths, legend item counts,
-chart types, canvas sizes and title combinations, and verifies in the
-rendered pixels that the flush legend stays anchored to the same
-bottom-left spot in every variant.

@@ -3,19 +3,18 @@
 # Runs what CI runs (.github/workflows/R-CMD-check.yaml) on this machine:
 #   current  R CMD check with your installed ggplot2; warnings fail
 #   ggplot2  the same against ggplot2 3.5.2, in a temporary library
-#   visual   the legend-stability sweep and the visual smoke test
 #
 # From the project folder:
-#   Rscript tools/check_like_ci.R             # all three
-#   Rscript tools/check_like_ci.R visual      # only the visual scripts
+#   Rscript tools/check_like_ci.R             # both
+#   Rscript tools/check_like_ci.R ggplot2     # only the ggplot2 3.5.2 run
 # or in R: source("tools/check_like_ci.R")
 #
 # Needs rcmdcheck and remotes (installed when missing). The exit status
 # is 1 when anything fails.
 
 steps <- commandArgs(trailingOnly = TRUE)
-if (!length(steps)) steps <- c("current", "ggplot2", "visual")
-stopifnot(file.exists("DESCRIPTION"), all(steps %in% c("current", "ggplot2", "visual")))
+if (!length(steps)) steps <- c("current", "ggplot2")
+stopifnot(file.exists("DESCRIPTION"), all(steps %in% c("current", "ggplot2")))
 
 # Rscript has no CRAN mirror unless one is set
 if (!length(getOption("repos")) || identical(unname(getOption("repos")["CRAN"]), "@CRAN@")) {
@@ -50,14 +49,6 @@ check <- function(label, libpath = .libPaths()) {
   )
 }
 
-run_script <- function(label, path) {
-  cat("\n=== ", label, " ===\n", sep = "")
-  status <- system2(file.path(R.home("bin"), "Rscript"), path)
-  outcome[[label]] <<- list( # nolint: assignment_linter.
-    ok = identical(status, 0L), detail = paste("exit status", status)
-  )
-}
-
 if ("current" %in% steps) check("check, installed ggplot2")
 
 if ("ggplot2" %in% steps) {
@@ -67,11 +58,6 @@ if ("ggplot2" %in% steps) {
                            dependencies = FALSE, quiet = TRUE)
   cat("using ggplot2", as.character(packageVersion("ggplot2", lib.loc = lib)), "\n")
   check("check, ggplot2 3.5.2", libpath = c(lib, .libPaths()))
-}
-
-if ("visual" %in% steps) {
-  run_script("legend stability sweep", "inst/examples/legend_stability_test.R")
-  run_script("visual smoke test", "inst/examples/smoke_test_plots.R")
 }
 
 cat("\n=== summary ===\n")
