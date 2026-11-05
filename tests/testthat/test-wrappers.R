@@ -998,7 +998,11 @@ test_that("cpb_box group combines with a fill mapping (dodged boxes)", {
   df <- expand.grid(jaar = factor(c(2026, 2027)),
                     cat  = factor(c("a", "b", "c"), levels = c("a", "b", "c")))
   df$grp <- factor(ifelse(df$cat == "a", "G1", "G2"), levels = c("G1", "G2"))
-  df$p5 <- 1; df$p25 <- 2; df$p50 <- 3; df$p75 <- 4; df$p95 <- 5
+  df$p5 <- 1
+  df$p25 <- 2
+  df$p50 <- 3
+  df$p75 <- 4
+  df$p95 <- 5
   p <- cpb_box(df, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                fill = jaar, group = grp, orientation = "horizontal",
                position = ggplot2::position_dodge(width = 0.6),

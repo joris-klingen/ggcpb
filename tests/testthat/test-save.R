@@ -464,7 +464,7 @@ test_that("a printed cpb_donut has its title and legend at the figure's edges, l
   first_ink <- function(f) {
     im <- png::readPNG(f)
     diffs <- apply(
-      im[, , 1:3], 2, function(col) any(abs(col - rep(im[1, 1, 1:3], each = nrow(im))) > 0.3)
+      im[,, 1:3], 2, function(col) any(abs(col - rep(im[1, 1, 1:3], each = nrow(im))) > 0.3)
     )
     min(which(diffs))
   }
@@ -610,7 +610,7 @@ test_that("a printed cpb_map has its title and bottom legend at the figure's lef
   first_ink_cm <- function(f) {
     im <- png::readPNG(f)
     cols <- apply(
-      im[, , 1:3], 2, function(col) any(abs(col - rep(im[1, 1, 1:3], each = nrow(im))) > 0.3)
+      im[,, 1:3], 2, function(col) any(abs(col - rep(im[1, 1, 1:3], each = nrow(im))) > 0.3)
     )
     min(which(cols)) / 300 * 2.54
   }
@@ -637,7 +637,7 @@ test_that("cpb_map's legend inside the panel lines up with the title, not with t
   im <- png::readPNG(path)
   first_ink_cm <- function(rows) {
     cols <- apply(
-      im[rows, , 1:3], 2,
+      im[rows,, 1:3], 2,
       function(col) any(abs(col - rep(im[1, 1, 1:3], each = length(rows))) > 0.25)
     )
     min(which(cols)) / 300 * 2.54

@@ -62,7 +62,7 @@ cpb_group_positions <- function(cats, groups, gap = 0.8) {
   }
   # lay the groups out in factor-level order, categories in level order
   # within their group
-  map <- map[order(as.integer(map$grp), as.integer(map$cat)), , drop = FALSE]
+  map <- map[order(as.integer(map$grp), as.integer(map$cat)),, drop = FALSE]
   offset <- (as.integer(factor(map$grp, levels = unique(map$grp))) - 1) * gap
   map$pos <- seq_len(nrow(map)) + offset
   centres <- vapply(split(map$pos, map$grp), mean, numeric(1))
@@ -890,7 +890,7 @@ cpb_sec_layer <- function(p, data, x, sec_vals, sec_map, sec_type,
                           sec_symbol_size, sec_col_width, style = "dutch") {
   sec_df <- as.data.frame(data)
   sec_df[["cpb__sec"]] <- cpb_sec_to_primary(sec_vals, sec_map)
-  sec_df <- sec_df[!duplicated(rlang::eval_tidy(x, data)), , drop = FALSE]
+  sec_df <- sec_df[!duplicated(rlang::eval_tidy(x, data)),, drop = FALSE]
 
   if (sec_type == "col") {
     p <- p + ggplot2::geom_col(
@@ -2252,7 +2252,7 @@ cpb_line <- function(data, x, y, colour = NULL,
     } else {
       factor(sec_lab, levels = c(prim_lab, sec_lab))
     }
-    sec_df <- sec_df[!duplicated(rlang::eval_tidy(x, data)), , drop = FALSE]
+    sec_df <- sec_df[!duplicated(rlang::eval_tidy(x, data)),, drop = FALSE]
   }
 
   if (has_colour) {
@@ -2987,8 +2987,8 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     # only the plain category rows are axis breaks, so the house
     # category ticks land on them (and not on the bold group-heading
     # rows). The heading names are drawn separately as bold text.
-    cat_rows <- slots[!slots$heading, , drop = FALSE]
-    head_rows <- slots[slots$heading, , drop = FALSE]
+    cat_rows <- slots[!slots$heading,, drop = FALSE]
+    head_rows <- slots[slots$heading,, drop = FALSE]
     p <- p + ggplot2::scale_x_continuous(
       breaks = cat_rows$pos,
       labels = cpb_label_wrap()(cat_rows$label),
@@ -3772,8 +3772,8 @@ cpb_dot <- function(data, x, y, lower, upper,
   p <- cpb_add_sec_ylab(p, has_sec, sec_ylab)
 
   if (has_group) {
-    cat_rows <- slots[!slots$heading, , drop = FALSE]
-    head_rows <- slots[slots$heading, , drop = FALSE]
+    cat_rows <- slots[!slots$heading,, drop = FALSE]
+    head_rows <- slots[slots$heading,, drop = FALSE]
     p <- p + ggplot2::scale_x_continuous(
       breaks = cat_rows$pos,
       labels = cpb_label_wrap()(cat_rows$label),

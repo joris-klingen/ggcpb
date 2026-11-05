@@ -181,7 +181,7 @@ cpb_import_read_params <- function(params_csv, sep) {
   if (score_h > score_v) {
     names(raw_h) <- tolower(trimws(names(raw_h)))
     lapply(seq_len(nrow(raw_h)), function(i) {
-      vals <- vapply(raw_h[i, , drop = FALSE], as.character, character(1))
+      vals <- vapply(raw_h[i,, drop = FALSE], as.character, character(1))
       keep <- !is.na(vals) & nzchar(trimws(vals))
       as.list(vals[keep])
     })

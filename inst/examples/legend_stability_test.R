@@ -61,12 +61,20 @@ key_w_px  <- 0.30 / 2.54 * DPI    # legend key width: 0.30 cm
 measure_legend <- function(plot, width = 4, height = 4, file = NULL) {
   f <- if (is.null(file)) tempfile(fileext = ".png") else file
   ragg::agg_png(f, width = width, height = height, units = "in", res = DPI)
-  ok <- tryCatch({ print(plot); TRUE },
-                 error = function(e) { message("  render error: ", conditionMessage(e)); FALSE })
+  ok <- tryCatch(
+    {
+      print(plot)
+      TRUE
+    },
+    error = function(e) {
+      message("  render error: ", conditionMessage(e))
+      FALSE
+    }
+  )
   grDevices::dev.off()
   if (!ok) return(list(left = NA_real_, bottom_off = NA_real_, file = f))
   img <- png::readPNG(f)
-  blue <- img[, , 1] < 0.25 & img[, , 3] > 0.5 & img[, , 3] > img[, , 1] + 0.3
+  blue <- img[,, 1] < 0.25 & img[,, 3] > 0.5 & img[,, 3] > img[,, 1] + 0.3
   if (!any(blue)) return(list(left = NA_real_, bottom_off = NA_real_, file = f))
   list(
     left       = min(which(apply(blue, 2, any))),

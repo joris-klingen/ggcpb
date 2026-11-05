@@ -351,7 +351,7 @@ cpb_legend_items <- function(guide_box) {
     is_label <- grepl("^label-", lay$name)
     if (!any(is_key) || !any(is_label)) return(NA)
     cells <- unique(lay[is_key, c("t", "l")])
-    cells <- cells[order(cells$l, cells$t), , drop = FALSE]
+    cells <- cells[order(cells$l, cells$t),, drop = FALSE]
     for (i in seq_len(nrow(cells))) {
       in_cell <- which(is_key & lay$t == cells$t[i] & lay$l == cells$l[i])
       label_i <- which(is_label & lay$t == cells$t[i] & lay$l > cells$l[i])

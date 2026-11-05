@@ -46,7 +46,7 @@ cpb_font_files <- function(paths = cpb_font_paths()) {
     files <- list.files(p, pattern = "^Rijksoverheid.*\\.(ttf|otf)$",
                         ignore.case = TRUE, full.names = TRUE)
     found <- cpb_read_fonts(files)
-    found <- found[found$family == cpb_house_family, , drop = FALSE]
+    found <- found[found$family == cpb_house_family,, drop = FALSE]
     faces <- cpb_family_faces(found)
     if (!anyNA(faces[cpb_required_faces])) {
       return(list(family = cpb_house_family, faces = faces))
@@ -371,7 +371,7 @@ cpb_register_fonts <- function(path = NULL,
       warning("ggcpb: no font files found in '", path, "'.", call. = FALSE)
     }
     for (fam in unique(found$family)) {
-      faces <- cpb_family_faces(found[found$family == fam, , drop = FALSE])
+      faces <- cpb_family_faces(found[found$family == fam,, drop = FALSE])
       registered <- rbind(
         registered,
         cpb_register_family(fam, faces, windows_device = windows_device)
@@ -407,7 +407,7 @@ cpb_register_fonts <- function(path = NULL,
   # a `path` pointing at the font's folder re-registers that family;
   # report each family once, keeping the registration that actually took
   # effect (the later one wins in both backends)
-  registered <- registered[!duplicated(registered$family, fromLast = TRUE), ,
+  registered <- registered[!duplicated(registered$family, fromLast = TRUE),,
                            drop = FALSE]
   rownames(registered) <- NULL
   attr(registered, "showtext") <- showtext_on

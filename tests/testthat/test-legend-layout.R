@@ -26,7 +26,7 @@ legend_key_px <- function(p, width = 4, height = 4, dpi = 96) {
   print(p)
   grDevices::dev.off()
   img <- png::readPNG(f)
-  blue <- img[, , 1] < 0.25 & img[, , 3] > 0.5 & img[, , 3] > img[, , 1] + 0.3
+  blue <- img[,, 1] < 0.25 & img[,, 3] > 0.5 & img[,, 3] > img[,, 1] + 0.3
   expect_true(any(blue))  # sanity: the blue key must exist
   bottom <- max(which(apply(blue, 1, any)))
   list(
@@ -327,7 +327,8 @@ test_that("legend_ncol lays the keys out in columns and keeps reverse_legend", {
   expect_true(both$reverse)
 
   # a numeric colour draws a colourbar, which takes neither setting
-  num <- d; num$n <- seq_len(24)
+  num <- d
+  num$n <- seq_len(24)
   expect_s3_class(cpb_scatter(num, x, y, colour = n, legend_ncol = 2), "ggplot")
 })
 
@@ -344,7 +345,7 @@ test_that("a level with no observations still gets a coloured legend glyph", {
     f <- withr::local_tempfile(fileext = ".png")
     suppressMessages(ggplot2::ggsave(f, p, width = 4, height = 2.6, dpi = 150,
                                      device = ragg::agg_png))
-    im <- png::readPNG(f)[, , 1:3]
+    im <- png::readPNG(f)[,, 1:3]
     hex <- toupper(apply(im, c(1, 2), function(q) grDevices::rgb(q[1], q[2], q[3])))
     any(hex == toupper(lightest))
   }
