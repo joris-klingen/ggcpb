@@ -1308,8 +1308,8 @@ cpb_check_category_labels <- function(plot, width) {
 #' Some wrappers tag their own output with a plain-English reason (via
 #' the `cpb_half_page_unsuitable` attribute) when their layout
 #' fundamentally needs more width than a half page gives -- an extended
-#' boxplot split into several facet panels, say, or a donut chart's
-#' ring plus its (often long) legend. Checked here, once, rather than
+#' boxplot split into several facet panels, say. Checked here, once,
+#' rather than
 #' in each wrapper: `width` is only known for certain at save time (a
 #' bare `print()`/knitr chunk never goes through save_cpb() at all, and
 #' `page`/`width` can still be overridden here regardless of what the

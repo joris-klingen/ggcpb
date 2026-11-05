@@ -128,7 +128,7 @@ A cell can be left blank. Fields at the end of a row can be left out.
 
 The parameter `page` sets the page width a figure is saved at: `half`
 (7.5 cm, the default), `full` (15.5 cm) or `small`. Leave it out for
-`half`. A donut chart, for example, needs `full`.
+`half`.
 
 Some parameters refer to columns in the dataset. For example:
 

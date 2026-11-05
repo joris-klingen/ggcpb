@@ -1,8 +1,7 @@
 # tools/lint.R ----
 #
-# Runs lintr over the package (R/, tests/, inst/, vignettes/) and tools/,
-# with the settings in .lintr. The exit status is 1 when anything is
-# reported, so CI (.github/workflows/R-CMD-check.yaml) fails on it.
+# Run lintr over the package with the settings in .lintr. The exit status
+# is 1 when anything is reported, so CI fails on it.
 #
 # From the project folder:
 #   Rscript tools/lint.R

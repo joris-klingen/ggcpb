@@ -152,12 +152,10 @@ test_that("save_cpb warns when category labels are too long side by side", {
 test_that("save_cpb warns when the plot type does not suit a half page", {
   path <- withr::local_tempfile(fileext = ".png")
 
+  # a donut fits a half page, with or without the wider page
   d <- data.frame(bron = factor(c("a", "b")), share = c(60, 40))
   donut <- cpb_donut(d, fill = bron, y = share)
-  expect_warning(
-    save_cpb(path, donut, page = "half"),
-    "not suitable for a half page"
-  )
+  expect_no_warning(save_cpb(path, donut, page = "half"))
   expect_no_warning(save_cpb(path, donut, page = "full"))
 
   box_df <- data.frame(
@@ -500,11 +498,8 @@ test_that("save_cpb never triggers the warning of print.cpb_plot()", {
   # the fast path (ggplot2::ggsave()) prints the plot internally to
   # render it -- without save_cpb() stripping the "cpb_plot" class
   # first, that internal print() would trigger the same warning on
-  # every ordinary save_cpb() call. page = "full", not "half": a donut
-  # warns on a half page for an unrelated reason (see test-save.R's
-  # "not suitable for a half page" test), which would otherwise mask
-  # whether this specific warning was also (wrongly) present
-  expect_no_warning(save_cpb(path, p, page = "full"))
+  # every ordinary save_cpb() call
+  expect_no_warning(save_cpb(path, p, page = "half"))
 
   # a map always takes the grob path (cpb_fix_panel_size()), with or
   # without an explicit height
