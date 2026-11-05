@@ -6,6 +6,10 @@ number formatters, a figure export helper, and high-level wrappers for
 the common CPB chart types. Everything returns real `ggplot` objects
 that you can keep extending with `+`.
 
+**New to ggcpb? Start with the introduction:
+[doc/introduction.md](doc/introduction.md).** It shows how to create
+figures with Excel and/or R.
+
 > **Status: work in progress.** The style is calibrated against a set
 > of published reference figures, but robustness still needs to be
 > checked and improved (edge cases, unusual data shapes, device/font
