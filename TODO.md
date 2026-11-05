@@ -7,16 +7,42 @@ published reference figures in `references/plots/`.
 MEV 2026, zonnepanelen, erfbelasting) and which of its items were kept
 or dropped.
 
-## Open items
+## Plan (status 2026-11-05)
 
-- **CSV import wishlist**: things an R figure can do that `params.csv`
-  cannot yet. `x_labels` (a formatter such as `label_euro_nl()`), classed
-  colours from `cpb_cut()` with a `labeller`, extra ggplot2 layers and
-  annotations (a text along a diagonal, a reference line), and maps.
-  Also a `page` column (`half` or `full`, default `half`) per figure.
-- **Introduction vignette**: show the R code of every figure in a final
-  section "Example code to create figures in R", taken from the same
-  chunks (`ref.label`) so it cannot drift from the figures.
+### Critical, before a release
+
+1. **`[path]`**: fill in the real folder of the ggcpb kit in
+   `vignettes/introduction.Rmd` and `vignettes/import.Rmd`.
+2. **CI**: push, and watch the first run. The new `lintr` job, Windows
+   and ggplot2 3.5.2 have not run on these changes yet.
+3. **Version**: dev is `0.2.1.9000` and has breaking changes in the CSV
+   import (one `params.csv` layout, `cpb_import_csv()` without
+   `data_csv`). Release it as 0.3.0, and tell the users of the old kit.
+4. **Merge dev into main**: dev already holds `origin/main` (merged on
+   2026-11-05), so this merge has no conflicts.
+
+### Important
+
+5. **Mac start script**: `inst/autogenerate_plots/run_import.command`
+   still ships, while the docs only name `run_import.bat`. Remove it, or
+   document it again.
+6. **Excel CSV**: Dutch Excel writes `;` and a decimal comma, unless
+   "CSV UTF-8 (comma delimited)" is chosen. Detect the separator and the
+   decimal mark in `cpb_import_read_data()`.
+7. **Import values that are not possible yet**: an explicit `NULL` (an
+   empty cell means the default), a formatter with its own accuracy
+   (`euro` with 0.1), and extra ggplot2 layers. The last one is R only by
+   design.
+8. **House font in the vignette html**: Rijksoverheid Sans only shows
+   where it is installed. Embed Source Sans 3 with `@font-face` as the
+   fallback, or accept this.
+9. **Vignette html**: only `annotation`, `import` and `introduction` are
+   tracked. Decide for the other six (`boxplots`, `chart-types`,
+   `colours`, `ggcpb`, `layout`, `maps`).
+10. **Scatter with classes** (question 4): this is possible now with
+    `cut`. Add it to `inst/examples/` if wanted.
+
+## Open items
 
 - **Dual-axis line charts** (from the audit): CEP fig 1.2-right draws
   two series on left/right axes with legend entries auto-suffixed
