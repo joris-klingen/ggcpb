@@ -225,6 +225,10 @@ table th {
   color: #005faf;
   font-weight: bold;
 }
+/* every header and cell aligned left */
+table th, table td {
+  text-align: left !important;
+}
 /* code in a table header looks like the rest of the header */
 table th code {
   background: none;

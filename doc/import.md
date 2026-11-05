@@ -65,22 +65,22 @@ column names. The package example has two datasets. One of the example
 datasets is shown here:
 
 | jaar | groep           | koopkracht | werkloosheid |
-|-----:|:----------------|-----------:|-------------:|
-| 2021 | werkenden       |        0.3 |          3.4 |
-| 2021 | gepensioneerden |       -0.2 |          3.4 |
-| 2021 | uitkering       |       -0.9 |          3.4 |
-| 2022 | werkenden       |       -2.7 |          3.5 |
-| 2022 | gepensioneerden |       -2.3 |          3.5 |
-| 2022 | uitkering       |       -3.2 |          3.5 |
-| 2023 | werkenden       |        1.5 |          3.6 |
-| 2023 | gepensioneerden |        0.8 |          3.6 |
-| 2023 | uitkering       |       -0.3 |          3.6 |
-| 2024 | werkenden       |        1.2 |          3.7 |
-| 2024 | gepensioneerden |        0.6 |          3.7 |
-| 2024 | uitkering       |       -0.5 |          3.7 |
-| 2025 | werkenden       |        0.9 |          3.7 |
-| 2025 | gepensioneerden |        0.4 |          3.7 |
-| 2025 | uitkering       |       -0.6 |          3.7 |
+|:-----|:----------------|:-----------|:-------------|
+| 2021 | werkenden       | 0.3        | 3.4          |
+| 2021 | gepensioneerden | -0.2       | 3.4          |
+| 2021 | uitkering       | -0.9       | 3.4          |
+| 2022 | werkenden       | -2.7       | 3.5          |
+| 2022 | gepensioneerden | -2.3       | 3.5          |
+| 2022 | uitkering       | -3.2       | 3.5          |
+| 2023 | werkenden       | 1.5        | 3.6          |
+| 2023 | gepensioneerden | 0.8        | 3.6          |
+| 2023 | uitkering       | -0.3       | 3.6          |
+| 2024 | werkenden       | 1.2        | 3.7          |
+| 2024 | gepensioneerden | 0.6        | 3.7          |
+| 2024 | uitkering       | -0.5       | 3.7          |
+| 2025 | werkenden       | 0.9        | 3.7          |
+| 2025 | gepensioneerden | 0.4        | 3.7          |
+| 2025 | uitkering       | -0.6       | 3.7          |
 
 The parameter file refers to variables by their column names.
 Categorical columns (e.g. `regio`, `geslacht`) keep the order of the

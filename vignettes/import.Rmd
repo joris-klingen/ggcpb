@@ -92,7 +92,8 @@ column names. The package example has two datasets. One of the example
 datasets is shown here:
 
 ```{r data-frame, echo = FALSE}
-knitr::kable(read.csv(file.path(figure_dir, "data", "koopkracht.csv")))
+knitr::kable(read.csv(file.path(figure_dir, "data", "koopkracht.csv")),
+             align = "l")
 ```
 
 The parameter file refers to variables by their column names. 
@@ -116,7 +117,7 @@ params_df <- read.csv(params_csv, header = FALSE, fill = TRUE,
                       stringsAsFactors = FALSE)
 params_df[is.na(params_df)] <- ""
 names(params_df) <- as.character(unlist(params_df[1, ]))
-knitr::kable(params_df[-1, ], row.names = FALSE)
+knitr::kable(params_df[-1, ], row.names = FALSE, align = "l")
 ```
 
 This table shows that there are two figures. The first figure is a column chart (`plot_type` = `col`) that uses the `koopkracht` 
@@ -330,6 +331,7 @@ show_params <- function(rows) {
   print(knitr::kable(
     rows,
     row.names = FALSE,
+    align = "l",
     col.names = c("parameter", "default", "example")
   ))
 }

@@ -179,7 +179,7 @@ A line chart with a forecast window and an uncertainty band.
 plot_type
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 line
 </td>
@@ -193,7 +193,7 @@ line
 title
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 Economische groei met onzekerheid
 </td>
@@ -207,7 +207,7 @@ Economische groei met onzekerheid
 x
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 jaar
 </td>
@@ -221,7 +221,7 @@ jaar
 y
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 groei
 </td>
@@ -235,7 +235,7 @@ groei
 ymin
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 lo
 </td>
@@ -249,7 +249,7 @@ lo
 ymax
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 hi
 </td>
@@ -263,7 +263,7 @@ hi
 forecast_x
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 2023.5
 </td>
@@ -277,7 +277,7 @@ forecast_x
 ylab
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 %
 </td>
@@ -322,7 +322,7 @@ legend tells you which axis belongs to which series.
 plot_type
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 col
 </td>
@@ -336,7 +336,7 @@ col
 title
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 Erfenissen en erfbelasting
 </td>
@@ -350,7 +350,7 @@ Erfenissen en erfbelasting
 x
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 jaar
 </td>
@@ -364,7 +364,7 @@ jaar
 y
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 mld
 </td>
@@ -378,7 +378,7 @@ mld
 fill
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 soort
 </td>
@@ -392,7 +392,7 @@ soort
 sec_y
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 heffing
 </td>
@@ -406,7 +406,7 @@ heffing
 sec_limits
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 0;3
 </td>
@@ -420,7 +420,7 @@ sec_limits
 sec_legend_label
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 erfbelasting
 </td>
@@ -434,7 +434,7 @@ erfbelasting
 sec_ylab
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 mld euro
 </td>
@@ -448,7 +448,7 @@ mld euro
 ylab
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 mld euro
 </td>
@@ -492,7 +492,7 @@ The colours decide the legend. Pick them with `colour_index`.
 plot_type
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 col
 </td>
@@ -506,7 +506,7 @@ col
 title
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 Zonnepanelen naar inkomen
 </td>
@@ -520,7 +520,7 @@ Zonnepanelen naar inkomen
 x
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 groep
 </td>
@@ -534,7 +534,7 @@ groep
 y
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 aandeel
 </td>
@@ -548,7 +548,7 @@ aandeel
 fill
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 jaar
 </td>
@@ -562,7 +562,7 @@ jaar
 position
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 dodge
 </td>
@@ -576,7 +576,7 @@ dodge
 orientation
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 horizontal
 </td>
@@ -590,7 +590,7 @@ horizontal
 colour_index
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 2;1
 </td>
@@ -604,7 +604,7 @@ colour_index
 value_limits
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 0;70
 </td>
@@ -618,7 +618,7 @@ value_limits
 ylab
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 inkomensgroep
 </td>
@@ -632,7 +632,7 @@ inkomensgroep
 xlab
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 aandeel binnen inkomensgroep (%)
 </td>
@@ -677,7 +677,7 @@ English style.
 plot_type
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 line
 </td>
@@ -691,7 +691,7 @@ line
 title
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 Preferred tax rate by age
 </td>
@@ -705,7 +705,7 @@ Preferred tax rate by age
 x
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 leeftijd
 </td>
@@ -719,7 +719,7 @@ leeftijd
 y
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 tarief
 </td>
@@ -733,7 +733,7 @@ tarief
 colour
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 erfenis
 </td>
@@ -747,7 +747,7 @@ erfenis
 points
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 TRUE
 </td>
@@ -761,7 +761,7 @@ TRUE
 value_limits
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 0;30
 </td>
@@ -775,7 +775,7 @@ value_limits
 style
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 english
 </td>
@@ -789,7 +789,7 @@ english
 ylab
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 % average rate
 </td>
@@ -834,7 +834,7 @@ median. The whiskers run from the 5th to the 95th percentile.
 plot_type
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 box
 </td>
@@ -848,7 +848,7 @@ box
 title
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 Koopkracht per inkomensgroep
 </td>
@@ -862,7 +862,7 @@ Koopkracht per inkomensgroep
 x
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 groep
 </td>
@@ -876,7 +876,7 @@ groep
 p5
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 p5
 </td>
@@ -890,7 +890,7 @@ p5
 p25
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 p25
 </td>
@@ -904,7 +904,7 @@ p25
 p50
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 p50
 </td>
@@ -918,7 +918,7 @@ p50
 p75
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 p75
 </td>
@@ -932,7 +932,7 @@ p75
 p95
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 p95
 </td>
@@ -946,7 +946,7 @@ p95
 orientation
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 horizontal
 </td>
@@ -960,7 +960,7 @@ horizontal
 subtitle
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 inkomensgroep
 </td>
@@ -974,7 +974,7 @@ inkomensgroep
 ylab
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 % koopkrachtmutatie
 </td>
@@ -1022,7 +1022,7 @@ work, as the donut chart automatically calculates the proportions.
 plot_type
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 donut
 </td>
@@ -1036,7 +1036,7 @@ donut
 title
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 Energiemix van huishoudens
 </td>
@@ -1050,7 +1050,7 @@ Energiemix van huishoudens
 fill
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 bron
 </td>
@@ -1064,7 +1064,7 @@ bron
 y
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 aandeel
 </td>
@@ -1078,7 +1078,7 @@ aandeel
 colour_index
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 6;5;2;4
 </td>
@@ -1122,7 +1122,7 @@ A dot plot shows an estimate with its interval.
 plot_type
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 dot
 </td>
@@ -1136,7 +1136,7 @@ dot
 title
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 Samenhang met voorkeurstarieven
 </td>
@@ -1150,7 +1150,7 @@ Samenhang met voorkeurstarieven
 x
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 term
 </td>
@@ -1164,7 +1164,7 @@ term
 y
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 coef
 </td>
@@ -1178,7 +1178,7 @@ coef
 lower
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 lo
 </td>
@@ -1192,7 +1192,7 @@ lo
 upper
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 hi
 </td>
@@ -1206,7 +1206,7 @@ hi
 group
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 blok
 </td>
@@ -1220,7 +1220,7 @@ blok
 xlab
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 %punt verandering
 </td>
@@ -1262,7 +1262,7 @@ at the end.
 plot_type
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 scatter
 </td>
@@ -1276,7 +1276,7 @@ scatter
 title
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 Energierekening naar inkomen
 </td>
@@ -1290,7 +1290,7 @@ Energierekening naar inkomen
 x
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 inkomen
 </td>
@@ -1304,7 +1304,7 @@ inkomen
 y
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 energierekening
 </td>
@@ -1318,7 +1318,7 @@ energierekening
 ylab
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 euro per maand
 </td>
@@ -1332,7 +1332,7 @@ euro per maand
 xlab
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 besteedbaar inkomen (euro per maand)
 </td>
@@ -1346,7 +1346,7 @@ besteedbaar inkomen (euro per maand)
 x_labels
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 euro
 </td>
@@ -1388,7 +1388,7 @@ the example code at the end.
 plot_type
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 hist
 </td>
@@ -1402,7 +1402,7 @@ hist
 title
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 Verdeling van de duur
 </td>
@@ -1416,7 +1416,7 @@ Verdeling van de duur
 x
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 maanden
 </td>
@@ -1430,7 +1430,7 @@ maanden
 binwidth
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 2
 </td>
@@ -1444,7 +1444,7 @@ binwidth
 ylab
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 aantal
 </td>
@@ -1458,7 +1458,7 @@ aantal
 xlab
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 duur (maanden)
 </td>
@@ -1540,7 +1540,7 @@ gemeenten <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
 plot_type
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 map
 </td>
@@ -1554,7 +1554,7 @@ map
 title
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 Aandeel huishoudens met zonnepanelen
 </td>
@@ -1568,7 +1568,7 @@ Aandeel huishoudens met zonnepanelen
 region
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 code
 </td>
@@ -1582,7 +1582,7 @@ code
 value
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 aandeel
 </td>
@@ -1596,7 +1596,7 @@ aandeel
 cut
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 0;20;30;40;50;60;Inf
 </td>
@@ -1610,7 +1610,7 @@ cut
 cut_labels
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 pct
 </td>
@@ -1624,7 +1624,7 @@ pct
 palette
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 blues
 </td>
@@ -1638,7 +1638,7 @@ blues
 legend_title
 </td>
 
-<td style="text-align:right;">
+<td style="text-align:left;">
 
 aandeel
 </td>

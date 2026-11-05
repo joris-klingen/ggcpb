@@ -41,7 +41,7 @@ ptab <- function(...) {
   p <- list(...)
   knitr::kable(data.frame(parameter = names(p), value = unlist(p),
                           row.names = NULL),
-               align = c("l", "r"), format = "html", col.names = NULL,
+               align = "l", format = "html", col.names = NULL,
                table.attr = 'class="ptab"')
 }
 
