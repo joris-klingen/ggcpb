@@ -22,7 +22,8 @@ Invisibly, \code{dest}.
 \description{
 \code{cpb_import_csv()} itself still needs R to be started by hand. This copies
 a small kit to \code{dest}: an example \code{params.csv}, a \code{data} folder with
-example datasets, a \code{run_import.R} script that reads them and saves each figure as a PNG
+example datasets, a \code{run_import.R} script that reads them and saves each
+figure as a PNG
 in a \code{generated} subfolder, and two start scripts that run it with a
 double click instead of opening R at all -- \code{run_import.bat} on
 Windows, \code{run_import.command} on a Mac. R itself, and the ggcpb
@@ -33,7 +34,8 @@ hand each time.
 \details{
 The example \code{params.csv} and datasets are meant to be replaced.
 Edit them (a plain text editor or a spreadsheet program both work),
-keep \code{params.csv} and the \code{data} folder where they are, and the start script builds whatever figures
+keep \code{params.csv} and the \code{data} folder where they are, and the start script
+builds whatever figures
 the new \code{params.csv} describes on the next run.
 }
 \examples{

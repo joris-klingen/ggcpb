@@ -11,7 +11,8 @@ cpb_import_col_args <- list(
   col     = c("x", "y", "fill", "group", "facet", "sec_y"),
   area    = c("x", "y", "fill", "facet", "sec_y"),
   line    = c("x", "y", "colour", "ymin", "ymax", "facet", "sec_y"),
-  box     = c("x", "p5", "p25", "p50", "p75", "p95", "mean", "fill", "group", "facet", "sec_y"),
+  box     = c("x", "p5", "p25", "p50", "p75", "p95", "mean", "fill", "group",
+              "facet", "sec_y"),
   dot     = c("x", "y", "lower", "upper", "colour", "group", "facet", "sec_y"),
   scatter = c("x", "y", "colour", "facet"),
   hist    = c("x", "fill", "facet"),
@@ -53,7 +54,8 @@ cpb_import_coerce <- function(value) {
 # no other candidate does better, so the caller's own error stands on
 # its own.
 cpb_import_sep_hint <- function(path, sep, actual_cols) {
-  first_line <- tryCatch(readLines(path, n = 1, warn = FALSE), error = function(e) "")
+  first_line <- tryCatch(readLines(path, n = 1, warn = FALSE),
+                         error = function(e) "")
   if (!length(first_line) || !nzchar(first_line)) {
     return("")
   }
@@ -85,9 +87,11 @@ cpb_import_sep_hint <- function(path, sep, actual_cols) {
 # message that names the actual, likely cause instead.
 cpb_import_read_data <- function(path, sep) {
   data_df <- tryCatch(
-    utils::read.csv(path, check.names = FALSE, stringsAsFactors = FALSE, sep = sep),
+    utils::read.csv(path, check.names = FALSE,
+                    stringsAsFactors = FALSE, sep = sep),
     error = function(e) {
-      stop("Could not read the dataset (", conditionMessage(e), "). Check that ",
+      stop("Could not read the dataset (", conditionMessage(e),
+        "). Check that ",
         "every row has the same number of fields, and that the very first ",
         "row is the header row naming each column, with nothing (no title, ",
         "no blank line) above it.",
@@ -99,7 +103,8 @@ cpb_import_read_data <- function(path, sep) {
   looks_numeric <- grepl("^-?[0-9]+(\\.[0-9]+)?$", trimws(names(data_df)))
   if (any(looks_numeric)) {
     stop("The first row of the dataset does not look like column names ",
-      "(found ", paste0("\"", names(data_df)[looks_numeric], "\"", collapse = ", "),
+      "(found ", paste0("\"", names(data_df)[looks_numeric], "\"",
+                        collapse = ", "),
       "). `cpb_import_csv()` always reads the first row as the header; check ",
       "that a real header row is there, and that no other line comes ",
       "before it.", cpb_import_sep_hint(path, sep, ncol(data_df)),
@@ -118,7 +123,8 @@ cpb_import_read_data <- function(path, sep) {
   # order in the CSV is the order of the categories on the axis and in the
   # legend (read.csv would leave them to sort alphabetically).
   chr <- vapply(data_df, is.character, logical(1))
-  data_df[chr] <- lapply(data_df[chr], function(x) factor(x, levels = unique(x)))
+  data_df[chr] <- lapply(data_df[chr],
+                         function(x) factor(x, levels = unique(x)))
 
   data_df
 }
@@ -211,7 +217,8 @@ cpb_import_build_one <- function(params, data_df, extra_params) {
 
   # a number used to split series (a year as `fill`) is a category, not a
   # gradient. Only a scatter `colour` keeps its numeric gradient.
-  category_args <- c("fill", "group", "facet", if (plot_type != "scatter") "colour")
+  category_args <- c("fill", "group", "facet",
+                     if (plot_type != "scatter") "colour")
   for (nm in intersect(names(params), category_args)) {
     col <- params[[nm]]
     if (col %in% names(data_df) && is.numeric(data_df[[col]])) {
@@ -249,7 +256,8 @@ cpb_import_write_log <- function(params_csv, data_dir, entries) {
   log_path <- paste0(tools::file_path_sans_ext(params_csv), "_log.txt")
 
   header <- c(
-    paste0("ggcpb cpb_import_csv log -- ", format(Sys.time(), "%Y-%m-%d %H:%M:%S")),
+    paste0("ggcpb cpb_import_csv log -- ",
+           format(Sys.time(), "%Y-%m-%d %H:%M:%S")),
     paste0("data:   ", data_dir),
     paste0("params: ", params_csv),
     ""
@@ -275,7 +283,8 @@ cpb_import_write_log <- function(params_csv, data_dir, entries) {
     c(lines, "")
   }))
 
-  n_skipped <- sum(vapply(entries, function(e) e$status == "skipped", logical(1)))
+  n_skipped <- sum(vapply(entries, function(e) e$status == "skipped",
+                          logical(1)))
   n_built <- length(entries) - n_skipped
   n_issues <- sum(vapply(entries, function(e) {
     if (e$status == "skipped") 0L else length(e$unknown)
@@ -301,7 +310,8 @@ cpb_import_write_log <- function(params_csv, data_dir, entries) {
 #' Each figure names its dataset in the `data` parameter, with or without
 #' the `.csv` extension. `data` = `koopkracht` reads `data/koopkracht.csv`,
 #' relative to the folder holding `params_csv`. `data` = `a;b` builds the
-#' figure once per file. A blank or absent `data` reads `data/data.csv`. A dataset that
+#' figure once per file. A blank or absent `data` reads `data/data.csv`. A
+#' dataset that
 #' is missing or cannot be read is skipped with a warning, and every other
 #' figure (and every other dataset in the same list) is still built.
 #'
@@ -401,7 +411,8 @@ cpb_import_csv <- function(params_csv, sep = ",", ..., simplify = TRUE) {
     if (!is.null(params[["data"]])) {
       files <- trimws(strsplit(params[["data"]], ";", fixed = TRUE)[[1]])
       files <- files[nzchar(files)]
-      # the extension is optional: `koopkracht` and `koopkracht.csv` are one dataset
+      # the extension is optional: `koopkracht` and `koopkracht.csv` are one
+      # dataset
       files <- unique(ifelse(grepl("[.]csv$", files, ignore.case = TRUE),
                              files, paste0(files, ".csv")))
     }
@@ -416,7 +427,8 @@ cpb_import_csv <- function(params_csv, sep = ",", ..., simplify = TRUE) {
 
   # a dataset used by more than one figure gets its figure number
   # added to its name, so no figure overwrites another
-  stems <- vapply(items, function(it) tools::file_path_sans_ext(it$file), character(1))
+  stems <- vapply(items, function(it) tools::file_path_sans_ext(it$file),
+                  character(1))
   shared <- unique(stems[duplicated(stems)])
 
   cache <- new.env(parent = emptyenv())
@@ -433,24 +445,24 @@ cpb_import_csv <- function(params_csv, sep = ",", ..., simplify = TRUE) {
   plots <- list()
   for (it in items) {
     entry_label <- paste0(it$label, " [", it$file, "]")
-    skip <- function(detail) {
+    # warns, and returns the log entry of a figure that is left out
+    skipped <- function(detail) {
       warning("Figure ", it$row, " \"", entry_label, "\": ", detail,
         " -- skipped.",
         call. = FALSE
       )
-      entries[[length(entries) + 1]] <<- list(
-        row = it$row, label = entry_label, status = "skipped",
-        detail = detail
-      )
+      list(row = it$row, label = entry_label, status = "skipped",
+           detail = detail)
     }
 
     if (!file.exists(it$path)) {
-      skip(paste0("dataset not found: ", it$path))
+      entries[[length(entries) + 1]] <-
+        skipped(paste0("dataset not found: ", it$path))
       next
     }
     data <- read_cached(it$path)
     if (!is.null(data$error)) {
-      skip(paste0("error: ", data$error))
+      entries[[length(entries) + 1]] <- skipped(paste0("error: ", data$error))
       next
     }
 
@@ -460,16 +472,13 @@ cpb_import_csv <- function(params_csv, sep = ",", ..., simplify = TRUE) {
     # broken figure among twenty should still leave the other nineteen
     # built. The real error message goes in the log, not just the
     # console warning(), which an unattended run may never show.
-    build_error <- NULL
     built <- tryCatch(
       cpb_import_build_one(it$params, data$df, extra_params),
-      error = function(e) {
-        build_error <<- conditionMessage(e)
-        NULL
-      }
+      error = function(e) e
     )
-    if (!is.null(build_error)) {
-      skip(paste0("error: ", build_error))
+    if (inherits(built, "error")) {
+      entries[[length(entries) + 1]] <-
+        skipped(paste0("error: ", conditionMessage(built)))
       next
     }
     entries[[length(entries) + 1]] <- list(
@@ -491,7 +500,9 @@ cpb_import_csv <- function(params_csv, sep = ",", ..., simplify = TRUE) {
   # the individual reasons are already in the log, and repeated here
   # since an unattended run may never show this console error either
   if (!length(plots)) {
-    detail <- vapply(entries, function(e) paste0("\"", e$label, "\": ", e$detail), character(1))
+    detail <- vapply(entries,
+                     function(e) paste0("\"", e$label, "\": ", e$detail),
+                     character(1))
     stop("No figures were built from `params_csv` (", length(entries),
       " figure(s) defined, all skipped) -- ", paste(detail, collapse = "; "),
       ". See the run log: ", log_path,
@@ -531,12 +542,14 @@ cpb_import_run <- function(dir = ".", page = "half") {
 
   out_dir <- file.path(dir, "generated")
   if (!dir.exists(out_dir)) dir.create(out_dir)
-  paths <- file.path(out_dir, paste0(gsub("[^A-Za-z0-9_-]+", "_", names(figs)), ".png"))
+  paths <- file.path(out_dir,
+                     paste0(gsub("[^A-Za-z0-9_-]+", "_", names(figs)), ".png"))
   for (i in seq_along(figs)) {
     save_cpb(paths[[i]], figs[[i]], page = page)
   }
 
-  cat("\nDone. ", length(paths), " figure(s) saved in the generated folder.\n", sep = "")
+  cat("\nDone. ", length(paths),
+      " figure(s) saved in the generated folder.\n", sep = "")
   if (length(warns)) {
     n_skipped <- sum(grepl("-- skipped\\.$", warns))
     cat("\n", n_skipped, " figure(s) skipped. All warnings:\n", sep = "")
@@ -550,7 +563,8 @@ cpb_import_run <- function(dir = ".", page = "half") {
 #'
 #' `cpb_import_csv()` itself still needs R to be started by hand. This copies
 #' a small kit to `dest`: an example `params.csv`, a `data` folder with
-#' example datasets, a `run_import.R` script that reads them and saves each figure as a PNG
+#' example datasets, a `run_import.R` script that reads them and saves each
+#' figure as a PNG
 #' in a `generated` subfolder, and two start scripts that run it with a
 #' double click instead of opening R at all -- `run_import.bat` on
 #' Windows, `run_import.command` on a Mac. R itself, and the ggcpb
@@ -560,7 +574,8 @@ cpb_import_run <- function(dir = ".", page = "half") {
 #'
 #' The example `params.csv` and datasets are meant to be replaced.
 #' Edit them (a plain text editor or a spreadsheet program both work),
-#' keep `params.csv` and the `data` folder where they are, and the start script builds whatever figures
+#' keep `params.csv` and the `data` folder where they are, and the start script
+#' builds whatever figures
 #' the new `params.csv` describes on the next run.
 #'
 #' @param dest Destination folder. Created if it does not exist yet.

@@ -1603,7 +1603,7 @@ stijging <- tibble(jaar = 2017:2024,
                    waarde = c(2.1, 2.3, 2.0, 1.9, 6.4, 6.8, 6.5, 6.6))
 
 cpb_line(stijging, x = jaar, y = waarde,
-  title = "Een scherpe stijging", ylab = "%") +
+         title = "Een scherpe stijging", ylab = "%") +
   geom_hline(yintercept = 6, linetype = "dashed", linewidth = 0.3) +
   annotate("text", x = 2020.2, y = 4.2, label = "scherpe stijging",
            angle = 72, colour = "#a0004e", fontface = "italic",

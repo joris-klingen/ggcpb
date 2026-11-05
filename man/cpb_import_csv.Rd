@@ -39,7 +39,8 @@ arguments, in one of two layouts.
 Each figure names its dataset in the \code{data} parameter, with or without
 the \code{.csv} extension. \code{data} = \code{koopkracht} reads \code{data/koopkracht.csv},
 relative to the folder holding \code{params_csv}. \code{data} = \verb{a;b} builds the
-figure once per file. A blank or absent \code{data} reads \code{data/data.csv}. A dataset that
+figure once per file. A blank or absent \code{data} reads \code{data/data.csv}. A
+dataset that
 is missing or cannot be read is skipped with a warning, and every other
 figure (and every other dataset in the same list) is still built.
 

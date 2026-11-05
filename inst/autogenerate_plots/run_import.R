@@ -28,7 +28,7 @@ cat(script_dir, "\n\n")
 result <- tryCatch({
   if (!requireNamespace("ggcpb", quietly = TRUE)) {
     stop("The ggcpb package is not installed. Install it in R first, ",
-      "then run this script again.")
+         "then run this script again.")
   }
   ggcpb::cpb_import_run(script_dir)
   "ok"

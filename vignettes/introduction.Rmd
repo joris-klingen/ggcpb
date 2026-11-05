@@ -45,7 +45,8 @@ ptab <- function(...) {
 
 # One standard sentence under every figure.
 repro <- function(fun) {
-  cat("**How to reproduce this figure:** copy `params.csv`, the folder `data` and ",
+  cat("**How to reproduce this figure:** copy `params.csv`, the folder ",
+      "`data` and ",
       "`run_import.bat` (Windows) or `run_import.command` (Mac) to a ",
       "personal folder. Fill in the parameters above in `params.csv` and ",
       "start the script. In R you can call `", fun, "()` instead. See ",
@@ -194,8 +195,8 @@ groei <- tibble(jaar = 2015:2027,
 
 ```{r line-forecast}
 cpb_line(groei, x = jaar, y = groei, ymin = lo, ymax = hi,
-  forecast_x = 2023.5,
-  title = "Economische groei met onzekerheid", ylab = "%") +
+         forecast_x = 2023.5,
+         title = "Economische groei met onzekerheid", ylab = "%") +
   scale_x_continuous(breaks = seq(2015, 2027, 3), minor_breaks = 2015:2027,
                      guide = guide_axis(minor.ticks = TRUE))
 ```
@@ -240,9 +241,9 @@ erfenissen <- expand_grid(
 
 ```{r col-secaxis, warning = FALSE}
 cpb_col(erfenissen, x = jaar, y = mld, fill = soort,
-  sec_y = heffing, sec_limits = c(0, 3),
-  sec_legend_label = "erfbelasting", sec_ylab = "mld euro",
-  title = "Erfenissen en erfbelasting", ylab = "mld euro")
+        sec_y = heffing, sec_limits = c(0, 3),
+        sec_legend_label = "erfbelasting", sec_ylab = "mld euro",
+        title = "Erfenissen en erfbelasting", ylab = "mld euro")
 ```
 
 <div>
@@ -283,10 +284,10 @@ zonnepanelen <- expand_grid(
 
 ```{r col-horizontal}
 cpb_col(zonnepanelen, x = groep, y = aandeel, fill = jaar,
-  position = "dodge", orientation = "horizontal",
-  colour_index = c(2, 1), value_limits = c(0, 70), width = 0.85,
-  title = "Zonnepanelen naar inkomen",
-  ylab  = "inkomensgroep", xlab = "aandeel binnen inkomensgroep (%)")
+        position = "dodge", orientation = "horizontal",
+        colour_index = c(2, 1), value_limits = c(0, 70), width = 0.85,
+        title = "Zonnepanelen naar inkomen",
+        ylab  = "inkomensgroep", xlab = "aandeel binnen inkomensgroep (%)")
 ```
 
 <div>
@@ -329,8 +330,8 @@ tarieven <- expand_grid(
 
 ```{r line-points}
 cpb_line(tarieven, x = leeftijd, y = tarief, colour = erfenis,
-  points = TRUE, value_limits = c(0, 30), style = "english",
-  title = "Preferred tax rate by age", ylab = "% average rate")
+         points = TRUE, value_limits = c(0, 30), style = "english",
+         title = "Preferred tax rate by age", ylab = "% average rate")
 ```
 
 <div>
@@ -372,10 +373,10 @@ kk <- raw |>
 
 ```{r box}
 cpb_box(kk, x = groep,
-  p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-  orientation = "horizontal",
-  title = "Koopkracht per inkomensgroep",
-  subtitle = "inkomensgroep", ylab = "% koopkrachtmutatie")
+        p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+        orientation = "horizontal",
+        title = "Koopkracht per inkomensgroep",
+        subtitle = "inkomensgroep", ylab = "% koopkrachtmutatie")
 ```
 
 <div>
@@ -416,8 +417,8 @@ energie <- tibble(bron = factor(bronnen, levels = bronnen),
 
 ```{r donut, warning = FALSE}
 cpb_donut(energie, fill = bron, y = aandeel,
-  colour_index = c(6, 5, 2, 4),
-  title = "Energiemix van huishoudens")
+          colour_index = c(6, 5, 2, 4),
+          title = "Energiemix van huishoudens")
 ```
 
 <div>
@@ -458,9 +459,9 @@ schatting <- tibble(
 
 ```{r dot}
 cpb_dot(schatting, x = term, y = coef, lower = lo, upper = hi,
-  group = blok,
-  title = "Samenhang met voorkeurstarieven",
-  xlab  = "%punt verandering")
+        group = blok,
+        title = "Samenhang met voorkeurstarieven",
+        xlab  = "%punt verandering")
 ```
 
 <div>
@@ -492,10 +493,10 @@ hh <- tibble(inkomen = round(rlnorm(400, log(2500), 0.35))) |>
 
 ```{r scatter}
 cpb_scatter(hh, x = inkomen, y = energierekening,
-  title = "Energierekening naar inkomen",
-  ylab  = "euro per maand",
-  xlab  = "besteedbaar inkomen (euro per maand)",
-  x_labels = label_euro_nl())
+            title = "Energierekening naar inkomen",
+            ylab  = "euro per maand",
+            xlab  = "besteedbaar inkomen (euro per maand)",
+            x_labels = label_euro_nl())
 ```
 
 <div>
@@ -526,8 +527,8 @@ duur <- tibble(maanden = round(rgamma(1200, 8, 0.6)))
 
 ```{r hist}
 cpb_hist(duur, x = maanden, binwidth = 2,
-  title = "Verdeling van de duur", ylab = "aantal",
-  xlab  = "duur (maanden)")
+         title = "Verdeling van de duur", ylab = "aantal",
+         xlab  = "duur (maanden)")
 ```
 
 <div>
@@ -563,7 +564,7 @@ stijging <- tibble(jaar = 2017:2024,
                    waarde = c(2.1, 2.3, 2.0, 1.9, 6.4, 6.8, 6.5, 6.6))
 
 cpb_line(stijging, x = jaar, y = waarde,
-  title = "Een scherpe stijging", ylab = "%") +
+         title = "Een scherpe stijging", ylab = "%") +
   geom_hline(yintercept = 6, linetype = "dashed", linewidth = 0.3) +
   annotate("text", x = 2020.2, y = 4.2, label = "scherpe stijging",
            angle = 72, colour = "#a0004e", fontface = "italic",
@@ -594,9 +595,9 @@ gemeenten <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
 
 ```{r map, warning = FALSE}
 cpb_map(gemeenten, region = code, value = klasse,
-  palette = "blues",
-  title = "Aandeel huishoudens met zonnepanelen",
-  legend_title = "aandeel")
+        palette = "blues",
+        title = "Aandeel huishoudens met zonnepanelen",
+        legend_title = "aandeel")
 ```
 
 <div>
