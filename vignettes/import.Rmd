@@ -130,6 +130,49 @@ The parameter `page` sets the page width a figure is saved at: `half`
 (7.5 cm, the default), `full` (15.5 cm) or `small`. 
 If left out, the default `half` is used. 
 
+## Plot types
+
+`plot_type` names the figure type: `line`, `col`, `area`, `box`,
+`boxplot_extended`, `dot`, `scatter`, `hist`, `donut` or `map`. Each
+type is the `cpb_` function of the same name, such as `cpb_line()`.
+Every argument of that function can be a parameter. Appendix A lists
+them all per type.
+
+## Special values
+
+Most values are plain text, a number, `TRUE` or `FALSE`. A few need a
+special form:
+
+| Value | Example | What happens |
+|---|---|---|
+| a list | `0;100` | `;` separates the values. |
+| a line break | `First line\nsecond line` | `\n` starts a new line. |
+| no upper limit | `0;20;Inf` | `Inf` and `-Inf` are numbers. |
+| a formatter | `euro` | `x_labels` and `sec_axis_labels` take `number`, `euro` or `pct`. |
+| pairs | `p5:onderste 5%` | `dot_labels` takes name:value pairs. |
+| a date | `2024-01-31` | A dataset column of dates gives a date axis. `31-1-2024` works too. |
+
+## Classes
+
+The parameter `cut` puts numbers into classes, such as
+`0;20;30;40;Inf`. That gives the classes "lager dan 20", "20 - 30",
+"30 - 40" and "40 en hoger". `cut_labels` writes them as `number`
+(default), `euro` or `pct`. It works on the column that sets the
+colours: `value` of a map, `colour` of a line, dot or scatter plot, and
+`fill` of the other types. The numbers themselves stay available, for
+example on the y axis.
+
+## Saving
+
+Next to `page`, four parameters say how a figure is saved:
+
+| Parameter | Example | What happens |
+|---|---|---|
+| `height` | `10` | The height in cm. Left out, the page height is used. |
+| `preset` | `map` | `map` makes a map as tall as it needs. `presentation` is for slides. |
+| `dpi` | `800` | The resolution. The default is 300. |
+| `lock` | `FALSE` | A title that is too wide only gives a warning, instead of an error. |
+
 # Creating the figures in R
 
 Pass the parameter file to `cpb_import_csv()`. The datasets are read

@@ -422,7 +422,13 @@ font-weight: bold;
 opening R?</a></li>
 </ul></li>
 <li><a href="#the-dataset" id="toc-the-dataset"><span class="toc-section-number">2</span> The dataset</a></li>
-<li><a href="#the-parameter-file" id="toc-the-parameter-file"><span class="toc-section-number">3</span> The parameter file</a></li>
+<li><a href="#the-parameter-file" id="toc-the-parameter-file"><span class="toc-section-number">3</span> The parameter file</a>
+<ul>
+<li><a href="#plot-types" id="toc-plot-types"><span class="toc-section-number">3.1</span> Plot types</a></li>
+<li><a href="#special-values" id="toc-special-values"><span class="toc-section-number">3.2</span> Special values</a></li>
+<li><a href="#classes" id="toc-classes"><span class="toc-section-number">3.3</span> Classes</a></li>
+<li><a href="#saving" id="toc-saving"><span class="toc-section-number">3.4</span> Saving</a></li>
+</ul></li>
 <li><a href="#creating-the-figures-in-r" id="toc-creating-the-figures-in-r"><span class="toc-section-number">4</span> Creating the figures in R</a></li>
 <li><a href="#several-datasets" id="toc-several-datasets"><span class="toc-section-number">5</span> Several datasets</a></li>
 <li><a href="#a-parameter-file-with-one-figure" id="toc-a-parameter-file-with-one-figure"><span class="toc-section-number">6</span> A parameter file with one
@@ -691,6 +697,123 @@ gets English labels and number formats.</p>
 at: <code>half</code> (7.5 cm, the default), <code>full</code> (15.5 cm)
 or <code>small</code>. If left out, the default <code>half</code> is
 used.</p>
+<div id="plot-types" class="section level2" number="3.1">
+<h2><span class="header-section-number">3.1</span> Plot types</h2>
+<p><code>plot_type</code> names the figure type: <code>line</code>,
+<code>col</code>, <code>area</code>, <code>box</code>,
+<code>boxplot_extended</code>, <code>dot</code>, <code>scatter</code>,
+<code>hist</code>, <code>donut</code> or <code>map</code>. Each type is
+the <code>cpb_</code> function of the same name, such as
+<code>cpb_line()</code>. Every argument of that function can be a
+parameter. Appendix A lists them all per type.</p>
+</div>
+<div id="special-values" class="section level2" number="3.2">
+<h2><span class="header-section-number">3.2</span> Special values</h2>
+<p>Most values are plain text, a number, <code>TRUE</code> or
+<code>FALSE</code>. A few need a special form:</p>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Value</th>
+<th>Example</th>
+<th>What happens</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>a list</td>
+<td><code>0;100</code></td>
+<td><code>;</code> separates the values.</td>
+</tr>
+<tr class="even">
+<td>a line break</td>
+<td><code>First line\nsecond line</code></td>
+<td><code>\n</code> starts a new line.</td>
+</tr>
+<tr class="odd">
+<td>no upper limit</td>
+<td><code>0;20;Inf</code></td>
+<td><code>Inf</code> and <code>-Inf</code> are numbers.</td>
+</tr>
+<tr class="even">
+<td>a formatter</td>
+<td><code>euro</code></td>
+<td><code>x_labels</code> and <code>sec_axis_labels</code> take
+<code>number</code>, <code>euro</code> or <code>pct</code>.</td>
+</tr>
+<tr class="odd">
+<td>pairs</td>
+<td><code>p5:onderste 5%</code></td>
+<td><code>dot_labels</code> takes name:value pairs.</td>
+</tr>
+<tr class="even">
+<td>a date</td>
+<td><code>2024-01-31</code></td>
+<td>A dataset column of dates gives a date axis. <code>31-1-2024</code>
+works too.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="classes" class="section level2" number="3.3">
+<h2><span class="header-section-number">3.3</span> Classes</h2>
+<p>The parameter <code>cut</code> puts numbers into classes, such as
+<code>0;20;30;40;Inf</code>. That gives the classes “lager dan 20”, “20
+- 30”, “30 - 40” and “40 en hoger”. <code>cut_labels</code> writes them
+as <code>number</code> (default), <code>euro</code> or <code>pct</code>.
+It works on the column that sets the colours: <code>value</code> of a
+map, <code>colour</code> of a line, dot or scatter plot, and
+<code>fill</code> of the other types. The numbers themselves stay
+available, for example on the y axis.</p>
+</div>
+<div id="saving" class="section level2" number="3.4">
+<h2><span class="header-section-number">3.4</span> Saving</h2>
+<p>Next to <code>page</code>, four parameters say how a figure is
+saved:</p>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Example</th>
+<th>What happens</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>height</code></td>
+<td><code>10</code></td>
+<td>The height in cm. Left out, the page height is used.</td>
+</tr>
+<tr class="even">
+<td><code>preset</code></td>
+<td><code>map</code></td>
+<td><code>map</code> makes a map as tall as it needs.
+<code>presentation</code> is for slides.</td>
+</tr>
+<tr class="odd">
+<td><code>dpi</code></td>
+<td><code>800</code></td>
+<td>The resolution. The default is 300.</td>
+</tr>
+<tr class="even">
+<td><code>lock</code></td>
+<td><code>FALSE</code></td>
+<td>A title that is too wide only gives a warning, instead of an
+error.</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 <div id="creating-the-figures-in-r" class="section level1" number="4">
 <h1><span class="header-section-number">4</span> Creating the figures in
@@ -819,9 +942,9 @@ A1.</p>
 all plot types</strong></span></p>
 <table>
 <colgroup>
-<col width="16%" />
-<col width="15%" />
-<col width="68%" />
+<col width="11%" />
+<col width="38%" />
+<col width="49%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -837,34 +960,54 @@ all plot types</strong></span></p>
 <td align="left">2;6</td>
 </tr>
 <tr class="even">
+<td align="left">cut</td>
+<td align="left"></td>
+<td align="left">0;20;40;Inf</td>
+</tr>
+<tr class="odd">
+<td align="left">cut_labels</td>
+<td align="left">number/euro/pct (default: number)</td>
+<td align="left">pct</td>
+</tr>
+<tr class="even">
 <td align="left">data</td>
 <td align="left">data</td>
 <td align="left">koopkracht;werkloosheid</td>
 </tr>
 <tr class="odd">
+<td align="left">dpi</td>
+<td align="left">300</td>
+<td align="left">800</td>
+</tr>
+<tr class="even">
 <td align="left">flush_legend</td>
 <td align="left">TRUE</td>
 <td align="left">TRUE</td>
 </tr>
-<tr class="even">
-<td align="left">legend</td>
-<td align="left">bottom</td>
-<td align="left">bottom</td>
-</tr>
 <tr class="odd">
+<td align="left">height</td>
+<td align="left"></td>
+<td align="left">10 (cm)</td>
+</tr>
+<tr class="even">
 <td align="left">legend_ncol</td>
 <td align="left"></td>
 <td align="left">2</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">legend_nrow</td>
 <td align="left"></td>
-<td align="left"></td>
+<td align="left">2</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">legend_title</td>
 <td align="left"></td>
 <td align="left">title of the legend</td>
+</tr>
+<tr class="odd">
+<td align="left">lock</td>
+<td align="left">TRUE</td>
+<td align="left">FALSE</td>
 </tr>
 <tr class="even">
 <td align="left">page</td>
@@ -872,9 +1015,9 @@ all plot types</strong></span></p>
 <td align="left">full</td>
 </tr>
 <tr class="odd">
-<td align="left">palette</td>
-<td align="left">qualitative</td>
-<td align="left">qualitative</td>
+<td align="left">preset</td>
+<td align="left">report/presentation/map (default: report)</td>
+<td align="left">map</td>
 </tr>
 <tr class="even">
 <td align="left">style</td>
@@ -898,9 +1041,9 @@ figure)</td>
 <code>col</code></strong></span></p>
 <table>
 <colgroup>
-<col width="18%" />
-<col width="40%" />
-<col width="40%" />
+<col width="17%" />
+<col width="38%" />
+<col width="44%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -971,14 +1114,24 @@ figure)</td>
 <td align="left">0.8</td>
 </tr>
 <tr class="odd">
+<td align="left">legend</td>
+<td align="left">bottom</td>
+<td align="left">bottom</td>
+</tr>
+<tr class="even">
 <td align="left">minor</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">orientation</td>
 <td align="left">vertical/horizontal (default: vertical)</td>
 <td align="left">vertical/horizontal (default: vertical)</td>
+</tr>
+<tr class="even">
+<td align="left">palette</td>
+<td align="left">qualitative</td>
+<td align="left">qualitative</td>
 </tr>
 <tr class="odd">
 <td align="left">pct_axis</td>
@@ -1003,12 +1156,12 @@ figure)</td>
 <tr class="odd">
 <td align="left">sec_at</td>
 <td align="left"></td>
-<td align="left"></td>
+<td align="left">0;50;100</td>
 </tr>
 <tr class="even">
 <td align="left">sec_axis_labels</td>
 <td align="left"></td>
-<td align="left"></td>
+<td align="left">pct (or number, euro, or labels such as a;b;c)</td>
 </tr>
 <tr class="odd">
 <td align="left">sec_col_width</td>
@@ -1136,9 +1289,9 @@ figure)</td>
 <code>area</code></strong></span></p>
 <table>
 <colgroup>
-<col width="22%" />
-<col width="38%" />
-<col width="38%" />
+<col width="18%" />
+<col width="32%" />
+<col width="48%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -1194,9 +1347,19 @@ figure)</td>
 <td align="left">0.1</td>
 </tr>
 <tr class="even">
+<td align="left">legend</td>
+<td align="left">bottom</td>
+<td align="left">bottom</td>
+</tr>
+<tr class="odd">
 <td align="left">minor</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
+</tr>
+<tr class="even">
+<td align="left">palette</td>
+<td align="left">qualitative</td>
+<td align="left">qualitative</td>
 </tr>
 <tr class="odd">
 <td align="left">pct_axis</td>
@@ -1216,12 +1379,12 @@ figure)</td>
 <tr class="even">
 <td align="left">sec_at</td>
 <td align="left"></td>
-<td align="left"></td>
+<td align="left">0;50;100</td>
 </tr>
 <tr class="odd">
 <td align="left">sec_axis_labels</td>
 <td align="left"></td>
-<td align="left"></td>
+<td align="left">pct (or number, euro, or labels such as a;b;c)</td>
 </tr>
 <tr class="even">
 <td align="left">sec_col_width</td>
@@ -1344,9 +1507,9 @@ figure)</td>
 <code>line</code></strong></span></p>
 <table>
 <colgroup>
-<col width="22%" />
-<col width="38%" />
-<col width="38%" />
+<col width="18%" />
+<col width="32%" />
+<col width="48%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -1402,19 +1565,29 @@ figure)</td>
 <td align="left">0.1</td>
 </tr>
 <tr class="even">
+<td align="left">legend</td>
+<td align="left">bottom</td>
+<td align="left">bottom</td>
+</tr>
+<tr class="odd">
 <td align="left">line_colour</td>
 <td align="left"></td>
 <td align="left">#005faf</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">linewidth</td>
 <td align="left">0.55</td>
 <td align="left">0.55</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">minor</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
+</tr>
+<tr class="even">
+<td align="left">palette</td>
+<td align="left">qualitative</td>
+<td align="left">qualitative</td>
 </tr>
 <tr class="odd">
 <td align="left">pct_axis</td>
@@ -1439,12 +1612,12 @@ figure)</td>
 <tr class="odd">
 <td align="left">sec_at</td>
 <td align="left"></td>
-<td align="left"></td>
+<td align="left">0;50;100</td>
 </tr>
 <tr class="even">
 <td align="left">sec_axis_labels</td>
 <td align="left"></td>
-<td align="left"></td>
+<td align="left">pct (or number, euro, or labels such as a;b;c)</td>
 </tr>
 <tr class="odd">
 <td align="left">sec_col_width</td>
@@ -1582,9 +1755,9 @@ figure)</td>
 <code>box</code></strong></span></p>
 <table>
 <colgroup>
-<col width="18%" />
-<col width="40%" />
-<col width="40%" />
+<col width="17%" />
+<col width="38%" />
+<col width="44%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -1665,49 +1838,59 @@ figure)</td>
 <td align="left">0.1</td>
 </tr>
 <tr class="odd">
+<td align="left">legend</td>
+<td align="left">bottom</td>
+<td align="left">bottom</td>
+</tr>
+<tr class="even">
 <td align="left">linewidth</td>
 <td align="left">0.25</td>
 <td align="left">0.25</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">mean</td>
 <td align="left"></td>
 <td align="left">mean</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">minor</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">orientation</td>
 <td align="left">vertical/horizontal (default: vertical)</td>
 <td align="left">vertical/horizontal (default: vertical)</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">p25</td>
 <td align="left">(required)</td>
 <td align="left">p25</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">p5</td>
 <td align="left">(required)</td>
 <td align="left">p5</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">p50</td>
 <td align="left">(required)</td>
 <td align="left">p50</td>
+</tr>
+<tr class="odd">
+<td align="left">p75</td>
+<td align="left">(required)</td>
+<td align="left">p75</td>
 </tr>
 <tr class="even">
-<td align="left">p75</td>
+<td align="left">p95</td>
 <td align="left">(required)</td>
-<td align="left">p75</td>
+<td align="left">p95</td>
 </tr>
 <tr class="odd">
-<td align="left">p95</td>
-<td align="left">(required)</td>
-<td align="left">p95</td>
+<td align="left">palette</td>
+<td align="left">qualitative</td>
+<td align="left">qualitative</td>
 </tr>
 <tr class="even">
 <td align="left">pct_axis</td>
@@ -1727,12 +1910,12 @@ figure)</td>
 <tr class="odd">
 <td align="left">sec_at</td>
 <td align="left"></td>
-<td align="left"></td>
+<td align="left">0;50;100</td>
 </tr>
 <tr class="even">
 <td align="left">sec_axis_labels</td>
 <td align="left"></td>
-<td align="left"></td>
+<td align="left">pct (or number, euro, or labels such as a;b;c)</td>
 </tr>
 <tr class="odd">
 <td align="left">sec_col_width</td>
@@ -1860,9 +2043,9 @@ figure)</td>
 <code>dot</code></strong></span></p>
 <table>
 <colgroup>
-<col width="17%" />
-<col width="41%" />
-<col width="41%" />
+<col width="16%" />
+<col width="39%" />
+<col width="43%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -1923,24 +2106,34 @@ figure)</td>
 <td align="left">0.7</td>
 </tr>
 <tr class="odd">
+<td align="left">legend</td>
+<td align="left">bottom</td>
+<td align="left">bottom</td>
+</tr>
+<tr class="even">
 <td align="left">linewidth</td>
 <td align="left">0.4</td>
 <td align="left">0.4</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">lower</td>
 <td align="left">(required)</td>
 <td align="left">lower_bound</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">minor</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">orientation</td>
 <td align="left">horizontal/vertical (default: horizontal)</td>
 <td align="left">horizontal/vertical (default: horizontal)</td>
+</tr>
+<tr class="even">
+<td align="left">palette</td>
+<td align="left">qualitative</td>
+<td align="left">qualitative</td>
 </tr>
 <tr class="odd">
 <td align="left">pct_axis</td>
@@ -1960,12 +2153,12 @@ figure)</td>
 <tr class="even">
 <td align="left">sec_at</td>
 <td align="left"></td>
-<td align="left"></td>
+<td align="left">0;50;100</td>
 </tr>
 <tr class="odd">
 <td align="left">sec_axis_labels</td>
 <td align="left"></td>
-<td align="left"></td>
+<td align="left">pct (or number, euro, or labels such as a;b;c)</td>
 </tr>
 <tr class="even">
 <td align="left">sec_col_width</td>
@@ -2102,6 +2295,11 @@ figure)</td>
 <p><span class="table-title"><strong>Table A7. Parameters specific to
 <code>scatter</code></strong></span></p>
 <table>
+<colgroup>
+<col width="23%" />
+<col width="15%" />
+<col width="61%" />
+</colgroup>
 <thead>
 <tr class="header">
 <th align="left">parameter</th>
@@ -2156,9 +2354,19 @@ figure)</td>
 <td align="left">0.1</td>
 </tr>
 <tr class="even">
+<td align="left">legend</td>
+<td align="left">bottom</td>
+<td align="left">bottom</td>
+</tr>
+<tr class="odd">
 <td align="left">minor</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
+</tr>
+<tr class="even">
+<td align="left">palette</td>
+<td align="left">qualitative</td>
+<td align="left">qualitative</td>
 </tr>
 <tr class="odd">
 <td align="left">pct_axis</td>
@@ -2211,31 +2419,36 @@ figure)</td>
 <td align="left">year</td>
 </tr>
 <tr class="odd">
+<td align="left">x_labels</td>
+<td align="left"></td>
+<td align="left">euro (or number, pct, or labels such as a;b;c)</td>
+</tr>
+<tr class="even">
 <td align="left">x_lim</td>
 <td align="left"></td>
 <td align="left">2015;2025</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">x_lim_follow_data</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">xlab</td>
 <td align="left"></td>
 <td align="left">unit below the x axis</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">y</td>
 <td align="left">(required)</td>
 <td align="left">purchasing_power</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">ylab</td>
 <td align="left"></td>
 <td align="left">% change</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">zeroline</td>
 <td align="left"></td>
 <td align="left">TRUE</td>
@@ -2304,14 +2517,24 @@ figure)</td>
 <td align="left">0.1</td>
 </tr>
 <tr class="odd">
+<td align="left">legend</td>
+<td align="left">bottom</td>
+<td align="left">bottom</td>
+</tr>
+<tr class="even">
 <td align="left">minor</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">outline</td>
 <td align="left">white</td>
 <td align="left">white</td>
+</tr>
+<tr class="even">
+<td align="left">palette</td>
+<td align="left">qualitative</td>
+<td align="left">qualitative</td>
 </tr>
 <tr class="odd">
 <td align="left">position</td>
@@ -2427,14 +2650,24 @@ figure)</td>
 <td align="left">0.15</td>
 </tr>
 <tr class="odd">
+<td align="left">legend</td>
+<td align="left">bottom</td>
+<td align="left">bottom</td>
+</tr>
+<tr class="even">
 <td align="left">legend_pct</td>
 <td align="left">FALSE</td>
 <td align="left">FALSE</td>
 </tr>
+<tr class="odd">
+<td align="left">palette</td>
+<td align="left">qualitative</td>
+<td align="left">qualitative</td>
+</tr>
 <tr class="even">
 <td align="left">panel_size</td>
 <td align="left"></td>
-<td align="left"></td>
+<td align="left">1.8</td>
 </tr>
 <tr class="odd">
 <td align="left">reverse_legend</td>
@@ -2455,6 +2688,382 @@ figure)</td>
 <td align="left">y</td>
 <td align="left">(required)</td>
 <td align="left">purchasing_power</td>
+</tr>
+</tbody>
+</table>
+<p><span class="table-title"><strong>Table A10. Parameters specific to
+<code>map</code></strong></span></p>
+<table>
+<colgroup>
+<col width="15%" />
+<col width="42%" />
+<col width="42%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">parameter</th>
+<th align="left">default</th>
+<th align="left">example</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">border_colour</td>
+<td align="left"></td>
+<td align="left">white</td>
+</tr>
+<tr class="even">
+<td align="left">border_linewidth</td>
+<td align="left">0.15</td>
+<td align="left">0.15</td>
+</tr>
+<tr class="odd">
+<td align="left">legend</td>
+<td align="left">topleft</td>
+<td align="left">topleft</td>
+</tr>
+<tr class="even">
+<td align="left">level</td>
+<td align="left">gemeente/corop/provincie (default: gemeente)</td>
+<td align="left">gemeente/corop/provincie (default: gemeente)</td>
+</tr>
+<tr class="odd">
+<td align="left">na_fill</td>
+<td align="left"></td>
+<td align="left">lightgrey</td>
+</tr>
+<tr class="even">
+<td align="left">palette</td>
+<td align="left">sequential</td>
+<td align="left">sequential</td>
+</tr>
+<tr class="odd">
+<td align="left">region</td>
+<td align="left">(required)</td>
+<td align="left">code</td>
+</tr>
+<tr class="even">
+<td align="left">reverse</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+</tr>
+<tr class="odd">
+<td align="left">reverse_legend</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+</tr>
+<tr class="even">
+<td align="left">value</td>
+<td align="left">(required)</td>
+<td align="left">share</td>
+</tr>
+</tbody>
+</table>
+<p><span class="table-title"><strong>Table A11. Parameters specific to
+<code>boxplot_extended</code></strong></span></p>
+<table>
+<colgroup>
+<col width="21%" />
+<col width="36%" />
+<col width="41%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">parameter</th>
+<th align="left">default</th>
+<th align="left">example</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">axis_text_size</td>
+<td align="left">7</td>
+<td align="left">7</td>
+</tr>
+<tr class="even">
+<td align="left">box_labels</td>
+<td align="left"></td>
+<td align="left">TRUE</td>
+</tr>
+<tr class="odd">
+<td align="left">box_style</td>
+<td align="left">modern/ggcpb/james/dot (default: modern)</td>
+<td align="left">modern/ggcpb/james/dot (default: modern)</td>
+</tr>
+<tr class="even">
+<td align="left">dot_labels</td>
+<td align="left"></td>
+<td align="left">p5:bottom 5%;p95:top 5%</td>
+</tr>
+<tr class="odd">
+<td align="left">facet</td>
+<td align="left"></td>
+<td align="left">region</td>
+</tr>
+<tr class="even">
+<td align="left">facet_ncol</td>
+<td align="left"></td>
+<td align="left">2</td>
+</tr>
+<tr class="odd">
+<td align="left">facet_scales</td>
+<td align="left">fixed</td>
+<td align="left">fixed</td>
+</tr>
+<tr class="even">
+<td align="left">fill</td>
+<td align="left"></td>
+<td align="left">group</td>
+</tr>
+<tr class="odd">
+<td align="left">fill_colour</td>
+<td align="left"></td>
+<td align="left">#005faf</td>
+</tr>
+<tr class="even">
+<td align="left">grid_colour</td>
+<td align="left">white</td>
+<td align="left">white</td>
+</tr>
+<tr class="odd">
+<td align="left">grid_linewidth</td>
+<td align="left">0.8</td>
+<td align="left">0.8</td>
+</tr>
+<tr class="even">
+<td align="left">group</td>
+<td align="left"></td>
+<td align="left">sector</td>
+</tr>
+<tr class="odd">
+<td align="left">group_gap</td>
+<td align="left">0.7</td>
+<td align="left">0.7</td>
+</tr>
+<tr class="even">
+<td align="left">label_accuracy</td>
+<td align="left">0.1</td>
+<td align="left">0.1</td>
+</tr>
+<tr class="odd">
+<td align="left">legend</td>
+<td align="left">bottom</td>
+<td align="left">bottom</td>
+</tr>
+<tr class="even">
+<td align="left">linewidth</td>
+<td align="left">0.25</td>
+<td align="left">0.25</td>
+</tr>
+<tr class="odd">
+<td align="left">mean</td>
+<td align="left"></td>
+<td align="left">mean</td>
+</tr>
+<tr class="even">
+<td align="left">minor</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+</tr>
+<tr class="odd">
+<td align="left">orientation</td>
+<td align="left">horizontal/vertical (default: horizontal)</td>
+<td align="left">horizontal/vertical (default: horizontal)</td>
+</tr>
+<tr class="even">
+<td align="left">p25</td>
+<td align="left">(required)</td>
+<td align="left">p25</td>
+</tr>
+<tr class="odd">
+<td align="left">p5</td>
+<td align="left">(required)</td>
+<td align="left">p5</td>
+</tr>
+<tr class="even">
+<td align="left">p50</td>
+<td align="left">(required)</td>
+<td align="left">p50</td>
+</tr>
+<tr class="odd">
+<td align="left">p75</td>
+<td align="left">(required)</td>
+<td align="left">p75</td>
+</tr>
+<tr class="even">
+<td align="left">p95</td>
+<td align="left">(required)</td>
+<td align="left">p95</td>
+</tr>
+<tr class="odd">
+<td align="left">palette</td>
+<td align="left">qualitative</td>
+<td align="left">qualitative</td>
+</tr>
+<tr class="even">
+<td align="left">panel_fill</td>
+<td align="left">#eef8ff</td>
+<td align="left">#eef8ff</td>
+</tr>
+<tr class="odd">
+<td align="left">pct_axis</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+</tr>
+<tr class="even">
+<td align="left">reverse_legend</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+</tr>
+<tr class="odd">
+<td align="left">sec_accuracy</td>
+<td align="left"></td>
+<td align="left">0.1</td>
+</tr>
+<tr class="even">
+<td align="left">sec_at</td>
+<td align="left"></td>
+<td align="left">0;50;100</td>
+</tr>
+<tr class="odd">
+<td align="left">sec_axis_labels</td>
+<td align="left"></td>
+<td align="left">pct (or number, euro, or labels such as a;b;c)</td>
+</tr>
+<tr class="even">
+<td align="left">sec_col_width</td>
+<td align="left">0.3</td>
+<td align="left">0.3</td>
+</tr>
+<tr class="odd">
+<td align="left">sec_colour</td>
+<td align="left"></td>
+<td align="left">#e6006e</td>
+</tr>
+<tr class="even">
+<td align="left">sec_legend_label</td>
+<td align="left"></td>
+<td align="left">name of the second series</td>
+</tr>
+<tr class="odd">
+<td align="left">sec_limits</td>
+<td align="left"></td>
+<td align="left">0;100</td>
+</tr>
+<tr class="even">
+<td align="left">sec_linewidth</td>
+<td align="left">0.55</td>
+<td align="left">0.55</td>
+</tr>
+<tr class="odd">
+<td align="left">sec_points</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+</tr>
+<tr class="even">
+<td align="left">sec_scale_auto</td>
+<td align="left">TRUE</td>
+<td align="left">TRUE</td>
+</tr>
+<tr class="odd">
+<td align="left">sec_symbol_size</td>
+<td align="left">1.6</td>
+<td align="left">1.6</td>
+</tr>
+<tr class="even">
+<td align="left">sec_type</td>
+<td align="left">line/point/col (default: line)</td>
+<td align="left">line/point/col (default: line)</td>
+</tr>
+<tr class="odd">
+<td align="left">sec_y</td>
+<td align="left"></td>
+<td align="left">unemployment</td>
+</tr>
+<tr class="even">
+<td align="left">sec_ylab</td>
+<td align="left"></td>
+<td align="left">unit of the right axis</td>
+</tr>
+<tr class="odd">
+<td align="left">ticks</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+</tr>
+<tr class="even">
+<td align="left">value_accuracy</td>
+<td align="left"></td>
+<td align="left">0.1</td>
+</tr>
+<tr class="odd">
+<td align="left">value_axis</td>
+<td align="left"></td>
+<td align="left">bottom</td>
+</tr>
+<tr class="even">
+<td align="left">value_axis_linewidth</td>
+<td align="left">0.7</td>
+<td align="left">0.7</td>
+</tr>
+<tr class="odd">
+<td align="left">value_breaks</td>
+<td align="left"></td>
+<td align="left">0;25;50;75;100</td>
+</tr>
+<tr class="even">
+<td align="left">value_crop</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+</tr>
+<tr class="odd">
+<td align="left">value_limits</td>
+<td align="left"></td>
+<td align="left">0;100</td>
+</tr>
+<tr class="even">
+<td align="left">width</td>
+<td align="left">0.45</td>
+<td align="left">0.45</td>
+</tr>
+<tr class="odd">
+<td align="left">x</td>
+<td align="left">(required)</td>
+<td align="left">year</td>
+</tr>
+<tr class="even">
+<td align="left">x_lim</td>
+<td align="left"></td>
+<td align="left">2015;2025</td>
+</tr>
+<tr class="odd">
+<td align="left">x_lim_follow_data</td>
+<td align="left">TRUE</td>
+<td align="left">TRUE</td>
+</tr>
+<tr class="even">
+<td align="left">xlab</td>
+<td align="left"></td>
+<td align="left">unit below the x axis</td>
+</tr>
+<tr class="odd">
+<td align="left">ylab</td>
+<td align="left"></td>
+<td align="left">% change</td>
+</tr>
+<tr class="even">
+<td align="left">ylab_position</td>
+<td align="left"></td>
+<td align="left">left</td>
+</tr>
+<tr class="odd">
+<td align="left">zero_indicator</td>
+<td align="left"></td>
+<td align="left">TRUE</td>
+</tr>
+<tr class="even">
+<td align="left">zero_indicator_linewidth</td>
+<td align="left">2</td>
+<td align="left">2</td>
 </tr>
 </tbody>
 </table>

@@ -503,7 +503,7 @@ cpb_scatter(hh, x = inkomen, y = energierekening,
 ```{r par-scatter}
 ptab(plot_type = "scatter", title = "Energierekening naar inkomen",
      x = "inkomen", y = "energierekening", ylab = "euro per maand",
-     xlab = "besteedbaar inkomen (euro per maand)")
+     xlab = "besteedbaar inkomen (euro per maand)", x_labels = "euro")
 ```
 
 </div>
@@ -577,9 +577,10 @@ You can stack as many pieces as you need. More patterns are in
 The maps can display municipalities or provinces 
 on bundled generalised CBS/Kadaster boundaries.
 The following map colours each Dutch municipality by class. 
-The function `cpb_cut()` makes the classes, 
-and `label_pct_nl()` writes them as percentages. 
-Maps are drawn in R. The boundaries come with the package.
+The parameter `cut` makes the classes,
+and `cut_labels = pct` writes them as percentages.
+In R, `cpb_cut()` and `label_pct_nl()` do the same.
+The boundaries come with the package.
 
 ```{r data-map, echo = TRUE}
 gemeenten <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
@@ -602,18 +603,20 @@ cpb_map(gemeenten, region = code, value = klasse,
 #### Relevant parameters {-}
 
 ```{r par-map}
-ptab(`function` = "cpb_map", title = "Aandeel huishoudens met zonnepanelen",
-     region = "code", value = "cpb_cut(aandeel, labeller = label_pct_nl())",
-     palette = "blues", legend_title = "aandeel")
+ptab(plot_type = "map", title = "Aandeel huishoudens met zonnepanelen",
+     region = "code", value = "aandeel", cut = "0;20;30;40;50;60;Inf",
+     cut_labels = "pct", palette = "blues", legend_title = "aandeel")
 ```
 
 </div>
 
 :::
 
-Maps currently have no `params.csv` route. Call `cpb_map()` in R, as
-described above. More options are in
-[`vignette("maps")`](maps.html).
+```{r, results = "asis"}
+repro("cpb_map", "map")
+```
+
+More options are in [`vignette("maps")`](maps.html).
 
 # Example code to create figures in R
 

@@ -1339,6 +1339,20 @@ besteedbaar inkomen (euro per maand)
 
 </tr>
 
+<tr>
+
+<td style="text-align:left;">
+
+x_labels
+</td>
+
+<td style="text-align:right;">
+
+euro
+</td>
+
+</tr>
+
 </tbody>
 
 </table>
@@ -1496,9 +1510,9 @@ You can stack as many pieces as you need. More patterns are in
 
 The maps can display municipalities or provinces on bundled generalised
 CBS/Kadaster boundaries. The following map colours each Dutch
-municipality by class. The function `cpb_cut()` makes the classes, and
-`label_pct_nl()` writes them as percentages. Maps are drawn in R. The
-boundaries come with the package.
+municipality by class. The parameter `cut` makes the classes, and
+`cut_labels = pct` writes them as percentages. In R, `cpb_cut()` and
+`label_pct_nl()` do the same. The boundaries come with the package.
 
 ``` r
 gemeenten <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
@@ -1523,12 +1537,12 @@ gemeenten <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
 
 <td style="text-align:left;">
 
-function
+plot_type
 </td>
 
 <td style="text-align:right;">
 
-cpb_map
+map
 </td>
 
 </tr>
@@ -1570,7 +1584,35 @@ value
 
 <td style="text-align:right;">
 
-cpb_cut(aandeel, labeller = label_pct_nl())
+aandeel
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+cut
+</td>
+
+<td style="text-align:right;">
+
+0;20;30;40;50;60;Inf
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+cut_labels
+</td>
+
+<td style="text-align:right;">
+
+pct
 </td>
 
 </tr>
@@ -1611,8 +1653,13 @@ aandeel
 
 </div>
 
-Maps currently have no `params.csv` route. Call `cpb_map()` in R, as
-described above. More options are in [`vignette("maps")`](maps.md).
+**How to reproduce this figure:** copy `params.csv`, the folder `data`
+containing at least `map.csv` and `run_import.bat` to a personal folder.
+Fill in the parameters above in `params.csv` and start the script. In R
+you can call `cpb_map()` instead. See section 1.3 and the example code
+at the end.
+
+More options are in [`vignette("maps")`](maps.md).
 
 # Example code to create figures in R
 
