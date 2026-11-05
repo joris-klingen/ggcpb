@@ -10,7 +10,8 @@
 #'
 #' @param accuracy Passed to [scales::label_currency()]; `NULL`
 #'   (default) lets `scales` pick a sensible accuracy from the data.
-#' @param style Formatting style: `"dutch"` (default, `.` thousands, `,` decimal)
+#' @param style Formatting style: `"dutch"` (default, `.` thousands, `,`
+#' decimal)
 #'   or `"english"` (`,` thousands, `.` decimal). Taken from
 #'   `getOption("ggcpb.style")`, so an English report can set
 #'   `options(ggcpb.style = "english")` once rather than passing `style`
@@ -26,7 +27,8 @@ label_euro_nl <- function(accuracy = NULL,
   style <- match.arg(style, c("dutch", "english"))
   m <- number_format_style(style)
   scales::label_currency(
-    prefix       = "\u20ac", # euro sign, as an escape for locale-independent parsing
+    # euro sign, as an escape for locale-independent parsing
+    prefix       = "\u20ac",
     big.mark     = m$big.mark,
     decimal.mark = m$decimal.mark,
     accuracy     = accuracy,
@@ -36,7 +38,8 @@ label_euro_nl <- function(accuracy = NULL,
 
 #' Percent-formatted labels, Dutch locale
 #'
-#' A thin wrapper around [scales::label_percent()] with Dutch or English grouping
+#' A thin wrapper around [scales::label_percent()] with Dutch or English
+#' grouping
 #' and decimal marks. Note the default `scale = 1`: CPB data is
 #' typically already expressed in percentage points (e.g. `45` meaning
 #' 45%), unlike `scales::label_percent()`'s own default of `scale =
@@ -47,7 +50,8 @@ label_euro_nl <- function(accuracy = NULL,
 #'   proportions in `[0, 1]`.
 #' @param accuracy Rounding accuracy; `1` (default) rounds to whole
 #'   percentage points.
-#' @param style Formatting style: `"dutch"` (default, `.` thousands, `,` decimal)
+#' @param style Formatting style: `"dutch"` (default, `.` thousands, `,`
+#' decimal)
 #'   or `"english"` (`,` thousands, `.` decimal). Taken from
 #'   `getOption("ggcpb.style")`, so an English report can set
 #'   `options(ggcpb.style = "english")` once rather than passing `style`
@@ -78,7 +82,8 @@ label_pct_nl <- function(scale = 1, accuracy = 1,
 #'
 #' @param accuracy Accuracy passed to [scales::label_number()]; `NULL`
 #'   (default) automatically calculates the required decimal precision.
-#' @param style Formatting style: `"dutch"` (default, `.` thousands, `,` decimal)
+#' @param style Formatting style: `"dutch"` (default, `.` thousands, `,`
+#' decimal)
 #'   or `"english"` (`,` thousands, `.` decimal). Taken from
 #'   `getOption("ggcpb.style")`, so an English report can set
 #'   `options(ggcpb.style = "english")` once rather than passing `style`

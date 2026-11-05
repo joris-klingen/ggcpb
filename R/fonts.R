@@ -105,7 +105,8 @@ cpb_font_from_name <- function(file) {
   stem <- tools::file_path_sans_ext(basename(file))
   # drop a trailing version suffix such as "_2_0"
   stem <- sub("[_-][0-9]+([_.-][0-9]+)*$", "", stem)
-  face_pat <- "[ _-]?(BoldItalic|BoldOblique|Italic|Oblique|Bold|Regular|Book|Roman)$"
+  face_pat <- paste0("[ _-]?(BoldItalic|BoldOblique|Italic|Oblique|Bold|",
+                     "Regular|Book|Roman)$")
   m <- regmatches(stem, regexpr(face_pat, stem, ignore.case = TRUE))
   token <- tolower(gsub("[ _-]", "", m))
   face <- cpb_font_face(
@@ -186,11 +187,11 @@ cpb_register_windows_font <- function(family) {
   if (!identical(.Platform$OS.type, "windows")) return(FALSE)
   tryCatch({
     # fetched at run time so the call does not exist on other platforms
-    grd <- asNamespace("grDevices")
-    windowsFonts <- get("windowsFonts", envir = grd) # nolint: object_name_linter.
-    windowsFont <- get("windowsFont", envir = grd) # nolint: object_name_linter.
-    args <- stats::setNames(list(windowsFont(family)), family)
-    do.call(windowsFonts, args)
+    ns <- asNamespace("grDevices")
+    windows_fonts <- get("windowsFonts", envir = ns)
+    windows_font <- get("windowsFont", envir = ns)
+    args <- stats::setNames(list(windows_font(family)), family)
+    do.call(windows_fonts, args)
     TRUE
   }, error = function(e) FALSE)
 }
@@ -470,7 +471,8 @@ cpb_check_house_font <- function(plot, once = FALSE) {
   rlang::warn(
     paste0(
       "ggcpb: this plot does not meet the Rijkshuisstijl requirements, ",
-      "because it does not use the Rijkshuisstijl font (", cpb_house_family, ").",
+      "because it does not use the Rijkshuisstijl font (",
+      cpb_house_family, ").",
       if (!registered) " The font was not found. See ?cpb_register_fonts."
     ),
     .frequency = if (once) "once" else "always",

@@ -15,13 +15,13 @@ test_that("scale_fill_cpb_d maps discrete levels to the qualitative palette", {
   expect_true(all(fills %in% cpb_tokens()$colors))
 })
 
-test_that("scale_fill_cpb_c builds a gradient scale spanning the sequential ramp", {
+test_that("scale_fill_cpb_c builds a gradient over the sequential ramp", {
   sc <- scale_fill_cpb_c()
   expect_equal(sc$na.value, "lightgrey")
   expect_s3_class(sc, "ScaleContinuous")
 })
 
-test_that("scale_fill_cpb_manual selects and orders specific palette positions", {
+test_that("scale_fill_cpb_manual selects and orders palette positions", {
   df <- data.frame(g = factor(c("a", "b"), levels = c("a", "b")))
   p <- ggplot2::ggplot(df, ggplot2::aes(g, fill = g)) +
     ggplot2::geom_bar() +

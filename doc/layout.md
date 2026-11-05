@@ -25,8 +25,8 @@ grid with `facet_ncol` and shared-versus-free axis ranges with
 comparable):
 
 ``` r
-regio_namen <- c("stedelijk", "landelijk", "gemengd", "totaal")
-regios <- expand_grid(regio = factor(regio_namen, levels = regio_namen),
+regio_names <- c("stedelijk", "landelijk", "gemengd", "totaal")
+regios <- expand_grid(regio = factor(regio_names, levels = regio_names),
                       groep = factor(c("laag", "midden", "hoog"),
                                      levels = c("laag", "midden", "hoog")),
                       jaar  = 2019:2025) |>

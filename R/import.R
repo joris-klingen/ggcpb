@@ -10,7 +10,8 @@ cpb_import_col_args <- list(
   col     = c("x", "y", "fill", "group", "facet", "sec_y"),
   area    = c("x", "y", "fill", "facet", "sec_y"),
   line    = c("x", "y", "colour", "ymin", "ymax", "facet", "sec_y"),
-  box     = c("x", "p5", "p25", "p50", "p75", "p95", "mean", "fill", "group", "facet", "sec_y"),
+  box     = c("x", "p5", "p25", "p50", "p75", "p95", "mean", "fill", "group",
+              "facet", "sec_y"),
   dot     = c("x", "y", "lower", "upper", "colour", "group", "facet", "sec_y"),
   scatter = c("x", "y", "colour", "facet"),
   hist    = c("x", "fill", "facet"),
@@ -62,7 +63,8 @@ cpb_import_coerce <- function(value) {
 # no other candidate does better, so the caller's own error stands on
 # its own.
 cpb_import_sep_hint <- function(path, sep, actual_cols) {
-  first_line <- tryCatch(readLines(path, n = 1, warn = FALSE), error = function(e) "")
+  first_line <- tryCatch(readLines(path, n = 1, warn = FALSE),
+                         error = function(e) "")
   if (!length(first_line) || !nzchar(first_line)) {
     return("")
   }
@@ -94,7 +96,8 @@ cpb_import_sep_hint <- function(path, sep, actual_cols) {
 # message that names the actual, likely cause instead.
 cpb_import_read_data <- function(data_csv, sep) {
   data_df <- tryCatch(
-    utils::read.csv(data_csv, check.names = FALSE, stringsAsFactors = FALSE, sep = sep),
+    utils::read.csv(data_csv, check.names = FALSE,
+                    stringsAsFactors = FALSE, sep = sep),
     error = function(e) {
       stop("Could not read `data_csv` (", conditionMessage(e), "). Check that ",
         "every row has the same number of fields, and that the very first ",
@@ -108,7 +111,8 @@ cpb_import_read_data <- function(data_csv, sep) {
   looks_numeric <- grepl("^-?[0-9]+(\\.[0-9]+)?$", trimws(names(data_df)))
   if (any(looks_numeric)) {
     stop("The first row of `data_csv` does not look like column names ",
-      "(found ", paste0("\"", names(data_df)[looks_numeric], "\"", collapse = ", "),
+      "(found ", paste0("\"", names(data_df)[looks_numeric], "\"",
+                        collapse = ", "),
       "). `cpb_import_csv()` always reads the first row as the header; check ",
       "that a real header row is there, and that no other line comes ",
       "before it.", cpb_import_sep_hint(data_csv, sep, ncol(data_df)),
@@ -261,7 +265,8 @@ cpb_import_write_log <- function(params_csv, data_csv, entries) {
   log_path <- paste0(tools::file_path_sans_ext(params_csv), "_log.txt")
 
   header <- c(
-    paste0("ggcpb cpb_import_csv log -- ", format(Sys.time(), "%Y-%m-%d %H:%M:%S")),
+    paste0("ggcpb cpb_import_csv log -- ",
+           format(Sys.time(), "%Y-%m-%d %H:%M:%S")),
     paste0("data:   ", data_csv),
     paste0("params: ", params_csv),
     ""
@@ -287,7 +292,8 @@ cpb_import_write_log <- function(params_csv, data_csv, entries) {
     c(lines, "")
   }))
 
-  n_skipped <- sum(vapply(entries, function(e) e$status == "skipped", logical(1)))
+  n_skipped <- sum(vapply(entries, function(e) e$status == "skipped",
+                          logical(1)))
   n_built <- length(entries) - n_skipped
   n_issues <- sum(vapply(entries, function(e) {
     if (e$status == "skipped") 0L else length(e$unknown)
@@ -444,7 +450,9 @@ cpb_import_csv <- function(data_csv, params_csv, sep = ",", ...) {
   # the individual reasons are already in the log, and repeated here
   # since an unattended run may never show this console error either
   if (!length(plots)) {
-    detail <- vapply(entries, function(e) paste0("\"", e$label, "\": ", e$detail), character(1))
+    detail <- vapply(entries,
+                     function(e) paste0("\"", e$label, "\": ", e$detail),
+                     character(1))
     stop("No figures were built from `params_csv` (", length(figs),
       " figure(s) defined, all skipped) -- ", paste(detail, collapse = "; "),
       ". See the run log: ", log_path,

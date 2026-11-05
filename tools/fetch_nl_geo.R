@@ -13,8 +13,8 @@
 # Re-run (from the package root) to bump the boundary year:
 #   Rscript tools/fetch_nl_geo.R
 
-YEAR <- 2025 # nolint: object_name_linter.
-LEVELS <- c( # nolint: object_name_linter.
+geo_year <- 2025
+geo_levels <- c(
   gemeente = "gemeente", corop = "coropgebied", provincie = "provincie"
 )
 
@@ -52,13 +52,17 @@ flatten_geojson <- function(g) {
   out
 }
 
-geo <- lapply(LEVELS, function(lvl) {
-  url <- sprintf("https://cartomap.github.io/nl/rd/%s_%d.geojson", lvl, YEAR)
+geo <- lapply(geo_levels, function(lvl) {
+  url <- sprintf("https://cartomap.github.io/nl/rd/%s_%d.geojson",
+                 lvl, geo_year)
   message("fetching ", url)
   flatten_geojson(jsonlite::read_json(url))
 })
-attr(geo, "year") <- YEAR
-attr(geo, "source") <- "cartomap.github.io/nl (generalised CBS/Kadaster boundaries), EPSG:28992"
+attr(geo, "year") <- geo_year
+attr(geo, "source") <- paste0(
+  "cartomap.github.io/nl (generalised CBS/Kadaster boundaries), ",
+  "EPSG:28992"
+)
 
 dir.create("inst/extdata", showWarnings = FALSE, recursive = TRUE)
 saveRDS(geo, "inst/extdata/nl_geo.rds", compress = "xz")

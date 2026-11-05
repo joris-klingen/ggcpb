@@ -138,9 +138,11 @@ for (pt in plot_types) {
 
 out <- do.call(rbind, rows)
 write.csv(out, "inst/extdata/parameter_settings.csv", row.names = FALSE)
-cat("Wrote inst/extdata/parameter_settings.csv (", nrow(out), " rows).\n", sep = "")
+cat("Wrote inst/extdata/parameter_settings.csv (", nrow(out),
+    " rows).\n", sep = "")
 
-missing_example <- out[!nzchar(out$example), c("plot_type", "param", "kind", "default")]
+missing_example <- out[!nzchar(out$example),
+                       c("plot_type", "param", "kind", "default")]
 if (nrow(missing_example)) {
   cat("\nNo example value for these (add one to column_examples or ",
       "literal_examples in this script):\n", sep = "")

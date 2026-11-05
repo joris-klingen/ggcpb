@@ -89,8 +89,10 @@
 #'   `NULL` (default) picks `"right"` when the value axis is at the
 #'   top, and `"left"` otherwise (`orientation = "vertical"`,
 #'   `value_axis = "bottom"`).
-#' @param style Formatting style: `"dutch"` (default, `.` thousands, `,` decimal)
-#'   or `"english"` (`,` thousands, `.` decimal, English forecast / axis labels).
+#' @param style Formatting style: `"dutch"` (default, `.` thousands, `,`
+#' decimal)
+#'   or `"english"` (`,` thousands, `.` decimal, English forecast / axis
+#'   labels).
 #'   Taken from `getOption("ggcpb.style")`, so an English report can set
 #'   `options(ggcpb.style = "english")` once rather than passing `style` to
 #'   every figure and risking a stray Dutch decimal comma.
@@ -112,7 +114,8 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
                                  fill_colour = NULL,
                                  group = NULL,
                                  group_gap = 0.7,
-                                 box_style = c("modern", "ggcpb", "james", "dot"),
+                                 box_style = c("modern", "ggcpb",
+                                               "james", "dot"),
                                  dot_labels = NULL,
                                  box_labels = NULL,
                                  label_accuracy = 0.1,
@@ -181,7 +184,8 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
   if (is.null(ylab_position)) {
     # on the right, the caption reads as the top value axis's own title
     # rather than as part of the plot title above it
-    ylab_position <- if (orientation == "horizontal" && value_axis == "top") "right" else "left"
+    ylab_position <- if (orientation == "horizontal" &&
+                           value_axis == "top") "right" else "left"
   } else {
     ylab_position <- match.arg(ylab_position, c("left", "middle", "right"))
   }
@@ -195,11 +199,13 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
     label_accuracy = label_accuracy, width = width, linewidth = linewidth,
     palette = palette, colour_index = colour_index,
     pct_axis = pct_axis, value_accuracy = value_accuracy,
-    value_breaks = value_breaks, value_limits = value_limits, value_crop = value_crop,
+    value_breaks = value_breaks, value_limits = value_limits,
+    value_crop = value_crop,
     value_axis = value_axis, x_lim = x_lim,
     x_lim_follow_data = x_lim_follow_data, orientation = orientation,
     sec_y = {{ sec_y }}, sec_type = sec_type, sec_limits = sec_limits,
-    sec_legend_label = sec_legend_label, sec_ylab = sec_ylab, sec_colour = sec_colour,
+    sec_legend_label = sec_legend_label, sec_ylab = sec_ylab,
+    sec_colour = sec_colour,
     sec_linewidth = sec_linewidth, sec_points = sec_points,
     sec_symbol_size = sec_symbol_size, sec_col_width = sec_col_width,
     sec_accuracy = sec_accuracy, sec_scale_auto = sec_scale_auto,
@@ -236,18 +242,21 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
         ggplot2::element_blank()
       },
       axis.line.y        = ggplot2::element_blank(),
-      panel.grid.major.x = ggplot2::element_line(colour = grid_colour, linewidth = grid_linewidth),
+      panel.grid.major.x = ggplot2::element_line(colour = grid_colour,
+                                                 linewidth = grid_linewidth),
       panel.grid.major.y = ggplot2::element_blank()
     )
   } else {
     # the vertical case has no published example to check this
     # against; mapped by the same left-right/top-bottom symmetry as
     # the horizontal case above, on a best-effort basis
-    value_axis_line <- ggplot2::element_line(colour = "black", linewidth = value_axis_linewidth)
+    value_axis_line <- ggplot2::element_line(colour = "black",
+                                             linewidth = value_axis_linewidth)
     theme_extra <- ggplot2::theme(
       axis.line.y         = value_axis_line,
       axis.line.x         = ggplot2::element_blank(),
-      panel.grid.major.y  = ggplot2::element_line(colour = grid_colour, linewidth = grid_linewidth),
+      panel.grid.major.y  = ggplot2::element_line(colour = grid_colour,
+                                                  linewidth = grid_linewidth),
       panel.grid.major.x  = ggplot2::element_blank()
     )
   }
@@ -293,7 +302,8 @@ cpb_boxplot_extended <- function(data, x, p5, p25, p50, p75, p95,
     # category labels and, per box, a full whisker-to-whisker span) is
     # rarely legible split across a half page's 7.5 cm. save_cpb()
     # warns using this when asked to.
-    attr(p, "cpb_half_page_unsuitable") <- "an extended boxplot faceted into multiple panels"
+    attr(p, "cpb_half_page_unsuitable") <-
+      "an extended boxplot faceted into multiple panels"
   }
 
   if (is.null(zero_indicator)) {

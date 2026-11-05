@@ -74,7 +74,8 @@ defaults to \code{"stack"}.}
 
 \item{colour_index}{Which house colours the series get. Either a vector
 of palette positions -- \code{c(2, 5, 6)}, forwarded to
-\code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} or \code{\link[=scale_colour_cpb_manual]{scale_colour_cpb_manual()}} -- or a keyword naming a palette:
+\code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} or \code{\link[=scale_colour_cpb_manual]{scale_colour_cpb_manual()}} -- or a keyword
+naming a palette:
 \code{"discrete"} for the qualitative house palette (blue, magenta,
 taupe, ...) and \code{"continuous"} for the sequential ramp; the palette
 names (such as \code{"extended"}, 20 colours for charts with more than
@@ -172,8 +173,10 @@ the legend, with at most 2 rows of legend items below it (title and
 items together take the 3 rows a legend has without a title).
 \code{NULL} (default) draws no title, matching CPB house style.}
 
-\item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
-or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).
+\item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,}
+decimal)
+or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis
+labels).
 Taken from \code{getOption("ggcpb.style")}, so an English report can set
 \code{options(ggcpb.style = "english")} once rather than passing \code{style} to
 every figure and risking a stray Dutch decimal comma.}

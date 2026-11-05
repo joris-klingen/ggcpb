@@ -48,8 +48,8 @@ ranges with `facet_scales` (`"fixed"` by default, so panels are
 directly comparable):
 
 ```{r facets, fig.width = 15.5 / 2.54, fig.height = 4.5, out.width = "700px"}
-regio_namen <- c("stedelijk", "landelijk", "gemengd", "totaal")
-regios <- expand_grid(regio = factor(regio_namen, levels = regio_namen),
+regio_names <- c("stedelijk", "landelijk", "gemengd", "totaal")
+regios <- expand_grid(regio = factor(regio_names, levels = regio_names),
                       groep = factor(c("laag", "midden", "hoog"),
                                      levels = c("laag", "midden", "hoog")),
                       jaar  = 2019:2025) |>

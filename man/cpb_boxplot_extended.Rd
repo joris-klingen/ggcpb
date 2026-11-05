@@ -149,7 +149,8 @@ the thin strokes of the published CPB distributional figures.}
 
 \item{colour_index}{Which house colours the series get. Either a vector
 of palette positions -- \code{c(2, 5, 6)}, forwarded to
-\code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} or \code{\link[=scale_colour_cpb_manual]{scale_colour_cpb_manual()}} -- or a keyword naming a palette:
+\code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} or \code{\link[=scale_colour_cpb_manual]{scale_colour_cpb_manual()}} -- or a keyword
+naming a palette:
 \code{"discrete"} for the qualitative house palette (blue, magenta,
 taupe, ...) and \code{"continuous"} for the sequential ramp; the palette
 names (such as \code{"extended"}, 20 colours for charts with more than
@@ -249,7 +250,8 @@ secondary axis spans. \code{NULL} (default) uses zero to the maximum of
 the primary (p5-p95) range, so the two axes always start together.}
 
 \item{sec_legend_label}{Name of the \code{sec_y} series in the legend.
-\code{NULL} (default) uses the \code{sec_y} column name. Automatically suffixed \code{"(rechteras)"}
+\code{NULL} (default) uses the \code{sec_y} column name. Automatically suffixed
+\code{"(rechteras)"}
 (right axis) -- don't add it yourself, e.g. \code{sec_legend_label = "erfbelasting"} shows as \code{"erfbelasting (rechteras)"}.}
 
 \item{sec_ylab}{Unit caption for the secondary axis, drawn
@@ -398,8 +400,10 @@ over the panel.
 top, and \code{"left"} otherwise (\code{orientation = "vertical"},
 \code{value_axis = "bottom"}).}
 
-\item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
-or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).
+\item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,}
+decimal)
+or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis
+labels).
 Taken from \code{getOption("ggcpb.style")}, so an English report can set
 \code{options(ggcpb.style = "english")} once rather than passing \code{style} to
 every figure and risking a stray Dutch decimal comma.}

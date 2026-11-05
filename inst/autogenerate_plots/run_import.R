@@ -55,7 +55,8 @@ result <- tryCatch({
     ggcpb::save_cpb(file.path(out_dir, file_name), figs[[nm]], page = "half")
   }
 
-  cat("\nDone. ", length(figs), " figure(s) saved in the generated folder.\n", sep = "")
+  cat("\nDone. ", length(figs),
+      " figure(s) saved in the generated folder.\n", sep = "")
   "ok"
 }, error = function(e) {
   cat("Something went wrong and no figures were saved.\n\n")

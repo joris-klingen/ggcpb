@@ -65,7 +65,7 @@ test_that("cpb_register_fonts() reports what it registered", {
   expect_false(res$windows)
 })
 
-test_that("cpb_register_fonts(path =) adds families without dropping the house one", {
+test_that("cpb_register_fonts(path =) adds families, keeps the house one", {
   tmp <- withr::local_tempdir()
   writeLines("not a font", file.path(tmp, "Extra-Regular.ttf"))
 
@@ -94,7 +94,9 @@ test_that("enable_showtext toggles showtext rendering", {
   # that does its own font lookup, rather than erroring on it
   p <- ggplot2::ggplot(data.frame(x = 1:3, y = 1:3), ggplot2::aes(x, y)) +
     ggplot2::geom_line() +
-    ggplot2::theme(text = ggplot2::element_text(family = .ggcpb_env$font_family))
+    ggplot2::theme(
+      text = ggplot2::element_text(family = .ggcpb_env$font_family)
+    )
   f <- withr::local_tempfile(fileext = ".png")
   expect_silent({
     grDevices::png(f, width = 400, height = 300)
@@ -116,7 +118,7 @@ test_that("the Rijksoverheid font is taken from the first folder that has it", {
   expect_equal(dirname(unname(font$faces[cpb_required_faces])), rep(tmp, 3))
 })
 
-test_that("without the Rijksoverheid font, the bundled Source Sans 3 stands in", {
+test_that("without the Rijksoverheid font, Source Sans 3 stands in", {
   font <- cpb_font_files(withr::local_tempdir())
   expect_equal(font$family, cpb_fallback_family)
   expect_equal(basename(unname(font$faces[cpb_required_faces])),
@@ -131,14 +133,16 @@ test_that("without the Rijksoverheid font, the bundled Source Sans 3 stands in",
   expect_equal(cpb_font_family(), cpb_fallback_family)
 })
 
-test_that("save_cpb() and print() warn when the Rijksoverheid font is not used", {
+test_that("save_cpb() and print() warn without the Rijksoverheid font", {
   # setup.R turns the warning off; "verbose" lifts print()'s once-only limit
-  withr::local_options(ggcpb.font_warning = TRUE, rlib_warning_verbosity = "verbose")
+  withr::local_options(ggcpb.font_warning = TRUE,
+                       rlib_warning_verbosity = "verbose")
   df <- data.frame(x = c("a", "b"), y = 1:2)
   p <- cpb_col(df, x = x, y = y) +
     ggplot2::theme(text = ggplot2::element_text(family = cpb_fallback_family))
   path <- withr::local_tempfile(fileext = ".png")
-  expect_warning(save_cpb(path, p), "does not meet the Rijkshuisstijl requirements")
+  expect_warning(save_cpb(path, p),
+                 "does not meet the Rijkshuisstijl requirements")
 
   ragg::agg_png(withr::local_tempfile(fileext = ".png"))
   withr::defer(grDevices::dev.off())

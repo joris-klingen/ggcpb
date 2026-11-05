@@ -1,6 +1,7 @@
 test_that("the value axis uses Dutch number formatting by default", {
   df <- data.frame(x = c("a", "b"), y = c(-0.5, -2.75))
-  sc <- cpb_col(df, x = x, y = y, value_breaks = seq(-3, 0, 0.5))$scales$get_scales("y")
+  sc <- cpb_col(df, x = x, y = y,
+                value_breaks = seq(-3, 0, 0.5))$scales$get_scales("y")
   # published figures read "-0,5", never the ggplot2 default "-0.5"
   expect_equal(sc$get_labels(seq(-3, 0, 0.5)),
                c("-3,0", "-2,5", "-2,0", "-1,5", "-1,0", "-0,5", "0,0"))
@@ -47,6 +48,7 @@ test_that("a default multi-series chart matches the published colours", {
   d <- data.frame(x = rep(1:3, 3), y = 1:9,
                   g = rep(c("a", "b", "c"), each = 3))
   cols <- unique(ggplot2::ggplot_build(
-                                       cpb_line(d, x = x, y = y, colour = g))$data[[1]]$colour)
+                                       cpb_line(d, x = x, y = y,
+                                                colour = g))$data[[1]]$colour)
   expect_setequal(cols, unname(cpb_cols(6, 2, 8)))
 })

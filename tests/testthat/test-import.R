@@ -55,7 +55,7 @@ test_that("cpb_import_csv builds several figures, skipping create = n", {
   expect_true(inherits(ps$Tweede$layers[[1]]$geom, "GeomLine"))
 })
 
-test_that("cpb_import_csv resolves sec_y against the data and passes sec_type through", {
+test_that("cpb_import_csv resolves sec_y and passes sec_type through", {
   data_csv <- local_data_csv()
   params_csv <- local_params_csv(c(
     "plot_type,col",
@@ -67,9 +67,11 @@ test_that("cpb_import_csv resolves sec_y against the data and passes sec_type th
 
   p <- cpb_import_csv(data_csv, params_csv)
 
-  is_point <- vapply(p$layers, function(l) inherits(l$geom, "GeomPoint"), logical(1))
+  is_point <- vapply(p$layers,
+                     function(l) inherits(l$geom, "GeomPoint"), logical(1))
   expect_true(any(is_point))
-  expect_false(any(vapply(p$layers, function(l) inherits(l$geom, "GeomLine"), logical(1))))
+  expect_false(any(vapply(p$layers, function(l) inherits(l$geom, "GeomLine"),
+                          logical(1))))
 })
 
 test_that("cpb_import_csv splits a semicolon-delimited value into a vector", {
@@ -85,7 +87,7 @@ test_that("cpb_import_csv splits a semicolon-delimited value into a vector", {
   expect_no_error(cpb_import_csv(data_csv, params_csv))
 })
 
-test_that("cpb_import_csv drops unrecognised parameter names, warning instead of erroring", {
+test_that("cpb_import_csv drops unknown parameter names with a warning", {
   data_csv <- local_data_csv()
   params_csv <- local_params_csv(c(
     "plot_type,line",
@@ -113,46 +115,53 @@ test_that("cpb_import_csv always (over)writes a run log next to params_csv", {
   log_lines <- readLines(log_path)
   expect_match(paste(log_lines, collapse = "\n"), "Figure 1 \"Eerste\"")
   expect_match(paste(log_lines, collapse = "\n"), "skipped \\(create = n\\)")
-  expect_match(paste(log_lines, collapse = "\n"), "2 figure\\(s\\) read, 1 skipped, 1 built")
+  expect_match(paste(log_lines, collapse = "\n"),
+               "2 figure\\(s\\) read, 1 skipped, 1 built")
 })
 
-test_that(
-          paste0("cpb_import_csv skips (warning) rather than crashes on one bad figure, ",
-                 "but errors if that leaves nothing built"), {
-            data_csv <- local_data_csv()
+test_that("cpb_import_csv skips a bad figure, errors if none is built", {
+  data_csv <- local_data_csv()
 
-            # a single-figure params.csv where that one figure is unbuildable: a
-            # console warning() for the specific reason, and -- since nothing at
-            # all was built -- a top-level error, not a silently empty result
-            params_csv <- local_params_csv(c("plot_type,pie", "x,jaar", "y,mld"))
-            expect_warning(
-              expect_error(cpb_import_csv(data_csv, params_csv), "Unknown plot_type"),
-              "Unknown plot_type"
-            )
+  # a single-figure params.csv where that one figure is unbuildable: a
+  # console warning() for the specific reason, and -- since nothing at
+  # all was built -- a top-level error, not a silently empty result
+  params_csv <- local_params_csv(c("plot_type,pie",
+                                   "x,jaar", "y,mld"))
+  expect_warning(
+    expect_error(cpb_import_csv(data_csv, params_csv),
+                 "Unknown plot_type"),
+    "Unknown plot_type"
+  )
 
-            params_csv <- local_params_csv(c("plot_type,line", "x,jaar", "y,doesnotexist"))
-            expect_warning(
-              expect_error(cpb_import_csv(data_csv, params_csv), "not a column in the data"),
-              "not a column in the data"
-            )
+  params_csv <- local_params_csv(c("plot_type,line", "x,jaar",
+                                   "y,doesnotexist"))
+  expect_warning(
+    expect_error(cpb_import_csv(data_csv, params_csv),
+                 "not a column in the data"),
+    "not a column in the data"
+  )
 
-            # the same error in just one of several figures instead leaves the
-            # others built -- an unattended batch must not lose everything over
-            # one broken row
-            params_csv <- local_params_csv(c(
-              "plot_type,title,x,y",
-              "line,Goed,jaar,mld",
-              "line,Kapot,jaar,doesnotexist"
-            ))
-            expect_warning(cpb_import_csv(data_csv, params_csv), "not a column in the data")
-            ps <- suppressWarnings(cpb_import_csv(data_csv, params_csv))
-            expect_s3_class(ps, "ggplot") # only one figure survived, so it is not a list
-            expect_equal(ps$labels$title, "Goed")
+  # the same error in just one of several figures instead leaves the
+  # others built -- an unattended batch must not lose everything over
+  # one broken row
+  params_csv <- local_params_csv(c(
+    "plot_type,title,x,y",
+    "line,Goed,jaar,mld",
+    "line,Kapot,jaar,doesnotexist"
+  ))
+  expect_warning(cpb_import_csv(data_csv, params_csv),
+                 "not a column in the data")
+  ps <- suppressWarnings(cpb_import_csv(data_csv, params_csv))
+  # only one figure survived, so it is not a list
+  expect_s3_class(ps, "ggplot")
+  expect_equal(ps$labels$title, "Goed")
 
-            log_path <- paste0(tools::file_path_sans_ext(params_csv), "_log.txt")
-            log_text <- paste(readLines(log_path), collapse = "\n")
-            expect_match(log_text, "Figure 2 \"Kapot\": skipped \\(error: .*not a column")
-          })
+  log_path <- paste0(tools::file_path_sans_ext(params_csv),
+                     "_log.txt")
+  log_text <- paste(readLines(log_path), collapse = "\n")
+  expect_match(log_text,
+               "Figure 2 \"Kapot\": skipped \\(error: .*not a column")
+})
 
 test_that("cpb_import_csv errors clearly on missing files", {
   data_csv <- local_data_csv()
@@ -182,7 +191,8 @@ test_that("autogenerate_plots copies every kit file into a new folder", {
   expect_setequal(list.files(dest), list.files(kit_dir))
 
   # the two data files ship ready to run as-is
-  p <- cpb_import_csv(file.path(dest, "data.csv"), file.path(dest, "params.csv"))
+  p <- cpb_import_csv(file.path(dest, "data.csv"),
+                      file.path(dest, "params.csv"))
   expect_type(p, "list")
 })
 
@@ -223,35 +233,40 @@ test_that("cpb_import_csv errors clearly when data_csv has no header row", {
   data_csv <- local_params_csv(c("2020,A,2.0", "2021,B,3.0"))
   params_csv <- local_params_csv(c("plot_type,line", "x,jaar", "y,koopkracht"))
 
-  expect_error(cpb_import_csv(data_csv, params_csv), "does not look like column names")
+  expect_error(cpb_import_csv(data_csv, params_csv),
+               "does not look like column names")
 })
 
-test_that("cpb_import_csv errors clearly on a stray line above data_csv's header", {
+test_that("cpb_import_csv errors on a stray line above the dataset header", {
   data_csv <- local_params_csv(c(
-    "Dit is een titel regel", "jaar,groep,koopkracht", "2020,A,2.0", "2021,B,3.0"
+    "Dit is een titel regel", "jaar,groep,koopkracht", "2020,A,2.0",
+    "2021,B,3.0"
   ))
   params_csv <- local_params_csv(c("plot_type,line", "x,jaar", "y,koopkracht"))
 
   expect_error(cpb_import_csv(data_csv, params_csv), "no title, no blank line")
 })
 
-test_that("cpb_import_csv errors clearly when data_csv uses tabs but sep is a comma", {
-  data_csv <- local_params_csv(c("jaar\tgroep\tkoopkracht", "2020\tA\t2.0", "2021\tB\t3.0"))
+test_that("cpb_import_csv errors on a tab dataset with a comma sep", {
+  data_csv <- local_params_csv(c("jaar\tgroep\tkoopkracht", "2020\tA\t2.0",
+                                 "2021\tB\t3.0"))
   params_csv <- local_params_csv(c("plot_type,line", "x,jaar", "y,koopkracht"))
 
   expect_error(cpb_import_csv(data_csv, params_csv), "might use a tab instead")
 })
 
-test_that("cpb_import_csv errors clearly when params_csv uses tabs but sep is a comma", {
+test_that("cpb_import_csv errors on a tab params file with a comma sep", {
   data_csv <- local_data_csv()
   params_csv <- local_params_csv(c("plot_type\tline", "x\tjaar", "y\tmld"))
 
   expect_error(cpb_import_csv(data_csv, params_csv), "might use a tab instead")
 })
 
-test_that("cpb_import_csv reads both files fine when sep matches a tab-separated pair", {
-  data_csv <- local_params_csv(c("jaar\tgroep\tkoopkracht", "2020\tA\t2.0", "2021\tB\t3.0"))
-  params_csv <- local_params_csv(c("plot_type\tline", "x\tjaar", "y\tkoopkracht"))
+test_that("cpb_import_csv reads both files when sep matches a tab pair", {
+  data_csv <- local_params_csv(c("jaar\tgroep\tkoopkracht", "2020\tA\t2.0",
+                                 "2021\tB\t3.0"))
+  params_csv <- local_params_csv(c("plot_type\tline", "x\tjaar",
+                                   "y\tkoopkracht"))
 
   expect_no_error(cpb_import_csv(data_csv, params_csv, sep = "\t"))
 })

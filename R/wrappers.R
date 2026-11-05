@@ -33,7 +33,8 @@ cpb_wrapper_theme <- function(env = parent.frame()) {
 cpb_wrapper_layout <- function(p, env = parent.frame()) {
   if (isTRUE(get0("flush_legend", envir = env, ifnotfound = TRUE))) {
     nrow <- get0("legend_nrow", envir = env)
-    if (!is.null(get0("legend_title", envir = env)) && !is.null(nrow) && nrow > 2) {
+    if (!is.null(get0("legend_title", envir = env)) &&
+          !is.null(nrow) && nrow > 2) {
       stop("`legend_nrow` can be at most 2 with a `legend_title`: the title ",
            "takes the first of the legend's 3 rows.", call. = FALSE)
     }
@@ -82,8 +83,10 @@ cpb_group_labels <- function(centres, cats) {
   lapply(seq_along(centres), function(i) {
     ggplot2::annotation_custom(
       grid::textGrob(
-        names(centres)[i], y = grid::unit(0, "npc") - grid::unit(y_cm, "cm"), vjust = 0.5,
-        gp = grid::gpar(fontface = "bold", fontsize = cpb_font_pt, fontfamily = cpb_font_family())
+        names(centres)[i], y = grid::unit(0, "npc") - grid::unit(y_cm, "cm"),
+        vjust = 0.5,
+        gp = grid::gpar(fontface = "bold", fontsize = cpb_font_pt,
+                        fontfamily = cpb_font_family())
       ),
       xmin = centres[[i]], xmax = centres[[i]], ymin = -Inf, ymax = Inf
     )
@@ -154,9 +157,11 @@ cpb_drawn_extent <- function(p, facet, facet_ncol, facet_scales) {
 # guide_legend(), so they are resolved together: setting one through a
 # wrapper argument must not silently drop the others (which a bare
 # guides() call appended after the wrapper would do).
-cpb_add_legend_guide <- function(p, aesthetic, reverse = FALSE, ncol = NULL, nrow = NULL) {
+cpb_add_legend_guide <- function(p, aesthetic, reverse = FALSE, ncol = NULL,
+                                 nrow = NULL) {
   if (!isTRUE(reverse) && is.null(ncol) && is.null(nrow)) return(p)
-  args <- list(ggplot2::guide_legend(reverse = isTRUE(reverse), ncol = ncol, nrow = nrow))
+  args <- list(ggplot2::guide_legend(reverse = isTRUE(reverse), ncol = ncol,
+                                     nrow = nrow))
   names(args) <- aesthetic
   p + do.call(ggplot2::guides, args)
 }
@@ -217,8 +222,11 @@ cpb_reserve_subtitle <- function(title, subtitle, force = FALSE) {
 # `force` works as in cpb_reserve_subtitle().
 # @return list(x, y, subtitle)
 # @noRd
-cpb_axis_labs <- function(title, subtitle, xlab, ylab, orientation = "vertical", force = FALSE) {
-  labs <- if (orientation == "horizontal") list(x = NULL, y = xlab) else list(x = xlab, y = NULL)
+cpb_axis_labs <- function(title, subtitle, xlab, ylab, orientation = "vertical",
+                          force = FALSE) {
+  labs <- if (orientation == "horizontal") list(x = NULL,
+                                                y = xlab) else list(x = xlab,
+                                                                    y = NULL)
   if (is.null(subtitle)) {
     subtitle <- ylab
   } else if (!is.null(ylab) && orientation == "vertical") {
@@ -234,7 +242,8 @@ cpb_axis_labs <- function(title, subtitle, xlab, ylab, orientation = "vertical",
 # so it can't drift apart between the fill wrappers and the colour
 # ones.
 cpb_discrete_scale <- function(aesthetic = c("fill", "colour"), index = NULL,
-                               palette = "qualitative", labels = ggplot2::waiver()) {
+                               palette = "qualitative",
+                               labels = ggplot2::waiver()) {
   aesthetic <- match.arg(aesthetic)
   if (aesthetic == "fill") {
     if (!is.null(index)) {
@@ -262,7 +271,8 @@ cpb_numeric_legend_scale <- function(values, style = "dutch") {
   breaks <- cpb_axis_ticks(lims[1], lims[2], max_labels = 7)$breaks
   scale_colour_cpb_c(
     breaks = breaks,
-    labels = label_number_nl(accuracy = cpb_label_accuracy(breaks), style = style),
+    labels = label_number_nl(accuracy = cpb_label_accuracy(breaks),
+                             style = style),
     guide = "legend"
   )
 }
@@ -303,7 +313,8 @@ cpb_axis_ticks <- function(lo, hi, whole = FALSE, edge = TRUE, max_labels = 7) {
   decimals <- function(k) {
     step <- span / k
     for (d in 0:3) {
-      if (abs(step * 10^d - round(step * 10^d)) < 1e-9 * max(1, abs(step * 10^d))) return(d)
+      tol <- 1e-9 * max(1, abs(step * 10^d))
+      if (abs(step * 10^d - round(step * 10^d)) < tol) return(d)
     }
     4
   }
@@ -326,12 +337,16 @@ cpb_axis_ticks <- function(lo, hi, whole = FALSE, edge = TRUE, max_labels = 7) {
 cpb_time_ticks <- function(lo, hi, edge = TRUE) {
   first <- inherits(lo, "Date") && all(format(c(lo, hi), "%d") == "01")
   if (first) {
-    months <- function(d) as.integer(format(d, "%Y")) * 12L + as.integer(format(d, "%m"))
+    months <- function(d) {
+      as.integer(format(d, "%Y")) * 12L +
+        as.integer(format(d, "%m"))
+    }
     tk <- cpb_axis_ticks(0, months(hi) - months(lo), whole = TRUE, edge = edge,
                          max_labels = 5)
     n <- length(tk$breaks)
     if (n < 2) return(list(breaks = lo, lo = lo, hi = hi))
-    breaks <- seq(lo, by = paste(tk$breaks[2] - tk$breaks[1], "months"), length.out = n)
+    breaks <- seq(lo, by = paste(tk$breaks[2] - tk$breaks[1], "months"),
+                  length.out = n)
     return(list(breaks = breaks, lo = lo, hi = hi))
   }
   tk <- cpb_axis_ticks(as.numeric(lo), as.numeric(hi), whole = FALSE,
@@ -409,7 +424,8 @@ cpb_x_scale <- function(p, x, data, flush, domain = NULL, bars = FALSE) {
   # comes from the coord (cpb_x_flush_xlim()), as for a numeric x.
   if (inherits(xvals, c("Date", "POSIXt")) || is.numeric(xvals)) {
     edge <- user_lim || !bars
-    tk <- cpb_x_ticks(xvals, min(domain, na.rm = TRUE), max(domain, na.rm = TRUE),
+    tk <- cpb_x_ticks(xvals, min(domain, na.rm = TRUE),
+                      max(domain, na.rm = TRUE),
                       edge)
     if (inherits(xvals, "Date")) {
       p + ggplot2::scale_x_date(breaks = tk$breaks, labels = cpb_date_labels)
@@ -421,7 +437,11 @@ cpb_x_scale <- function(p, x, data, flush, domain = NULL, bars = FALSE) {
   } else {
     p + ggplot2::scale_x_discrete(
       labels = cpb_label_wrap(),
-      expand = if (isTRUE(flush)) ggplot2::expansion(mult = 0) else ggplot2::waiver()
+      expand = if (isTRUE(flush)) {
+        ggplot2::expansion(mult = 0)
+      } else {
+        ggplot2::waiver()
+      }
     )
   }
 }
@@ -479,7 +499,8 @@ cpb_label_wrap <- function(width = cpb_wrap_width_default) {
 # length, or how many of those lines came from a manual break. Only
 # the truncated case gets a trailing "..." -- a label that already fit
 # within max_lines is returned exactly as wrapped.
-cpb_wrap_capped <- function(text, width = cpb_wrap_width_default, max_lines = 3) {
+cpb_wrap_capped <- function(text, width = cpb_wrap_width_default,
+                            max_lines = 3) {
   wrapped <- cpb_wrap_respecting_breaks(text, width)
   vapply(wrapped, function(w) {
     lines <- strsplit(w, "\n", fixed = TRUE)[[1]]
@@ -543,7 +564,8 @@ cpb_apply_coord <- function(p, orientation, x_lim, value_limits,
                             skip_x_flush = FALSE, scale_args = NULL) {
   clip <- cpb_clip(x_lim, scale_args)
   do_flush <- is.null(x_lim) && !has_group && !skip_x_flush
-  flush_xlim <- if (do_flush) cpb_x_flush_xlim(x, data, x_lim_follow_data) else NULL
+  flush_xlim <- if (do_flush) cpb_x_flush_xlim(x, data,
+                                               x_lim_follow_data) else NULL
   xlim_final <- if (!is.null(x_lim)) x_lim else flush_xlim
 
   # expand = FALSE only to skip the *default* expansion flush_xlim
@@ -555,7 +577,8 @@ cpb_apply_coord <- function(p, orientation, x_lim, value_limits,
   expand <- is.null(flush_xlim)
   if (orientation == "horizontal") {
     p <- p + if (!is.null(value_limits) || !is.null(xlim_final)) {
-      ggplot2::coord_flip(xlim = xlim_final, ylim = value_limits, clip = clip, expand = expand)
+      ggplot2::coord_flip(xlim = xlim_final, ylim = value_limits, clip = clip,
+                          expand = expand)
     } else {
       ggplot2::coord_flip(clip = clip)
     }
@@ -610,7 +633,8 @@ cpb_zeroline_auto <- function(lo, hi) {
 # own units again.
 
 # Calculates secondary breaks matching the number of primary gridlines N,
-# ensuring right y-axis ticks align at the exact height of left y-axis gridlines.
+# ensuring right y-axis ticks align at the exact height of left y-axis
+# gridlines.
 odd_elements <- function(x) {
   x[seq(1, length(x), by = 2)]
 }
@@ -619,7 +643,8 @@ cpb_find_sec_breaks <- function(primary_breaks, sec_vals, sec_limits = NULL,
                                 sec_at = NULL, sec_scale_auto = TRUE) {
   n_labels <- length(primary_breaks)
   if (n_labels < 2) {
-    stop("The primary value axis must have at least 2 breaks for `sec_y` mapping.", call. = FALSE)
+    stop("The primary value axis must have at least 2 breaks for `sec_y` ",
+         "mapping.", call. = FALSE)
   }
 
   # A high-to-low sec_limits/sec_at reads naturally enough as "the range
@@ -633,7 +658,8 @@ cpb_find_sec_breaks <- function(primary_breaks, sec_vals, sec_limits = NULL,
   if (!is.null(sec_at)) {
     sec_at <- sort(sec_at)
   }
-  if (!is.null(sec_limits) && is.numeric(sec_limits) && length(sec_limits) == 2) {
+  if (!is.null(sec_limits) && is.numeric(sec_limits) &&
+        length(sec_limits) == 2) {
     sec_limits <- sort(sec_limits)
   }
 
@@ -641,7 +667,8 @@ cpb_find_sec_breaks <- function(primary_breaks, sec_vals, sec_limits = NULL,
     if (length(sec_at) != n_labels) {
       stop(
         sprintf(
-          "Number of values in `sec_at` (%d) must match the number of primary axis gridlines (%d).",
+          paste0("Number of values in `sec_at` (%d) must match the number of ",
+                 "primary axis gridlines (%d)."),
           length(sec_at), n_labels
         ),
         call. = FALSE
@@ -683,7 +710,8 @@ cpb_find_sec_breaks <- function(primary_breaks, sec_vals, sec_limits = NULL,
   if (user_custom_limits) {
     finite <- sec_vals[is.finite(sec_vals)]
     tol <- (high - low) * 1e-9
-    if (length(finite) && (min(finite) < low - tol || max(finite) > high + tol)) {
+    if (length(finite) &&
+          (min(finite) < low - tol || max(finite) > high + tol)) {
       widened <- TRUE
       low <- min(low, finite)
       high <- max(high, finite)
@@ -695,7 +723,11 @@ cpb_find_sec_breaks <- function(primary_breaks, sec_vals, sec_limits = NULL,
   } else {
     sec_breaks <- pretty(c(low, high), n = n_labels)
     n <- n_labels - length(sec_breaks)
-    delta <- if (length(sec_breaks) >= 2) diff(sec_breaks[1:2]) else (high - low) / n_labels
+    delta <- if (length(sec_breaks) >= 2) {
+      diff(sec_breaks[1:2])
+    } else {
+      (high - low) / n_labels
+    }
 
     while (n != 0) {
       if (n > 0) {
@@ -725,8 +757,10 @@ cpb_find_sec_breaks <- function(primary_breaks, sec_vals, sec_limits = NULL,
   sec_breaks
 }
 
-cpb_sec_map <- function(sec_vals, sec_limits = NULL, prim_min = NULL, prim_max = NULL,
-                        primary_breaks = NULL, sec_at = NULL, sec_scale_auto = TRUE) {
+cpb_sec_map <- function(sec_vals, sec_limits = NULL, prim_min = NULL,
+                        prim_max = NULL,
+                        primary_breaks = NULL, sec_at = NULL,
+                        sec_scale_auto = TRUE) {
   if (!is.numeric(sec_vals)) {
     stop("`sec_y` must be a numeric column.", call. = FALSE)
   }
@@ -745,13 +779,15 @@ cpb_sec_map <- function(sec_vals, sec_limits = NULL, prim_min = NULL, prim_max =
     legacy_prim_min <- sec_limits
     legacy_prim_max <- prim_min
     if (isTRUE(all.equal(legacy_prim_min, legacy_prim_max))) {
-      stop("the primary value axis has no range for `sec_y` to map onto.", call. = FALSE)
+      stop("the primary value axis has no range for `sec_y` to map onto.",
+           call. = FALSE)
     }
     primary_breaks <- seq(legacy_prim_min, legacy_prim_max, length.out = 5)
     sec_limits <- legacy_sec_limits
   } else if (!is.null(primary_breaks) && length(primary_breaks) == 2) {
     if (isTRUE(all.equal(primary_breaks[1], primary_breaks[2]))) {
-      stop("the primary value axis has no range for `sec_y` to map onto.", call. = FALSE)
+      stop("the primary value axis has no range for `sec_y` to map onto.",
+           call. = FALSE)
     }
     primary_breaks <- seq(primary_breaks[1], primary_breaks[2], length.out = 5)
   }
@@ -769,7 +805,8 @@ cpb_sec_map <- function(sec_vals, sec_limits = NULL, prim_min = NULL, prim_max =
   # Those are arbitrary fractions, so cpb_sec_axis() caps their label
   # precision. An explicit sec_at is left alone.
   user_custom_limits <- is.numeric(sec_limits) && length(sec_limits) == 2
-  forced_linear <- is.null(sec_at) && (!isTRUE(sec_scale_auto) || user_custom_limits)
+  forced_linear <- is.null(sec_at) &&
+    (!isTRUE(sec_scale_auto) || user_custom_limits)
 
   p_min <- primary_breaks[1]
   p_max <- primary_breaks[length(primary_breaks)]
@@ -777,7 +814,8 @@ cpb_sec_map <- function(sec_vals, sec_limits = NULL, prim_min = NULL, prim_max =
   s_max <- sec_breaks[length(sec_breaks)]
 
   if (isTRUE(all.equal(p_min, p_max))) {
-    stop("the primary value axis has no range for `sec_y` to map onto.", call. = FALSE)
+    stop("the primary value axis has no range for `sec_y` to map onto.",
+         call. = FALSE)
   }
 
   list(
@@ -843,7 +881,8 @@ cpb_sec_axis <- function(sec_map, accuracy = NULL, sec_axis_labels = NULL,
   # decimals as it takes to stay true to the tick (cpb_label_accuracy()).
   # An explicit sec_accuracy wins.
   acc <- accuracy
-  if (is.null(acc) && is.null(sec_axis_labels) && isTRUE(sec_map$forced_linear)) {
+  if (is.null(acc) && is.null(sec_axis_labels) &&
+        isTRUE(sec_map$forced_linear)) {
     acc <- cpb_label_accuracy(breaks_val)
   }
 
@@ -862,7 +901,8 @@ cpb_sec_axis <- function(sec_map, accuracy = NULL, sec_axis_labels = NULL,
       warning(
         "ggcpb: `sec_accuracy` = ", accuracy, " rounds the secondary axis's ",
         "breaks to only ", length(unique(shown)), " distinct label(s) for ",
-        length(breaks_val), " gridlines (", paste(unique(shown), collapse = ", "),
+        length(breaks_val), " gridlines (",
+        paste(unique(shown), collapse = ", "),
         "). Use a finer `sec_accuracy` -- the breaks themselves are ",
         round(min(diff(sort(breaks_val))), 6), " apart.",
         call. = FALSE
@@ -949,7 +989,10 @@ cpb_linkeras_labels <- function(has_sec, style = "dutch") {
 cpb_dual_axis_labels <- function(sec_lab, style = "dutch") {
   left  <- if (style == "english") " (left axis)" else " (linkeras)"
   right <- if (style == "english") " (right axis)" else " (rechteras)"
-  function(b) ifelse(as.character(b) == sec_lab, paste0(b, right), paste0(b, left))
+  function(b) {
+    ifelse(as.character(b) == sec_lab, paste0(b, right),
+           paste0(b, left))
+  }
 }
 
 # Step 6: once has_sec is TRUE, the primary fill guide and sec_y's own
@@ -968,7 +1011,8 @@ cpb_dual_axis_labels <- function(sec_lab, style = "dutch") {
 # and never needs this. Previously duplicated byte-for-byte across
 # those three wrappers -- kept here as one function so a fix to this
 # guide-stacking logic can't land in one wrapper and miss the others.
-cpb_add_sec_guides <- function(p, has_sec, reverse_legend, legend_ncol, legend_nrow = NULL) {
+cpb_add_sec_guides <- function(p, has_sec, reverse_legend, legend_ncol,
+                               legend_nrow = NULL) {
   if (!isTRUE(has_sec)) return(p)
   p +
     ggplot2::guides(
@@ -989,21 +1033,30 @@ cpb_add_sec_guides <- function(p, has_sec, reverse_legend, legend_ncol, legend_n
 # @return list(p, scale_args)
 # @noRd
 cpb_add_sec_y <- function(p, scale_args, env = parent.frame()) {
-  a <- mget(c("data", "x", "sec_y", "sec_type", "sec_legend_label", "sec_colour",
+  a <- mget(c("data", "x", "sec_y", "sec_type", "sec_legend_label",
+              "sec_colour",
               "sec_linewidth", "sec_points", "sec_symbol_size", "sec_col_width",
-              "sec_accuracy", "sec_limits", "sec_at", "sec_scale_auto", "sec_axis_labels",
+              "sec_accuracy", "sec_limits", "sec_at", "sec_scale_auto",
+              "sec_axis_labels",
               "style"), envir = env)
   sec_vals <- rlang::eval_tidy(a$sec_y, a$data)
   sec_map <- cpb_sec_map(
     sec_vals, primary_breaks = scale_args$breaks, sec_limits = a$sec_limits,
     sec_at = a$sec_at, sec_scale_auto = a$sec_scale_auto
   )
-  sec_lab <- if (is.null(a$sec_legend_label)) rlang::as_label(a$sec_y) else a$sec_legend_label
+  sec_lab <- if (is.null(a$sec_legend_label)) {
+    rlang::as_label(a$sec_y)
+  } else {
+    a$sec_legend_label
+  }
   p <- cpb_sec_layer(p, a$data, a$x, sec_vals, sec_map, a$sec_type,
-                     cpb_single_colour(a$sec_colour, 2), sec_lab, a$sec_linewidth,
-                     a$sec_points, a$sec_symbol_size, a$sec_col_width, style = a$style)
+                     cpb_single_colour(a$sec_colour, 2), sec_lab,
+                     a$sec_linewidth,
+                     a$sec_points, a$sec_symbol_size, a$sec_col_width,
+                     style = a$style)
   scale_args$sec.axis <- cpb_sec_axis(
-    sec_map, accuracy = a$sec_accuracy, sec_axis_labels = a$sec_axis_labels, style = a$style
+    sec_map, accuracy = a$sec_accuracy, sec_axis_labels = a$sec_axis_labels,
+    style = a$style
   )
   list(p = p, scale_args = scale_args)
 }
@@ -1038,7 +1091,8 @@ cpb_add_sec_ylab <- function(p, has_sec, sec_ylab) {
   # underneath everything) would shift a stored position out from
   # under it. cpb_take_sec_ylab() (save.R) looks this up by identity
   # instead, which survives that.
-  attr(p, "cpb_sec_ylab") <- list(label = sec_ylab, layer_obj = p$layers[[length(p$layers)]])
+  attr(p, "cpb_sec_ylab") <- list(label = sec_ylab,
+                                  layer_obj = p$layers[[length(p$layers)]])
   # print.cpb_plot() (see save.R) warns, once, that a bare print()
   # shows this approximately rather than exactly -- only save_cpb()
   # reads the attribute above
@@ -1055,9 +1109,11 @@ cpb_add_sec_ylab <- function(p, has_sec, sec_ylab) {
 # already span the data.
 # @noRd
 cpb_value_scale <- function(axis_values, pct_scale = 1, env = parent.frame()) {
-  a <- mget(c("pct_axis", "value_accuracy", "value_breaks", "value_limits", "style"),
+  a <- mget(c("pct_axis", "value_accuracy", "value_breaks",
+              "value_limits", "style"),
             envir = env)
-  a$value_crop <- get0("value_crop", envir = env, inherits = FALSE, ifnotfound = FALSE)
+  a$value_crop <- get0("value_crop", envir = env, inherits = FALSE,
+                       ifnotfound = FALSE)
   cpb_flush_scale_args(
     axis_values = axis_values, pct_axis = a$pct_axis, pct_scale = pct_scale,
     value_accuracy = a$value_accuracy, value_breaks = a$value_breaks,
@@ -1118,7 +1174,8 @@ cpb_flush_scale_args <- function(axis_values, pct_axis = FALSE, pct_scale = 1,
   # limits the data fits inside are shown exactly, with equal steps
   lim <- if (!is.null(value_limits)) range(value_limits)
   fits <- !is.null(lim) && is.null(value_breaks) && diff(lim) > 0 &&
-    all(data_range >= lim[1] - diff(lim) * 1e-6 & data_range <= lim[2] + diff(lim) * 1e-6)
+    all(data_range >= lim[1] - diff(lim) * 1e-6 & data_range <= lim[2] +
+          diff(lim) * 1e-6)
   breaks_final <- if (!is.null(value_breaks)) {
     value_breaks
   } else if (fits) {
@@ -1250,7 +1307,11 @@ cpb_forecast_pos <- function(forecast_x, xvals) {
     return(as.Date(forecast_x))
   }
   if (is.numeric(forecast_x)) return(forecast_x)
-  levs <- if (is.factor(xvals)) levels(xvals) else sort(unique(as.character(xvals)))
+  levs <- if (is.factor(xvals)) {
+    levels(xvals)
+  } else {
+    sort(unique(as.character(xvals)))
+  }
   pos <- match(as.character(forecast_x), levs)
   if (is.na(pos)) {
     stop("`forecast_x` (\"", forecast_x, "\") is not one of the values on ",
@@ -1354,7 +1415,8 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   past it, the axis is widened to round values (with a message), so
 #'   no value is cut off.
 #' @param sec_legend_label Name of the `sec_y` series in the legend.
-#'   `NULL` (default) uses the `sec_y` column name. Automatically suffixed `"(rechteras)"`
+#'   `NULL` (default) uses the `sec_y` column name. Automatically suffixed
+#'   `"(rechteras)"`
 #'   (right axis) -- don't add it yourself, e.g. `sec_legend_label =
 #'   "erfbelasting"` shows as `"erfbelasting (rechteras)"`.
 #' @param sec_ylab Unit caption for the secondary axis, drawn
@@ -1443,7 +1505,8 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   (20 categorical colours).
 #' @param colour_index Which house colours the series get. Either a vector
 #'   of palette positions -- `c(2, 5, 6)`, forwarded to
-#'   [scale_fill_cpb_manual()] or [scale_colour_cpb_manual()] -- or a keyword naming a palette:
+#'   [scale_fill_cpb_manual()] or [scale_colour_cpb_manual()] -- or a keyword
+#'   naming a palette:
 #'   `"discrete"` for the qualitative house palette (blue, magenta,
 #'   taupe, ...) and `"continuous"` for the sequential ramp; the palette
 #'   names (such as `"extended"`, 20 colours for charts with more than
@@ -1525,8 +1588,10 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   the legend, with at most 2 rows of legend items below it (title and
 #'   items together take the 3 rows a legend has without a title).
 #'   `NULL` (default) draws no title, matching CPB house style.
-#' @param style Formatting style: `"dutch"` (default, `.` thousands, `,` decimal)
-#'   or `"english"` (`,` thousands, `.` decimal, English forecast / axis labels).
+#' @param style Formatting style: `"dutch"` (default, `.` thousands, `,`
+#' decimal)
+#'   or `"english"` (`,` thousands, `.` decimal, English forecast / axis
+#'   labels).
 #'   Taken from `getOption("ggcpb.style")`, so an English report can set
 #'   `options(ggcpb.style = "english")` once rather than passing `style` to
 #'   every figure and risking a stray Dutch decimal comma.
@@ -1595,7 +1660,8 @@ cpb_col <- function(data, x, y, fill = NULL,
                     style = getOption("ggcpb.style", "dutch"),
                     ...) {
   style <- match.arg(style, c("dutch", "english"))
-  .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette), "colour_index")
+  .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette),
+                                "colour_index")
   index <- .cpb_idx$index
   palette <- .cpb_idx$palette
   position <- match.arg(position)
@@ -1646,7 +1712,8 @@ cpb_col <- function(data, x, y, fill = NULL,
                                rlang::eval_tidy(group, data),
                                gap = group_gap)
     data <- as.data.frame(data)
-    data[["cpb__x"]] <- grp$map$pos[match(as.character(rlang::eval_tidy(x, data)),
+    data[["cpb__x"]] <- grp$map$pos[match(as.character(rlang::eval_tidy(x,
+                                                                        data)),
                                           as.character(grp$map$cat))]
     x <- rlang::quo(.data[["cpb__x"]])
   }
@@ -1706,7 +1773,8 @@ cpb_col <- function(data, x, y, fill = NULL,
     stack = cpb_drawn_extent(p, facet, facet_ncol, facet_scales),
     dodge = c(rlang::eval_tidy(y, data), 0)
   )
-  scale_args <- cpb_value_scale(axis_values, pct_scale = if (position == "fill") 100 else 1)
+  scale_args <- cpb_value_scale(axis_values,
+                                pct_scale = if (position == "fill") 100 else 1)
   if (has_group && isTRUE(value_crop)) {
     stop("`value_crop` cannot be combined with `group`.", call. = FALSE)
   }
@@ -1721,14 +1789,17 @@ cpb_col <- function(data, x, y, fill = NULL,
   # The zero line sits on the value axis (the y aesthetic even under
   # coord_flip()) and is drawn on top of the bars.
   if (isTRUE(zeroline)) {
-    p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black", linewidth = 0.25)
+    p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black",
+                                 linewidth = 0.25)
   }
-  p <- p + cpb_forecast_label(forecast_x, rlang::eval_tidy(x, data), forecast_label, style = style)
+  p <- p + cpb_forecast_label(forecast_x, rlang::eval_tidy(x, data),
+                              forecast_label, style = style)
 
   bar_width <- list(...)$width
   if (is.null(bar_width)) {
     xvals_for_width <- rlang::eval_tidy(x, data)
-    bar_width <- if (is.numeric(xvals_for_width) || cpb_is_datetime(xvals_for_width)) {
+    bar_width <- if (is.numeric(xvals_for_width) ||
+                       cpb_is_datetime(xvals_for_width)) {
       0.9 * ggplot2::resolution(xvals_for_width, zero = FALSE)
     } else {
       0.9
@@ -1763,18 +1834,21 @@ cpb_col <- function(data, x, y, fill = NULL,
       # The group names sit in bold under the category labels. Clip is
       # off so the text can be drawn below the panel.
       cpb_group_labels(grp$centres, as.character(grp$map$cat)) +
-      ggplot2::coord_cartesian(xlim = x_lim, ylim = value_limits_visual, clip = "off")
+      ggplot2::coord_cartesian(xlim = x_lim, ylim = value_limits_visual,
+                               clip = "off")
   } else if (orientation == "horizontal") {
     p <- p + if (!is.null(value_limits) || !is.null(xlim_final)) {
       ggplot2::coord_flip(
-        xlim = xlim_final, ylim = value_limits_visual, clip = clip, expand = expand
+        xlim = xlim_final, ylim = value_limits_visual, clip = clip,
+        expand = expand
       )
     } else {
       ggplot2::coord_flip(clip = clip)
     }
   } else if (!is.null(value_limits) || !is.null(xlim_final) || clip == "off") {
     p <- p + ggplot2::coord_cartesian(
-      xlim = xlim_final, ylim = value_limits_visual, clip = clip, expand = expand
+      xlim = xlim_final, ylim = value_limits_visual, clip = clip,
+      expand = expand
     )
   }
   if (do_flush) {
@@ -1805,20 +1879,24 @@ cpb_col <- function(data, x, y, fill = NULL,
 
   if (has_fill) {
     p <- p + cpb_discrete_scale("fill", index, palette,
-                                labels = cpb_linkeras_labels(has_sec, style = style))
-    p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol, legend_nrow)
+                                labels = cpb_linkeras_labels(has_sec,
+                                                             style = style))
+    p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol,
+                              legend_nrow)
   } else if (has_sec) {
     p <- p + ggplot2::scale_fill_manual(
       values = stats::setNames(single_fill, primary_lab), name = NULL,
       labels = cpb_linkeras_labels(TRUE, style = style)
     )
-    p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol, legend_nrow)
+    p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol,
+                              legend_nrow)
   }
 
   # ylab goes on the subtitle line, xlab on whichever axis is drawn
   # horizontally (see cpb_axis_labs())
   labs <- cpb_axis_labs(
-    title, subtitle, xlab, ylab, orientation, force = has_sec && !is.null(sec_ylab)
+    title, subtitle, xlab, ylab, orientation, force = has_sec &&
+      !is.null(sec_ylab)
   )
   # the bold group labels occupy the axis-title line, so it is always
   # reserved (an explicit xlab would collide with them)
@@ -1828,7 +1906,8 @@ cpb_col <- function(data, x, y, fill = NULL,
 
   p <- p +
     ggplot2::labs(
-      title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y, fill = legend_title
+      title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y,
+      fill = legend_title
     ) +
     cpb_wrapper_theme()
   p <- cpb_wrapper_layout(p)
@@ -1943,7 +2022,8 @@ cpb_area <- function(data, x, y, fill,
                      style = getOption("ggcpb.style", "dutch"),
                      ...) {
   style <- match.arg(style, c("dutch", "english"))
-  .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette), "colour_index")
+  .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette),
+                                "colour_index")
   index <- .cpb_idx$index
   palette <- .cpb_idx$palette
   sec_type <- match.arg(sec_type)
@@ -1968,15 +2048,18 @@ cpb_area <- function(data, x, y, fill,
   # guide, not just ones it maps something to -- see the "sec_y
   # helpers" block near the top of this file).
   p <- p + ggplot2::geom_area(
-                              show.legend = c(fill = TRUE, colour = FALSE), key_glyph = "rect", ...)
+                              show.legend = c(fill = TRUE, colour = FALSE),
+                              key_glyph = "rect", ...)
   # geom_area() stacks, so the axis spans the stacked areas as drawn
   axis_values <- cpb_drawn_extent(p, facet, facet_ncol, facet_scales)
 
   # on top of the areas
   if (isTRUE(zeroline)) {
-    p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black", linewidth = 0.25)
+    p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black",
+                                 linewidth = 0.25)
   }
-  p <- p + cpb_forecast_label(forecast_x, rlang::eval_tidy(x, data), forecast_label, style = style)
+  p <- p + cpb_forecast_label(forecast_x, rlang::eval_tidy(x, data),
+                              forecast_label, style = style)
 
   scale_args <- cpb_value_scale(axis_values)
   value_limits_visual <- range(scale_args$breaks)
@@ -1995,7 +2078,8 @@ cpb_area <- function(data, x, y, fill,
   # own comment for why); for a discrete x, scale-based instead
   # (cpb_x_scale(), below). Superseded by an explicit x_lim.
   do_flush <- is.null(x_lim)
-  flush_xlim <- if (do_flush) cpb_x_flush_xlim(x, data, x_lim_follow_data) else NULL
+  flush_xlim <- if (do_flush) cpb_x_flush_xlim(x, data,
+                                               x_lim_follow_data) else NULL
   xlim_final <- if (!is.null(x_lim)) x_lim else flush_xlim
   # always off unless the caller explicitly zoomed with x_lim -- every
   # flush axis (x or value) legitimately puts a real data point (a
@@ -2023,18 +2107,21 @@ cpb_area <- function(data, x, y, fill,
   p <- cpb_add_sec_ylab(p, has_sec, sec_ylab)
 
   p <- p + cpb_discrete_scale("fill", index, palette,
-                              labels = cpb_linkeras_labels(has_sec, style = style))
+                              labels = cpb_linkeras_labels(has_sec,
+                                                           style = style))
 
   p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol, legend_nrow)
 
   p <- cpb_add_facet(p, facet, facet_ncol, facet_scales)
 
   # ylab goes on the subtitle line (see cpb_axis_labs())
-  labs <- cpb_axis_labs(title, subtitle, xlab, ylab, force = has_sec && !is.null(sec_ylab))
+  labs <- cpb_axis_labs(title, subtitle, xlab, ylab, force = has_sec &&
+                          !is.null(sec_ylab))
 
   p <- p +
     ggplot2::labs(
-      title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y, fill = legend_title
+      title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y,
+      fill = legend_title
     ) +
     cpb_wrapper_theme()
   p <- cpb_wrapper_layout(p)
@@ -2185,7 +2272,8 @@ cpb_line <- function(data, x, y, colour = NULL,
                      style = getOption("ggcpb.style", "dutch"),
                      ...) {
   style <- match.arg(style, c("dutch", "english"))
-  .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette), "colour_index")
+  .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette),
+                                "colour_index")
   index <- .cpb_idx$index
   palette <- .cpb_idx$palette
   sec_type <- match.arg(sec_type)
@@ -2235,7 +2323,11 @@ cpb_line <- function(data, x, y, colour = NULL,
     if (!is.numeric(sec_vals)) {
       stop("`sec_y` must be a numeric column.", call. = FALSE)
     }
-    sec_lab <- if (is.null(sec_legend_label)) rlang::as_label(sec_y) else sec_legend_label
+    sec_lab <- if (is.null(sec_legend_label)) {
+      rlang::as_label(sec_y)
+    } else {
+      sec_legend_label
+    }
     prim_lab <- if (is.null(ylab)) rlang::as_label(y) else ylab
 
     sec_map <- cpb_sec_map(
@@ -2276,7 +2368,8 @@ cpb_line <- function(data, x, y, colour = NULL,
   # then the uncertainty band, so the data lines stay on top
   p <- p + cpb_forecast_rect(forecast_x, rlang::eval_tidy(x, data))
   if (isTRUE(zeroline)) {
-    p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black", linewidth = 0.25)
+    p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black",
+                                 linewidth = 0.25)
   }
 
   single_colour <- cpb_single_colour(line_colour, 6)
@@ -2343,7 +2436,8 @@ cpb_line <- function(data, x, y, colour = NULL,
     } else {
       p <- p + ggplot2::geom_line(
         data = sec_df,
-        ggplot2::aes(x = !!x, y = .data[["cpb__sec"]], colour = .data[["cpb__seclab"]],
+        ggplot2::aes(x = !!x, y = .data[["cpb__sec"]],
+                     colour = .data[["cpb__seclab"]],
                      group = 1),
         linewidth = if (is.null(sec_linewidth)) linewidth else sec_linewidth,
         show.legend = TRUE
@@ -2364,7 +2458,8 @@ cpb_line <- function(data, x, y, colour = NULL,
   }
 
   # the label sits on top of everything
-  p <- p + cpb_forecast_label(forecast_x, rlang::eval_tidy(x, data), forecast_label, style = style)
+  p <- p + cpb_forecast_label(forecast_x, rlang::eval_tidy(x, data),
+                              forecast_label, style = style)
 
   p <- cpb_add_sec_ylab(p, has_sec, sec_ylab)
 
@@ -2373,7 +2468,8 @@ cpb_line <- function(data, x, y, colour = NULL,
   # apart -- see there.
   if (has_sec) {
     scale_args$sec.axis <- cpb_sec_axis(
-      sec_map, accuracy = sec_accuracy, sec_axis_labels = sec_axis_labels, style = style
+      sec_map, accuracy = sec_accuracy, sec_axis_labels = sec_axis_labels,
+      style = style
     )
   }
   if (length(scale_args)) {
@@ -2387,7 +2483,8 @@ cpb_line <- function(data, x, y, colour = NULL,
   # scoped to numeric x only this time); for a discrete x, scale-based
   # instead (cpb_x_scale(), below). Superseded by an explicit x_lim.
   do_flush <- is.null(x_lim)
-  flush_xlim <- if (do_flush) cpb_x_flush_xlim(x, data, x_lim_follow_data) else NULL
+  flush_xlim <- if (do_flush) cpb_x_flush_xlim(x, data,
+                                               x_lim_follow_data) else NULL
   xlim_final <- if (!is.null(x_lim)) x_lim else flush_xlim
   # off: every flush axis (x or value) legitimately puts a real data
   # point (a sec_y marker, a points = TRUE marker, ...) exactly on the
@@ -2402,7 +2499,8 @@ cpb_line <- function(data, x, y, colour = NULL,
     # already zero either way (see cpb_flush_scale_args()), so this
     # never strips anything from it
     p <- p + ggplot2::coord_cartesian(
-      xlim = xlim_final, ylim = value_limits_visual, clip = clip, expand = is.null(flush_xlim)
+      xlim = xlim_final, ylim = value_limits_visual, clip = clip,
+      expand = is.null(flush_xlim)
     )
   }
   if (do_flush) {
@@ -2415,19 +2513,27 @@ cpb_line <- function(data, x, y, colour = NULL,
     # with sec_y the primary and secondary series share this one colour
     # scale; suffix every key with the axis it belongs to (the sec_y
     # level is `sec_lab`), the way cpb_col() does on its fill scale
-    sec_labels_fn <- if (has_sec) cpb_dual_axis_labels(sec_lab, style) else ggplot2::waiver()
-    p <- p + cpb_discrete_scale("colour", index, palette, labels = sec_labels_fn)
-    p <- cpb_add_legend_guide(p, "colour", reverse_legend, legend_ncol, legend_nrow)
+    sec_labels_fn <- if (has_sec) {
+      cpb_dual_axis_labels(sec_lab, style)
+    } else {
+      ggplot2::waiver()
+    }
+    p <- p + cpb_discrete_scale("colour", index, palette,
+                                labels = sec_labels_fn)
+    p <- cpb_add_legend_guide(p, "colour", reverse_legend, legend_ncol,
+                              legend_nrow)
   }
 
   p <- cpb_add_facet(p, facet, facet_ncol, facet_scales)
 
   # ylab goes on the subtitle line (see cpb_axis_labs())
-  labs <- cpb_axis_labs(title, subtitle, xlab, ylab, force = has_sec && !is.null(sec_ylab))
+  labs <- cpb_axis_labs(title, subtitle, xlab, ylab, force = has_sec &&
+                          !is.null(sec_ylab))
 
   cpb_wrapper_layout(p +
     ggplot2::labs(
-      title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y, colour = legend_title
+      title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y,
+      colour = legend_title
     ) +
     cpb_wrapper_theme())
 }
@@ -2636,7 +2742,8 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                     style = getOption("ggcpb.style", "dutch"),
                     ...) {
   style <- match.arg(style, c("dutch", "english"))
-  .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette), "colour_index")
+  .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette),
+                                "colour_index")
   index <- .cpb_idx$index
   palette <- .cpb_idx$palette
   orientation <- match.arg(orientation)
@@ -2715,7 +2822,8 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   }
 
   if (is.null(zeroline)) {
-    zeroline <- cpb_zeroline_auto(rlang::eval_tidy(p5, data), rlang::eval_tidy(p95, data))
+    zeroline <- cpb_zeroline_auto(rlang::eval_tidy(p5, data),
+                                  rlang::eval_tidy(p95, data))
   }
 
   if (has_fill) {
@@ -2764,7 +2872,8 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
 
   # underneath the boxes
   if (isTRUE(zeroline)) {
-    p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black", linewidth = 0.25)
+    p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black",
+                                 linewidth = 0.25)
   }
 
   if (box_style == "dot") {
@@ -2869,7 +2978,8 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
         box_col   = cpb_single_colour(fill_colour, 5),
         whisk_lw  = 0.55,
         med_col   = unname(cpb_cols(6)), med_lw = 1.3, med_ext = 0.2,
-        med_lab_col = unname(cpb_cols(6)), med_lab_face = "bold", med_lab_size = 2.6,
+        med_lab_col = unname(cpb_cols(6)), med_lab_face = "bold",
+        med_lab_size = 2.6,
         q_labels  = TRUE, q_lab_col = "#00a5ff", q_lab_size = 2.2
       )
     )
@@ -3017,9 +3127,11 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
 
   if (has_fill) {
     p <- p + cpb_discrete_scale(
-      "fill", index, palette, labels = cpb_linkeras_labels(has_sec, style = style)
+      "fill", index, palette,
+      labels = cpb_linkeras_labels(has_sec, style = style)
     )
-    p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol, legend_nrow)
+    p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol,
+                              legend_nrow)
   } else if (has_sec) {
     # no real fill mapping, so the boxes' own legend key (added above,
     # via mapping_box's fill = primary_lab) needs a matching one-colour
@@ -3029,7 +3141,8 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
       values = stats::setNames(style_fill_col, primary_lab), name = NULL,
       labels = cpb_linkeras_labels(TRUE, style = style)
     )
-    p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol, legend_nrow)
+    p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol,
+                              legend_nrow)
   }
 
   p <- cpb_add_facet(p, facet, facet_ncol, facet_scales)
@@ -3037,12 +3150,14 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   # ylab goes on the subtitle line, xlab on whichever axis is drawn
   # horizontally (see cpb_axis_labs())
   labs <- cpb_axis_labs(
-    title, subtitle, xlab, ylab, orientation, force = has_sec && !is.null(sec_ylab)
+    title, subtitle, xlab, ylab, orientation, force = has_sec &&
+      !is.null(sec_ylab)
   )
 
   p <- p +
     ggplot2::labs(
-      title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y, fill = legend_title
+      title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y,
+      fill = legend_title
     ) +
     cpb_wrapper_theme()
   p <- cpb_wrapper_layout(p)
@@ -3149,7 +3264,8 @@ cpb_scatter <- function(data, x, y, colour = NULL,
                         style = getOption("ggcpb.style", "dutch"),
                         ...) {
   style <- match.arg(style, c("dutch", "english"))
-  .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette), "colour_index")
+  .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette),
+                                "colour_index")
   index <- .cpb_idx$index
   palette <- .cpb_idx$palette
   x <- rlang::enquo(x)
@@ -3176,7 +3292,8 @@ cpb_scatter <- function(data, x, y, colour = NULL,
   # underneath the points: first the forecast window, then the zero line
   p <- p + cpb_forecast_rect(forecast_x, rlang::eval_tidy(x, data))
   if (isTRUE(zeroline)) {
-    p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black", linewidth = 0.25)
+    p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black",
+                                 linewidth = 0.25)
   }
 
   p <- p + if (has_colour) {
@@ -3187,7 +3304,8 @@ cpb_scatter <- function(data, x, y, colour = NULL,
   }
 
   # the label sits on top of everything
-  p <- p + cpb_forecast_label(forecast_x, rlang::eval_tidy(x, data), forecast_label, style = style)
+  p <- p + cpb_forecast_label(forecast_x, rlang::eval_tidy(x, data),
+                              forecast_label, style = style)
 
   # a numeric colour column gets the continuous gradient, anything
   # else the discrete palette
@@ -3198,7 +3316,8 @@ cpb_scatter <- function(data, x, y, colour = NULL,
     } else {
       cpb_discrete_scale("colour", index, palette)
     }
-    p <- cpb_add_legend_guide(p, "colour", reverse_legend, legend_ncol, legend_nrow)
+    p <- cpb_add_legend_guide(p, "colour", reverse_legend, legend_ncol,
+                              legend_nrow)
   }
 
   # both axes are drawn flush at both ends (the value axis as in the
@@ -3236,7 +3355,8 @@ cpb_scatter <- function(data, x, y, colour = NULL,
   )
   if (!is.null(x_breaks)) x_scale_args$breaks <- x_breaks
   p <- p + do.call(ggplot2::scale_x_continuous, x_scale_args) +
-    ggplot2::scale_y_continuous(breaks = scale_args$breaks, labels = scale_args$labels)
+    ggplot2::scale_y_continuous(breaks = scale_args$breaks,
+                                labels = scale_args$labels)
 
   p <- cpb_add_facet(p, facet, facet_ncol, facet_scales)
 
@@ -3245,7 +3365,8 @@ cpb_scatter <- function(data, x, y, colour = NULL,
 
   cpb_wrapper_layout(p +
     ggplot2::labs(
-      title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y, colour = legend_title
+      title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y,
+      colour = legend_title
     ) +
     cpb_wrapper_theme())
 }
@@ -3261,7 +3382,8 @@ cpb_scatter <- function(data, x, y, colour = NULL,
 # x facet scale gives every panel its own range.
 cpb_hist_bin_args <- function(xvals, binwidth, bins, dots, facet_scales) {
   keep <- list(binwidth = binwidth, bins = bins, boundary = NULL)
-  if (!is.null(binwidth) || any(c("center", "boundary", "breaks") %in% names(dots)) ||
+  if (!is.null(binwidth) ||
+        any(c("center", "boundary", "breaks") %in% names(dots)) ||
         facet_scales %in% c("free", "free_x") || !is.numeric(xvals)) {
     return(keep)
   }
@@ -3364,7 +3486,8 @@ cpb_hist <- function(data, x, fill = NULL,
                      style = getOption("ggcpb.style", "dutch"),
                      ...) {
   style <- match.arg(style, c("dutch", "english"))
-  .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette), "colour_index")
+  .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette),
+                                "colour_index")
   index <- .cpb_idx$index
   palette <- .cpb_idx$palette
   x <- rlang::enquo(x)
@@ -3386,15 +3509,18 @@ cpb_hist <- function(data, x, fill = NULL,
   bins <- bin_args$bins
 
   p <- p + if (has_fill) {
-    ggplot2::geom_histogram(binwidth = binwidth, bins = bins, position = position,
+    ggplot2::geom_histogram(binwidth = binwidth, bins = bins,
+                            position = position,
                             boundary = bin_args$boundary,
                             colour = outline, linewidth = 0.2,
                             show.legend = TRUE, ...)
   } else {
     single_fill <- cpb_single_colour(fill_colour, 6)
-    ggplot2::geom_histogram(binwidth = binwidth, bins = bins, position = position,
+    ggplot2::geom_histogram(binwidth = binwidth, bins = bins,
+                            position = position,
                             boundary = bin_args$boundary,
-                            colour = outline, linewidth = 0.2, fill = single_fill, ...)
+                            colour = outline, linewidth = 0.2,
+                            fill = single_fill, ...)
   }
 
   # the bars as drawn, read before the zero line becomes the last layer
@@ -3405,7 +3531,8 @@ cpb_hist <- function(data, x, fill = NULL,
   # counts are anchored at zero: black zero line on top of the bars and
   # a count axis flush with the axis line
   if (isTRUE(zeroline)) {
-    p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black", linewidth = 0.25)
+    p <- p + ggplot2::geom_hline(yintercept = 0, colour = "black",
+                                 linewidth = 0.25)
   }
   # flush on a labelled round value, as the other charts; free y facets
   # each get their own
@@ -3432,7 +3559,8 @@ cpb_hist <- function(data, x, fill = NULL,
   xvals <- rlang::eval_tidy(x, data)
   if (!is.numeric(xvals)) {
     p <- if (!is.null(x_lim)) {
-      p + ggplot2::coord_cartesian(xlim = x_lim, ylim = crop_ylim, clip = crop_clip)
+      p + ggplot2::coord_cartesian(xlim = x_lim, ylim = crop_ylim,
+                                   clip = crop_clip)
     } else {
       cpb_x_scale(p, x, data, flush = isTRUE(x_lim_follow_data))
     }
@@ -3445,7 +3573,8 @@ cpb_hist <- function(data, x, fill = NULL,
       x_range <- x_lim
       x_breaks <- tk$breaks
     } else if (isTRUE(x_lim_follow_data)) {
-      tk <- cpb_axis_ticks(bin_range[1], bin_range[2], whole = FALSE, edge = TRUE)
+      tk <- cpb_axis_ticks(bin_range[1], bin_range[2], whole = FALSE,
+                           edge = TRUE)
       x_range <- c(tk$lo, tk$hi)
       x_breaks <- tk$breaks
     } else {
@@ -3462,7 +3591,8 @@ cpb_hist <- function(data, x, fill = NULL,
 
   if (has_fill) {
     p <- p + cpb_discrete_scale("fill", index, palette)
-    p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol, legend_nrow)
+    p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol,
+                              legend_nrow)
   }
 
   p <- cpb_add_facet(p, facet, facet_ncol, facet_scales)
@@ -3472,7 +3602,8 @@ cpb_hist <- function(data, x, fill = NULL,
 
   cpb_wrapper_layout(p +
     ggplot2::labs(
-      title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y, fill = legend_title
+      title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y,
+      fill = legend_title
     ) +
     cpb_wrapper_theme())
 }
@@ -3639,7 +3770,8 @@ cpb_dot <- function(data, x, y, lower, upper,
                     style = getOption("ggcpb.style", "dutch"),
                     ...) {
   style <- match.arg(style, c("dutch", "english"))
-  .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette), "colour_index")
+  .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette),
+                                "colour_index")
   index <- .cpb_idx$index
   palette <- .cpb_idx$palette
   orientation <- match.arg(orientation)
@@ -3747,7 +3879,8 @@ cpb_dot <- function(data, x, y, lower, upper,
   value_limits_visual <- range(scale_args$breaks)
 
   if (is.null(zeroline)) {
-    zeroline <- cpb_zeroline_auto(value_limits_visual[1], value_limits_visual[2])
+    zeroline <- cpb_zeroline_auto(value_limits_visual[1],
+                                  value_limits_visual[2])
   }
   # first layer, so it sits underneath the estimates
   if (isTRUE(zeroline)) {
@@ -3799,7 +3932,8 @@ cpb_dot <- function(data, x, y, lower, upper,
 
   if (has_colour) {
     p <- p + cpb_discrete_scale("colour", index, palette)
-    p <- cpb_add_legend_guide(p, "colour", reverse_legend, legend_ncol, legend_nrow)
+    p <- cpb_add_legend_guide(p, "colour", reverse_legend, legend_ncol,
+                              legend_nrow)
   } else if (has_sec) {
     # the estimate series has no colour/fill mapping of its own, so key
     # it on a one-colour fill scale (a square) beside sec_y's own line
@@ -3816,11 +3950,13 @@ cpb_dot <- function(data, x, y, lower, upper,
   # ylab goes on the subtitle line, xlab on whichever axis is drawn
   # horizontally (see cpb_axis_labs())
   labs <- cpb_axis_labs(
-    title, subtitle, xlab, ylab, orientation, force = has_sec && !is.null(sec_ylab)
+    title, subtitle, xlab, ylab, orientation, force = has_sec &&
+      !is.null(sec_ylab)
   )
 
   p <- p +
-    ggplot2::labs(title = title, subtitle = labs$subtitle, x = labs$x, y = labs$y,
+    ggplot2::labs(title = title, subtitle = labs$subtitle,
+                  x = labs$x, y = labs$y,
                   colour = legend_title) +
     cpb_wrapper_theme()
   p <- cpb_wrapper_layout(p)
@@ -3967,7 +4103,8 @@ cpb_donut <- function(data, fill, y,
                       legend_title = NULL,
                       style = getOption("ggcpb.style", "dutch"),
                       ...) {
-  .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette), "colour_index")
+  .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette),
+                                "colour_index")
   index <- .cpb_idx$index
   palette <- .cpb_idx$palette
   fill <- rlang::enquo(fill)
@@ -4110,7 +4247,8 @@ cpb_donut <- function(data, fill, y,
       # bit) as far as that takes
       n <- length(grp)
       if (target_y[grp[n]] * d > y_lim) {
-        gap <- max(0.35, min(min_row_gap, (y_lim - target_y[grp[1]] * d) / (n - 1)))
+        gap <- max(0.35, min(min_row_gap,
+                             (y_lim - target_y[grp[1]] * d) / (n - 1)))
         target_y[grp[n]] <- y_lim * d
         for (i in rev(seq_len(n - 1))) {
           if ((target_y[grp[i + 1]] - target_y[grp[i]]) * d < gap) {
@@ -4124,7 +4262,8 @@ cpb_donut <- function(data, fill, y,
     # (angle close to 90/270 degrees) height barely changes with
     # radius at all, so the extension is capped rather than left to
     # blow up chasing a target it cannot reach that way.
-    safe_cos <- ifelse(abs(cos(theta)) < 0.05, sign(cos(theta)) * 0.05, cos(theta))
+    safe_cos <- ifelse(abs(cos(theta)) < 0.05,
+                       sign(cos(theta)) * 0.05, cos(theta))
     r_tick <- pmin(pmax(target_y / safe_cos, r_base), r_base + max_extend)
     tick_y <- r_tick * cos(theta)
     tick_x <- r_tick * sin(theta)
@@ -4188,8 +4327,10 @@ cpb_donut <- function(data, fill, y,
           data.frame(grp = id, x = along(t_top)$y, y = if (left) total else 0)
         }
         return(rbind(
-          piece(step[step < t_top], paste0(i, "a")), top(tick_x[i] < 0, paste0(i, "a")),
-          top(tick_x[i] > 0, paste0(i, "b")), piece(step[step > t_top], paste0(i, "b"))
+          piece(step[step < t_top], paste0(i, "a")),
+          top(tick_x[i] < 0, paste0(i, "a")),
+          top(tick_x[i] > 0, paste0(i, "b")),
+          piece(step[step > t_top], paste0(i, "b"))
         ))
       }
       piece(step, as.character(i))
@@ -4263,7 +4404,8 @@ cpb_donut <- function(data, fill, y,
       ) +
       ggplot2::geom_path(
         data = path_data,
-        ggplot2::aes(x = .data[["x"]], y = .data[["y"]], group = .data[["grp"]]),
+        ggplot2::aes(x = .data[["x"]], y = .data[["y"]],
+                     group = .data[["grp"]]),
         inherit.aes = FALSE, colour = "grey30", linewidth = 0.3
       ) +
       ggplot2::geom_text(
@@ -4272,7 +4414,8 @@ cpb_donut <- function(data, fill, y,
           x = .data[["x_text"]], y = .data[["y_text"]],
           label = .data[["wedge_label"]], hjust = .data[["hjust"]]
         ),
-        inherit.aes = FALSE, colour = label_colour, size = cpb_font_pt / ggplot2::.pt,
+        inherit.aes = FALSE, colour = label_colour,
+        size = cpb_font_pt / ggplot2::.pt,
         family = cpb_font_family()
       )
   }

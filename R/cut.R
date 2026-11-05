@@ -56,7 +56,8 @@ cpb_cut <- function(x,
     stop("`x` must be numeric.", call. = FALSE)
   }
   if (!is.function(labeller)) {
-    stop("`labeller` must be a function, e.g. label_number_nl().", call. = FALSE)
+    stop("`labeller` must be a function, e.g. label_number_nl().",
+         call. = FALSE)
   }
 
   # a single integer means "this many equal-width bins": let cut() pick
@@ -71,7 +72,8 @@ cpb_cut <- function(x,
 
   breaks <- sort(unique(breaks))
   if (length(breaks) < 2) {
-    stop("`breaks` must give at least two cut points (one class).", call. = FALSE)
+    stop("`breaks` must give at least two cut points (one class).",
+         call. = FALSE)
   }
   n_class <- length(breaks) - 1L
 

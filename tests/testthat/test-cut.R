@@ -43,7 +43,8 @@ test_that("the blues palette ramps light to dark and integrates with scales", {
   lum <- colSums(grDevices::col2rgb(six))
   expect_true(all(diff(lum) < 0))
   # exposed in tokens and usable as a discrete scale palette
-  expect_true("blues" %in% names(cpb_tokens()) || !is.null(cpb_tokens()$colors_blues))
+  expect_true("blues" %in% names(cpb_tokens()) ||
+                !is.null(cpb_tokens()$colors_blues))
   sc <- scale_fill_cpb_d(palette = "blues")
   expect_s3_class(sc, "Scale")
   scc <- scale_fill_cpb_c()  # continuous still fine

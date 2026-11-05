@@ -80,7 +80,8 @@ cpb_table_total  <- "#f08bb8"
 #' @return A character vector of hex colours (data colours only); named
 #'   for `"extended"`, unnamed for the others.
 #' @noRd
-cpb_palette_colours <- function(palette = c("qualitative", "discr", "sequential",
+cpb_palette_colours <- function(palette = c("qualitative", "discr",
+                                            "sequential",
                                             "blues", "extended")) {
   palette <- match.arg(palette)
   raw <- switch(

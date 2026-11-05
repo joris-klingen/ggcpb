@@ -75,7 +75,9 @@ cpb_pal <- function(palette = c("qualitative", "discr", "sequential",
         warning(
           "cpb_pal(): the '", palette, "' palette only has ", length(cols),
           " colours; recycling to fill ", n, " requested levels.",
-          if (!identical(palette, "extended")) ' Use palette = "extended" for up to 20 colours.',
+          if (!identical(palette, "extended")) {
+            ' Use palette = "extended" for up to 20 colours.'
+          },
           call. = FALSE
         )
         cols <- rep_len(cols, n)
@@ -109,7 +111,8 @@ cpb_pal <- function(palette = c("qualitative", "discr", "sequential",
 #' cpb_cols("apple", "sun", palette = "extended")
 #' @export
 cpb_cols <- function(...,
-                     palette = c("qualitative", "discr", "sequential", "extended"),
+                     palette = c("qualitative", "discr", "sequential",
+                                 "extended"),
                      reverse = FALSE) {
   palette <- match.arg(palette)
   cols <- cpb_palette_colours(palette)
@@ -122,15 +125,19 @@ cpb_cols <- function(...,
   if (is.character(idx) && !is.null(names(cols))) {
     unknown <- setdiff(idx, names(cols))
     if (length(unknown)) {
-      stop("cpb_cols(): unknown colour name(s) ", paste0("'", unknown, "'", collapse = ", "),
-           "; the '", palette, "' palette has ", paste(names(cols), collapse = ", "), ".",
+      stop("cpb_cols(): unknown colour name(s) ",
+           paste0("'", unknown, "'", collapse = ", "),
+           "; the '", palette, "' palette has ",
+           paste(names(cols), collapse = ", "), ".",
            call. = FALSE)
     }
     return(cols[idx])
   }
   if (!is.numeric(idx)) {
-    stop("cpb_cols(): indices passed via ... must be numeric positions into the palette",
-         if (!is.null(names(cols))) " or colour names" else "", ".", call. = FALSE)
+    stop("cpb_cols(): indices passed via ... must be numeric positions ",
+         "into the palette",
+         if (!is.null(names(cols))) " or colour names" else "", ".",
+         call. = FALSE)
   }
   if (any(idx < 1 | idx > length(cols))) {
     stop(
@@ -180,7 +187,8 @@ cpb_resolve_index <- function(value, palette, palette_supplied,
   if (is.character(value)) {
     if (length(value) != 1L || is.na(value)) {
       stop("`", arg, "` must be a single keyword (",
-           paste0("\"", names(cpb_index_keywords)[1:2], "\"", collapse = " or "),
+           paste0("\"", names(cpb_index_keywords)[1:2], "\"",
+                  collapse = " or "),
            ") or a vector of palette positions.", call. = FALSE)
     }
     if (!value %in% names(cpb_index_keywords)) {

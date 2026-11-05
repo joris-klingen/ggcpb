@@ -24,7 +24,8 @@
 #'   geom_bar() +
 #'   scale_fill_cpb_d()
 #' @export
-scale_fill_cpb_d <- function(palette = c("qualitative", "discr", "sequential", "blues", "extended"),
+scale_fill_cpb_d <- function(palette = c("qualitative", "discr", "sequential",
+                                         "blues", "extended"),
                              reverse = FALSE,
                              na.value = cpb_na,
                              ...) {
