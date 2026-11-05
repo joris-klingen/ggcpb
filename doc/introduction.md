@@ -81,16 +81,9 @@ already have in R. The caption below each figure in this introduction
 shows the function to use. Load the packages first.
 
 ``` r
-library(conflicted)
+library(conflicted) # optional, but recommended
 library(ggcpb)
 ```
-
-We advise to load `conflicted` as well. Some functions exist in more
-than one package. Without `conflicted`, the package that you loaded last
-wins silently. A script then gives different results when a package was
-already loaded in your session. `conflicted` stops with a clear message
-instead. Choose a function with `conflicts_prefer(dplyr::filter)`, for
-example.
 
 Each figure type has its own function.
 
@@ -1169,20 +1162,6 @@ colour_index
 <td style="text-align:right;">
 
 6;5;2;4
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-page
-</td>
-
-<td style="text-align:right;">
-
-full
 </td>
 
 </tr>

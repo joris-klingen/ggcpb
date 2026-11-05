@@ -430,8 +430,7 @@ cpb_donut(energie, fill = bron, y = aandeel,
 
 ```{r par-donut}
 ptab(plot_type = "donut", title = "Energiemix van huishoudens",
-     fill = "bron", y = "aandeel", colour_index = "6;5;2;4",
-     page = "full")
+     fill = "bron", y = "aandeel", colour_index = "6;5;2;4")
 ```
 
 </div>
