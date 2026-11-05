@@ -56,8 +56,9 @@ dataset, the figure number in \code{params_csv} (the first figure column is
 }
 
 \code{params_csv} needs a \code{plot_type} field naming the wrapper to use
-(\code{"col"}, \code{"area"}, \code{"line"}, \code{"box"}, \code{"dot"}, \code{"scatter"}, or
-\code{"hist"} -- i.e. the \verb{cpb_*()} name without the prefix), plus whichever
+(\code{"col"}, \code{"area"}, \code{"line"}, \code{"box"}, \code{"boxplot_extended"}, \code{"dot"},
+\code{"scatter"}, \code{"hist"}, \code{"donut"} or \code{"map"} -- i.e. the \verb{cpb_*()} name
+without the prefix), plus whichever
 of that wrapper's own arguments the figure needs. Column-referencing
 arguments (\code{x}, \code{y}, \code{fill}, \code{colour}, \code{p5}..\code{p95}, \code{sec_y}, ...) take
 a column name from the dataset; everything else (\code{title}, \code{ylab},
@@ -69,6 +70,23 @@ chosen wrapper, are simply skipped -- the wrapper's own default
 applies, so a typo or a stray column never breaks the import (a
 \code{warning()} is still raised for each one). Set \code{create} to
 \code{"n"}/\code{"no"}/\code{"false"}/\code{"f"} to skip a figure entirely.
+
+Some values are read specially, so that every argument can be set from a
+CSV:
+\itemize{
+\item \code{Inf} and \code{-Inf} are numbers, and a written \verb{\\n} is a line break.
+\item \code{x_labels} and \code{sec_axis_labels} take the name of a formatter:
+\code{number}, \code{euro} or \code{pct}.
+\item \code{dot_labels} takes name:value pairs, such as \verb{p5:onderste 5\%}.
+\item A dataset column of dates (\code{2024-01-31}, or \code{31-1-2024}) becomes a
+date axis, and \code{x_lim} on it is given as dates.
+\item \code{cut} (such as \verb{0;20;40;Inf}) puts the numbers of the column that sets
+the colours (\code{value} of a map, \code{colour} of a line, dot or scatter plot,
+\code{fill} of the others) into classes. \code{cut_labels} (\code{number}, \code{euro} or
+\code{pct}) formats the class labels, as \code{\link[=cpb_cut]{cpb_cut()}} does.
+\item \code{page}, \code{height} (in cm), \code{preset}, \code{dpi} and \code{lock} say how
+\code{\link[=cpb_import_run]{cpb_import_run()}} saves the figure, see \code{\link[=save_cpb]{save_cpb()}}.
+}
 
 In \code{params_csv} column 1 holds the parameter names, one per row. Every
 other column is one figure. Fields at the end of a row can be left

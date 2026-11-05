@@ -460,8 +460,8 @@ test_that("`page` sets the width a figure is saved at, half by default", {
     "page,,full"
   ))
   expect_no_warning(ps <- cpb_import_csv(file.path(dir, "params.csv")))
-  expect_null(attr(ps$koopkracht, "cpb_import_page"))
-  expect_equal(attr(ps$werkloosheid, "cpb_import_page"), "full")
+  expect_null(attr(ps$koopkracht, "cpb_import_save")$page)
+  expect_equal(attr(ps$werkloosheid, "cpb_import_save")$page, "full")
 
   utils::capture.output(cpb_import_run(dir))
   px <- function(f) dim(png::readPNG(file.path(dir, "generated", f)))[2]

@@ -34,7 +34,9 @@ column_examples <- c(
   p25     = "p25",
   p50     = "p50",
   p75     = "p75",
-  p95     = "p95"
+  p95     = "p95",
+  region  = "code",
+  value   = "share"
 )
 
 # Shown for a "literal" kind parameter whose own default is blank
@@ -71,7 +73,28 @@ literal_examples <- c(
   dot_labels       = "p5:bottom 5%;p95:top 5%",
   zeroline         = "TRUE",
   colour_index     = "2;6",
-  colour_index       = "2;6"
+  x_labels         = "euro (or number, pct, or labels such as a;b;c)",
+  sec_axis_labels  = "pct (or number, euro, or labels such as a;b;c)",
+  border_colour    = "white",
+  na_fill          = "lightgrey",
+  label_colour     = "white",
+  value_axis       = "bottom",
+  sec_at           = "0;50;100",
+  legend_nrow      = "2",
+  x_lim_follow_data = "TRUE",
+  panel_size       = "1.8",
+  zero_indicator   = "TRUE",
+  ylab_position    = "left"
+)
+
+# Parameters read by the import itself, the same for every plot type:
+# how the figure is saved, and the classes of `cut`.
+import_rows <- data.frame(
+  param = c("page", "height", "preset", "dpi", "lock", "cut", "cut_labels"),
+  default = c("half", "", "report/presentation/map (default: report)",
+              "300", "TRUE", "", "number/euro/pct (default: number)"),
+  example = c("full", "10 (cm)", "map", "800", "FALSE", "0;20;40;Inf", "pct"),
+  stringsAsFactors = FALSE
 )
 
 fmt_default <- function(val) {
@@ -109,8 +132,7 @@ for (pt in plot_types) {
   f <- formals(fn)
   col_args <- cpb_import_col_args[[pt]]
   for (nm in names(f)) {
-    # a function cannot be given in a CSV
-    if (nm %in% c("...", "x_labels")) next
+    if (nm == "...") next
     if (nm == "data") {
       # in a CSV `data` is not the data frame but the dataset file name(s)
       # inside the data folder, so it is a literal here
@@ -119,11 +141,9 @@ for (pt in plot_types) {
         default = "data", example = "koopkracht;werkloosheid",
         stringsAsFactors = FALSE
       )
-      # `page` is read by the import itself, for saving, so it is no
-      # argument of a wrapper either
       rows[[length(rows) + 1]] <- data.frame(
-        plot_type = pt, param = "page", kind = "literal",
-        default = "half", example = "full",
+        plot_type = pt, import_rows[, "param", drop = FALSE],
+        kind = "literal", import_rows[, c("default", "example")],
         stringsAsFactors = FALSE
       )
       next

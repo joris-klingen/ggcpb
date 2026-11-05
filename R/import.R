@@ -16,24 +16,68 @@ cpb_import_col_args <- list(
   dot     = c("x", "y", "lower", "upper", "colour", "group", "facet", "sec_y"),
   scatter = c("x", "y", "colour", "facet"),
   hist    = c("x", "fill", "facet"),
-  donut   = c("fill", "y", "label")
+  donut   = c("fill", "y", "label"),
+  map     = c("region", "value"),
+  boxplot_extended = c("x", "p5", "p25", "p50", "p75", "p95", "mean",
+                       "fill", "group", "facet", "sec_y")
 )
+
+# Parameters read by the import itself, not passed to the wrapper: the
+# ones that say how a figure is saved, and the classes of `cut`.
+cpb_import_save_args <- c("page", "height", "preset", "dpi", "lock")
+
+# The column that `cut` puts into classes, per plot_type.
+cpb_import_cut_target <- function(plot_type) {
+  switch(plot_type,
+    map = "value",
+    scatter = , line = , dot = "colour",
+    "fill"
+  )
+}
+
+# Formatters a CSV cell can name, for parameters that take a labelling
+# function (x_labels, sec_axis_labels) and for the labels of `cut`.
+cpb_import_formatter <- function(name, style) {
+  switch(tolower(trimws(name)),
+    number = label_number_nl(style = style),
+    euro = label_euro_nl(style = style),
+    pct = , percent = label_pct_nl(style = style),
+    NULL
+  )
+}
+cpb_import_formatter_args <- c("x_labels", "sec_axis_labels")
 
 # One string value from a CSV cell -> an R value. A value containing ";"
 # becomes a vector, each piece coerced the same way (so "6;2" becomes the
 # numeric vector c(6, 2), matching e.g. colour_index = c(6, 2)). Otherwise: a
-# plain number if it looks like one, TRUE/FALSE if it reads as one, else
-# the string as-is.
+# plain number if it looks like one (Inf and -Inf included), TRUE/FALSE if
+# it reads as one, else the string, with a written "\\n" as a line break.
 cpb_import_coerce_scalar <- function(x) {
   x <- trimws(x)
-  if (grepl("^-?[0-9]+(\\.[0-9]+)?$", x)) {
+  number <- "^-?([0-9]+([.][0-9]*)?|[.][0-9]+)([eE][-+]?[0-9]+)?$"
+  if (grepl(number, x) || x %in% c("Inf", "-Inf")) {
     return(as.numeric(x))
   }
   if (tolower(x) %in% c("true", "false")) {
     return(as.logical(x))
   }
-  x
+  gsub("\\n", "\n", x, fixed = TRUE)
 }
+
+# "p5:onderste 5%;p95:bovenste 5%" -> c(p5 = "onderste 5%", ...), for the
+# parameters that take a named vector
+cpb_import_named <- function(value) {
+  parts <- trimws(strsplit(value, ";", fixed = TRUE)[[1]])
+  keys <- trimws(sub(":.*$", "", parts))
+  vals <- trimws(sub("^[^:]*:", "", parts))
+  if (!all(grepl(":", parts, fixed = TRUE))) {
+    stop("write each value as name:value, separated by ;", call. = FALSE)
+  }
+  stats::setNames(vapply(vals, function(v) {
+    as.character(cpb_import_coerce_scalar(v))
+  }, character(1)), keys)
+}
+cpb_import_named_args <- "dot_labels"
 
 cpb_import_coerce <- function(value) {
   if (grepl(";", value, fixed = TRUE)) {
@@ -121,12 +165,35 @@ cpb_import_read_data <- function(path, sep) {
 
   # Text columns keep the order their values first appear in, so the row
   # order in the CSV is the order of the categories on the axis and in the
-  # legend (read.csv would leave them to sort alphabetically).
+  # legend (read.csv would leave them to sort alphabetically). A column of
+  # dates becomes a Date column first.
+  data_df[] <- lapply(data_df, cpb_import_as_date)
   chr <- vapply(data_df, is.character, logical(1))
   data_df[chr] <- lapply(data_df[chr],
                          function(x) factor(x, levels = unique(x)))
 
   data_df
+}
+
+# A text column that holds only dates becomes a Date column: 2024-01-31 (ISO)
+# or 31-1-2024 (day-month-year, as Dutch Excel writes it). Anything else is
+# left as it is.
+cpb_import_as_date <- function(x) {
+  if (!is.character(x)) return(x)
+  filled <- !is.na(x) & nzchar(trimws(x))
+  v <- trimws(x[filled])
+  if (!length(v)) return(x)
+  fmt <- if (all(grepl("^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}$", v))) {
+    "%Y-%m-%d"
+  } else if (all(grepl("^[0-9]{1,2}-[0-9]{1,2}-[0-9]{4}$", v))) {
+    "%d-%m-%Y"
+  } else {
+    return(x)
+  }
+  d <- as.Date(trimws(x), format = fmt)
+  # a value that looks like a date but is none (2024-13-45) keeps the text
+  if (anyNA(d[filled])) return(x)
+  d
 }
 
 # Reads params.csv and returns one named list of (still all-character)
@@ -205,16 +272,14 @@ cpb_import_build_one <- function(params, data_df, extra_params) {
   params[["create"]] <- NULL
   params[["id"]] <- NULL
   params[["data"]] <- NULL
-  # the page width is for saving, not an argument of the wrapper
-  page <- params[["page"]]
-  params[["page"]] <- NULL
-  if (!is.null(page)) {
-    page <- tolower(trimws(page))
-    if (!page %in% c("half", "full", "small")) {
-      stop("`page` must be half, full or small, not \"", page, "\".",
-           call. = FALSE)
-    }
-  }
+  # how the figure is saved: not arguments of the wrapper
+  save <- cpb_import_save_params(params[intersect(names(params),
+                                                  cpb_import_save_args)])
+  params[cpb_import_save_args] <- NULL
+  cut <- params[["cut"]]
+  cut_labels <- params[["cut_labels"]]
+  params[["cut"]] <- NULL
+  params[["cut_labels"]] <- NULL
 
   unknown <- setdiff(names(params), valid_args)
   if (length(unknown)) {
@@ -224,9 +289,36 @@ cpb_import_build_one <- function(params, data_df, extra_params) {
       call. = FALSE
     )
   }
+  style <- params[["style"]]
+  style <- if (is.null(style)) getOption("ggcpb.style", "dutch") else style
+
+  # cut: numbers into classes, for the column that sets the colours. The
+  # classes go into a new column, so the numbers can still be the x or y.
+  if (!is.null(cut)) {
+    target_arg <- cpb_import_cut_target(plot_type)
+    target <- params[[target_arg]]
+    if (is.null(target) || !target %in% names(data_df)) {
+      stop("`cut` needs a `", cpb_import_cut_target(plot_type), "` column.",
+           call. = FALSE)
+    }
+    labeller <- if (is.null(cut_labels)) {
+      label_number_nl(style = style)
+    } else {
+      cpb_import_formatter(cut_labels, style)
+    }
+    if (is.null(labeller)) {
+      stop("`cut_labels` must be number, euro or pct, not \"", cut_labels,
+           "\".", call. = FALSE)
+    }
+    classes <- paste0(".cpb_classes_", target)
+    data_df[[classes]] <- cpb_cut(data_df[[target]],
+                                  breaks = cpb_import_coerce(cut),
+                                  labeller = labeller)
+    params[[target_arg]] <- classes
+  }
 
   # a number used to split series (a year as `fill`) is a category, not a
-  # gradient. Only a scatter `colour` keeps its numeric gradient.
+  # gradient. Only a scatter `colour` and a map `value` keep their numbers.
   category_args <- c("fill", "group", "facet",
                      if (plot_type != "scatter") "colour")
   for (nm in intersect(names(params), category_args)) {
@@ -247,13 +339,63 @@ cpb_import_build_one <- function(params, data_df, extra_params) {
         )
       }
       args[[nm]] <- as.symbol(val)
+    } else if (nm %in% cpb_import_formatter_args &&
+                 !is.null(cpb_import_formatter(val, style))) {
+      args[[nm]] <- cpb_import_formatter(val, style)
+    } else if (nm %in% cpb_import_named_args) {
+      args[[nm]] <- cpb_import_named(val)
     } else {
       args[[nm]] <- cpb_import_coerce(val)
     }
   }
+  # x_lim on a date axis is given as dates
+  x_col <- params[["x"]]
+  if (!is.null(args$x_lim) && !is.null(x_col) &&
+        inherits(data_df[[x_col]], "Date")) {
+    args$x_lim <- cpb_import_as_date(as.character(args$x_lim))
+  }
   args <- utils::modifyList(args, extra_params)
   list(plot = do.call(fn, args), plot_type = plot_type, unknown = unknown,
-       page = page)
+       save = save)
+}
+
+# The save parameters of one figure, checked: page (half, full, small),
+# height in cm, preset (report, presentation, map), dpi and lock.
+cpb_import_save_params <- function(p) {
+  out <- list()
+  if (!is.null(p$page)) {
+    out$page <- tolower(trimws(p$page))
+    if (!out$page %in% c("half", "full", "small")) {
+      stop("`page` must be half, full or small, not \"", out$page, "\".",
+           call. = FALSE)
+    }
+  }
+  if (!is.null(p$preset)) {
+    out$preset <- tolower(trimws(p$preset))
+    if (!out$preset %in% c("report", "presentation", "map")) {
+      stop("`preset` must be report, presentation or map, not \"",
+           out$preset, "\".", call. = FALSE)
+    }
+  }
+  for (nm in c("height", "dpi")) {
+    if (!is.null(p[[nm]])) {
+      v <- cpb_import_coerce(p[[nm]])
+      if (!is.numeric(v) || length(v) != 1 || v <= 0) {
+        stop("`", nm, "` must be one positive number, not \"", p[[nm]],
+             "\".", call. = FALSE)
+      }
+      out[[nm]] <- v
+    }
+  }
+  # height is written in cm, save_cpb() takes inches
+  if (!is.null(out$height)) out$height <- out$height / 2.54
+  if (!is.null(p$lock)) {
+    out$lock <- cpb_import_coerce(p$lock)
+    if (!is.logical(out$lock)) {
+      stop("`lock` must be TRUE or FALSE.", call. = FALSE)
+    }
+  }
+  out
 }
 
 # Always (over)writes a plain-text run log next to params_csv, listing
@@ -336,8 +478,9 @@ cpb_import_write_log <- function(params_csv, data_dir, entries) {
 #' `koopkracht_1`, `koopkracht_3`.
 #'
 #' `params_csv` needs a `plot_type` field naming the wrapper to use
-#' (`"col"`, `"area"`, `"line"`, `"box"`, `"dot"`, `"scatter"`, or
-#' `"hist"` -- i.e. the `cpb_*()` name without the prefix), plus whichever
+#' (`"col"`, `"area"`, `"line"`, `"box"`, `"boxplot_extended"`, `"dot"`,
+#' `"scatter"`, `"hist"`, `"donut"` or `"map"` -- i.e. the `cpb_*()` name
+#' without the prefix), plus whichever
 #' of that wrapper's own arguments the figure needs. Column-referencing
 #' arguments (`x`, `y`, `fill`, `colour`, `p5`..`p95`, `sec_y`, ...) take
 #' a column name from the dataset; everything else (`title`, `ylab`,
@@ -349,6 +492,21 @@ cpb_import_write_log <- function(params_csv, data_dir, entries) {
 #' applies, so a typo or a stray column never breaks the import (a
 #' `warning()` is still raised for each one). Set `create` to
 #' `"n"`/`"no"`/`"false"`/`"f"` to skip a figure entirely.
+#'
+#' Some values are read specially, so that every argument can be set from a
+#' CSV:
+#' * `Inf` and `-Inf` are numbers, and a written `\n` is a line break.
+#' * `x_labels` and `sec_axis_labels` take the name of a formatter:
+#'   `number`, `euro` or `pct`.
+#' * `dot_labels` takes name:value pairs, such as `p5:onderste 5%`.
+#' * A dataset column of dates (`2024-01-31`, or `31-1-2024`) becomes a
+#'   date axis, and `x_lim` on it is given as dates.
+#' * `cut` (such as `0;20;40;Inf`) puts the numbers of the column that sets
+#'   the colours (`value` of a map, `colour` of a line, dot or scatter plot,
+#'   `fill` of the others) into classes. `cut_labels` (`number`, `euro` or
+#'   `pct`) formats the class labels, as [cpb_cut()] does.
+#' * `page`, `height` (in cm), `preset`, `dpi` and `lock` say how
+#'   [cpb_import_run()] saves the figure, see [save_cpb()].
 #'
 #' In `params_csv` column 1 holds the parameter names, one per row. Every
 #' other column is one figure. Fields at the end of a row can be left
@@ -503,7 +661,7 @@ cpb_import_csv <- function(params_csv, sep = ",", ..., simplify = TRUE) {
     stem <- tools::file_path_sans_ext(it$file)
     fig_id <- if (stem %in% shared) paste0(stem, "_", it$row) else stem
     plots[[fig_id]] <- built$plot
-    attr(plots[[fig_id]], "cpb_import_page") <- built$page
+    attr(plots[[fig_id]], "cpb_import_save") <- built$save
   }
 
   entries <- entries[order(vapply(entries, function(e) e$row, numeric(1)))]
@@ -534,8 +692,10 @@ cpb_import_csv <- function(params_csv, sep = ",", ..., simplify = TRUE) {
 #' builds the figures with [cpb_import_csv()] (datasets
 #' from `dir/data`), and saves each as a PNG in `dir/generated`, named after
 #' its dataset. A PNG that already exists is replaced. Datasets or figures
-#' that fail are skipped, listed at the end, and written to
-#' `params_log.txt`.
+#' that fail, also when a figure only fails while it is drawn, are skipped,
+#' listed at the end, and written to `params_log.txt`. The parameters
+#' `page`, `height` (in cm), `preset`, `dpi` and `lock` in `params.csv` are
+#' passed to [save_cpb()].
 #'
 #' @param dir The figure folder, holding `params.csv` and `data/`.
 #' @param page Page width passed to [save_cpb()] for a figure that has no
@@ -560,13 +720,39 @@ cpb_import_run <- function(dir = ".", page = "half") {
   if (!dir.exists(out_dir)) dir.create(out_dir)
   paths <- file.path(out_dir,
                      paste0(gsub("[^A-Za-z0-9_-]+", "_", names(figs)), ".png"))
+  # A figure that only fails when it is drawn must not stop the others.
+  # It is skipped, listed at the end, and added to the log.
+  saved <- rep(FALSE, length(figs))
+  not_saved <- character(0)
   for (i in seq_along(figs)) {
-    page_i <- attr(figs[[i]], "cpb_import_page")
-    if (is.null(page_i)) page_i <- page
-    save_cpb(paths[[i]], figs[[i]], page = page_i)
+    save <- utils::modifyList(list(page = page),
+                              as.list(attr(figs[[i]], "cpb_import_save")))
+    result <- withCallingHandlers(
+      tryCatch({
+        do.call(save_cpb, c(list(paths[[i]], figs[[i]]), save))
+        TRUE
+      }, error = function(e) conditionMessage(e)),
+      warning = function(w) {
+        warns <<- c(warns, paste0("\"", names(figs)[i], "\": ",
+                                  conditionMessage(w)))
+        invokeRestart("muffleWarning")
+      }
+    )
+    if (isTRUE(result)) {
+      saved[i] <- TRUE
+    } else {
+      msg <- paste0("Figure \"", names(figs)[i], "\": not saved (",
+                    gsub("\\s+", " ", result), ") -- skipped.")
+      warns <- c(warns, msg)
+      not_saved <- c(not_saved, msg)
+    }
+  }
+  if (length(not_saved)) {
+    log_path <- paste0(tools::file_path_sans_ext(params_csv), "_log.txt")
+    cat("", not_saved, sep = "\n", file = log_path, append = TRUE)
   }
 
-  cat("\nDone. ", length(paths),
+  cat("\nDone. ", sum(saved),
       " figure(s) saved in the generated folder.\n", sep = "")
   if (length(warns)) {
     n_skipped <- sum(grepl("-- skipped\\.$", warns))
@@ -574,7 +760,7 @@ cpb_import_run <- function(dir = ".", page = "half") {
     cat(paste0("  ", warns), sep = "\n")
     cat("\nSee params_log.txt for details.\n")
   }
-  invisible(paths)
+  invisible(paths[saved])
 }
 
 #' Copy a ready-to-run figure-generating kit to a folder
