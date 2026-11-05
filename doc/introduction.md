@@ -285,7 +285,8 @@ ylab
 **How to reproduce this figure:** copy `params.csv`, the folder `data`
 and `run_import.bat` (Windows) or `run_import.command` (Mac) to a
 personal folder. Fill in the parameters above in `params.csv` and start
-the script. In R you can call `cpb_line()` instead. See section 1.4.
+the script. In R you can call `cpb_line()` instead. See section 1.4 and
+the example code at the end.
 
 ## Columns with two axes
 
@@ -473,7 +474,8 @@ mld euro
 **How to reproduce this figure:** copy `params.csv`, the folder `data`
 and `run_import.bat` (Windows) or `run_import.command` (Mac) to a
 personal folder. Fill in the parameters above in `params.csv` and start
-the script. In R you can call `cpb_col()` instead. See section 1.4.
+the script. In R you can call `cpb_col()` instead. See section 1.4 and
+the example code at the end.
 
 ## Horizontal bars with chosen colours
 
@@ -674,7 +676,8 @@ aandeel binnen inkomensgroep (%)
 **How to reproduce this figure:** copy `params.csv`, the folder `data`
 and `run_import.bat` (Windows) or `run_import.command` (Mac) to a
 personal folder. Fill in the parameters above in `params.csv` and start
-the script. In R you can call `cpb_col()` instead. See section 1.4.
+the script. In R you can call `cpb_col()` instead. See section 1.4 and
+the example code at the end.
 
 ## Line with markers in English
 
@@ -848,7 +851,8 @@ ylab
 **How to reproduce this figure:** copy `params.csv`, the folder `data`
 and `run_import.bat` (Windows) or `run_import.command` (Mac) to a
 personal folder. Fill in the parameters above in `params.csv` and start
-the script. In R you can call `cpb_line()` instead. See section 1.4.
+the script. In R you can call `cpb_line()` instead. See section 1.4 and
+the example code at the end.
 
 ## Boxplot
 
@@ -1050,7 +1054,8 @@ ylab
 **How to reproduce this figure:** copy `params.csv`, the folder `data`
 and `run_import.bat` (Windows) or `run_import.command` (Mac) to a
 personal folder. Fill in the parameters above in `params.csv` and start
-the script. In R you can call `cpb_box()` instead. See section 1.4.
+the script. In R you can call `cpb_box()` instead. See section 1.4 and
+the example code at the end.
 
 More box plot styles are in [`vignette("boxplots")`](boxplots.md).
 
@@ -1185,7 +1190,8 @@ full
 **How to reproduce this figure:** copy `params.csv`, the folder `data`
 and `run_import.bat` (Windows) or `run_import.command` (Mac) to a
 personal folder. Fill in the parameters above in `params.csv` and start
-the script. In R you can call `cpb_donut()` instead. See section 1.4.
+the script. In R you can call `cpb_donut()` instead. See section 1.4 and
+the example code at the end.
 
 ## Dot plot
 
@@ -1344,7 +1350,8 @@ xlab
 **How to reproduce this figure:** copy `params.csv`, the folder `data`
 and `run_import.bat` (Windows) or `run_import.command` (Mac) to a
 personal folder. Fill in the parameters above in `params.csv` and start
-the script. In R you can call `cpb_dot()` instead. See section 1.4.
+the script. In R you can call `cpb_dot()` instead. See section 1.4 and
+the example code at the end.
 
 ## Scatter plot
 
@@ -1473,7 +1480,8 @@ besteedbaar inkomen (euro per maand)
 **How to reproduce this figure:** copy `params.csv`, the folder `data`
 and `run_import.bat` (Windows) or `run_import.command` (Mac) to a
 personal folder. Fill in the parameters above in `params.csv` and start
-the script. In R you can call `cpb_scatter()` instead. See section 1.4.
+the script. In R you can call `cpb_scatter()` instead. See section 1.4
+and the example code at the end.
 
 ## Histogram
 
@@ -1602,7 +1610,8 @@ duur (maanden)
 **How to reproduce this figure:** copy `params.csv`, the folder `data`
 and `run_import.bat` (Windows) or `run_import.command` (Mac) to a
 personal folder. Fill in the parameters above in `params.csv` and start
-the script. In R you can call `cpb_hist()` instead. See section 1.4.
+the script. In R you can call `cpb_hist()` instead. See section 1.4 and
+the example code at the end.
 
 # Ggplot2 base allows for endless possibilities
 
@@ -1770,3 +1779,159 @@ aandeel
 
 Maps currently have no `params.csv` route. Call `cpb_map()` in R, as
 described above. More options are in [`vignette("maps")`](maps.md).
+
+# Example code to create figures in R
+
+The code below creates the figures above in R. It first builds the data,
+then draws the figure. It is the same code that made the figures in this
+document.
+
+## Line with forecast
+
+``` r
+groei <- tibble(jaar = 2015:2027,
+                groei = round(rnorm(13, 1.5, 0.8), 1)) |>
+  mutate(marge = c(rep(0, 9), 0.4, 0.9, 1.4, 1.8),
+         lo = groei - marge, hi = groei + marge)
+cpb_line(groei, x = jaar, y = groei, ymin = lo, ymax = hi,
+         forecast_x = 2023.5,
+         title = "Economische groei met onzekerheid", ylab = "%") +
+  scale_x_continuous(breaks = seq(2015, 2027, 3), minor_breaks = 2015:2027,
+                     guide = guide_axis(minor.ticks = TRUE))
+```
+
+## Columns with two axes
+
+``` r
+erfenissen <- expand_grid(
+  soort = factor(c("geen aangifte", "wel aangifte"),
+                 levels = c("geen aangifte", "wel aangifte")),
+  jaar  = 2015:2022
+) |>
+  mutate(mld = c(15.0, 15.3, 15.5, 16.3, 19.4, 20.5, 22.2, 23.0,
+                 5.8, 5.6, 5.6, 6.6, 6.4, 6.5, 6.8, 7.0)) |>
+  left_join(tibble(jaar = 2015:2022,
+                   heffing = c(1.7, 1.8, 1.8, 1.8, 2.3, 2.4, 2.5, 2.6)),
+            by = "jaar")
+cpb_col(erfenissen, x = jaar, y = mld, fill = soort,
+        sec_y = heffing, sec_limits = c(0, 3),
+        sec_legend_label = "erfbelasting", sec_ylab = "mld euro",
+        title = "Erfenissen en erfbelasting", ylab = "mld euro")
+```
+
+## Horizontal bars with chosen colours
+
+``` r
+groepen <- c("tot 120% wml", "120% wml tot modaal", "1 tot 1,5x modaal",
+             "1,5 tot 2x modaal", "2 tot 3x modaal", "boven 3x modaal")
+zonnepanelen <- expand_grid(
+  jaar  = factor(c(2021, 2024), levels = c(2024, 2021)),
+  groep = factor(groepen, levels = rev(groepen))
+) |>
+  mutate(aandeel = c(10, 14, 19, 22, 26, 33,
+                     19, 25, 31, 38, 47, 59))
+cpb_col(zonnepanelen, x = groep, y = aandeel, fill = jaar,
+        position = "dodge", orientation = "horizontal",
+        colour_index = c(2, 1), value_limits = c(0, 70), width = 0.85,
+        title = "Zonnepanelen naar inkomen",
+        ylab  = "inkomensgroep", xlab = "aandeel binnen inkomensgroep (%)")
+```
+
+## Line with markers in English
+
+``` r
+leeftijden <- c("20 to 30", "30 to 40", "40 to 50", "50 to 60", "60 to 70")
+tarieven <- expand_grid(
+  erfenis  = factor(c("10,000 euro", "100,000 euro"),
+                    levels = c("10,000 euro", "100,000 euro")),
+  leeftijd = factor(leeftijden, levels = leeftijden)
+) |>
+  mutate(tarief = c(14.5, 12.5, 13.5, 10.5, 8.5,
+                    21.5, 18.5, 18.5, 17.5, 17.5))
+cpb_line(tarieven, x = leeftijd, y = tarief, colour = erfenis,
+         points = TRUE, value_limits = c(0, 30), style = "english",
+         title = "Preferred tax rate by age", ylab = "% average rate")
+```
+
+## Boxplot
+
+``` r
+raw <- tibble(
+  groep      = factor(rep(groepen, each = 400), levels = rev(groepen)),
+  koopkracht = rnorm(2400, mean = rep(c(-3, -1.5, 0, 1, 2, 3.5), each = 400),
+                     sd = 2)
+)
+kk <- raw |>
+  summarise(p5 = quantile(koopkracht, 0.05), p25 = quantile(koopkracht, 0.25),
+            p50 = quantile(koopkracht, 0.50), p75 = quantile(koopkracht, 0.75),
+            p95 = quantile(koopkracht, 0.95), .by = groep)
+cpb_box(kk, x = groep,
+        p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+        orientation = "horizontal",
+        title = "Koopkracht per inkomensgroep",
+        subtitle = "inkomensgroep", ylab = "% koopkrachtmutatie")
+```
+
+## Donut
+
+``` r
+bronnen <- c("gas", "elektriciteit", "warmte", "overig")
+energie <- tibble(bron = factor(bronnen, levels = bronnen),
+                  aandeel = c(45, 30, 15, 10))
+cpb_donut(energie, fill = bron, y = aandeel,
+          colour_index = c(6, 5, 2, 4),
+          title = "Energiemix van huishoudens")
+```
+
+## Dot plot
+
+``` r
+termen <- c("Werken ontmoedigd", "Ongelijkheid", "Hard werken loont",
+            "Leeftijd", "Geslacht", "Kinderen")
+schatting <- tibble(
+  term = factor(termen, levels = termen),
+  blok = factor(rep(c("Percepties", "Achtergrond"), each = 3),
+                levels = c("Percepties", "Achtergrond")),
+  coef = c(3.2, 2.9, -2.0, 3.5, 0.4, -1.4),
+  lo   = c(-0.3, 2.1, -3.0, 2.6, -1.3, -3.3),
+  hi   = c(6.6, 3.6, -1.1, 4.3, 2.2, 0.6)
+)
+cpb_dot(schatting, x = term, y = coef, lower = lo, upper = hi,
+        group = blok,
+        title = "Samenhang met voorkeurstarieven",
+        xlab  = "%punt verandering")
+```
+
+## Scatter plot
+
+``` r
+hh <- tibble(inkomen = round(rlnorm(400, log(2500), 0.35))) |>
+  mutate(energierekening = round(90 + 0.04 * inkomen + rnorm(n(), 0, 35)))
+cpb_scatter(hh, x = inkomen, y = energierekening,
+            title = "Energierekening naar inkomen",
+            ylab  = "euro per maand",
+            xlab  = "besteedbaar inkomen (euro per maand)",
+            x_labels = label_euro_nl())
+```
+
+## Histogram
+
+``` r
+duur <- tibble(maanden = round(rgamma(1200, 8, 0.6)))
+cpb_hist(duur, x = maanden, binwidth = 2,
+         title = "Verdeling van de duur", ylab = "aantal",
+         xlab  = "duur (maanden)")
+```
+
+## Classed map
+
+``` r
+gemeenten <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
+  mutate(aandeel = runif(n(), 5, 75),
+         klasse  = cpb_cut(aandeel, breaks = c(0, 20, 30, 40, 50, 60, Inf),
+                           labeller = label_pct_nl()))
+cpb_map(gemeenten, region = code, value = klasse,
+        palette = "blues",
+        title = "Aandeel huishoudens met zonnepanelen",
+        legend_title = "aandeel")
+```

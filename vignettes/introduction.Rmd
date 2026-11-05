@@ -50,7 +50,7 @@ repro <- function(fun) {
       "`run_import.bat` (Windows) or `run_import.command` (Mac) to a ",
       "personal folder. Fill in the parameters above in `params.csv` and ",
       "start the script. In R you can call `", fun, "()` instead. See ",
-      "section 1.4.\n", sep = "")
+      "section 1.4 and the example code at the end.\n", sep = "")
 }
 ```
 
@@ -619,3 +619,59 @@ ptab(`function` = "cpb_map", title = "Aandeel huishoudens met zonnepanelen",
 Maps currently have no `params.csv` route. Call `cpb_map()` in R, as
 described above. More options are in
 [`vignette("maps")`](maps.html).
+
+# Example code to create figures in R
+
+The code below creates the figures above in R. It first builds the data,
+then draws the figure. It is the same code that made the figures in this
+document.
+
+## Line with forecast
+
+```{r code-line-forecast, ref.label = c("data-line", "line-forecast"), echo = TRUE, eval = FALSE}
+```
+
+## Columns with two axes
+
+```{r code-col-secaxis, ref.label = c("data-col", "col-secaxis"), echo = TRUE, eval = FALSE}
+```
+
+## Horizontal bars with chosen colours
+
+```{r code-col-horizontal, ref.label = c("data-hbar", "col-horizontal"), echo = TRUE, eval = FALSE}
+```
+
+## Line with markers in English
+
+```{r code-line-points, ref.label = c("data-points", "line-points"), echo = TRUE, eval = FALSE}
+```
+
+## Boxplot
+
+```{r code-box, ref.label = c("data-box", "box"), echo = TRUE, eval = FALSE}
+```
+
+## Donut
+
+```{r code-donut, ref.label = c("data-donut", "donut"), echo = TRUE, eval = FALSE}
+```
+
+## Dot plot
+
+```{r code-dot, ref.label = c("data-dot", "dot"), echo = TRUE, eval = FALSE}
+```
+
+## Scatter plot
+
+```{r code-scatter, ref.label = c("data-scatter", "scatter"), echo = TRUE, eval = FALSE}
+```
+
+## Histogram
+
+```{r code-hist, ref.label = c("data-hist", "hist"), echo = TRUE, eval = FALSE}
+```
+
+## Classed map
+
+```{r code-map, ref.label = c("data-map", "map"), echo = TRUE, eval = FALSE}
+```
