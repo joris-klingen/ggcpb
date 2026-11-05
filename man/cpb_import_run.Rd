@@ -16,8 +16,8 @@ cpb_import_run(dir = ".", page = "half")
 Invisibly, the paths of the PNGs written.
 }
 \description{
-What \code{run_import.bat} and \code{run_import.command} start. Reads
-\code{params.csv} in \code{dir}, builds the figures with \code{\link[=cpb_import_csv]{cpb_import_csv()}} (datasets
+What \code{run_import.bat} starts. Reads \code{params.csv} in \code{dir},
+builds the figures with \code{\link[=cpb_import_csv]{cpb_import_csv()}} (datasets
 from \code{dir/data}), and saves each as a PNG in \code{dir/generated}, named after
 its dataset. A PNG that already exists is replaced. Datasets or figures
 that fail are skipped, listed at the end, and written to

@@ -530,8 +530,8 @@ cpb_import_csv <- function(params_csv, sep = ",", ..., simplify = TRUE) {
 
 #' Build and save every figure of a figure folder
 #'
-#' What `run_import.bat` and `run_import.command` start. Reads
-#' `params.csv` in `dir`, builds the figures with [cpb_import_csv()] (datasets
+#' What `run_import.bat` starts. Reads `params.csv` in `dir`,
+#' builds the figures with [cpb_import_csv()] (datasets
 #' from `dir/data`), and saves each as a PNG in `dir/generated`, named after
 #' its dataset. A PNG that already exists is replaced. Datasets or figures
 #' that fail are skipped, listed at the end, and written to
@@ -584,10 +584,10 @@ cpb_import_run <- function(dir = ".", page = "half") {
 #' example datasets, a `run_import.R` script that reads them and saves each
 #' figure as a PNG
 #' in a `generated` subfolder, and two start scripts that run it with a
-#' double click instead of opening R at all -- `run_import.bat` on
-#' Windows, `run_import.command` on a Mac. R itself, and the ggcpb
-#' package, still need to be installed on the machine the start script runs
-#' on; the start script only skips having to open R and type a command by
+#' double click instead of opening R at all `run_import.bat` on
+#' Windows. R itself, and the ggcpb package, still need to be
+#' installed on the machine the start script runs on.
+#' The start script only skips having to open R and type a command by
 #' hand each time.
 #'
 #' The example `params.csv` and datasets are meant to be replaced.

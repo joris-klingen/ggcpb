@@ -45,10 +45,10 @@ ptab <- function(...) {
 }
 
 # One standard sentence under every figure.
-repro <- function(fun) {
+repro <- function(fun, dataset) {
   cat("**How to reproduce this figure:** copy `params.csv`, the folder ",
-      "`data` and ",
-      "`run_import.bat` (Windows) or `run_import.command` (Mac) to a ",
+      "`data` containing at least `", dataset, ".csv` and ",
+      "`run_import.bat` (Windows) to a ",
       "personal folder. Fill in the parameters above in `params.csv` and ",
       "start the script. In R you can call `", fun, "()` instead. See ",
       "section 1.4 and the example code at the end.\n", sep = "")
@@ -219,7 +219,7 @@ ptab(plot_type = "line", title = "Economische groei met onzekerheid",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_line")
+repro("cpb_line", "line-forecast")
 ```
 
 ## Columns with two axes
@@ -265,7 +265,7 @@ ptab(plot_type = "col", title = "Erfenissen en erfbelasting",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_col")
+repro("cpb_col", "col-secaxis")
 ```
 
 ## Horizontal bars with chosen colours
@@ -310,7 +310,7 @@ ptab(plot_type = "col", title = "Zonnepanelen naar inkomen",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_col")
+repro("cpb_col", "col-horizontal")
 ```
 
 ## Line with markers in English
@@ -352,7 +352,7 @@ ptab(plot_type = "line", title = "Preferred tax rate by age",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_line")
+repro("cpb_line", "line-points")
 ```
 
 ## Boxplot
@@ -398,7 +398,7 @@ ptab(plot_type = "box", title = "Koopkracht per inkomensgroep",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_box")
+repro("cpb_box", "box")
 ```
 
 More box plot styles are in [`vignette("boxplots")`](boxplots.html).
@@ -438,7 +438,7 @@ ptab(plot_type = "donut", title = "Energiemix van huishoudens",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_donut")
+repro("cpb_donut", "donut")
 ```
 
 ## Dot plot
@@ -482,7 +482,7 @@ ptab(plot_type = "dot", title = "Samenhang met voorkeurstarieven",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_dot")
+repro("cpb_dot", "dot")
 ```
 
 ## Scatter plot
@@ -517,7 +517,7 @@ ptab(plot_type = "scatter", title = "Energierekening naar inkomen",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_scatter")
+repro("cpb_scatter", "scatter")
 ```
 
 ## Histogram
@@ -549,13 +549,13 @@ ptab(plot_type = "hist", title = "Verdeling van de duur",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_hist")
+repro("cpb_hist", "hist")
 ```
 
 # Ggplot2 base allows for endless possibilities
 
-Every ggcpb figure is a real ggplot2 object. This means you can add
-to it with `+`. Each added piece changes the figure a little.
+Every ggcpb figure is a real ggplot2 object. This means you can stack
+extra functionalities to the plot in R with `+`.
 
 The next figure has a sharp rise between 2020 and 2021. We add a
 reference line, and a text along the diagonal in dark pink italic

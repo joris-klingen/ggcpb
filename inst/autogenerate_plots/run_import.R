@@ -1,7 +1,7 @@
 # run_import.R
 #
-# This script is started by run_import.bat on Windows or
-# run_import.command on Mac. It is not normally opened by hand.
+# This script is started by run_import.bat on Windows
+# It is not normally opened by hand.
 #
 # It reads params.csv from its own folder, builds every figure described
 # there from the datasets in the data folder, and saves each one as a PNG
