@@ -276,8 +276,3 @@ a:hover, a:visited:hover {
   color: #003c6e;
   text-decoration: underline;
 }
-
-/* The main entries of the table of contents (1 What is ggcpb?) in bold. */
-#TOC > ul > li > a {
-  font-weight: bold;
-}
