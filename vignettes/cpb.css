@@ -192,6 +192,11 @@ h1, h2, h3, h4, h5, h6, h1.title {
   color: #005faf;
 }
 
+/* The titles of the tables in the appendix: the CPB pink (cpb_cols(2)). */
+.table-title {
+  color: #e6006e;
+}
+
 /* Tables: no background colours, no vertical borders, a light grey line
    between the rows. The header row is in the CPB blue and bold. In the
    parameter tables next to a figure (class ptab) the first column is. */
@@ -210,6 +215,16 @@ table thead th {
 table th {
   color: #005faf;
   font-weight: bold;
+}
+/* code in a table header looks like the rest of the header */
+table th code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
 }
 table.ptab td:first-child {
   color: #005faf;

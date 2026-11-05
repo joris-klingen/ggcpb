@@ -238,359 +238,368 @@ any parameter problems.
 
 The available parameters depend on the `plot_type`. The complete list is
 stored in `parameter_settings.csv`, and gives the available parameters,
-their kind, default values and examples.
+their default values and examples.
 
 Many parameters are the same across every `plot_type`. Table A1 lists
 the parameters shared, with the same meaning and default, by all plot
 types. Table A2 onward each cover one `plot_type`, listing only what is
 not already in Table A1.
 
-**Table A1. Shared parameters across all plot types**
+<span class="table-title">**Table A1. Shared parameters across all plot
+types**</span>
 
-| setting | kind | default | example |
-|:---|:---|:---|:---|
-| colour_index | literal |  | 2;6 |
-| data | literal | data | koopkracht;werkloosheid |
-| flush_legend | literal | TRUE | TRUE |
-| legend | literal | bottom | bottom |
-| legend_ncol | literal |  | 2 |
-| legend_nrow | literal |  |  |
-| legend_title | literal |  | title of the legend |
-| page | literal | half | full |
-| palette | literal | qualitative | qualitative |
-| style | literal | dutch | dutch |
-| subtitle | literal |  | subtitle (replaces the default unit above the figure) |
-| title | literal |  | Title of the figure |
+| parameter | default | example |
+|:---|:---|:---|
+| colour_index |  | 2;6 |
+| data | data | koopkracht;werkloosheid |
+| flush_legend | TRUE | TRUE |
+| legend | bottom | bottom |
+| legend_ncol |  | 2 |
+| legend_nrow |  |  |
+| legend_title |  | title of the legend |
+| page | half | full |
+| palette | qualitative | qualitative |
+| style | dutch | dutch |
+| subtitle |  | subtitle (replaces the default unit above the figure) |
+| title |  | Title of the figure |
 
-**Table A2. Parameters specific to `col`**
+<span class="table-title">**Table A2. Parameters specific to
+`col`**</span>
 
-| setting | kind | default | example |
-|:---|:---|:---|:---|
-| axis_text_size | literal | 7 | 7 |
-| facet | column (from dataset) |  | region |
-| facet_ncol | literal |  | 2 |
-| facet_scales | literal | fixed | fixed |
-| fill | column (from dataset) |  | group |
-| fill_colour | literal |  | \#005faf |
-| forecast_label | literal | raming | raming |
-| forecast_x | literal |  | 2025 |
-| grid_colour | literal | black | black |
-| grid_linewidth | literal | 0.1 | 0.1 |
-| group | column (from dataset) |  | sector |
-| group_gap | literal | 0.8 | 0.8 |
-| minor | literal | FALSE | FALSE |
-| orientation | literal | vertical/horizontal (default: vertical) | vertical/horizontal (default: vertical) |
-| pct_axis | literal | FALSE | FALSE |
-| position | literal | stack/dodge/fill (default: stack) | stack/dodge/fill (default: stack) |
-| reverse_legend | literal | TRUE | TRUE |
-| sec_accuracy | literal |  | 0.1 |
-| sec_at | literal |  |  |
-| sec_axis_labels | literal |  |  |
-| sec_col_width | literal | 0.3 | 0.3 |
-| sec_colour | literal |  | \#e6006e |
-| sec_legend_label | literal |  | name of the second series |
-| sec_limits | literal |  | 0;100 |
-| sec_linewidth | literal | 0.55 | 0.55 |
-| sec_points | literal | FALSE | FALSE |
-| sec_scale_auto | literal | TRUE | TRUE |
-| sec_symbol_size | literal | 1.6 | 1.6 |
-| sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
-| sec_y | column (from dataset) |  | unemployment |
-| sec_ylab | literal |  | unit of the right axis |
-| ticks | literal | TRUE | TRUE |
-| value_accuracy | literal |  | 0.1 |
-| value_breaks | literal |  | 0;25;50;75;100 |
-| value_crop | literal | FALSE | FALSE |
-| value_labels | literal | FALSE | FALSE |
-| value_limits | literal |  | 0;100 |
-| x | column (from dataset) | (required) | year |
-| x_lim | literal |  | 2015;2025 |
-| x_lim_follow_data | literal | FALSE | FALSE |
-| xlab | literal |  | unit below the x axis |
-| y | column (from dataset) | (required) | purchasing_power |
-| ylab | literal |  | % change |
-| zeroline | literal | TRUE | TRUE |
+| parameter | default | example |
+|:---|:---|:---|
+| axis_text_size | 7 | 7 |
+| facet |  | region |
+| facet_ncol |  | 2 |
+| facet_scales | fixed | fixed |
+| fill |  | group |
+| fill_colour |  | \#005faf |
+| forecast_label | raming | raming |
+| forecast_x |  | 2025 |
+| grid_colour | black | black |
+| grid_linewidth | 0.1 | 0.1 |
+| group |  | sector |
+| group_gap | 0.8 | 0.8 |
+| minor | FALSE | FALSE |
+| orientation | vertical/horizontal (default: vertical) | vertical/horizontal (default: vertical) |
+| pct_axis | FALSE | FALSE |
+| position | stack/dodge/fill (default: stack) | stack/dodge/fill (default: stack) |
+| reverse_legend | TRUE | TRUE |
+| sec_accuracy |  | 0.1 |
+| sec_at |  |  |
+| sec_axis_labels |  |  |
+| sec_col_width | 0.3 | 0.3 |
+| sec_colour |  | \#e6006e |
+| sec_legend_label |  | name of the second series |
+| sec_limits |  | 0;100 |
+| sec_linewidth | 0.55 | 0.55 |
+| sec_points | FALSE | FALSE |
+| sec_scale_auto | TRUE | TRUE |
+| sec_symbol_size | 1.6 | 1.6 |
+| sec_type | line/point/col (default: line) | line/point/col (default: line) |
+| sec_y |  | unemployment |
+| sec_ylab |  | unit of the right axis |
+| ticks | TRUE | TRUE |
+| value_accuracy |  | 0.1 |
+| value_breaks |  | 0;25;50;75;100 |
+| value_crop | FALSE | FALSE |
+| value_labels | FALSE | FALSE |
+| value_limits |  | 0;100 |
+| x | (required) | year |
+| x_lim |  | 2015;2025 |
+| x_lim_follow_data | FALSE | FALSE |
+| xlab |  | unit below the x axis |
+| y | (required) | purchasing_power |
+| ylab |  | % change |
+| zeroline | TRUE | TRUE |
 
-**Table A3. Parameters specific to `area`**
+<span class="table-title">**Table A3. Parameters specific to
+`area`**</span>
 
-| setting | kind | default | example |
-|:---|:---|:---|:---|
-| axis_text_size | literal | 7 | 7 |
-| facet | column (from dataset) |  | region |
-| facet_ncol | literal |  | 2 |
-| facet_scales | literal | fixed | fixed |
-| fill | column (from dataset) | (required) | group |
-| forecast_label | literal | raming | raming |
-| forecast_x | literal |  | 2025 |
-| grid_colour | literal | black | black |
-| grid_linewidth | literal | 0.1 | 0.1 |
-| minor | literal | FALSE | FALSE |
-| pct_axis | literal | FALSE | FALSE |
-| reverse_legend | literal | TRUE | TRUE |
-| sec_accuracy | literal |  | 0.1 |
-| sec_at | literal |  |  |
-| sec_axis_labels | literal |  |  |
-| sec_col_width | literal | 0.3 | 0.3 |
-| sec_colour | literal |  | \#e6006e |
-| sec_legend_label | literal |  | name of the second series |
-| sec_limits | literal |  | 0;100 |
-| sec_linewidth | literal | 0.55 | 0.55 |
-| sec_points | literal | FALSE | FALSE |
-| sec_scale_auto | literal | TRUE | TRUE |
-| sec_symbol_size | literal | 1.6 | 1.6 |
-| sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
-| sec_y | column (from dataset) |  | unemployment |
-| sec_ylab | literal |  | unit of the right axis |
-| ticks | literal | TRUE | TRUE |
-| value_accuracy | literal |  | 0.1 |
-| value_breaks | literal |  | 0;25;50;75;100 |
-| value_crop | literal | FALSE | FALSE |
-| value_limits | literal |  | 0;100 |
-| x | column (from dataset) | (required) | year |
-| x_lim | literal |  | 2015;2025 |
-| x_lim_follow_data | literal | FALSE | FALSE |
-| xlab | literal |  | unit below the x axis |
-| y | column (from dataset) | (required) | purchasing_power |
-| ylab | literal |  | % change |
-| zeroline | literal | TRUE | TRUE |
+| parameter | default | example |
+|:---|:---|:---|
+| axis_text_size | 7 | 7 |
+| facet |  | region |
+| facet_ncol |  | 2 |
+| facet_scales | fixed | fixed |
+| fill | (required) | group |
+| forecast_label | raming | raming |
+| forecast_x |  | 2025 |
+| grid_colour | black | black |
+| grid_linewidth | 0.1 | 0.1 |
+| minor | FALSE | FALSE |
+| pct_axis | FALSE | FALSE |
+| reverse_legend | TRUE | TRUE |
+| sec_accuracy |  | 0.1 |
+| sec_at |  |  |
+| sec_axis_labels |  |  |
+| sec_col_width | 0.3 | 0.3 |
+| sec_colour |  | \#e6006e |
+| sec_legend_label |  | name of the second series |
+| sec_limits |  | 0;100 |
+| sec_linewidth | 0.55 | 0.55 |
+| sec_points | FALSE | FALSE |
+| sec_scale_auto | TRUE | TRUE |
+| sec_symbol_size | 1.6 | 1.6 |
+| sec_type | line/point/col (default: line) | line/point/col (default: line) |
+| sec_y |  | unemployment |
+| sec_ylab |  | unit of the right axis |
+| ticks | TRUE | TRUE |
+| value_accuracy |  | 0.1 |
+| value_breaks |  | 0;25;50;75;100 |
+| value_crop | FALSE | FALSE |
+| value_limits |  | 0;100 |
+| x | (required) | year |
+| x_lim |  | 2015;2025 |
+| x_lim_follow_data | FALSE | FALSE |
+| xlab |  | unit below the x axis |
+| y | (required) | purchasing_power |
+| ylab |  | % change |
+| zeroline | TRUE | TRUE |
 
-**Table A4. Parameters specific to `line`**
+<span class="table-title">**Table A4. Parameters specific to
+`line`**</span>
 
-| setting | kind | default | example |
-|:---|:---|:---|:---|
-| axis_text_size | literal | 7 | 7 |
-| colour | column (from dataset) |  | group |
-| facet | column (from dataset) |  | region |
-| facet_ncol | literal |  | 2 |
-| facet_scales | literal | fixed | fixed |
-| forecast_label | literal | raming | raming |
-| forecast_x | literal |  | 2025 |
-| grid_colour | literal | black | black |
-| grid_linewidth | literal | 0.1 | 0.1 |
-| line_colour | literal |  | \#005faf |
-| linewidth | literal | 0.55 | 0.55 |
-| minor | literal | FALSE | FALSE |
-| pct_axis | literal | FALSE | FALSE |
-| points | literal | FALSE | FALSE |
-| reverse_legend | literal | FALSE | FALSE |
-| sec_accuracy | literal |  | 0.1 |
-| sec_at | literal |  |  |
-| sec_axis_labels | literal |  |  |
-| sec_col_width | literal | 0.3 | 0.3 |
-| sec_colour | literal |  | \#e6006e |
-| sec_legend_label | literal |  | name of the second series |
-| sec_limits | literal |  | 0;100 |
-| sec_linewidth | literal |  | 0.55 |
-| sec_points | literal | FALSE | FALSE |
-| sec_scale_auto | literal | TRUE | TRUE |
-| sec_symbol_size | literal | 1.6 | 1.6 |
-| sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
-| sec_y | column (from dataset) |  | unemployment |
-| sec_ylab | literal |  | unit of the right axis |
-| symbol_size | literal | 1.1 | 1.1 |
-| ticks | literal | TRUE | TRUE |
-| value_accuracy | literal |  | 0.1 |
-| value_breaks | literal |  | 0;25;50;75;100 |
-| value_crop | literal | FALSE | FALSE |
-| value_limits | literal |  | 0;100 |
-| x | column (from dataset) | (required) | year |
-| x_lim | literal |  | 2015;2025 |
-| x_lim_follow_data | literal | TRUE | TRUE |
-| xlab | literal |  | unit below the x axis |
-| y | column (from dataset) | (required) | purchasing_power |
-| ylab | literal |  | % change |
-| ymax | column (from dataset) |  | upper_bound |
-| ymin | column (from dataset) |  | lower_bound |
-| zeroline | literal |  | TRUE |
+| parameter | default | example |
+|:---|:---|:---|
+| axis_text_size | 7 | 7 |
+| colour |  | group |
+| facet |  | region |
+| facet_ncol |  | 2 |
+| facet_scales | fixed | fixed |
+| forecast_label | raming | raming |
+| forecast_x |  | 2025 |
+| grid_colour | black | black |
+| grid_linewidth | 0.1 | 0.1 |
+| line_colour |  | \#005faf |
+| linewidth | 0.55 | 0.55 |
+| minor | FALSE | FALSE |
+| pct_axis | FALSE | FALSE |
+| points | FALSE | FALSE |
+| reverse_legend | FALSE | FALSE |
+| sec_accuracy |  | 0.1 |
+| sec_at |  |  |
+| sec_axis_labels |  |  |
+| sec_col_width | 0.3 | 0.3 |
+| sec_colour |  | \#e6006e |
+| sec_legend_label |  | name of the second series |
+| sec_limits |  | 0;100 |
+| sec_linewidth |  | 0.55 |
+| sec_points | FALSE | FALSE |
+| sec_scale_auto | TRUE | TRUE |
+| sec_symbol_size | 1.6 | 1.6 |
+| sec_type | line/point/col (default: line) | line/point/col (default: line) |
+| sec_y |  | unemployment |
+| sec_ylab |  | unit of the right axis |
+| symbol_size | 1.1 | 1.1 |
+| ticks | TRUE | TRUE |
+| value_accuracy |  | 0.1 |
+| value_breaks |  | 0;25;50;75;100 |
+| value_crop | FALSE | FALSE |
+| value_limits |  | 0;100 |
+| x | (required) | year |
+| x_lim |  | 2015;2025 |
+| x_lim_follow_data | TRUE | TRUE |
+| xlab |  | unit below the x axis |
+| y | (required) | purchasing_power |
+| ylab |  | % change |
+| ymax |  | upper_bound |
+| ymin |  | lower_bound |
+| zeroline |  | TRUE |
 
-**Table A5. Parameters specific to `box`**
+<span class="table-title">**Table A5. Parameters specific to
+`box`**</span>
 
-| setting | kind | default | example |
-|:---|:---|:---|:---|
-| axis_text_size | literal | 7 | 7 |
-| box_labels | literal |  | TRUE |
-| box_style | literal | ggcpb/james/modern/dot (default: ggcpb) | ggcpb/james/modern/dot (default: ggcpb) |
-| dot_labels | literal |  | p5:bottom 5%;p95:top 5% |
-| facet | column (from dataset) |  | region |
-| facet_ncol | literal |  | 2 |
-| facet_scales | literal | fixed | fixed |
-| fill | column (from dataset) |  | group |
-| fill_colour | literal |  | \#005faf |
-| grid_colour | literal | black | black |
-| grid_linewidth | literal | 0.1 | 0.1 |
-| group | column (from dataset) |  | sector |
-| group_gap | literal | 0.7 | 0.7 |
-| label_accuracy | literal | 0.1 | 0.1 |
-| linewidth | literal | 0.25 | 0.25 |
-| mean | column (from dataset) |  | mean |
-| minor | literal | FALSE | FALSE |
-| orientation | literal | vertical/horizontal (default: vertical) | vertical/horizontal (default: vertical) |
-| p25 | column (from dataset) | (required) | p25 |
-| p5 | column (from dataset) | (required) | p5 |
-| p50 | column (from dataset) | (required) | p50 |
-| p75 | column (from dataset) | (required) | p75 |
-| p95 | column (from dataset) | (required) | p95 |
-| pct_axis | literal | FALSE | FALSE |
-| reverse_legend | literal | FALSE | FALSE |
-| sec_accuracy | literal |  | 0.1 |
-| sec_at | literal |  |  |
-| sec_axis_labels | literal |  |  |
-| sec_col_width | literal | 0.3 | 0.3 |
-| sec_colour | literal |  | \#e6006e |
-| sec_legend_label | literal |  | name of the second series |
-| sec_limits | literal |  | 0;100 |
-| sec_linewidth | literal | 0.55 | 0.55 |
-| sec_points | literal | FALSE | FALSE |
-| sec_scale_auto | literal | TRUE | TRUE |
-| sec_symbol_size | literal | 1.6 | 1.6 |
-| sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
-| sec_y | column (from dataset) |  | unemployment |
-| sec_ylab | literal |  | unit of the right axis |
-| ticks | literal | TRUE | TRUE |
-| value_accuracy | literal |  | 0.1 |
-| value_axis | literal | bottom/top (default: bottom) | bottom/top (default: bottom) |
-| value_breaks | literal |  | 0;25;50;75;100 |
-| value_crop | literal | FALSE | FALSE |
-| value_limits | literal |  | 0;100 |
-| width | literal | 0.5 | 0.5 |
-| x | column (from dataset) | (required) | year |
-| x_lim | literal |  | 2015;2025 |
-| x_lim_follow_data | literal | TRUE | TRUE |
-| xlab | literal |  | unit below the x axis |
-| ylab | literal |  | % change |
-| zeroline | literal |  | TRUE |
+| parameter | default | example |
+|:---|:---|:---|
+| axis_text_size | 7 | 7 |
+| box_labels |  | TRUE |
+| box_style | ggcpb/james/modern/dot (default: ggcpb) | ggcpb/james/modern/dot (default: ggcpb) |
+| dot_labels |  | p5:bottom 5%;p95:top 5% |
+| facet |  | region |
+| facet_ncol |  | 2 |
+| facet_scales | fixed | fixed |
+| fill |  | group |
+| fill_colour |  | \#005faf |
+| grid_colour | black | black |
+| grid_linewidth | 0.1 | 0.1 |
+| group |  | sector |
+| group_gap | 0.7 | 0.7 |
+| label_accuracy | 0.1 | 0.1 |
+| linewidth | 0.25 | 0.25 |
+| mean |  | mean |
+| minor | FALSE | FALSE |
+| orientation | vertical/horizontal (default: vertical) | vertical/horizontal (default: vertical) |
+| p25 | (required) | p25 |
+| p5 | (required) | p5 |
+| p50 | (required) | p50 |
+| p75 | (required) | p75 |
+| p95 | (required) | p95 |
+| pct_axis | FALSE | FALSE |
+| reverse_legend | FALSE | FALSE |
+| sec_accuracy |  | 0.1 |
+| sec_at |  |  |
+| sec_axis_labels |  |  |
+| sec_col_width | 0.3 | 0.3 |
+| sec_colour |  | \#e6006e |
+| sec_legend_label |  | name of the second series |
+| sec_limits |  | 0;100 |
+| sec_linewidth | 0.55 | 0.55 |
+| sec_points | FALSE | FALSE |
+| sec_scale_auto | TRUE | TRUE |
+| sec_symbol_size | 1.6 | 1.6 |
+| sec_type | line/point/col (default: line) | line/point/col (default: line) |
+| sec_y |  | unemployment |
+| sec_ylab |  | unit of the right axis |
+| ticks | TRUE | TRUE |
+| value_accuracy |  | 0.1 |
+| value_axis | bottom/top (default: bottom) | bottom/top (default: bottom) |
+| value_breaks |  | 0;25;50;75;100 |
+| value_crop | FALSE | FALSE |
+| value_limits |  | 0;100 |
+| width | 0.5 | 0.5 |
+| x | (required) | year |
+| x_lim |  | 2015;2025 |
+| x_lim_follow_data | TRUE | TRUE |
+| xlab |  | unit below the x axis |
+| ylab |  | % change |
+| zeroline |  | TRUE |
 
-**Table A6. Parameters specific to `dot`**
+<span class="table-title">**Table A6. Parameters specific to
+`dot`**</span>
 
-| setting | kind | default | example |
-|:---|:---|:---|:---|
-| axis_text_size | literal | 7 | 7 |
-| cap_width | literal | 0.25 | 0.25 |
-| colour | column (from dataset) |  | group |
-| facet | column (from dataset) |  | region |
-| facet_ncol | literal |  | 2 |
-| facet_scales | literal | fixed | fixed |
-| grid_colour | literal | black | black |
-| grid_linewidth | literal | 0.1 | 0.1 |
-| group | column (from dataset) |  | sector |
-| group_gap | literal | 0.7 | 0.7 |
-| linewidth | literal | 0.4 | 0.4 |
-| lower | column (from dataset) | (required) | lower_bound |
-| minor | literal | FALSE | FALSE |
-| orientation | literal | horizontal/vertical (default: horizontal) | horizontal/vertical (default: horizontal) |
-| pct_axis | literal | FALSE | FALSE |
-| reverse_legend | literal | FALSE | FALSE |
-| sec_accuracy | literal |  | 0.1 |
-| sec_at | literal |  |  |
-| sec_axis_labels | literal |  |  |
-| sec_col_width | literal | 0.3 | 0.3 |
-| sec_colour | literal |  | \#e6006e |
-| sec_legend_label | literal |  | name of the second series |
-| sec_limits | literal |  | 0;100 |
-| sec_linewidth | literal | 0.55 | 0.55 |
-| sec_points | literal | FALSE | FALSE |
-| sec_scale_auto | literal | TRUE | TRUE |
-| sec_symbol_size | literal | symbol_size | symbol_size |
-| sec_type | literal | line/point/col (default: line) | line/point/col (default: line) |
-| sec_y | column (from dataset) |  | unemployment |
-| sec_ylab | literal |  | unit of the right axis |
-| symbol_colour | literal |  | \#e6006e |
-| symbol_size | literal | 1.4 | 1.4 |
-| ticks | literal | TRUE | TRUE |
-| upper | column (from dataset) | (required) | upper_bound |
-| value_accuracy | literal |  | 0.1 |
-| value_breaks | literal |  | 0;25;50;75;100 |
-| value_crop | literal | FALSE | FALSE |
-| value_limits | literal |  | 0;100 |
-| x | column (from dataset) | (required) | year |
-| x_lim | literal |  | 2015;2025 |
-| x_lim_follow_data | literal | TRUE | TRUE |
-| xlab | literal |  | unit below the x axis |
-| y | column (from dataset) | (required) | purchasing_power |
-| ylab | literal |  | % change |
-| zeroline | literal |  | TRUE |
+| parameter | default | example |
+|:---|:---|:---|
+| axis_text_size | 7 | 7 |
+| cap_width | 0.25 | 0.25 |
+| colour |  | group |
+| facet |  | region |
+| facet_ncol |  | 2 |
+| facet_scales | fixed | fixed |
+| grid_colour | black | black |
+| grid_linewidth | 0.1 | 0.1 |
+| group |  | sector |
+| group_gap | 0.7 | 0.7 |
+| linewidth | 0.4 | 0.4 |
+| lower | (required) | lower_bound |
+| minor | FALSE | FALSE |
+| orientation | horizontal/vertical (default: horizontal) | horizontal/vertical (default: horizontal) |
+| pct_axis | FALSE | FALSE |
+| reverse_legend | FALSE | FALSE |
+| sec_accuracy |  | 0.1 |
+| sec_at |  |  |
+| sec_axis_labels |  |  |
+| sec_col_width | 0.3 | 0.3 |
+| sec_colour |  | \#e6006e |
+| sec_legend_label |  | name of the second series |
+| sec_limits |  | 0;100 |
+| sec_linewidth | 0.55 | 0.55 |
+| sec_points | FALSE | FALSE |
+| sec_scale_auto | TRUE | TRUE |
+| sec_symbol_size | symbol_size | symbol_size |
+| sec_type | line/point/col (default: line) | line/point/col (default: line) |
+| sec_y |  | unemployment |
+| sec_ylab |  | unit of the right axis |
+| symbol_colour |  | \#e6006e |
+| symbol_size | 1.4 | 1.4 |
+| ticks | TRUE | TRUE |
+| upper | (required) | upper_bound |
+| value_accuracy |  | 0.1 |
+| value_breaks |  | 0;25;50;75;100 |
+| value_crop | FALSE | FALSE |
+| value_limits |  | 0;100 |
+| x | (required) | year |
+| x_lim |  | 2015;2025 |
+| x_lim_follow_data | TRUE | TRUE |
+| xlab |  | unit below the x axis |
+| y | (required) | purchasing_power |
+| ylab |  | % change |
+| zeroline |  | TRUE |
 
-**Table A7. Parameters specific to `scatter`**
+<span class="table-title">**Table A7. Parameters specific to
+`scatter`**</span>
 
-| setting           | kind                  | default    | example               |
-|:------------------|:----------------------|:-----------|:----------------------|
-| axis_text_size    | literal               | 7          | 7                     |
-| colour            | column (from dataset) |            | group                 |
-| facet             | column (from dataset) |            | region                |
-| facet_ncol        | literal               |            | 2                     |
-| facet_scales      | literal               | fixed      | fixed                 |
-| forecast_label    | literal               | raming     | raming                |
-| forecast_x        | literal               |            | 2025                  |
-| grid_colour       | literal               | black      | black                 |
-| grid_linewidth    | literal               | 0.1        | 0.1                   |
-| minor             | literal               | FALSE      | FALSE                 |
-| pct_axis          | literal               | FALSE      | FALSE                 |
-| reverse_legend    | literal               | FALSE      | FALSE                 |
-| symbol_colour     | literal               |            | \#e6006e              |
-| symbol_size       | literal               | 0.8        | 0.8                   |
-| ticks             | literal               | TRUE       | TRUE                  |
-| value_accuracy    | literal               |            | 0.1                   |
-| value_breaks      | literal               |            | 0;25;50;75;100        |
-| value_crop        | literal               | FALSE      | FALSE                 |
-| value_limits      | literal               |            | 0;100                 |
-| x                 | column (from dataset) | (required) | year                  |
-| x_lim             | literal               |            | 2015;2025             |
-| x_lim_follow_data | literal               | FALSE      | FALSE                 |
-| xlab              | literal               |            | unit below the x axis |
-| y                 | column (from dataset) | (required) | purchasing_power      |
-| ylab              | literal               |            | % change              |
-| zeroline          | literal               |            | TRUE                  |
+| parameter         | default    | example               |
+|:------------------|:-----------|:----------------------|
+| axis_text_size    | 7          | 7                     |
+| colour            |            | group                 |
+| facet             |            | region                |
+| facet_ncol        |            | 2                     |
+| facet_scales      | fixed      | fixed                 |
+| forecast_label    | raming     | raming                |
+| forecast_x        |            | 2025                  |
+| grid_colour       | black      | black                 |
+| grid_linewidth    | 0.1        | 0.1                   |
+| minor             | FALSE      | FALSE                 |
+| pct_axis          | FALSE      | FALSE                 |
+| reverse_legend    | FALSE      | FALSE                 |
+| symbol_colour     |            | \#e6006e              |
+| symbol_size       | 0.8        | 0.8                   |
+| ticks             | TRUE       | TRUE                  |
+| value_accuracy    |            | 0.1                   |
+| value_breaks      |            | 0;25;50;75;100        |
+| value_crop        | FALSE      | FALSE                 |
+| value_limits      |            | 0;100                 |
+| x                 | (required) | year                  |
+| x_lim             |            | 2015;2025             |
+| x_lim_follow_data | FALSE      | FALSE                 |
+| xlab              |            | unit below the x axis |
+| y                 | (required) | purchasing_power      |
+| ylab              |            | % change              |
+| zeroline          |            | TRUE                  |
 
-**Table A8. Parameters specific to `hist`**
+<span class="table-title">**Table A8. Parameters specific to
+`hist`**</span>
 
-| setting           | kind                  | default    | example               |
-|:------------------|:----------------------|:-----------|:----------------------|
-| axis_text_size    | literal               | 7          | 7                     |
-| bins              | literal               |            | 30                    |
-| binwidth          | literal               |            | 5                     |
-| facet             | column (from dataset) |            | region                |
-| facet_ncol        | literal               |            | 2                     |
-| facet_scales      | literal               | fixed      | fixed                 |
-| fill              | column (from dataset) |            | group                 |
-| fill_colour       | literal               |            | \#005faf              |
-| grid_colour       | literal               | black      | black                 |
-| grid_linewidth    | literal               | 0.1        | 0.1                   |
-| minor             | literal               | FALSE      | FALSE                 |
-| outline           | literal               | white      | white                 |
-| position          | literal               | stack      | stack                 |
-| reverse_legend    | literal               | TRUE       | TRUE                  |
-| ticks             | literal               | TRUE       | TRUE                  |
-| value_accuracy    | literal               |            | 0.1                   |
-| value_breaks      | literal               |            | 0;25;50;75;100        |
-| value_crop        | literal               | FALSE      | FALSE                 |
-| value_limits      | literal               |            | 0;100                 |
-| x                 | column (from dataset) | (required) | year                  |
-| x_lim             | literal               |            | 2015;2025             |
-| x_lim_follow_data | literal               | FALSE      | FALSE                 |
-| xlab              | literal               |            | unit below the x axis |
-| ylab              | literal               |            | % change              |
-| zeroline          | literal               | TRUE       | TRUE                  |
+| parameter         | default    | example               |
+|:------------------|:-----------|:----------------------|
+| axis_text_size    | 7          | 7                     |
+| bins              |            | 30                    |
+| binwidth          |            | 5                     |
+| facet             |            | region                |
+| facet_ncol        |            | 2                     |
+| facet_scales      | fixed      | fixed                 |
+| fill              |            | group                 |
+| fill_colour       |            | \#005faf              |
+| grid_colour       | black      | black                 |
+| grid_linewidth    | 0.1        | 0.1                   |
+| minor             | FALSE      | FALSE                 |
+| outline           | white      | white                 |
+| position          | stack      | stack                 |
+| reverse_legend    | TRUE       | TRUE                  |
+| ticks             | TRUE       | TRUE                  |
+| value_accuracy    |            | 0.1                   |
+| value_breaks      |            | 0;25;50;75;100        |
+| value_crop        | FALSE      | FALSE                 |
+| value_limits      |            | 0;100                 |
+| x                 | (required) | year                  |
+| x_lim             |            | 2015;2025             |
+| x_lim_follow_data | FALSE      | FALSE                 |
+| xlab              |            | unit below the x axis |
+| ylab              |            | % change              |
+| zeroline          | TRUE       | TRUE                  |
 
-**Table A9. Parameters specific to `donut`**
+<span class="table-title">**Table A9. Parameters specific to
+`donut`**</span>
 
-| setting | kind | default | example |
-|:---|:---|:---|:---|
-| fill | column (from dataset) | (required) | group |
-| label | column (from dataset) |  | name |
-| label_accuracy | literal | 1 | 1 |
-| label_colour | literal | black | black |
-| label_style | literal | wedge/leader (default: wedge) | wedge/leader (default: wedge) |
-| leader_length | literal | 0.15 | 0.15 |
-| legend_pct | literal | FALSE | FALSE |
-| panel_size | literal |  |  |
-| reverse_legend | literal | FALSE | FALSE |
-| ring_width | literal | 0.6 | 0.6 |
-| wedge_labels | literal | TRUE | TRUE |
-| y | column (from dataset) | (required) | purchasing_power |
+| parameter      | default                       | example                       |
+|:---------------|:------------------------------|:------------------------------|
+| fill           | (required)                    | group                         |
+| label          |                               | name                          |
+| label_accuracy | 1                             | 1                             |
+| label_colour   | black                         | black                         |
+| label_style    | wedge/leader (default: wedge) | wedge/leader (default: wedge) |
+| leader_length  | 0.15                          | 0.15                          |
+| legend_pct     | FALSE                         | FALSE                         |
+| panel_size     |                               |                               |
+| reverse_legend | FALSE                         | FALSE                         |
+| ring_width     | 0.6                           | 0.6                           |
+| wedge_labels   | TRUE                          | TRUE                          |
+| y              | (required)                    | purchasing_power              |
 
-A parameter of kind `column` takes a column name from the data file. A
-parameter of kind `literal` takes a value directly from the parameter
-file.
+A parameter that refers to a variable (such as `x`, `y` or `fill`) takes
+a column name from the dataset. Every other parameter takes a value
+directly from the parameter file.
 
 The `parameter_settings.csv` file can also be opened directly in a
 spreadsheet program.

@@ -246,7 +246,7 @@ and any parameter problems.
 
 The available parameters depend on the `plot_type`. The complete list
 is stored in `parameter_settings.csv`, and gives the available
-parameters, their kind, default values and examples.
+parameters, their default values and examples.
 
 ```{r params-ref-path, include=FALSE}
 ref_csv <- system.file(
@@ -282,31 +282,33 @@ is_shared <- vapply(by_param, function(rows) {
 shared_params <- sort(names(by_param)[is_shared])
 
 show_params <- function(rows) {
-  rows <- rows[order(rows$param), c("param", "kind", "default", "example")]
+  rows <- rows[order(rows$param), c("param", "default", "example")]
   print(knitr::kable(
     rows,
     row.names = FALSE,
-    col.names = c("setting", "kind", "default", "example")
+    col.names = c("parameter", "default", "example")
   ))
 }
 
-cat("\n\n**Table A1. Shared parameters across all plot types**\n\n")
+cat("\n\n<span class=\"table-title\">",
+    "**Table A1. Shared parameters across all plot types**",
+    "</span>\n\n", sep = "")
 show_params(ref[ref$param %in% shared_params & !duplicated(ref$param), ])
 
 table_n <- 2
 for (t in types) {
   rows <- ref[ref$plot_type == t & !ref$param %in% shared_params, ]
   if (!nrow(rows)) next
-  cat("\n\n**Table A", table_n, ". Parameters specific to `", t, "`**\n\n",
-      sep = "")
+  cat("\n\n<span class=\"table-title\">**Table A", table_n,
+      ". Parameters specific to `", t, "`**</span>\n\n", sep = "")
   show_params(rows)
   table_n <- table_n + 1
 }
 ```
 
-A parameter of kind `column` takes a column name from the data file.
-A parameter of kind `literal` takes a value directly from the
-parameter file.
+A parameter that refers to a variable (such as `x`, `y` or `fill`)
+takes a column name from the dataset. Every other parameter takes a value
+directly from the parameter file.
 
 The `parameter_settings.csv` file can also be opened directly in a
 spreadsheet program.
