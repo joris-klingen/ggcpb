@@ -38,11 +38,7 @@ Introduction to ggcpb
 .figrow { display: flex; gap: 24px; align-items: flex-start; margin: 1em 0; }
 .figrow > * { flex: 1 1 0; min-width: 0; }
 .figrow table { font-size: 0.85em; }
-table.ptab { background: none; border-collapse: collapse; width: 100%; }
-table.ptab tr, table.ptab tr:nth-child(odd), table.ptab tr:nth-child(even),
-table.ptab th, table.ptab td { background: none; border: none; }
-table.ptab th, table.ptab td { border-bottom: 1px solid #bbb; padding: 4px 6px; }
-table.ptab th { border-top: 2px solid #bbb; }
+table.ptab { width: 100%; }
 .figrow h4 { margin-top: 0; color: #c02a6a; }
 @media (max-width: 600px) { .figrow { display: block; } }
 </style>
@@ -173,24 +169,6 @@ A line chart with a forecast window and an uncertainty band.
 #### Relevant parameters
 
 <table class="ptab">
-
-<thead>
-
-<tr>
-
-<th style="text-align:left;">
-
-parameter
-</th>
-
-<th style="text-align:right;">
-
-value
-</th>
-
-</tr>
-
-</thead>
 
 <tbody>
 
@@ -334,24 +312,6 @@ legend tells you which axis belongs to which series.
 #### Relevant parameters
 
 <table class="ptab">
-
-<thead>
-
-<tr>
-
-<th style="text-align:left;">
-
-parameter
-</th>
-
-<th style="text-align:right;">
-
-value
-</th>
-
-</tr>
-
-</thead>
 
 <tbody>
 
@@ -522,24 +482,6 @@ The colours decide the legend. Pick them with `colour_index`.
 #### Relevant parameters
 
 <table class="ptab">
-
-<thead>
-
-<tr>
-
-<th style="text-align:left;">
-
-parameter
-</th>
-
-<th style="text-align:right;">
-
-value
-</th>
-
-</tr>
-
-</thead>
 
 <tbody>
 
@@ -726,24 +668,6 @@ English style.
 
 <table class="ptab">
 
-<thead>
-
-<tr>
-
-<th style="text-align:left;">
-
-parameter
-</th>
-
-<th style="text-align:right;">
-
-value
-</th>
-
-</tr>
-
-</thead>
-
 <tbody>
 
 <tr>
@@ -900,24 +824,6 @@ median. The whiskers run from the 5th to the 95th percentile.
 #### Relevant parameters
 
 <table class="ptab">
-
-<thead>
-
-<tr>
-
-<th style="text-align:left;">
-
-parameter
-</th>
-
-<th style="text-align:right;">
-
-value
-</th>
-
-</tr>
-
-</thead>
 
 <tbody>
 
@@ -1107,24 +1013,6 @@ work, as the donut chart automatically calculates the proportions.
 
 <table class="ptab">
 
-<thead>
-
-<tr>
-
-<th style="text-align:left;">
-
-parameter
-</th>
-
-<th style="text-align:right;">
-
-value
-</th>
-
-</tr>
-
-</thead>
-
 <tbody>
 
 <tr>
@@ -1224,24 +1112,6 @@ A dot plot shows an estimate with its interval.
 #### Relevant parameters
 
 <table class="ptab">
-
-<thead>
-
-<tr>
-
-<th style="text-align:left;">
-
-parameter
-</th>
-
-<th style="text-align:right;">
-
-value
-</th>
-
-</tr>
-
-</thead>
 
 <tbody>
 
@@ -1383,24 +1253,6 @@ the example code at the end.
 
 <table class="ptab">
 
-<thead>
-
-<tr>
-
-<th style="text-align:left;">
-
-parameter
-</th>
-
-<th style="text-align:right;">
-
-value
-</th>
-
-</tr>
-
-</thead>
-
 <tbody>
 
 <tr>
@@ -1512,24 +1364,6 @@ and the example code at the end.
 #### Relevant parameters
 
 <table class="ptab">
-
-<thead>
-
-<tr>
-
-<th style="text-align:left;">
-
-parameter
-</th>
-
-<th style="text-align:right;">
-
-value
-</th>
-
-</tr>
-
-</thead>
 
 <tbody>
 
@@ -1682,24 +1516,6 @@ gemeenten <- tibble(code = unique(cpb_nl_geo("gemeente")$code)) |>
 #### Relevant parameters
 
 <table class="ptab">
-
-<thead>
-
-<tr>
-
-<th style="text-align:left;">
-
-parameter
-</th>
-
-<th style="text-align:right;">
-
-value
-</th>
-
-</tr>
-
-</thead>
 
 <tbody>
 

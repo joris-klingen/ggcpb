@@ -187,28 +187,15 @@ line-height: 16px;
 }
 table {
 margin: 1em auto;
-border-width: 1px;
-border-color: #DDDDDD;
-border-style: outset;
 border-collapse: collapse;
+border: none;
 }
 table th {
-border-width: 2px;
 padding: 5px;
-border-style: inset;
 }
 table td {
-border-width: 1px;
-border-style: inset;
 line-height: 18px;
 padding: 5px 5px;
-}
-table, table th, table td {
-border-left-style: none;
-border-right-style: none;
-}
-table thead, table tr.even {
-background-color: #f7f7f7;
 }
 p {
 margin: 0.5em 0;
@@ -330,28 +317,39 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 h1, h2, h3, h4, h5, h6, h1.title {
 color: #005faf;
 }
-table:not(.ptab) th {
-background-color: #005faf !important;
-color: white !important;
+
+table, table thead, table tr, table tr.even, table th, table td {
+background: none !important;
+border-left: none;
+border-right: none;
 }
-table:not(.ptab) tr:nth-child(odd) td {
-background-color: white !important;
+table th, table td {
+border-top: none;
+border-bottom: 1px solid #DDDDDD;
 }
-table:not(.ptab) tr:nth-child(even) td {
-background-color: #eef8ff !important;
+table thead th {
+border-top: 1px solid #DDDDDD;
+}
+table th {
+color: #005faf;
+font-weight: bold;
+}
+table.ptab td:first-child {
+color: #005faf;
+font-weight: bold;
 }
 
 h1, h1.title {
-font-size: 12pt;
+font-size: 14pt;
 }
 h2 {
-font-size: 11pt;
+font-size: 12pt;
 }
 h3 {
-font-size: 10.5pt;
+font-size: 11pt;
 }
 h4, h5, h6 {
-font-size: 10pt;
+font-size: 10.5pt;
 }
 </style>
 
@@ -420,11 +418,7 @@ English</a></li>
 .figrow { display: flex; gap: 24px; align-items: flex-start; margin: 1em 0; }
 .figrow > * { flex: 1 1 0; min-width: 0; }
 .figrow table { font-size: 0.85em; }
-table.ptab { background: none; border-collapse: collapse; width: 100%; }
-table.ptab tr, table.ptab tr:nth-child(odd), table.ptab tr:nth-child(even),
-table.ptab th, table.ptab td { background: none; border: none; }
-table.ptab th, table.ptab td { border-bottom: 1px solid #bbb; padding: 4px 6px; }
-table.ptab th { border-top: 2px solid #bbb; }
+table.ptab { width: 100%; }
 .figrow h4 { margin-top: 0; color: #c02a6a; }
 @media (max-width: 600px) { .figrow { display: block; } }
 </style>
@@ -541,16 +535,6 @@ forecast</h2>
 <div id="relevant-parameters" class="section level4 unnumbered">
 <h4 class="unnumbered">Relevant parameters</h4>
 <table class="ptab">
-<thead>
-<tr>
-<th style="text-align:left;">
-parameter
-</th>
-<th style="text-align:right;">
-value
-</th>
-</tr>
-</thead>
 <tbody>
 <tr>
 <td style="text-align:left;">
@@ -638,16 +622,6 @@ The legend tells you which axis belongs to which series.</p>
 <div id="relevant-parameters-1" class="section level4 unnumbered">
 <h4 class="unnumbered">Relevant parameters</h4>
 <table class="ptab">
-<thead>
-<tr>
-<th style="text-align:left;">
-parameter
-</th>
-<th style="text-align:right;">
-value
-</th>
-</tr>
-</thead>
 <tbody>
 <tr>
 <td style="text-align:left;">
@@ -751,16 +725,6 @@ chosen colours</h2>
 <div id="relevant-parameters-2" class="section level4 unnumbered">
 <h4 class="unnumbered">Relevant parameters</h4>
 <table class="ptab">
-<thead>
-<tr>
-<th style="text-align:left;">
-parameter
-</th>
-<th style="text-align:right;">
-value
-</th>
-</tr>
-</thead>
 <tbody>
 <tr>
 <td style="text-align:left;">
@@ -872,16 +836,6 @@ the English style.</p>
 <div id="relevant-parameters-3" class="section level4 unnumbered">
 <h4 class="unnumbered">Relevant parameters</h4>
 <table class="ptab">
-<thead>
-<tr>
-<th style="text-align:left;">
-parameter
-</th>
-<th style="text-align:right;">
-value
-</th>
-</tr>
-</thead>
 <tbody>
 <tr>
 <td style="text-align:left;">
@@ -976,16 +930,6 @@ median. The whiskers run from the 5th to the 95th percentile.</p>
 <div id="relevant-parameters-4" class="section level4 unnumbered">
 <h4 class="unnumbered">Relevant parameters</h4>
 <table class="ptab">
-<thead>
-<tr>
-<th style="text-align:left;">
-parameter
-</th>
-<th style="text-align:right;">
-value
-</th>
-</tr>
-</thead>
 <tbody>
 <tr>
 <td style="text-align:left;">
@@ -1098,16 +1042,6 @@ work, as the donut chart automatically calculates the proportions.</p>
 <div id="relevant-parameters-5" class="section level4 unnumbered">
 <h4 class="unnumbered">Relevant parameters</h4>
 <table class="ptab">
-<thead>
-<tr>
-<th style="text-align:left;">
-parameter
-</th>
-<th style="text-align:right;">
-value
-</th>
-</tr>
-</thead>
 <tbody>
 <tr>
 <td style="text-align:left;">
@@ -1169,16 +1103,6 @@ at the end.</p>
 <div id="relevant-parameters-6" class="section level4 unnumbered">
 <h4 class="unnumbered">Relevant parameters</h4>
 <table class="ptab">
-<thead>
-<tr>
-<th style="text-align:left;">
-parameter
-</th>
-<th style="text-align:right;">
-value
-</th>
-</tr>
-</thead>
 <tbody>
 <tr>
 <td style="text-align:left;">
@@ -1263,16 +1187,6 @@ the end.</p>
 <div id="relevant-parameters-7" class="section level4 unnumbered">
 <h4 class="unnumbered">Relevant parameters</h4>
 <table class="ptab">
-<thead>
-<tr>
-<th style="text-align:left;">
-parameter
-</th>
-<th style="text-align:right;">
-value
-</th>
-</tr>
-</thead>
 <tbody>
 <tr>
 <td style="text-align:left;">
@@ -1341,16 +1255,6 @@ at the end.</p>
 <div id="relevant-parameters-8" class="section level4 unnumbered">
 <h4 class="unnumbered">Relevant parameters</h4>
 <table class="ptab">
-<thead>
-<tr>
-<th style="text-align:left;">
-parameter
-</th>
-<th style="text-align:right;">
-value
-</th>
-</tr>
-</thead>
 <tbody>
 <tr>
 <td style="text-align:left;">
@@ -1449,16 +1353,6 @@ Maps are drawn in R. The boundaries come with the package.</p>
 <div id="relevant-parameters-9" class="section level4 unnumbered">
 <h4 class="unnumbered">Relevant parameters</h4>
 <table class="ptab">
-<thead>
-<tr>
-<th style="text-align:left;">
-parameter
-</th>
-<th style="text-align:right;">
-value
-</th>
-</tr>
-</thead>
 <tbody>
 <tr>
 <td style="text-align:left;">

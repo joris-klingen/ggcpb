@@ -41,7 +41,7 @@ ptab <- function(...) {
   p <- list(...)
   knitr::kable(data.frame(parameter = names(p), value = unlist(p),
                           row.names = NULL),
-               align = c("l", "r"), format = "html",
+               align = c("l", "r"), format = "html", col.names = NULL,
                table.attr = 'class="ptab"')
 }
 
@@ -60,11 +60,7 @@ repro <- function(fun, dataset) {
 .figrow { display: flex; gap: 24px; align-items: flex-start; margin: 1em 0; }
 .figrow > * { flex: 1 1 0; min-width: 0; }
 .figrow table { font-size: 0.85em; }
-table.ptab { background: none; border-collapse: collapse; width: 100%; }
-table.ptab tr, table.ptab tr:nth-child(odd), table.ptab tr:nth-child(even),
-table.ptab th, table.ptab td { background: none; border: none; }
-table.ptab th, table.ptab td { border-bottom: 1px solid #bbb; padding: 4px 6px; }
-table.ptab th { border-top: 2px solid #bbb; }
+table.ptab { width: 100%; }
 .figrow h4 { margin-top: 0; color: #c02a6a; }
 @media (max-width: 600px) { .figrow { display: block; } }
 </style>
