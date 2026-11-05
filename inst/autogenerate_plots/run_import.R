@@ -1,6 +1,6 @@
 # run_import.R
 #
-# This script is started by run_import.bat on Windows
+# This script is started by run_import.bat.
 # It is not normally opened by hand.
 #
 # It reads params.csv from its own folder, builds every figure described

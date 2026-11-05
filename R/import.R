@@ -583,9 +583,9 @@ cpb_import_run <- function(dir = ".", page = "half") {
 #' a small kit to `dest`: an example `params.csv`, a `data` folder with
 #' example datasets, a `run_import.R` script that reads them and saves each
 #' figure as a PNG
-#' in a `generated` subfolder, and two start scripts that run it with a
-#' double click instead of opening R at all `run_import.bat` on
-#' Windows. R itself, and the ggcpb package, still need to be
+#' in a `generated` subfolder, and a start script, `run_import.bat`, that
+#' runs it with a double click instead of opening R at all. R itself, and
+#' the ggcpb package, still need to be
 #' installed on the machine the start script runs on.
 #' The start script only skips having to open R and type a command by
 #' hand each time.

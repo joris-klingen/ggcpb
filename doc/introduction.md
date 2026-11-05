@@ -72,8 +72,8 @@ R:
 2.  Copy it to the place where you want to create figures.
 3.  Put your datasets in the folder `data`. Open `params.csv` in Excel
     and describe your figures.
-4.  Start `run_import.bat` (Windows) by double clicking it. Your figures
-    appear in the folder `generated`.
+4.  Start `run_import.bat` by double clicking it. Your figures appear in
+    the folder `generated`.
 
 You do not need to know R to follow this workflow. One parameter file
 and one or more datasets drive everything.
@@ -293,10 +293,10 @@ ylab
 </div>
 
 **How to reproduce this figure:** copy `params.csv`, the folder `data`
-containing at least `line-forecast.csv` and `run_import.bat` (Windows)
-to a personal folder. Fill in the parameters above in `params.csv` and
-start the script. In R you can call `cpb_line()` instead. See section
-1.3 and the example code at the end.
+containing at least `line-forecast.csv` and `run_import.bat` to a
+personal folder. Fill in the parameters above in `params.csv` and start
+the script. In R you can call `cpb_line()` instead. See section 1.3 and
+the example code at the end.
 
 ## Columns with two axes
 
@@ -464,10 +464,10 @@ mld euro
 </div>
 
 **How to reproduce this figure:** copy `params.csv`, the folder `data`
-containing at least `col-secaxis.csv` and `run_import.bat` (Windows) to
-a personal folder. Fill in the parameters above in `params.csv` and
-start the script. In R you can call `cpb_col()` instead. See section 1.3
-and the example code at the end.
+containing at least `col-secaxis.csv` and `run_import.bat` to a personal
+folder. Fill in the parameters above in `params.csv` and start the
+script. In R you can call `cpb_col()` instead. See section 1.3 and the
+example code at the end.
 
 ## Horizontal bars with chosen colours
 
@@ -648,10 +648,10 @@ aandeel binnen inkomensgroep (%)
 </div>
 
 **How to reproduce this figure:** copy `params.csv`, the folder `data`
-containing at least `col-horizontal.csv` and `run_import.bat` (Windows)
-to a personal folder. Fill in the parameters above in `params.csv` and
-start the script. In R you can call `cpb_col()` instead. See section 1.3
-and the example code at the end.
+containing at least `col-horizontal.csv` and `run_import.bat` to a
+personal folder. Fill in the parameters above in `params.csv` and start
+the script. In R you can call `cpb_col()` instead. See section 1.3 and
+the example code at the end.
 
 ## Line with markers in English
 
@@ -805,10 +805,10 @@ ylab
 </div>
 
 **How to reproduce this figure:** copy `params.csv`, the folder `data`
-containing at least `line-points.csv` and `run_import.bat` (Windows) to
-a personal folder. Fill in the parameters above in `params.csv` and
-start the script. In R you can call `cpb_line()` instead. See section
-1.3 and the example code at the end.
+containing at least `line-points.csv` and `run_import.bat` to a personal
+folder. Fill in the parameters above in `params.csv` and start the
+script. In R you can call `cpb_line()` instead. See section 1.3 and the
+example code at the end.
 
 ## Boxplot
 
@@ -990,10 +990,10 @@ ylab
 </div>
 
 **How to reproduce this figure:** copy `params.csv`, the folder `data`
-containing at least `box.csv` and `run_import.bat` (Windows) to a
-personal folder. Fill in the parameters above in `params.csv` and start
-the script. In R you can call `cpb_box()` instead. See section 1.3 and
-the example code at the end.
+containing at least `box.csv` and `run_import.bat` to a personal folder.
+Fill in the parameters above in `params.csv` and start the script. In R
+you can call `cpb_box()` instead. See section 1.3 and the example code
+at the end.
 
 More box plot styles are in [`vignette("boxplots")`](boxplots.md).
 
@@ -1094,10 +1094,10 @@ colour_index
 </div>
 
 **How to reproduce this figure:** copy `params.csv`, the folder `data`
-containing at least `donut.csv` and `run_import.bat` (Windows) to a
-personal folder. Fill in the parameters above in `params.csv` and start
-the script. In R you can call `cpb_donut()` instead. See section 1.3 and
-the example code at the end.
+containing at least `donut.csv` and `run_import.bat` to a personal
+folder. Fill in the parameters above in `params.csv` and start the
+script. In R you can call `cpb_donut()` instead. See section 1.3 and the
+example code at the end.
 
 ## Dot plot
 
@@ -1236,10 +1236,10 @@ xlab
 </div>
 
 **How to reproduce this figure:** copy `params.csv`, the folder `data`
-containing at least `dot.csv` and `run_import.bat` (Windows) to a
-personal folder. Fill in the parameters above in `params.csv` and start
-the script. In R you can call `cpb_dot()` instead. See section 1.3 and
-the example code at the end.
+containing at least `dot.csv` and `run_import.bat` to a personal folder.
+Fill in the parameters above in `params.csv` and start the script. In R
+you can call `cpb_dot()` instead. See section 1.3 and the example code
+at the end.
 
 ## Scatter plot
 
@@ -1348,10 +1348,10 @@ besteedbaar inkomen (euro per maand)
 </div>
 
 **How to reproduce this figure:** copy `params.csv`, the folder `data`
-containing at least `scatter.csv` and `run_import.bat` (Windows) to a
-personal folder. Fill in the parameters above in `params.csv` and start
-the script. In R you can call `cpb_scatter()` instead. See section 1.3
-and the example code at the end.
+containing at least `scatter.csv` and `run_import.bat` to a personal
+folder. Fill in the parameters above in `params.csv` and start the
+script. In R you can call `cpb_scatter()` instead. See section 1.3 and
+the example code at the end.
 
 ## Histogram
 
@@ -1460,10 +1460,10 @@ duur (maanden)
 </div>
 
 **How to reproduce this figure:** copy `params.csv`, the folder `data`
-containing at least `hist.csv` and `run_import.bat` (Windows) to a
-personal folder. Fill in the parameters above in `params.csv` and start
-the script. In R you can call `cpb_hist()` instead. See section 1.3 and
-the example code at the end.
+containing at least `hist.csv` and `run_import.bat` to a personal
+folder. Fill in the parameters above in `params.csv` and start the
+script. In R you can call `cpb_hist()` instead. See section 1.3 and the
+example code at the end.
 
 # Ggplot2 base allows for endless possibilities
 
