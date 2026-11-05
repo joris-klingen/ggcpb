@@ -44,6 +44,9 @@ dataset that
 is missing or cannot be read is skipped with a warning, and every other
 figure (and every other dataset in the same list) is still built.
 
+The optional \code{page} parameter (\code{half}, \code{full} or \code{small}, default \code{half})
+sets the page width a figure is saved at by \code{\link[=cpb_import_run]{cpb_import_run()}}.
+
 Figures in the returned list are named after their dataset
 (\code{koopkracht} for \code{koopkracht.csv}). When several figures use the same
 dataset, the figure number in \code{params_csv} (the first figure column is

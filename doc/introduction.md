@@ -58,11 +58,13 @@ One parameter file and one or more datasets drive everything.
   file with any name, such as `koopkracht.csv`. The first row holds the
   column names. The following rows are the observations per column.
 
-Write the dataset name without `.csv`, such as `koopkracht`. Leave
-`data` blank to use `data/data.csv`. Write `a;b` to draw the same figure
-for both datasets. A figure is saved under the name of its dataset, so
-`koopkracht` gives `koopkracht.png`. If two figures use the same
-dataset, the figure number is added, such as `koopkracht_1.png`.
+Add the row `page` to save a figure at `full` width (15.5 cm). The
+default is `half` (7.5 cm). Write the dataset name without `.csv`, such
+as `koopkracht`. Leave `data` blank to use `data/data.csv`. Write `a;b`
+to draw the same figure for both datasets. A figure is saved under the
+name of its dataset, so `koopkracht` gives `koopkracht.png`. If two
+figures use the same dataset, the figure number is added, such as
+`koopkracht_1.png`.
 
 *Please note*: The files must be saved as CSV, not as spreadsheet
 (`xlsx`). In Excel, choose `File` -\> `Save as` -\>
@@ -1154,6 +1156,20 @@ colour_index
 <td style="text-align:right;">
 
 6;5;2;4
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+page
+</td>
+
+<td style="text-align:right;">
+
+full
 </td>
 
 </tr>

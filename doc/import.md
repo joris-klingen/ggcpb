@@ -88,7 +88,6 @@ The first column holds the parameter names. Every other column describes
 one figure. This is the example file:
 
     plot_type,col,line
-    id,koopkracht,werkloosheid
     title,Koopkrachtontwikkeling naar groep,Werkloosheid
     x,jaar,jaar
     y,koopkracht,werkloosheid
@@ -107,7 +106,6 @@ The same content, split on the comma and shown as a table:
 | parameter        | figure.1                          | figure.2     |
 |:-----------------|:----------------------------------|:-------------|
 | plot_type        | col                               | line         |
-| id               | koopkracht                        | werkloosheid |
 | title            | Koopkrachtontwikkeling naar groep | Werkloosheid |
 | x                | jaar                              | jaar         |
 | y                | koopkracht                        | werkloosheid |
@@ -122,6 +120,10 @@ The same content, split on the comma and shown as a table:
 | data             | koopkracht                        | werkloosheid |
 
 A cell can be left blank. Fields at the end of a row can be left out.
+
+The parameter `page` sets the page width a figure is saved at: `half`
+(7.5 cm, the default), `full` (15.5 cm) or `small`. Leave it out for
+`half`. A donut chart, for example, needs `full`.
 
 Some parameters refer to columns in the dataset. For example:
 
@@ -300,6 +302,7 @@ to, so a table for one `plot_type` does not necessarily match another.
 | legend_ncol | literal |  | 2 |
 | legend_nrow | literal |  |  |
 | legend_title | literal |  | title of the legend |
+| page | literal | half | full |
 | palette | literal | qualitative | qualitative |
 | style | literal | dutch | dutch |
 | subtitle | literal |  | subtitle (replaces the default unit above the figure) |

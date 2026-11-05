@@ -1,5 +1,4 @@
 plot_type,line,col,col,line,box,donut,dot,scatter,hist
-id,line-forecast,col-secaxis,col-horizontal,line-points,box,donut,dot,scatter,hist
 data,line-forecast,col-secaxis,col-horizontal,line-points,box,donut,dot,scatter,hist
 title,Economische groei met onzekerheid,Erfenissen en erfbelasting,Zonnepanelen naar inkomen,Preferred tax rate by age,Koopkracht per inkomensgroep,Energiemix van huishoudens,Samenhang met voorkeurstarieven,Energierekening naar inkomen,Verdeling van de duur
 x,jaar,jaar,groep,leeftijd,groep,,term,inkomen,maanden
@@ -31,3 +30,4 @@ lower,,,,,,,lo
 upper,,,,,,,hi
 group,,,,,,,blok
 binwidth,,,,,,,,,2
+page,,,,,,full

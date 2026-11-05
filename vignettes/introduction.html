@@ -432,13 +432,14 @@ its own CSV file with any name, such as <code>koopkracht.csv</code>. The
 first row holds the column names. The following rows are the
 observations per column.</li>
 </ul>
-<p>Write the dataset name without <code>.csv</code>, such as
-<code>koopkracht</code>. Leave <code>data</code> blank to use
-<code>data/data.csv</code>. Write <code>a;b</code> to draw the same
-figure for both datasets. A figure is saved under the name of its
-dataset, so <code>koopkracht</code> gives <code>koopkracht.png</code>.
-If two figures use the same dataset, the figure number is added, such as
-<code>koopkracht_1.png</code>.</p>
+<p>Add the row <code>page</code> to save a figure at <code>full</code>
+width (15.5 cm). The default is <code>half</code> (7.5 cm). Write the
+dataset name without <code>.csv</code>, such as <code>koopkracht</code>.
+Leave <code>data</code> blank to use <code>data/data.csv</code>. Write
+<code>a;b</code> to draw the same figure for both datasets. A figure is
+saved under the name of its dataset, so <code>koopkracht</code> gives
+<code>koopkracht.png</code>. If two figures use the same dataset, the
+figure number is added, such as <code>koopkracht_1.png</code>.</p>
 <p><em>Please note</em>: The files must be saved as CSV, not as
 spreadsheet (<code>xlsx</code>). In Excel, choose <code>File</code>
 -&gt; <code>Save as</code> -&gt;
@@ -1099,6 +1100,14 @@ colour_index
 </td>
 <td style="text-align:right;">
 6;5;2;4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+page
+</td>
+<td style="text-align:right;">
+full
 </td>
 </tr>
 </tbody>

@@ -9,7 +9,8 @@ cpb_import_run(dir = ".", page = "half")
 \arguments{
 \item{dir}{The figure folder, holding \code{params.csv} and \verb{data/}.}
 
-\item{page}{Page width passed to \code{\link[=save_cpb]{save_cpb()}}.}
+\item{page}{Page width passed to \code{\link[=save_cpb]{save_cpb()}} for a figure that has no
+\code{page} in \code{params_csv}.}
 }
 \value{
 Invisibly, the paths of the PNGs written.

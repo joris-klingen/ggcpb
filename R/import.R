@@ -205,6 +205,16 @@ cpb_import_build_one <- function(params, data_df, extra_params) {
   params[["create"]] <- NULL
   params[["id"]] <- NULL
   params[["data"]] <- NULL
+  # the page width is for saving, not an argument of the wrapper
+  page <- params[["page"]]
+  params[["page"]] <- NULL
+  if (!is.null(page)) {
+    page <- tolower(trimws(page))
+    if (!page %in% c("half", "full", "small")) {
+      stop("`page` must be half, full or small, not \"", page, "\".",
+           call. = FALSE)
+    }
+  }
 
   unknown <- setdiff(names(params), valid_args)
   if (length(unknown)) {
@@ -242,7 +252,8 @@ cpb_import_build_one <- function(params, data_df, extra_params) {
     }
   }
   args <- utils::modifyList(args, extra_params)
-  list(plot = do.call(fn, args), plot_type = plot_type, unknown = unknown)
+  list(plot = do.call(fn, args), plot_type = plot_type, unknown = unknown,
+       page = page)
 }
 
 # Always (over)writes a plain-text run log next to params_csv, listing
@@ -314,6 +325,9 @@ cpb_import_write_log <- function(params_csv, data_dir, entries) {
 #' dataset that
 #' is missing or cannot be read is skipped with a warning, and every other
 #' figure (and every other dataset in the same list) is still built.
+#'
+#' The optional `page` parameter (`half`, `full` or `small`, default `half`)
+#' sets the page width a figure is saved at by [cpb_import_run()].
 #'
 #' Figures in the returned list are named after their dataset
 #' (`koopkracht` for `koopkracht.csv`). When several figures use the same
@@ -489,6 +503,7 @@ cpb_import_csv <- function(params_csv, sep = ",", ..., simplify = TRUE) {
     stem <- tools::file_path_sans_ext(it$file)
     fig_id <- if (stem %in% shared) paste0(stem, "_", it$row) else stem
     plots[[fig_id]] <- built$plot
+    attr(plots[[fig_id]], "cpb_import_page") <- built$page
   }
 
   entries <- entries[order(vapply(entries, function(e) e$row, numeric(1)))]
@@ -523,7 +538,8 @@ cpb_import_csv <- function(params_csv, sep = ",", ..., simplify = TRUE) {
 #' `params_log.txt`.
 #'
 #' @param dir The figure folder, holding `params.csv` and `data/`.
-#' @param page Page width passed to [save_cpb()].
+#' @param page Page width passed to [save_cpb()] for a figure that has no
+#'   `page` in `params_csv`.
 #' @return Invisibly, the paths of the PNGs written.
 #' @export
 cpb_import_run <- function(dir = ".", page = "half") {
@@ -545,7 +561,9 @@ cpb_import_run <- function(dir = ".", page = "half") {
   paths <- file.path(out_dir,
                      paste0(gsub("[^A-Za-z0-9_-]+", "_", names(figs)), ".png"))
   for (i in seq_along(figs)) {
-    save_cpb(paths[[i]], figs[[i]], page = page)
+    page_i <- attr(figs[[i]], "cpb_import_page")
+    if (is.null(page_i)) page_i <- page
+    save_cpb(paths[[i]], figs[[i]], page = page_i)
   }
 
   cat("\nDone. ", length(paths),

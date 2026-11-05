@@ -449,3 +449,32 @@ test_that("a params.csv without a plot_type row is refused", {
   dir <- local_kit(c("x,jaar", "y,waarde"))
   expect_error(cpb_import_csv(file.path(dir, "params.csv")), "plot_type")
 })
+
+test_that("`page` sets the width a figure is saved at, half by default", {
+  skip_if_not_installed("png")
+  dir <- local_kit(c(
+    "plot_type,line,line",
+    "x,jaar,jaar",
+    "y,waarde,waarde",
+    "data,koopkracht,werkloosheid",
+    "page,,full"
+  ))
+  expect_no_warning(ps <- cpb_import_csv(file.path(dir, "params.csv")))
+  expect_null(attr(ps$koopkracht, "cpb_import_page"))
+  expect_equal(attr(ps$werkloosheid, "cpb_import_page"), "full")
+
+  utils::capture.output(cpb_import_run(dir))
+  px <- function(f) dim(png::readPNG(file.path(dir, "generated", f)))[2]
+  expect_gt(px("werkloosheid.png"), 1.5 * px("koopkracht.png"))
+})
+
+test_that("an invalid `page` skips the figure with a warning", {
+  params_csv <- local_figs(c(
+    "plot_type,line,line",
+    "x,jaar,jaar",
+    "y,mld,mld",
+    "page,huge,"
+  ))
+  expect_warning(ps <- cpb_import_csv(params_csv), "half, full or small")
+  expect_s3_class(ps, "ggplot")
+})

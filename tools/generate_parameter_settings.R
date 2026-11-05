@@ -119,6 +119,13 @@ for (pt in plot_types) {
         default = "data", example = "koopkracht;werkloosheid",
         stringsAsFactors = FALSE
       )
+      # `page` is read by the import itself, for saving, so it is no
+      # argument of a wrapper either
+      rows[[length(rows) + 1]] <- data.frame(
+        plot_type = pt, param = "page", kind = "literal",
+        default = "half", example = "full",
+        stringsAsFactors = FALSE
+      )
       next
     }
     is_column <- nm %in% col_args

@@ -1,5 +1,4 @@
 plot_type,col,line
-id,koopkracht,werkloosheid
 title,Koopkrachtontwikkeling naar groep,Werkloosheid
 x,jaar,jaar
 y,koopkracht,werkloosheid
