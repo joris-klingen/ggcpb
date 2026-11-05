@@ -24,8 +24,9 @@ test_that("cpb_col adds a value-label layer when requested", {
 test_that("cpb_col without a fill column adds no colour/fill scale", {
   df <- data.frame(year = 2021:2022, value = c(1, 2))
   p <- cpb_col(df, x = year, y = value)
-  has_colour_scale <- any(vapply(p$scales$scales, function(s)
-    any(c("fill", "colour") %in% s$aesthetics), logical(1)))
+  has_colour_scale <- any(vapply(p$scales$scales, function(s) {
+    any(c("fill", "colour") %in% s$aesthetics)
+  }, logical(1)))
   expect_false(has_colour_scale)
 })
 
@@ -102,8 +103,9 @@ test_that("all wrappers can be built into a gtable without error", {
 })
 
 test_that("the zero line is drawn automatically per house convention", {
-  has_hline <- function(p) any(vapply(p$layers, function(l)
-    inherits(l$geom, "GeomHline"), logical(1)))
+  has_hline <- function(p) {
+    any(vapply(p$layers, function(l) inherits(l$geom, "GeomHline"), logical(1)))
+  }
 
   # bars/areas are anchored at zero: always drawn, unless disabled
   df <- data.frame(x = c("a", "b"), y = c(1, 2), g = c("a", "b"))
@@ -122,8 +124,9 @@ test_that("the zero line layers correctly: over bars, under lines", {
   p <- cpb_col(df, x = x, y = y)
   is_hline <- vapply(p$layers, function(l) inherits(l$geom, "GeomHline"), logical(1))
   expect_equal(p$layers[[which(is_hline)]]$aes_params$colour, "black")
-  expect_gt(which(is_hline), which(vapply(p$layers, function(l)
-    inherits(l$geom, "GeomCol"), logical(1))))
+  expect_gt(which(is_hline), which(vapply(p$layers, function(l) {
+    inherits(l$geom, "GeomCol")
+  }, logical(1))))
 
   p2 <- cpb_line(df, x = x, y = y)
   is_hline2 <- vapply(p2$layers, function(l) inherits(l$geom, "GeomHline"), logical(1))
@@ -235,7 +238,7 @@ test_that("cpb_line draws the value axis flush via the scale, not a blanket coor
 test_that("cpb_line keeps discrete x-axis padding with points = TRUE, when asked to (regression)", {
   df <- data.frame(cat = factor(c("18-25", "26-35", "36-45"),
                                 levels = c("18-25", "26-35", "36-45")),
-                    y = c(5, 12, 18))
+                   y = c(5, 12, 18))
   # x_lim_follow_data defaults to TRUE now (see below), so this only
   # still protects against points = TRUE stripping the padding via
   # some *other*, unintended path when the caller has opted back into
@@ -251,7 +254,7 @@ test_that("cpb_line keeps discrete x-axis padding with points = TRUE, when asked
 test_that("x_lim_follow_data defaults to TRUE: the x axis sits flush to the data by default", {
   df <- data.frame(cat = factor(c("18-25", "26-35", "36-45"),
                                 levels = c("18-25", "26-35", "36-45")),
-                    y = c(5, 12, 18))
+                   y = c(5, 12, 18))
   p <- cpb_line(df, x = cat, y = y)
   built <- ggplot2::ggplot_build(p)
   xr <- built$layout$panel_params[[1]]$x.range
@@ -308,8 +311,9 @@ test_that("cpb_scatter picks the right colour treatment", {
 })
 
 test_that("cpb_scatter draws the zero line only when y spans zero", {
-  has_hline <- function(p) any(vapply(p$layers, function(l)
-    inherits(l$geom, "GeomHline"), logical(1)))
+  has_hline <- function(p) {
+    any(vapply(p$layers, function(l) inherits(l$geom, "GeomHline"), logical(1)))
+  }
   df <- data.frame(x = 1:3, y = c(1, 2, 3))
   expect_false(has_hline(cpb_scatter(df, x = x, y = y)))
   df2 <- data.frame(x = 1:3, y = c(-1, 0, 2))
@@ -535,8 +539,9 @@ test_that("a value axis narrower than the data is widened, never cropped", {
   expect_equal(p_wide$coordinates$clip, "off")
 
   built <- ggplot2::ggplot_build(p_wide)
-  box_data <- built$data[[which(vapply(p_wide$layers, function(l)
-    inherits(l$geom, "GeomErrorbar"), logical(1)))[1]]]
+  box_data <- built$data[[which(vapply(p_wide$layers, function(l) {
+    inherits(l$geom, "GeomErrorbar")
+  }, logical(1)))[1]]]
   expect_equal(sort(unique(c(box_data$ymin, box_data$ymax))), c(-6.5, 7.1))
   # and the drawn range really does contain them
   yr <- built$layout$panel_params[[1]]$y.range
@@ -987,8 +992,9 @@ test_that("cpb_box group builds heading rows on the category axis", {
   expect_equal(txt$aes_params$fontface, "bold")
   # the collapsed total still carries its box, above the first break
   built <- ggplot2::ggplot_build(p)
-  box_data <- built$data[[which(vapply(p$layers, function(l)
-    inherits(l$geom, "GeomBoxplot"), logical(1)))]]
+  box_data <- built$data[[which(vapply(p$layers, function(l) {
+    inherits(l$geom, "GeomBoxplot")
+  }, logical(1)))]]
   expect_true(max(box_data$x) > max(sc$breaks))
   # clip is off so the outdented headings can render outside the panel
   expect_equal(p$coordinates$clip, "off")
@@ -1008,8 +1014,9 @@ test_that("cpb_box group combines with a fill mapping (dodged boxes)", {
                position = ggplot2::position_dodge(width = 0.6),
                colour_index = c(6, 2), title = "t")
   built <- ggplot2::ggplot_build(p)
-  box_data <- built$data[[which(vapply(p$layers, function(l)
-    inherits(l$geom, "GeomBoxplot"), logical(1)))]]
+  box_data <- built$data[[which(vapply(p$layers, function(l) {
+    inherits(l$geom, "GeomBoxplot")
+  }, logical(1)))]]
   # 6 boxes (3 categories x 2 years), dodged: two distinct x offsets
   # around every category slot, so 6 unique positions in total
   expect_equal(nrow(box_data), 6)
@@ -1032,8 +1039,9 @@ test_that("vector fill_colour tracks rows in james/modern boxes", {
                group = grp, box_style = "james", orientation = "horizontal",
                fill_colour = cols)
   built <- ggplot2::ggplot_build(p)
-  box_i <- which(vapply(p$layers, function(l)
-    inherits(l$geom, "GeomBoxplot"), logical(1)))
+  box_i <- which(vapply(p$layers, function(l) {
+    inherits(l$geom, "GeomBoxplot")
+  }, logical(1)))
   box_data <- built$data[[box_i]]
   # the box on the highest slot (category "a", top of the flipped
   # axis) is light blue; the lowest (category "c") is magenta
@@ -1142,14 +1150,14 @@ test_that("cpb_box's ylab/xlab follow cpb_col()'s convention in both orientation
 
   # default "vertical": ylab -> subtitle (value), xlab -> bottom title (category)
   p_v <- cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-                orientation = "vertical", ylab = "eenheid", xlab = "categorie")
+                 orientation = "vertical", ylab = "eenheid", xlab = "categorie")
   expect_identical(p_v$labels$subtitle, "eenheid")
   expect_identical(p_v$labels$x, "categorie")
   expect_null(p_v$labels$y)
 
   # "horizontal": ylab -> subtitle (category), xlab -> bottom title (value)
   p_h <- cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-                orientation = "horizontal", ylab = "categorie", xlab = "eenheid")
+                 orientation = "horizontal", ylab = "categorie", xlab = "eenheid")
   expect_identical(p_h$labels$subtitle, "categorie")
   expect_identical(p_h$labels$y, "eenheid")
   expect_null(p_h$labels$x)
@@ -1290,14 +1298,14 @@ test_that("cpb_dot's ylab/xlab follow cpb_col()'s convention in both orientation
 
   # default "horizontal": ylab -> subtitle (category), xlab -> bottom title (value)
   p_h <- cpb_dot(df, x = term, y = est, lower = lo, upper = hi,
-                orientation = "horizontal", ylab = "categorie", xlab = "eenheid")
+                 orientation = "horizontal", ylab = "categorie", xlab = "eenheid")
   expect_identical(p_h$labels$subtitle, "categorie")
   expect_identical(p_h$labels$y, "eenheid")
   expect_null(p_h$labels$x)
 
   # "vertical": ylab -> subtitle (value), xlab -> bottom title (category)
   p_v <- cpb_dot(df, x = term, y = est, lower = lo, upper = hi,
-                orientation = "vertical", ylab = "eenheid", xlab = "categorie")
+                 orientation = "vertical", ylab = "eenheid", xlab = "categorie")
   expect_identical(p_v$labels$subtitle, "eenheid")
   expect_identical(p_v$labels$x, "categorie")
   expect_null(p_v$labels$y)
@@ -1372,8 +1380,7 @@ test_that("sec_y's default sec_limits use its own data range, not forced through
   expect_false(isTRUE(all.equal(line_default$data$cpb__sec, line_zero_forced$data$cpb__sec)))
 })
 
-test_that(
-  "sec_limits' non-zero-range check tolerates floating point noise, not just exact equality", {
+test_that("sec_limits' non-zero-range check tolerates floating point noise", {
   df <- data.frame(jaar = 2018:2020, mld = c(10, 12, 9), heffing = c(1.2, 1.4, 1.1))
 
   # representable as unequal doubles, but the same value in every way
@@ -1681,8 +1688,7 @@ test_that("cpb_add_sec_guides() -- shared by cpb_col/area/box -- is a no-op with
   expect_identical(cpb_add_sec_guides(p, FALSE, FALSE, NULL), p)
 })
 
-test_that(
-  "cpb_add_sec_guides() stacks the fill/colour guides and legend.box when sec_y is present", {
+test_that("cpb_add_sec_guides() stacks fill/colour guides and legend.box with sec_y", {
   p <- ggplot2::ggplot() + ggplot2::geom_blank()
   out <- cpb_add_sec_guides(p, TRUE, reverse_legend = TRUE, legend_ncol = 2, legend_nrow = 1)
 
@@ -1708,12 +1714,12 @@ test_that("sec_symbol_size and sec_col_width replace the old hardcoded sizes", {
   df <- data.frame(jaar = 2018:2020, mld = c(10, 12, 9), heffing = c(1.2, 1.4, 1.1))
 
   p <- cpb_col(df, x = jaar, y = mld, sec_y = heffing, sec_type = "point",
-              sec_symbol_size = 3)
+               sec_symbol_size = 3)
   pt <- Filter(function(l) inherits(l$geom, "GeomPoint"), p$layers)[[1]]
   expect_equal(pt$aes_params$size, 3)
 
   p <- cpb_col(df, x = jaar, y = mld, sec_y = heffing, sec_type = "col",
-              sec_col_width = 0.7)
+               sec_col_width = 0.7)
   cols <- Filter(function(l) inherits(l$geom, "GeomCol"), p$layers)
   # a literal width lands in aes_params under ggplot2 4.0, geom_params
   # under 3.5.x -- not a real behaviour difference, just which slot the
@@ -1729,8 +1735,8 @@ test_that("sec_symbol_size and sec_col_width replace the old hardcoded sizes", {
     heffing = c(1.2, 1.4, 1.1)
   )
   p <- cpb_dot(df2, x = term, y = est, lower = lo, upper = hi,
-              sec_y = heffing, sec_type = "point", symbol_size = 2.5,
-              orientation = "vertical")
+               sec_y = heffing, sec_type = "point", symbol_size = 2.5,
+               orientation = "vertical")
   point_sizes <- vapply(
     Filter(function(l) inherits(l$geom, "GeomPoint"), p$layers),
     function(l) l$aes_params$size, numeric(1)
@@ -1792,7 +1798,7 @@ test_that("cpb_donut prints a percentage wedge label by default, computed from y
 
 test_that("cpb_donut's label column prefixes the auto-computed percentage", {
   df <- data.frame(bron = c("gas", "elektriciteit"),
-                    share = c(75, 25), mld = c("7,5 mld", "2,5 mld"))
+                   share = c(75, 25), mld = c("7,5 mld", "2,5 mld"))
   p <- cpb_donut(df, fill = bron, y = share, label = mld)
   expect_equal(p$data[["cpb__wedge_label"]], c("7,5 mld (75%)", "2,5 mld (25%)"))
 })
@@ -1819,8 +1825,7 @@ test_that("cpb_donut's legend_pct suffixes the fill legend with each share", {
   expect_equal(sc$labels(c("gas", "elektriciteit")), c("gas (75%)", "elektriciteit (25%)"))
 })
 
-test_that(
-  "cpb_donut's label_style = \"leader\" draws a tick, a fan-out path and text outside the ring", {
+test_that("cpb_donut's leader labels draw a tick, a fan-out path and text outside the ring", {
   df <- data.frame(bron = c("gas", "elektriciteit"), share = c(75, 25))
   p <- cpb_donut(df, fill = bron, y = share, label_style = "leader", leader_length = 0.2)
 
@@ -1905,8 +1910,7 @@ test_that("long category tick labels wrap instead of shrinking the panel", {
   expect_true(all(grepl("\n", labs_dot, fixed = TRUE)))
 })
 
-test_that(
-  "cpb_donut keeps legend labels single-line but wraps wedge labels (wedge and leader alike)", {
+test_that("cpb_donut keeps legend labels single-line but wraps wedge labels", {
   long_cats <- c("Een erg lange categorienaam die nooit helemaal past",
                  "Nog een categorienaam die veel te lang is voor de as")
   df <- data.frame(bron = long_cats, share = c(60, 40))
@@ -1986,7 +1990,7 @@ test_that("cpb_dot()'s x-axis tick labels respect a manual '\\n'", {
   df <- data.frame(cat = factor(manual_cats, levels = manual_cats),
                    y = c(1, 2), lower = c(0, 1), upper = c(2, 3))
   p <- cpb_dot(df, x = cat, y = y, lower = lower, upper = upper,
-              orientation = "horizontal")
+               orientation = "horizontal")
   labs <- ggplot2::ggplot_build(p)$layout$panel_params[[1]]$y$get_labels()
   expect_setequal(labs, manual_cats)
 })
@@ -2010,10 +2014,10 @@ test_that("cpb_line/cpb_area/cpb_col accept a Date or POSIXct x axis (#49)", {
     expect_s3_class(b$layout$panel_scales_x[[1]], "ScaleContinuousDate")
   }
 
-  expect_no_warning(ggplot2::ggplot_build(
-    cpb_line(d, x = date, y = value, forecast_x = "2024-09-01")))
-  expect_no_warning(ggplot2::ggplot_build(
-    cpb_line(d, x = time, y = value, forecast_x = "2024-09-01")))
+  p_date <- cpb_line(d, x = date, y = value, forecast_x = "2024-09-01")
+  expect_no_warning(ggplot2::ggplot_build(p_date))
+  p_time <- cpb_line(d, x = time, y = value, forecast_x = "2024-09-01")
+  expect_no_warning(ggplot2::ggplot_build(p_time))
   expect_no_error(ggplot2::ggplot_build(cpb_area(d, x = date, y = value, fill = grp)))
   expect_no_error(ggplot2::ggplot_build(cpb_col(d, x = date, y = value)))
 })
@@ -2142,7 +2146,7 @@ test_that("cpb_hist has value axis arguments for the histogram axis", {
 
   # default: flush on a labelled round value, as in the other charts
   expect_equal(y_scale()$continuous_range, c(0, 3))
-  # value_limits / value_breaks
+  # the same for value_limits and value_breaks
   expect_equal(y_scale(value_limits = c(0, 10))$continuous_range, c(0, 10))
   expect_equal(y_scale(value_breaks = c(0, 2, 4))$breaks, c(0, 2, 4))
   expect_equal(max(y_scale(value_breaks = c(0, 1))$breaks) >= 3, TRUE)

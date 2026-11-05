@@ -81,7 +81,7 @@ cpb_table_total  <- "#f08bb8"
 #'   for `"extended"`, unnamed for the others.
 #' @noRd
 cpb_palette_colours <- function(palette = c("qualitative", "discr", "sequential",
-                                        "blues", "extended")) {
+                                            "blues", "extended")) {
   palette <- match.arg(palette)
   raw <- switch(
     palette,

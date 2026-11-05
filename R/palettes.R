@@ -179,7 +179,7 @@ cpb_resolve_index <- function(value, palette, palette_supplied,
 
   if (is.character(value)) {
     if (length(value) != 1L || is.na(value)) {
-      stop("`", arg, "` must be a single keyword (", 
+      stop("`", arg, "` must be a single keyword (",
            paste0("\"", names(cpb_index_keywords)[1:2], "\"", collapse = " or "),
            ") or a vector of palette positions.", call. = FALSE)
     }
@@ -200,7 +200,7 @@ cpb_resolve_index <- function(value, palette, palette_supplied,
 
   if (is.numeric(value)) {
     if (!length(value) || anyNA(value) || any(value < 1) ||
-        any(value != round(value))) {
+          any(value != round(value))) {
       stop("`", arg, "` must be positive whole numbers giving palette ",
            "positions, e.g. c(2, 5, 6).", call. = FALSE)
     }

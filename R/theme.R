@@ -73,16 +73,16 @@
 #'   theme_cpb(orientation = "horizontal")
 #' @export
 theme_cpb <- function(base_family = cpb_font_family(),
-                       background = TRUE,
-                       orientation = c("vertical", "horizontal"),
-                       grid = c("value", "both", "none", "x", "y"),
-                       legend = "bottom",
-                       minor = FALSE,
-                       ticks = TRUE,
-                       flush_legend = TRUE,
-                       axis_text_size = 7,
-                       grid_colour = "black",
-                       grid_linewidth = 0.1) {
+                      background = TRUE,
+                      orientation = c("vertical", "horizontal"),
+                      grid = c("value", "both", "none", "x", "y"),
+                      legend = "bottom",
+                      minor = FALSE,
+                      ticks = TRUE,
+                      flush_legend = TRUE,
+                      axis_text_size = 7,
+                      grid_colour = "black",
+                      grid_linewidth = 0.1) {
   orientation <- match.arg(orientation)
   grid <- match.arg(grid)
 

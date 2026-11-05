@@ -62,7 +62,7 @@ test_that("save_cpb saves a cpb_map() at the page's size, in proportion", {
   im <- png::readPNG(path)
   # ... with the map in proportion: its drawing area has the boundaries'
   # own height / width, and fits inside the page
-  for (size in list(c(7.5, 7.5), c(15.5, 7.5), c(7.5, 20)) ) {
+  for (size in list(c(7.5, 7.5), c(15.5, 7.5), c(7.5, 20))) {
     panel <- cpb_map_panel_size(p, attr(p, "cpb_map_aspect"), size[1] / 2.54, size[2] / 2.54)
     expect_equal(panel[2] / panel[1], attr(p, "cpb_map_aspect"))
     expect_lt(panel[1], size[1] / 2.54)
@@ -350,46 +350,46 @@ test_that("the tick-label gap follows the figure width, only with theme_cpb()'s 
 })
 
 test_that(
-  paste0("cpb_align_value_axis_title nudges a flush-right value-axis title ",
-         "to match the outermost tick label"), {
-  # theme_cpb()'s axis.title is anchored flush with the *panel* edge
-  # (hjust = 1), but every wrapper's value axis is flush too (the
-  # highest break sits exactly on the panel edge, no expansion) and
-  # axis text is centred on its own break -- so the outermost tick
-  # label's own text overhangs the panel edge by half its width, and a
-  # title anchored to the bare edge lands short of it by that much.
-  d <- data.frame(
-    groep = factor(c("a", "b", "c", "d"), levels = c("a", "b", "c", "d")),
-    val = c(10, 25, 47, 63)
-  )
-  p <- cpb_col(d, x = groep, y = val, orientation = "horizontal",
-               xlab = "aandeel binnen inkomensgroep (%)", pct_axis = TRUE)
-  g <- ggplot2::ggplotGrob(p)
+          paste0("cpb_align_value_axis_title nudges a flush-right value-axis title ",
+                 "to match the outermost tick label"), {
+            # theme_cpb()'s axis.title is anchored flush with the *panel* edge
+            # (hjust = 1), but every wrapper's value axis is flush too (the
+            # highest break sits exactly on the panel edge, no expansion) and
+            # axis text is centred on its own break -- so the outermost tick
+            # label's own text overhangs the panel edge by half its width, and a
+            # title anchored to the bare edge lands short of it by that much.
+            d <- data.frame(
+              groep = factor(c("a", "b", "c", "d"), levels = c("a", "b", "c", "d")),
+              val = c(10, 25, 47, 63)
+            )
+            p <- cpb_col(d, x = groep, y = val, orientation = "horizontal",
+                         xlab = "aandeel binnen inkomensgroep (%)", pct_axis = TRUE)
+            g <- ggplot2::ggplotGrob(p)
 
-  title_idx <- which(g$layout$name == "xlab-b")
-  axis_idx <- which(g$layout$name == "axis-b")
-  before <- cpb_find_grob(g$grobs[[title_idx]], "text")
-  tick_text <- cpb_find_grob(g$grobs[[axis_idx]], "text")
+            title_idx <- which(g$layout$name == "xlab-b")
+            axis_idx <- which(g$layout$name == "axis-b")
+            before <- cpb_find_grob(g$grobs[[title_idx]], "text")
+            tick_text <- cpb_find_grob(g$grobs[[axis_idx]], "text")
 
-  g2 <- cpb_align_value_axis_title(g)
-  after <- cpb_find_grob(g2$grobs[[title_idx]], "text")
+            g2 <- cpb_align_value_axis_title(g)
+            after <- cpb_find_grob(g2$grobs[[title_idx]], "text")
 
-  # unchanged: y position, hjust, label text
-  expect_equal(as.numeric(after$y), as.numeric(before$y))
-  expect_equal(after$hjust, before$hjust)
-  expect_equal(after$label, before$label)
-  # x anchor moved out past the panel edge (1npc) by exactly half the
-  # rightmost tick label's own rendered width
-  expect_equal(grid::unitType(after$x), "sum")
-  last_label <- tick_text$label[[which.max(as.numeric(tick_text$x))]]
-  expected_shift <- grid::convertWidth(
-    grid::grobWidth(grid::textGrob(last_label, gp = tick_text$gp)),
-    "in", valueOnly = TRUE
-  ) / 2
-  actual_shift <- grid::convertWidth(after$x, "in", valueOnly = TRUE) -
-    grid::convertWidth(grid::unit(1, "npc"), "in", valueOnly = TRUE)
-  expect_equal(actual_shift, expected_shift, tolerance = 1e-6)
-})
+            # unchanged: y position, hjust, label text
+            expect_equal(as.numeric(after$y), as.numeric(before$y))
+            expect_equal(after$hjust, before$hjust)
+            expect_equal(after$label, before$label)
+            # x anchor moved out past the panel edge (1npc) by exactly half the
+            # rightmost tick label's own rendered width
+            expect_equal(grid::unitType(after$x), "sum")
+            last_label <- tick_text$label[[which.max(as.numeric(tick_text$x))]]
+            expected_shift <- grid::convertWidth(
+              grid::grobWidth(grid::textGrob(last_label, gp = tick_text$gp)),
+              "in", valueOnly = TRUE
+            ) / 2
+            actual_shift <- grid::convertWidth(after$x, "in", valueOnly = TRUE) -
+              grid::convertWidth(grid::unit(1, "npc"), "in", valueOnly = TRUE)
+            expect_equal(actual_shift, expected_shift, tolerance = 1e-6)
+          })
 
 test_that("cpb_align_value_axis_title is a no-op when there is no value-axis title to align", {
   d <- data.frame(
@@ -464,7 +464,7 @@ test_that("a printed cpb_donut has its title and legend at the figure's edges, l
   first_ink <- function(f) {
     im <- png::readPNG(f)
     diffs <- apply(
-      im[,, 1:3], 2, function(col) any(abs(col - rep(im[1, 1, 1:3], each = nrow(im))) > 0.3)
+      im[, , 1:3], 2, function(col) any(abs(col - rep(im[1, 1, 1:3], each = nrow(im))) > 0.3)
     )
     min(which(diffs))
   }
@@ -610,7 +610,7 @@ test_that("a printed cpb_map has its title and bottom legend at the figure's lef
   first_ink_cm <- function(f) {
     im <- png::readPNG(f)
     cols <- apply(
-      im[,, 1:3], 2, function(col) any(abs(col - rep(im[1, 1, 1:3], each = nrow(im))) > 0.3)
+      im[, , 1:3], 2, function(col) any(abs(col - rep(im[1, 1, 1:3], each = nrow(im))) > 0.3)
     )
     min(which(cols)) / 300 * 2.54
   }
@@ -637,7 +637,7 @@ test_that("cpb_map's legend inside the panel lines up with the title, not with t
   im <- png::readPNG(path)
   first_ink_cm <- function(rows) {
     cols <- apply(
-      im[rows,, 1:3], 2,
+      im[rows, , 1:3], 2,
       function(col) any(abs(col - rep(im[1, 1, 1:3], each = length(rows))) > 0.25)
     )
     min(which(cols)) / 300 * 2.54

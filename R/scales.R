@@ -25,9 +25,9 @@
 #'   scale_fill_cpb_d()
 #' @export
 scale_fill_cpb_d <- function(palette = c("qualitative", "discr", "sequential", "blues", "extended"),
-                              reverse = FALSE,
-                              na.value = cpb_na,
-                              ...) {
+                             reverse = FALSE,
+                             na.value = cpb_na,
+                             ...) {
   palette <- match.arg(palette)
   ggplot2::discrete_scale(
     aesthetics = "fill",
@@ -40,10 +40,10 @@ scale_fill_cpb_d <- function(palette = c("qualitative", "discr", "sequential", "
 #' @rdname scale_fill_cpb_d
 #' @export
 scale_colour_cpb_d <- function(
-    palette = c("qualitative", "discr", "sequential", "blues", "extended"),
-    reverse = FALSE,
-    na.value = cpb_na,
-    ...) {
+  palette = c("qualitative", "discr", "sequential", "blues", "extended"),
+  reverse = FALSE,
+  na.value = cpb_na,
+  ...) {
   palette <- match.arg(palette)
   ggplot2::discrete_scale(
     aesthetics = "colour",
@@ -123,10 +123,10 @@ scale_color_cpb_c <- scale_colour_cpb_c
 #'   scale_fill_cpb_manual(index = c(6, 2, 5))
 #' @export
 scale_fill_cpb_manual <- function(
-    index = NULL,
-    palette = c("qualitative", "discr", "sequential", "blues", "extended"),
-    na.value = cpb_na,
-    ...) {
+  index = NULL,
+  palette = c("qualitative", "discr", "sequential", "blues", "extended"),
+  na.value = cpb_na,
+  ...) {
   palette <- match.arg(palette)
   cols <- cpb_palette_colours(palette)
   if (!is.null(index)) cols <- cols[index]
@@ -136,10 +136,10 @@ scale_fill_cpb_manual <- function(
 #' @rdname scale_fill_cpb_manual
 #' @export
 scale_colour_cpb_manual <- function(
-    index = NULL,
-    palette = c("qualitative", "discr", "sequential", "blues", "extended"),
-    na.value = cpb_na,
-    ...) {
+  index = NULL,
+  palette = c("qualitative", "discr", "sequential", "blues", "extended"),
+  na.value = cpb_na,
+  ...) {
   palette <- match.arg(palette)
   cols <- cpb_palette_colours(palette)
   if (!is.null(index)) cols <- cols[index]

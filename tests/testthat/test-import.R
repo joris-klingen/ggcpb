@@ -37,8 +37,7 @@ test_that("cpb_import_csv builds a single figure from a vertical params.csv", {
   expect_true(!is.null(p$scales$get_scales("colour")))
 })
 
-test_that(
-  "cpb_import_csv builds several figures from a horizontal params.csv, skipping create = n", {
+test_that("cpb_import_csv builds several figures, skipping create = n", {
   data_csv <- local_data_csv()
   params_csv <- local_params_csv(c(
     "plot_type,title,x,y,create",
@@ -118,42 +117,42 @@ test_that("cpb_import_csv always (over)writes a run log next to params_csv", {
 })
 
 test_that(
-  paste0("cpb_import_csv skips (warning) rather than crashes on one bad figure, ",
-         "but errors if that leaves nothing built"), {
-  data_csv <- local_data_csv()
+          paste0("cpb_import_csv skips (warning) rather than crashes on one bad figure, ",
+                 "but errors if that leaves nothing built"), {
+            data_csv <- local_data_csv()
 
-  # a single-figure params.csv where that one figure is unbuildable: a
-  # console warning() for the specific reason, and -- since nothing at
-  # all was built -- a top-level error, not a silently empty result
-  params_csv <- local_params_csv(c("plot_type,pie", "x,jaar", "y,mld"))
-  expect_warning(
-    expect_error(cpb_import_csv(data_csv, params_csv), "Unknown plot_type"),
-    "Unknown plot_type"
-  )
+            # a single-figure params.csv where that one figure is unbuildable: a
+            # console warning() for the specific reason, and -- since nothing at
+            # all was built -- a top-level error, not a silently empty result
+            params_csv <- local_params_csv(c("plot_type,pie", "x,jaar", "y,mld"))
+            expect_warning(
+              expect_error(cpb_import_csv(data_csv, params_csv), "Unknown plot_type"),
+              "Unknown plot_type"
+            )
 
-  params_csv <- local_params_csv(c("plot_type,line", "x,jaar", "y,doesnotexist"))
-  expect_warning(
-    expect_error(cpb_import_csv(data_csv, params_csv), "not a column in the data"),
-    "not a column in the data"
-  )
+            params_csv <- local_params_csv(c("plot_type,line", "x,jaar", "y,doesnotexist"))
+            expect_warning(
+              expect_error(cpb_import_csv(data_csv, params_csv), "not a column in the data"),
+              "not a column in the data"
+            )
 
-  # the same error in just one of several figures instead leaves the
-  # others built -- an unattended batch must not lose everything over
-  # one broken row
-  params_csv <- local_params_csv(c(
-    "plot_type,title,x,y",
-    "line,Goed,jaar,mld",
-    "line,Kapot,jaar,doesnotexist"
-  ))
-  expect_warning(cpb_import_csv(data_csv, params_csv), "not a column in the data")
-  ps <- suppressWarnings(cpb_import_csv(data_csv, params_csv))
-  expect_s3_class(ps, "ggplot") # only one figure survived, so it is not a list
-  expect_equal(ps$labels$title, "Goed")
+            # the same error in just one of several figures instead leaves the
+            # others built -- an unattended batch must not lose everything over
+            # one broken row
+            params_csv <- local_params_csv(c(
+              "plot_type,title,x,y",
+              "line,Goed,jaar,mld",
+              "line,Kapot,jaar,doesnotexist"
+            ))
+            expect_warning(cpb_import_csv(data_csv, params_csv), "not a column in the data")
+            ps <- suppressWarnings(cpb_import_csv(data_csv, params_csv))
+            expect_s3_class(ps, "ggplot") # only one figure survived, so it is not a list
+            expect_equal(ps$labels$title, "Goed")
 
-  log_path <- paste0(tools::file_path_sans_ext(params_csv), "_log.txt")
-  log_text <- paste(readLines(log_path), collapse = "\n")
-  expect_match(log_text, "Figure 2 \"Kapot\": skipped \\(error: .*not a column")
-})
+            log_path <- paste0(tools::file_path_sans_ext(params_csv), "_log.txt")
+            log_text <- paste(readLines(log_path), collapse = "\n")
+            expect_match(log_text, "Figure 2 \"Kapot\": skipped \\(error: .*not a column")
+          })
 
 test_that("cpb_import_csv errors clearly on missing files", {
   data_csv <- local_data_csv()

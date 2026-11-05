@@ -8,8 +8,7 @@ local_boxplot_extended_data <- function() {
   )
 }
 
-test_that(
-  "cpb_boxplot_extended forwards every cpb_box() parameter it doesn't explicitly opt out of", {
+test_that("cpb_boxplot_extended forwards every cpb_box() parameter unless opted out", {
   # cpb_boxplot_extended() hand-mirrors cpb_box()'s own signature
   # (a manual {{ }} forward, not automatic ... passthrough for every
   # named argument -- cpb_box() has no ... of its own to fall back
@@ -38,11 +37,11 @@ test_that(
 test_that("cpb_boxplot_extended draws the same data as cpb_box with box_style = modern", {
   d <- local_boxplot_extended_data()
   p <- cpb_boxplot_extended(d, x = cat, p5 = p5, p25 = p25, p50 = p50,
-                             p75 = p75, p95 = p95)
+                            p75 = p75, p95 = p95)
   p_ref <- cpb_box(d, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-                    box_style = "modern", orientation = "horizontal",
-                    value_axis = "top", width = 0.45, grid_colour = "white",
-                    ticks = FALSE, zeroline = FALSE)
+                   box_style = "modern", orientation = "horizontal",
+                   value_axis = "top", width = 0.45, grid_colour = "white",
+                   ticks = FALSE, zeroline = FALSE)
 
   b <- ggplot2::ggplot_build(p)
   b_ref <- ggplot2::ggplot_build(p_ref)
@@ -60,20 +59,20 @@ test_that("cpb_boxplot_extended draws the same data as cpb_box with box_style = 
 test_that("cpb_boxplot_extended defaults to horizontal, modern, value_axis top", {
   d <- local_boxplot_extended_data()
   p <- cpb_boxplot_extended(d, x = cat, p5 = p5, p25 = p25, p50 = p50,
-                             p75 = p75, p95 = p95)
+                            p75 = p75, p95 = p95)
   expect_s3_class(p$coordinates, "CoordFlip")
 })
 
 test_that("cpb_boxplot_extended adds a white zero_indicator line underneath everything else", {
   d <- local_boxplot_extended_data()
   p <- cpb_boxplot_extended(d, x = cat, p5 = p5, p25 = p25, p50 = p50,
-                             p75 = p75, p95 = p95)
+                            p75 = p75, p95 = p95)
   expect_true(inherits(p$layers[[1]]$geom, "GeomHline"))
   expect_equal(p$layers[[1]]$aes_params$colour, "white")
   expect_equal(p$layers[[1]]$aes_params$linewidth, 2)
 
   p2 <- cpb_boxplot_extended(d, x = cat, p5 = p5, p25 = p25, p50 = p50,
-                              p75 = p75, p95 = p95, zero_indicator = FALSE)
+                             p75 = p75, p95 = p95, zero_indicator = FALSE)
   expect_false(any(vapply(p2$layers, function(l) inherits(l$geom, "GeomHline"), TRUE)))
 })
 
@@ -96,7 +95,7 @@ test_that("cpb_boxplot_extended draws zero_indicator only when zero is on the va
 test_that("cpb_boxplot_extended keeps the title on the left by default, caption on the right", {
   d <- local_boxplot_extended_data()
   p <- cpb_boxplot_extended(d, x = cat, p5 = p5, p25 = p25, p50 = p50,
-                             p75 = p75, p95 = p95, title = "Titel")
+                            p75 = p75, p95 = p95, title = "Titel")
   expect_equal(p$theme$plot.title.position, "plot")
   expect_equal(p$theme$plot.title$hjust, 0)
   expect_equal(p$theme$plot.subtitle$hjust, 1)
@@ -107,7 +106,7 @@ test_that("cpb_boxplot_extended keeps the full-width left-aligned title when fac
   d <- rbind(d, d)
   d$jaar <- rep(c(2025, 2026), each = 3)
   p <- cpb_boxplot_extended(d, x = cat, p5 = p5, p25 = p25, p50 = p50,
-                             p75 = p75, p95 = p95, title = "Titel", facet = jaar)
+                            p75 = p75, p95 = p95, title = "Titel", facet = jaar)
   expect_equal(p$theme$plot.title.position, "plot")
   expect_equal(p$theme$plot.title$hjust, 0)
   expect_equal(p$facet$params$strip.position, "top")
@@ -141,16 +140,16 @@ test_that("cpb_boxplot_extended puts ylab's caption on the right by default", {
 test_that("cpb_boxplot_extended's ylab_position sets the ggplot2 fallback theme too", {
   d <- local_boxplot_extended_data()
   p_left <- cpb_boxplot_extended(d, x = cat, p5 = p5, p25 = p25, p50 = p50,
-                                  p75 = p75, p95 = p95, title = "Titel",
-                                  ylab_position = "left")
+                                 p75 = p75, p95 = p95, title = "Titel",
+                                 ylab_position = "left")
   expect_equal(p_left$theme$plot.title.position, "plot")
   expect_equal(p_left$theme$plot.title$hjust, 0)
 
   d2 <- rbind(d, d)
   d2$jaar <- rep(c(2025, 2026), each = 3)
   p_middle <- cpb_boxplot_extended(d2, x = cat, p5 = p5, p25 = p25, p50 = p50,
-                                    p75 = p75, p95 = p95, title = "Titel",
-                                    facet = jaar, ylab_position = "middle")
+                                   p75 = p75, p95 = p95, title = "Titel",
+                                   facet = jaar, ylab_position = "middle")
   expect_equal(p_middle$theme$plot.title.position, "panel")
   expect_equal(p_middle$theme$plot.title$hjust, 0.5)
 })
@@ -158,8 +157,8 @@ test_that("cpb_boxplot_extended's ylab_position sets the ggplot2 fallback theme 
 test_that("cpb_boxplot_extended's panel_fill and grid_colour are overridable", {
   d <- local_boxplot_extended_data()
   p <- cpb_boxplot_extended(d, x = cat, p5 = p5, p25 = p25, p50 = p50,
-                             p75 = p75, p95 = p95,
-                             panel_fill = "pink", grid_colour = "green")
+                            p75 = p75, p95 = p95,
+                            panel_fill = "pink", grid_colour = "green")
   expect_equal(p$theme$panel.background$fill, "pink")
   expect_equal(p$theme$panel.grid.major.x$colour, "green")
 })
@@ -171,8 +170,8 @@ test_that("cpb_boxplot_extended passes sec_y through to cpb_box", {
   d <- local_boxplot_extended_data()
   d$z <- c(10, 12, 11)
   p <- cpb_boxplot_extended(d, x = cat, p5 = p5, p25 = p25, p50 = p50,
-                             p75 = p75, p95 = p95, orientation = "vertical",
-                             sec_y = z, sec_ylab = "n")
+                            p75 = p75, p95 = p95, orientation = "vertical",
+                            sec_y = z, sec_ylab = "n")
   is_line <- vapply(p$layers, function(l) inherits(l$geom, "GeomLine"), logical(1))
   expect_true(any(is_line))
 })
@@ -182,7 +181,7 @@ test_that("cpb_boxplot_extended's sec_y still requires orientation = vertical, s
   d$z <- c(10, 12, 11)
   expect_error(
     cpb_boxplot_extended(d, x = cat, p5 = p5, p25 = p25, p50 = p50,
-                          p75 = p75, p95 = p95, sec_y = z),
+                         p75 = p75, p95 = p95, sec_y = z),
     "vertical box charts"
   )
 })
@@ -192,13 +191,13 @@ test_that("cpb_boxplot_extended's value_axis auto-resolves around sec_y", {
   d$z <- c(10, 12, 11)
 
   p1 <- cpb_boxplot_extended(d, x = cat, p5 = p5, p25 = p25, p50 = p50,
-                              p75 = p75, p95 = p95)
+                             p75 = p75, p95 = p95)
   expect_true(is.null(p1$theme$axis.line.x.bottom) ||
                 inherits(p1$theme$axis.line.x.bottom, "element_blank"))
 
   p2 <- cpb_boxplot_extended(d, x = cat, p5 = p5, p25 = p25, p50 = p50,
-                              p75 = p75, p95 = p95, orientation = "vertical",
-                              sec_y = z)
+                             p75 = p75, p95 = p95, orientation = "vertical",
+                             sec_y = z)
   # value_axis silently resolved to "bottom" here, avoiding cpb_box()'s
   # own error for sec_y + value_axis = "top" -- built without error is
   # the assertion that matters
@@ -207,8 +206,8 @@ test_that("cpb_boxplot_extended's value_axis auto-resolves around sec_y", {
   # an explicit value_axis still wins, error and all
   expect_error(
     cpb_boxplot_extended(d, x = cat, p5 = p5, p25 = p25, p50 = p50,
-                          p75 = p75, p95 = p95, orientation = "vertical",
-                          sec_y = z, value_axis = "top"),
+                         p75 = p75, p95 = p95, orientation = "vertical",
+                         sec_y = z, value_axis = "top"),
     "value_axis"
   )
 })
@@ -216,11 +215,11 @@ test_that("cpb_boxplot_extended's value_axis auto-resolves around sec_y", {
 test_that("cpb_boxplot_extended's value_axis_linewidth defaults to 0.7 and is overridable", {
   d <- local_boxplot_extended_data()
   p <- cpb_boxplot_extended(d, x = cat, p5 = p5, p25 = p25, p50 = p50,
-                             p75 = p75, p95 = p95)
+                            p75 = p75, p95 = p95)
   expect_equal(p$theme$axis.line.x.top$linewidth, 0.7)
 
   p2 <- cpb_boxplot_extended(d, x = cat, p5 = p5, p25 = p25, p50 = p50,
-                              p75 = p75, p95 = p95, value_axis_linewidth = 1.2)
+                             p75 = p75, p95 = p95, value_axis_linewidth = 1.2)
   expect_equal(p2$theme$axis.line.x.top$linewidth, 1.2)
 })
 
@@ -229,7 +228,7 @@ test_that("a faceted cpb_boxplot_extended gets one caption per panel, under its 
   d2 <- rbind(d, d)
   d2$jaar <- rep(c(2025, 2026), each = 3)
   p <- cpb_boxplot_extended(d2, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-                             facet = jaar, title = "Titel", ylab = "%")
+                            facet = jaar, title = "Titel", ylab = "%")
   g_bot <- cpb_figure_bottom(ggplot2::ggplotGrob(p), "none")
   g <- cpb_figure_top(g_bot, NULL, attr(p, "cpb_ylab_position"))
   lay <- g$layout
@@ -245,7 +244,7 @@ test_that("a faceted cpb_boxplot_extended gets one caption per panel, under its 
   expect_equal(g$grobs[[which(lay$name == caps$name[1])]]$hjust, 1)
   # "left" keeps the single caption under the title
   p_left <- cpb_boxplot_extended(d2, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-                                  facet = jaar, title = "Titel", ylab = "%", ylab_position = "left")
+                                 facet = jaar, title = "Titel", ylab = "%", ylab_position = "left")
   g_left <- cpb_figure_top(cpb_figure_bottom(ggplot2::ggplotGrob(p_left), "none"), NULL, "left")
   expect_equal(sum(grepl("^cpb-subtitle", g_left$layout$name)), 1)
 })

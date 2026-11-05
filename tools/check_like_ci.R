@@ -43,7 +43,7 @@ check <- function(label, libpath = .libPaths()) {
     build_args = c("--no-manual", if (!pandoc) "--no-build-vignettes"),
     error_on = "never", libpath = libpath
   )
-  outcome[[label]] <<- list(
+  outcome[[label]] <<- list( # nolint: assignment_linter.
     ok = !length(res$errors) && !length(res$warnings),
     detail = sprintf("%d errors, %d warnings, %d notes",
                      length(res$errors), length(res$warnings), length(res$notes))
@@ -53,7 +53,9 @@ check <- function(label, libpath = .libPaths()) {
 run_script <- function(label, path) {
   cat("\n=== ", label, " ===\n", sep = "")
   status <- system2(file.path(R.home("bin"), "Rscript"), path)
-  outcome[[label]] <<- list(ok = identical(status, 0L), detail = paste("exit status", status))
+  outcome[[label]] <<- list( # nolint: assignment_linter.
+    ok = identical(status, 0L), detail = paste("exit status", status)
+  )
 }
 
 if ("current" %in% steps) check("check, installed ggplot2")

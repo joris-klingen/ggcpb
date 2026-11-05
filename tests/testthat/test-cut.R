@@ -6,8 +6,8 @@ test_that("cpb_cut builds open-ended Dutch class labels", {
                labeller = label_pct_nl())
   expect_s3_class(f, "ordered")
   expect_equal(levels(f),
-    c("lager dan 20%", "20% - 30%", "30% - 40%",
-      "40% - 50%", "50% - 60%", "60% en hoger"))
+               c("lager dan 20%", "20% - 30%", "30% - 40%",
+                 "40% - 50%", "50% - 60%", "60% en hoger"))
   # values land in the right classes
   expect_equal(as.character(f[1]), "lager dan 20%")
   expect_equal(as.character(f[6]), "60% en hoger")

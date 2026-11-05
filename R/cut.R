@@ -77,9 +77,11 @@ cpb_cut <- function(x,
 
   # label only the finite interior breaks; open ends are worded
   interior <- breaks[-c(1L, length(breaks))]
-  lab <- function(v) vapply(v, function(b) {
-    if (is.finite(b)) labeller(b) else as.character(b)
-  }, character(1))
+  lab <- function(v) {
+    vapply(v, function(b) {
+      if (is.finite(b)) labeller(b) else as.character(b)
+    }, character(1))
+  }
   ib <- lab(interior)
 
   if (n_class == 1L) {

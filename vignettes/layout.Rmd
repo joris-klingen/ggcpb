@@ -48,20 +48,20 @@ ranges with `facet_scales` (`"fixed"` by default, so panels are
 directly comparable):
 
 ```{r facets, fig.width = 15.5 / 2.54, fig.height = 4.5, out.width = "700px"}
-regios <- expand_grid(regio = factor(c("stedelijk", "landelijk", "gemengd", "totaal"),
-                                     levels = c("stedelijk", "landelijk", "gemengd", "totaal")),
+regio_namen <- c("stedelijk", "landelijk", "gemengd", "totaal")
+regios <- expand_grid(regio = factor(regio_namen, levels = regio_namen),
                       groep = factor(c("laag", "midden", "hoog"),
                                      levels = c("laag", "midden", "hoog")),
                       jaar  = 2019:2025) |>
   mutate(waarde = round(2 + as.numeric(groep) + cumsum(rnorm(n(), 0, 0.3)), 1))
 
 cpb_col(regios, x = jaar, y = waarde, fill = groep,
-  position   = "dodge",
-  facet      = regio,
-  facet_ncol = 2,
-  colour_index = c(6, 2, 5),
-  title = "Ontwikkeling per regio",
-  ylab  = "mld euro")
+        position   = "dodge",
+        facet      = regio,
+        facet_ncol = 2,
+        colour_index = c(6, 2, 5),
+        title = "Ontwikkeling per regio",
+        ylab  = "mld euro")
 ```
 
 A faceted figure usually needs a taller canvas: pass an explicit
@@ -76,19 +76,19 @@ keeps everything on *one* comparable value axis. Pass it to
 the groups, the group names in bold under the category labels:
 
 ```{r col-grouped}
+cats <- c("jongen", "meisje", "laag", "hoog")
+grps <- c("geslacht", "opleiding ouders")
 zakkans <- tibble(
-  cat   = factor(rep(c("jongen", "meisje", "laag", "hoog"), each = 2),
-                 levels = c("jongen", "meisje", "laag", "hoog")),
-  grp   = factor(rep(c("geslacht", "opleiding ouders"), each = 4),
-                 levels = c("geslacht", "opleiding ouders")),
-  serie = rep(c("als centraal examen meetelt",
-                "als centraal examen niet meetelt"), 4),
-  pct   = c(8.7, 8.7, 9.7, 5.1, 11.2, 8.0, 8.1, 6.0))
+                  cat   = factor(rep(cats, each = 2), levels = cats),
+                  grp   = factor(rep(grps, each = 4), levels = grps),
+                  serie = rep(c("als centraal examen meetelt",
+                                "als centraal examen niet meetelt"), 4),
+                  pct   = c(8.7, 8.7, 9.7, 5.1, 11.2, 8.0, 8.1, 6.0))
 
 cpb_col(zakkans, x = cat, y = pct, fill = serie, group = grp,
-  position = "dodge", colour_index = c(6, 2), width = 0.75,
-  value_breaks = seq(0, 12, 2), value_limits = c(0, 12),
-  title = "VWO", ylab = "zakkans (%)")
+        position = "dodge", colour_index = c(6, 2), width = 0.75,
+        value_breaks = seq(0, 12, 2), value_limits = c(0, 12),
+        title = "VWO", ylab = "zakkans (%)")
 ```
 
 Each category must belong to exactly one group; tune the gap with
@@ -123,11 +123,11 @@ ink <- tibble(
          p5  = p25 - runif(n(), 0.1, 0.6),   p95 = p75 + runif(n(), 0.1, 0.6))
 
 cpb_box(ink, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-  group = grp, box_style = "james", orientation = "horizontal",
-  fill_colour = c("#193c69", rep("#87d2ff", 6), rep("#e6006e", 3)),
-  width = 0.45,
-  title = "Inkomenseffecten plannen stelsel",
-  ylab  = "verandering in 2025 (%)")
+        group = grp, box_style = "james", orientation = "horizontal",
+        fill_colour = c("#193c69", rep("#87d2ff", 6), rep("#e6006e", 3)),
+        width = 0.45,
+        title = "Inkomenseffecten plannen stelsel",
+        ylab  = "verandering in 2025 (%)")
 ```
 
 The category rows keep the house ticks; the bold group headings carry

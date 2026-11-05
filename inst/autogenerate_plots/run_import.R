@@ -32,7 +32,7 @@ cat(script_dir, "\n\n")
 result <- tryCatch({
   if (!requireNamespace("ggcpb", quietly = TRUE)) {
     stop("The ggcpb package is not installed. Install it in R first, ",
-      "then run this script again.")
+         "then run this script again.")
   }
   if (!file.exists(data_csv)) {
     stop("data.csv was not found in this folder.")

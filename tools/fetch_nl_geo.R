@@ -13,8 +13,10 @@
 # Re-run (from the package root) to bump the boundary year:
 #   Rscript tools/fetch_nl_geo.R
 
-YEAR <- 2025
-LEVELS <- c(gemeente = "gemeente", corop = "coropgebied", provincie = "provincie")
+YEAR <- 2025 # nolint: object_name_linter.
+LEVELS <- c( # nolint: object_name_linter.
+  gemeente = "gemeente", corop = "coropgebied", provincie = "provincie"
+)
 
 # flatten one GeoJSON feature collection into a data.frame with one row
 # per vertex: code/name identify the region, part is the polygon-part

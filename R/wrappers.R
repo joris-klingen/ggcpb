@@ -62,7 +62,7 @@ cpb_group_positions <- function(cats, groups, gap = 0.8) {
   }
   # lay the groups out in factor-level order, categories in level order
   # within their group
-  map <- map[order(as.integer(map$grp), as.integer(map$cat)),, drop = FALSE]
+  map <- map[order(as.integer(map$grp), as.integer(map$cat)), , drop = FALSE]
   offset <- (as.integer(factor(map$grp, levels = unique(map$grp))) - 1) * gap
   map$pos <- seq_len(nrow(map)) + offset
   centres <- vapply(split(map$pos, map$grp), mean, numeric(1))
@@ -667,7 +667,7 @@ cpb_find_sec_breaks <- function(primary_breaks, sec_vals, sec_limits = NULL,
     }
   }
   if (length(sec_limits) != 2 || !is.numeric(sec_limits) ||
-    isTRUE(all.equal(sec_limits[[1]], sec_limits[[2]]))) {
+        isTRUE(all.equal(sec_limits[[1]], sec_limits[[2]]))) {
     stop("`sec_limits` must be a length-2 numeric vector spanning a ",
       "non-zero range.",
       call. = FALSE
@@ -733,14 +733,14 @@ cpb_sec_map <- function(sec_vals, sec_limits = NULL, prim_min = NULL, prim_max =
 
   if (!is.null(prim_min) && !is.null(prim_max)) {
     if (isTRUE(all.equal(prim_min, prim_max))) {
-    stop("the primary value axis has no range for `sec_y` to map onto.",
-      call. = FALSE)
+      stop("the primary value axis has no range for `sec_y` to map onto.",
+           call. = FALSE)
     }
     if (is.null(primary_breaks)) {
       primary_breaks <- seq(prim_min, prim_max, length.out = 5)
     }
   } else if (!is.null(primary_breaks) && length(primary_breaks) == 2 &&
-             !is.null(sec_limits) && is.numeric(sec_limits)) {
+               !is.null(sec_limits) && is.numeric(sec_limits)) {
     legacy_sec_limits <- primary_breaks
     legacy_prim_min <- sec_limits
     legacy_prim_max <- prim_min
@@ -890,7 +890,7 @@ cpb_sec_layer <- function(p, data, x, sec_vals, sec_map, sec_type,
                           sec_symbol_size, sec_col_width, style = "dutch") {
   sec_df <- as.data.frame(data)
   sec_df[["cpb__sec"]] <- cpb_sec_to_primary(sec_vals, sec_map)
-  sec_df <- sec_df[!duplicated(rlang::eval_tidy(x, data)),, drop = FALSE]
+  sec_df <- sec_df[!duplicated(rlang::eval_tidy(x, data)), , drop = FALSE]
 
   if (sec_type == "col") {
     p <- p + ggplot2::geom_col(
@@ -974,7 +974,7 @@ cpb_add_sec_guides <- function(p, has_sec, reverse_legend, legend_ncol, legend_n
     ggplot2::guides(
       fill = ggplot2::guide_legend(
         order = 1, reverse = isTRUE(reverse_legend),
-                                   ncol = legend_ncol, nrow = legend_nrow,
+        ncol = legend_ncol, nrow = legend_nrow,
         override.aes = list(colour = NA, shape = NA)
       ),
       colour = ggplot2::guide_legend(order = 2)
@@ -1149,7 +1149,7 @@ cpb_flush_scale_args <- function(axis_values, pct_axis = FALSE, pct_scale = 1,
   if (!is.null(value_limits)) {
     tol <- diff(range(value_limits)) * 1e-6
     if (data_range[1] < min(value_limits) - tol ||
-        data_range[2] > max(value_limits) + tol) {
+          data_range[2] > max(value_limits) + tol) {
       message(
         "ggcpb: the data (", paste(signif(data_range, 4), collapse = " to "),
         ") runs past `value_limits`, so the axis is widened to ",
@@ -1542,56 +1542,56 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #' cpb_col(df, x = year, y = value, fill = group)
 #' @export
 cpb_col <- function(data, x, y, fill = NULL,
-                     fill_colour = NULL,
-                     group = NULL,
-                     group_gap = 0.8,
-                     position = c("stack", "dodge", "fill"),
-                     orientation = c("vertical", "horizontal"),
-                     sec_y = NULL,
-                     sec_type = c("line", "point", "col"),
-                     sec_limits = NULL,
-                     sec_legend_label = NULL,
-                     sec_ylab = NULL,
-                     sec_colour = NULL,
-                     sec_linewidth = 0.55,
-                     sec_points = FALSE,
-                     sec_symbol_size = 1.6,
-                     sec_col_width = 0.3,
-                     sec_accuracy = NULL,
+                    fill_colour = NULL,
+                    group = NULL,
+                    group_gap = 0.8,
+                    position = c("stack", "dodge", "fill"),
+                    orientation = c("vertical", "horizontal"),
+                    sec_y = NULL,
+                    sec_type = c("line", "point", "col"),
+                    sec_limits = NULL,
+                    sec_legend_label = NULL,
+                    sec_ylab = NULL,
+                    sec_colour = NULL,
+                    sec_linewidth = 0.55,
+                    sec_points = FALSE,
+                    sec_symbol_size = 1.6,
+                    sec_col_width = 0.3,
+                    sec_accuracy = NULL,
                     sec_scale_auto = TRUE,
                     sec_at = NULL,
                     sec_axis_labels = NULL,
                     palette = "qualitative",
-                     colour_index = NULL,
-                     pct_axis = FALSE,
-                     value_accuracy = NULL,
-                     value_breaks = NULL,
-                     value_limits = NULL,
-                     value_crop = FALSE,
-                     value_labels = FALSE,
-                     x_lim = NULL,
-                     x_lim_follow_data = FALSE,
-                     forecast_x = NULL,
-                     forecast_label = "raming",
-                     reverse_legend = TRUE,
-                     legend_ncol = NULL,
+                    colour_index = NULL,
+                    pct_axis = FALSE,
+                    value_accuracy = NULL,
+                    value_breaks = NULL,
+                    value_limits = NULL,
+                    value_crop = FALSE,
+                    value_labels = FALSE,
+                    x_lim = NULL,
+                    x_lim_follow_data = FALSE,
+                    forecast_x = NULL,
+                    forecast_label = "raming",
+                    reverse_legend = TRUE,
+                    legend_ncol = NULL,
                     legend_nrow = NULL,
-                     facet = NULL,
-                     facet_ncol = NULL,
-                     facet_scales = "fixed",
-                     legend = "bottom",
-                     zeroline = TRUE,
-                     minor = FALSE,
-                     ticks = TRUE,
-                     flush_legend = TRUE,
-                     axis_text_size = 7,
-                     grid_colour = "black",
-                     grid_linewidth = 0.1,
-                     title = NULL,
-                     subtitle = NULL,
-                     xlab = NULL,
-                     ylab = NULL,
-                     legend_title = NULL,
+                    facet = NULL,
+                    facet_ncol = NULL,
+                    facet_scales = "fixed",
+                    legend = "bottom",
+                    zeroline = TRUE,
+                    minor = FALSE,
+                    ticks = TRUE,
+                    flush_legend = TRUE,
+                    axis_text_size = 7,
+                    grid_colour = "black",
+                    grid_linewidth = 0.1,
+                    title = NULL,
+                    subtitle = NULL,
+                    xlab = NULL,
+                    ylab = NULL,
+                    legend_title = NULL,
                     style = getOption("ggcpb.style", "dutch"),
                     ...) {
   style <- match.arg(style, c("dutch", "english"))
@@ -1647,7 +1647,7 @@ cpb_col <- function(data, x, y, fill = NULL,
                                gap = group_gap)
     data <- as.data.frame(data)
     data[["cpb__x"]] <- grp$map$pos[match(as.character(rlang::eval_tidy(x, data)),
-                                             as.character(grp$map$cat))]
+                                          as.character(grp$map$cat))]
     x <- rlang::quo(.data[["cpb__x"]])
   }
 
@@ -1896,50 +1896,50 @@ cpb_col <- function(data, x, y, fill = NULL,
 #' ggcpb:::cpb_area(df, x = year, y = aandeel, fill = bron, pct_axis = TRUE)
 #' @keywords internal
 cpb_area <- function(data, x, y, fill,
-                      sec_y = NULL,
-                      sec_type = c("line", "point", "col"),
-                      sec_limits = NULL,
-                      sec_legend_label = NULL,
-                      sec_ylab = NULL,
-                      sec_colour = NULL,
-                      sec_linewidth = 0.55,
-                      sec_points = FALSE,
-                      sec_symbol_size = 1.6,
-                      sec_col_width = 0.3,
-                      sec_accuracy = NULL,
+                     sec_y = NULL,
+                     sec_type = c("line", "point", "col"),
+                     sec_limits = NULL,
+                     sec_legend_label = NULL,
+                     sec_ylab = NULL,
+                     sec_colour = NULL,
+                     sec_linewidth = 0.55,
+                     sec_points = FALSE,
+                     sec_symbol_size = 1.6,
+                     sec_col_width = 0.3,
+                     sec_accuracy = NULL,
                      sec_scale_auto = TRUE,
                      sec_at = NULL,
                      sec_axis_labels = NULL,
                      palette = "qualitative",
-                      colour_index = NULL,
-                      pct_axis = FALSE,
-                      value_accuracy = NULL,
-                      value_breaks = NULL,
-                      value_limits = NULL,
-                      value_crop = FALSE,
-                      x_lim = NULL,
-                      x_lim_follow_data = FALSE,
-                      forecast_x = NULL,
-                      forecast_label = "raming",
-                      reverse_legend = TRUE,
-                      legend_ncol = NULL,
+                     colour_index = NULL,
+                     pct_axis = FALSE,
+                     value_accuracy = NULL,
+                     value_breaks = NULL,
+                     value_limits = NULL,
+                     value_crop = FALSE,
+                     x_lim = NULL,
+                     x_lim_follow_data = FALSE,
+                     forecast_x = NULL,
+                     forecast_label = "raming",
+                     reverse_legend = TRUE,
+                     legend_ncol = NULL,
                      legend_nrow = NULL,
-                      facet = NULL,
-                      facet_ncol = NULL,
-                      facet_scales = "fixed",
-                      legend = "bottom",
-                      zeroline = TRUE,
-                      minor = FALSE,
-                      ticks = TRUE,
-                      flush_legend = TRUE,
-                      axis_text_size = 7,
-                      grid_colour = "black",
-                      grid_linewidth = 0.1,
-                      title = NULL,
-                      subtitle = NULL,
-                      xlab = NULL,
-                      ylab = NULL,
-                      legend_title = NULL,
+                     facet = NULL,
+                     facet_ncol = NULL,
+                     facet_scales = "fixed",
+                     legend = "bottom",
+                     zeroline = TRUE,
+                     minor = FALSE,
+                     ticks = TRUE,
+                     flush_legend = TRUE,
+                     axis_text_size = 7,
+                     grid_colour = "black",
+                     grid_linewidth = 0.1,
+                     title = NULL,
+                     subtitle = NULL,
+                     xlab = NULL,
+                     ylab = NULL,
+                     legend_title = NULL,
                      style = getOption("ggcpb.style", "dutch"),
                      ...) {
   style <- match.arg(style, c("dutch", "english"))
@@ -1968,7 +1968,7 @@ cpb_area <- function(data, x, y, fill,
   # guide, not just ones it maps something to -- see the "sec_y
   # helpers" block near the top of this file).
   p <- p + ggplot2::geom_area(
-    show.legend = c(fill = TRUE, colour = FALSE), key_glyph = "rect", ...)
+                              show.legend = c(fill = TRUE, colour = FALSE), key_glyph = "rect", ...)
   # geom_area() stacks, so the axis spans the stacked areas as drawn
   axis_values <- cpb_drawn_extent(p, facet, facet_ncol, facet_scales)
 
@@ -2132,56 +2132,56 @@ cpb_area <- function(data, x, y, fill,
 #' cpb_line(df, x = jaar, y = bbp_groei, colour = raming)
 #' @export
 cpb_line <- function(data, x, y, colour = NULL,
-                      line_colour = NULL,
-                      linewidth = 0.55,
-                      points = FALSE,
-                      symbol_size = 1.1,
-                      sec_y = NULL,
-                      sec_type = c("line", "point", "col"),
-                      sec_limits = NULL,
-                      sec_legend_label = NULL,
-                      sec_ylab = NULL,
-                      sec_colour = NULL,
-                      sec_linewidth = NULL,
-                      sec_points = FALSE,
-                      sec_symbol_size = 1.6,
-                      sec_col_width = 0.3,
-                      sec_accuracy = NULL,
+                     line_colour = NULL,
+                     linewidth = 0.55,
+                     points = FALSE,
+                     symbol_size = 1.1,
+                     sec_y = NULL,
+                     sec_type = c("line", "point", "col"),
+                     sec_limits = NULL,
+                     sec_legend_label = NULL,
+                     sec_ylab = NULL,
+                     sec_colour = NULL,
+                     sec_linewidth = NULL,
+                     sec_points = FALSE,
+                     sec_symbol_size = 1.6,
+                     sec_col_width = 0.3,
+                     sec_accuracy = NULL,
                      sec_scale_auto = TRUE,
                      sec_at = NULL,
                      sec_axis_labels = NULL,
                      palette = "qualitative",
-                      colour_index = NULL,
-                      pct_axis = FALSE,
-                      value_accuracy = NULL,
-                      value_breaks = NULL,
-                      value_limits = NULL,
-                      value_crop = FALSE,
-                      x_lim = NULL,
-                      x_lim_follow_data = TRUE,
-                      ymin = NULL,
-                      ymax = NULL,
-                      forecast_x = NULL,
-                      forecast_label = "raming",
-                      reverse_legend = FALSE,
-                      legend_ncol = NULL,
+                     colour_index = NULL,
+                     pct_axis = FALSE,
+                     value_accuracy = NULL,
+                     value_breaks = NULL,
+                     value_limits = NULL,
+                     value_crop = FALSE,
+                     x_lim = NULL,
+                     x_lim_follow_data = TRUE,
+                     ymin = NULL,
+                     ymax = NULL,
+                     forecast_x = NULL,
+                     forecast_label = "raming",
+                     reverse_legend = FALSE,
+                     legend_ncol = NULL,
                      legend_nrow = NULL,
-                      facet = NULL,
-                      facet_ncol = NULL,
-                      facet_scales = "fixed",
-                      legend = "bottom",
-                      zeroline = NULL,
-                      minor = FALSE,
-                      ticks = TRUE,
-                      flush_legend = TRUE,
-                      axis_text_size = 7,
-                      grid_colour = "black",
-                      grid_linewidth = 0.1,
-                      title = NULL,
-                      subtitle = NULL,
-                      xlab = NULL,
-                      ylab = NULL,
-                      legend_title = NULL,
+                     facet = NULL,
+                     facet_ncol = NULL,
+                     facet_scales = "fixed",
+                     legend = "bottom",
+                     zeroline = NULL,
+                     minor = FALSE,
+                     ticks = TRUE,
+                     flush_legend = TRUE,
+                     axis_text_size = 7,
+                     grid_colour = "black",
+                     grid_linewidth = 0.1,
+                     title = NULL,
+                     subtitle = NULL,
+                     xlab = NULL,
+                     ylab = NULL,
+                     legend_title = NULL,
                      style = getOption("ggcpb.style", "dutch"),
                      ...) {
   style <- match.arg(style, c("dutch", "english"))
@@ -2252,7 +2252,7 @@ cpb_line <- function(data, x, y, colour = NULL,
     } else {
       factor(sec_lab, levels = c(prim_lab, sec_lab))
     }
-    sec_df <- sec_df[!duplicated(rlang::eval_tidy(x, data)),, drop = FALSE]
+    sec_df <- sec_df[!duplicated(rlang::eval_tidy(x, data)), , drop = FALSE]
   }
 
   if (has_colour) {
@@ -2341,24 +2341,24 @@ cpb_line <- function(data, x, y, colour = NULL,
         data = sec_df, sec_aes, size = sec_symbol_size, show.legend = TRUE
       )
     } else {
-    p <- p + ggplot2::geom_line(
-      data = sec_df,
-      ggplot2::aes(x = !!x, y = .data[["cpb__sec"]], colour = .data[["cpb__seclab"]],
-                   group = 1),
-      linewidth = if (is.null(sec_linewidth)) linewidth else sec_linewidth,
-      show.legend = TRUE
-    )
+      p <- p + ggplot2::geom_line(
+        data = sec_df,
+        ggplot2::aes(x = !!x, y = .data[["cpb__sec"]], colour = .data[["cpb__seclab"]],
+                     group = 1),
+        linewidth = if (is.null(sec_linewidth)) linewidth else sec_linewidth,
+        show.legend = TRUE
+      )
       # markers keep following the primary series' own `points` (a line
       # chart with markers wants them on both series, and that is what
       # this wrapper has always done); sec_points turns them on for the
       # secondary series by itself, at cpb_sec_layer()'s smaller
       # decorating-a-line size
       if (isTRUE(points) || isTRUE(sec_points)) {
-      p <- p + ggplot2::geom_point(
-        data = sec_df, sec_aes,
+        p <- p + ggplot2::geom_point(
+          data = sec_df, sec_aes,
           size = if (isTRUE(points)) symbol_size else sec_symbol_size * 0.7,
           show.legend = TRUE
-      )
+        )
       }
     }
   }
@@ -2578,61 +2578,61 @@ cpb_line <- function(data, x, y, colour = NULL,
 #' cpb_box(df, x = groep, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95)
 #' @export
 cpb_box <- function(data, x, p5, p25, p50, p75, p95,
-                     mean = NULL,
-                     fill = NULL,
-                     fill_colour = NULL,
-                     group = NULL,
-                     group_gap = 0.7,
-                     box_style = c("ggcpb", "james", "modern", "dot"),
-                     dot_labels = NULL,
-                     box_labels = NULL,
-                     label_accuracy = 0.1,
-                     width = 0.5,
-                     linewidth = 0.25,
-                     palette = "qualitative",
-                     colour_index = NULL,
-                     pct_axis = FALSE,
-                     value_accuracy = NULL,
-                     value_breaks = NULL,
-                     value_limits = NULL,
-                     value_crop = FALSE,
-                     value_axis = c("bottom", "top"),
-                     x_lim = NULL,
-                     x_lim_follow_data = TRUE,
-                     orientation = c("vertical", "horizontal"),
-                     sec_y = NULL,
-                     sec_type = c("line", "point", "col"),
-                     sec_limits = NULL,
-                     sec_legend_label = NULL,
-                     sec_ylab = NULL,
-                     sec_colour = NULL,
-                     sec_linewidth = 0.55,
-                     sec_points = FALSE,
-                     sec_symbol_size = 1.6,
-                     sec_col_width = 0.3,
-                     sec_accuracy = NULL,
+                    mean = NULL,
+                    fill = NULL,
+                    fill_colour = NULL,
+                    group = NULL,
+                    group_gap = 0.7,
+                    box_style = c("ggcpb", "james", "modern", "dot"),
+                    dot_labels = NULL,
+                    box_labels = NULL,
+                    label_accuracy = 0.1,
+                    width = 0.5,
+                    linewidth = 0.25,
+                    palette = "qualitative",
+                    colour_index = NULL,
+                    pct_axis = FALSE,
+                    value_accuracy = NULL,
+                    value_breaks = NULL,
+                    value_limits = NULL,
+                    value_crop = FALSE,
+                    value_axis = c("bottom", "top"),
+                    x_lim = NULL,
+                    x_lim_follow_data = TRUE,
+                    orientation = c("vertical", "horizontal"),
+                    sec_y = NULL,
+                    sec_type = c("line", "point", "col"),
+                    sec_limits = NULL,
+                    sec_legend_label = NULL,
+                    sec_ylab = NULL,
+                    sec_colour = NULL,
+                    sec_linewidth = 0.55,
+                    sec_points = FALSE,
+                    sec_symbol_size = 1.6,
+                    sec_col_width = 0.3,
+                    sec_accuracy = NULL,
                     sec_scale_auto = TRUE,
                     sec_at = NULL,
                     sec_axis_labels = NULL,
                     facet = NULL,
-                     facet_ncol = NULL,
-                     facet_scales = "fixed",
-                     legend = "bottom",
-                     reverse_legend = FALSE,
-                     legend_ncol = NULL,
+                    facet_ncol = NULL,
+                    facet_scales = "fixed",
+                    legend = "bottom",
+                    reverse_legend = FALSE,
+                    legend_ncol = NULL,
                     legend_nrow = NULL,
-                     zeroline = NULL,
-                     minor = FALSE,
-                     ticks = TRUE,
-                     flush_legend = TRUE,
-                     axis_text_size = 7,
-                     grid_colour = "black",
-                     grid_linewidth = 0.1,
-                     title = NULL,
-                     subtitle = NULL,
-                     xlab = NULL,
-                     ylab = NULL,
-                     legend_title = NULL,
+                    zeroline = NULL,
+                    minor = FALSE,
+                    ticks = TRUE,
+                    flush_legend = TRUE,
+                    axis_text_size = 7,
+                    grid_colour = "black",
+                    grid_linewidth = 0.1,
+                    title = NULL,
+                    subtitle = NULL,
+                    xlab = NULL,
+                    ylab = NULL,
+                    legend_title = NULL,
                     style = getOption("ggcpb.style", "dutch"),
                     ...) {
   style <- match.arg(style, c("dutch", "english"))
@@ -2694,7 +2694,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                                          gap = group_gap)
     data <- as.data.frame(data)
     data[["cpb__x"]] <- slots$pos[match(as.character(rlang::eval_tidy(x, data)),
-                                           slots$cat)]
+                                        slots$cat)]
     x <- rlang::quo(.data[["cpb__x"]])
   }
 
@@ -2779,7 +2779,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                       mean = "gemiddelde")
     if (!is.null(dot_labels)) {
       if (is.null(names(dot_labels)) ||
-          !all(names(dot_labels) %in% names(labs_default))) {
+            !all(names(dot_labels) %in% names(labs_default))) {
         stop("`dot_labels` must be a named character vector using the names ",
              paste0("\"", names(labs_default), "\"", collapse = ", "), ".",
              call. = FALSE)
@@ -2987,8 +2987,8 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     # only the plain category rows are axis breaks, so the house
     # category ticks land on them (and not on the bold group-heading
     # rows). The heading names are drawn separately as bold text.
-    cat_rows <- slots[!slots$heading,, drop = FALSE]
-    head_rows <- slots[slots$heading,, drop = FALSE]
+    cat_rows <- slots[!slots$heading, , drop = FALSE]
+    head_rows <- slots[slots$heading, , drop = FALSE]
     p <- p + ggplot2::scale_x_continuous(
       breaks = cat_rows$pos,
       labels = cpb_label_wrap()(cat_rows$label),
@@ -3003,12 +3003,14 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
     if (nrow(head_rows)) {
       p <- p + if (orientation == "horizontal") {
         ggplot2::annotate("text", x = head_rows$pos, y = -Inf,
-          label = head_rows$label, hjust = 1.03, vjust = 0.5,
-          fontface = "bold", size = cpb_font_pt / ggplot2::.pt, family = cpb_font_family())
+                          label = head_rows$label, hjust = 1.03, vjust = 0.5,
+                          fontface = "bold", size = cpb_font_pt / ggplot2::.pt,
+                          family = cpb_font_family())
       } else {
         ggplot2::annotate("text", x = head_rows$pos, y = -Inf,
-          label = head_rows$label, hjust = 0.5, vjust = 2.6,
-          fontface = "bold", size = cpb_font_pt / ggplot2::.pt, family = cpb_font_family())
+                          label = head_rows$label, hjust = 0.5, vjust = 2.6,
+                          fontface = "bold", size = cpb_font_pt / ggplot2::.pt,
+                          family = cpb_font_family())
       }
     }
   }
@@ -3111,41 +3113,41 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
 #'   xlab  = "besteedbaar inkomen (euro per maand)")
 #' @export
 cpb_scatter <- function(data, x, y, colour = NULL,
-                         symbol_colour = NULL,
-                         symbol_size = 0.8,
-                         palette = "qualitative",
-                         colour_index = NULL,
-                         pct_axis = FALSE,
-                         value_accuracy = NULL,
-                         value_breaks = NULL,
-                         value_limits = NULL,
-                         value_crop = FALSE,
-                         x_lim = NULL,
-                         x_lim_follow_data = FALSE,
-                         x_labels = NULL,
-                         forecast_x = NULL,
-                         forecast_label = "raming",
-                         reverse_legend = FALSE,
-                         legend_ncol = NULL,
-                         legend_nrow = NULL,
-                         facet = NULL,
-                         facet_ncol = NULL,
-                         facet_scales = "fixed",
-                         legend = "bottom",
-                         zeroline = NULL,
-                         minor = FALSE,
-                         ticks = TRUE,
-                         flush_legend = TRUE,
-                         axis_text_size = 7,
-                         grid_colour = "black",
-                         grid_linewidth = 0.1,
-                         title = NULL,
-                         subtitle = NULL,
-                         xlab = NULL,
-                         ylab = NULL,
-                         legend_title = NULL,
-                         style = getOption("ggcpb.style", "dutch"),
-                         ...) {
+                        symbol_colour = NULL,
+                        symbol_size = 0.8,
+                        palette = "qualitative",
+                        colour_index = NULL,
+                        pct_axis = FALSE,
+                        value_accuracy = NULL,
+                        value_breaks = NULL,
+                        value_limits = NULL,
+                        value_crop = FALSE,
+                        x_lim = NULL,
+                        x_lim_follow_data = FALSE,
+                        x_labels = NULL,
+                        forecast_x = NULL,
+                        forecast_label = "raming",
+                        reverse_legend = FALSE,
+                        legend_ncol = NULL,
+                        legend_nrow = NULL,
+                        facet = NULL,
+                        facet_ncol = NULL,
+                        facet_scales = "fixed",
+                        legend = "bottom",
+                        zeroline = NULL,
+                        minor = FALSE,
+                        ticks = TRUE,
+                        flush_legend = TRUE,
+                        axis_text_size = 7,
+                        grid_colour = "black",
+                        grid_linewidth = 0.1,
+                        title = NULL,
+                        subtitle = NULL,
+                        xlab = NULL,
+                        ylab = NULL,
+                        legend_title = NULL,
+                        style = getOption("ggcpb.style", "dutch"),
+                        ...) {
   style <- match.arg(style, c("dutch", "english"))
   .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette), "colour_index")
   index <- .cpb_idx$index
@@ -3260,13 +3262,13 @@ cpb_scatter <- function(data, x, y, colour = NULL,
 cpb_hist_bin_args <- function(xvals, binwidth, bins, dots, facet_scales) {
   keep <- list(binwidth = binwidth, bins = bins, boundary = NULL)
   if (!is.null(binwidth) || any(c("center", "boundary", "breaks") %in% names(dots)) ||
-      facet_scales %in% c("free", "free_x") || !is.numeric(xvals)) {
+        facet_scales %in% c("free", "free_x") || !is.numeric(xvals)) {
     return(keep)
   }
   x_range <- range(xvals[is.finite(xvals)])
   if (is.null(bins)) bins <- 30
   if (length(x_range) != 2 || !all(is.finite(x_range)) ||
-      diff(x_range) == 0 || bins <= 1) {
+        diff(x_range) == 0 || bins <= 1) {
     return(keep)
   }
   width <- diff(x_range) / (bins - 1)
@@ -3327,40 +3329,40 @@ cpb_hist_bin_args <- function(xvals, binwidth, bins, dots, facet_scales) {
 #'   xlab  = "duur (maanden)")
 #' @export
 cpb_hist <- function(data, x, fill = NULL,
-                      fill_colour = NULL,
-                      binwidth = NULL,
-                      bins = NULL,
-                      outline = "white",
-                      position = "stack",
-                      palette = "qualitative",
-                      colour_index = NULL,
-                      value_accuracy = NULL,
-                      value_breaks = NULL,
-                      value_limits = NULL,
-                      value_crop = FALSE,
-                      x_lim = NULL,
-                      x_lim_follow_data = FALSE,
-                      reverse_legend = TRUE,
-                      legend_ncol = NULL,
-                      legend_nrow = NULL,
-                      facet = NULL,
-                      facet_ncol = NULL,
-                      facet_scales = "fixed",
-                      legend = "bottom",
-                      zeroline = TRUE,
-                      minor = FALSE,
-                      ticks = TRUE,
-                      flush_legend = TRUE,
-                      axis_text_size = 7,
-                      grid_colour = "black",
-                      grid_linewidth = 0.1,
-                      title = NULL,
-                      subtitle = NULL,
-                      xlab = NULL,
-                      ylab = NULL,
-                      legend_title = NULL,
-                      style = getOption("ggcpb.style", "dutch"),
-                      ...) {
+                     fill_colour = NULL,
+                     binwidth = NULL,
+                     bins = NULL,
+                     outline = "white",
+                     position = "stack",
+                     palette = "qualitative",
+                     colour_index = NULL,
+                     value_accuracy = NULL,
+                     value_breaks = NULL,
+                     value_limits = NULL,
+                     value_crop = FALSE,
+                     x_lim = NULL,
+                     x_lim_follow_data = FALSE,
+                     reverse_legend = TRUE,
+                     legend_ncol = NULL,
+                     legend_nrow = NULL,
+                     facet = NULL,
+                     facet_ncol = NULL,
+                     facet_scales = "fixed",
+                     legend = "bottom",
+                     zeroline = TRUE,
+                     minor = FALSE,
+                     ticks = TRUE,
+                     flush_legend = TRUE,
+                     axis_text_size = 7,
+                     grid_colour = "black",
+                     grid_linewidth = 0.1,
+                     title = NULL,
+                     subtitle = NULL,
+                     xlab = NULL,
+                     ylab = NULL,
+                     legend_title = NULL,
+                     style = getOption("ggcpb.style", "dutch"),
+                     ...) {
   style <- match.arg(style, c("dutch", "english"))
   .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette), "colour_index")
   index <- .cpb_idx$index
@@ -3584,56 +3586,56 @@ cpb_hist <- function(data, x, fill = NULL,
 #'         xlab = "%-punt verandering")
 #' @export
 cpb_dot <- function(data, x, y, lower, upper,
-                     colour = NULL,
-                     symbol_colour = NULL,
-                     group = NULL,
-                     group_gap = 0.7,
-                     symbol_size = 1.4,
-                     linewidth = 0.4,
-                     cap_width = 0.25,
-                     orientation = c("horizontal", "vertical"),
-                     sec_y = NULL,
-                     sec_type = c("line", "point", "col"),
-                     sec_limits = NULL,
-                     sec_legend_label = NULL,
-                     sec_ylab = NULL,
-                     sec_colour = NULL,
-                     sec_linewidth = 0.55,
-                     sec_points = FALSE,
-                     sec_symbol_size = symbol_size,
-                     sec_col_width = 0.3,
-                     sec_accuracy = NULL,
+                    colour = NULL,
+                    symbol_colour = NULL,
+                    group = NULL,
+                    group_gap = 0.7,
+                    symbol_size = 1.4,
+                    linewidth = 0.4,
+                    cap_width = 0.25,
+                    orientation = c("horizontal", "vertical"),
+                    sec_y = NULL,
+                    sec_type = c("line", "point", "col"),
+                    sec_limits = NULL,
+                    sec_legend_label = NULL,
+                    sec_ylab = NULL,
+                    sec_colour = NULL,
+                    sec_linewidth = 0.55,
+                    sec_points = FALSE,
+                    sec_symbol_size = symbol_size,
+                    sec_col_width = 0.3,
+                    sec_accuracy = NULL,
                     sec_scale_auto = TRUE,
                     sec_at = NULL,
                     sec_axis_labels = NULL,
                     palette = "qualitative",
-                     colour_index = NULL,
-                     pct_axis = FALSE,
-                     value_accuracy = NULL,
-                     value_breaks = NULL,
-                     value_limits = NULL,
-                     value_crop = FALSE,
-                     x_lim = NULL,
-                     x_lim_follow_data = TRUE,
-                     zeroline = NULL,
-                     reverse_legend = FALSE,
-                     legend_ncol = NULL,
+                    colour_index = NULL,
+                    pct_axis = FALSE,
+                    value_accuracy = NULL,
+                    value_breaks = NULL,
+                    value_limits = NULL,
+                    value_crop = FALSE,
+                    x_lim = NULL,
+                    x_lim_follow_data = TRUE,
+                    zeroline = NULL,
+                    reverse_legend = FALSE,
+                    legend_ncol = NULL,
                     legend_nrow = NULL,
-                     facet = NULL,
-                     facet_ncol = NULL,
-                     facet_scales = "fixed",
-                     legend = "bottom",
-                     minor = FALSE,
-                     ticks = TRUE,
-                     flush_legend = TRUE,
-                     axis_text_size = 7,
-                     grid_colour = "black",
-                     grid_linewidth = 0.1,
-                     title = NULL,
-                     subtitle = NULL,
-                     xlab = NULL,
-                     ylab = NULL,
-                     legend_title = NULL,
+                    facet = NULL,
+                    facet_ncol = NULL,
+                    facet_scales = "fixed",
+                    legend = "bottom",
+                    minor = FALSE,
+                    ticks = TRUE,
+                    flush_legend = TRUE,
+                    axis_text_size = 7,
+                    grid_colour = "black",
+                    grid_linewidth = 0.1,
+                    title = NULL,
+                    subtitle = NULL,
+                    xlab = NULL,
+                    ylab = NULL,
+                    legend_title = NULL,
                     style = getOption("ggcpb.style", "dutch"),
                     ...) {
   style <- match.arg(style, c("dutch", "english"))
@@ -3689,7 +3691,7 @@ cpb_dot <- function(data, x, y, lower, upper,
                                          gap = group_gap)
     data <- as.data.frame(data)
     data[["cpb__x"]] <- slots$pos[match(as.character(rlang::eval_tidy(x, data)),
-                                           slots$cat)]
+                                        slots$cat)]
     x <- rlang::quo(.data[["cpb__x"]])
   }
 
@@ -3772,8 +3774,8 @@ cpb_dot <- function(data, x, y, lower, upper,
   p <- cpb_add_sec_ylab(p, has_sec, sec_ylab)
 
   if (has_group) {
-    cat_rows <- slots[!slots$heading,, drop = FALSE]
-    head_rows <- slots[slots$heading,, drop = FALSE]
+    cat_rows <- slots[!slots$heading, , drop = FALSE]
+    head_rows <- slots[slots$heading, , drop = FALSE]
     p <- p + ggplot2::scale_x_continuous(
       breaks = cat_rows$pos,
       labels = cpb_label_wrap()(cat_rows$label),
@@ -3783,12 +3785,14 @@ cpb_dot <- function(data, x, y, lower, upper,
     if (nrow(head_rows)) {
       p <- p + if (orientation == "horizontal") {
         ggplot2::annotate("text", x = head_rows$pos, y = -Inf,
-          label = head_rows$label, hjust = 1.03, vjust = 0.5,
-          fontface = "bold", size = cpb_font_pt / ggplot2::.pt, family = cpb_font_family())
+                          label = head_rows$label, hjust = 1.03, vjust = 0.5,
+                          fontface = "bold", size = cpb_font_pt / ggplot2::.pt,
+                          family = cpb_font_family())
       } else {
         ggplot2::annotate("text", x = head_rows$pos, y = -Inf,
-          label = head_rows$label, hjust = 0.5, vjust = 2.6,
-          fontface = "bold", size = cpb_font_pt / ggplot2::.pt, family = cpb_font_family())
+                          label = head_rows$label, hjust = 0.5, vjust = 2.6,
+                          fontface = "bold", size = cpb_font_pt / ggplot2::.pt,
+                          family = cpb_font_family())
       }
     }
   }
@@ -3823,7 +3827,7 @@ cpb_dot <- function(data, x, y, lower, upper,
 
   # stack the primary fill key and sec_y's colour key into one block --
   # applied after the theme so its legend.box override survives, as in
-  # cpb_box()
+  # the box plot
   cpb_add_sec_guides(p, has_sec && !has_colour, reverse_legend,
                      legend_ncol, legend_nrow)
 }

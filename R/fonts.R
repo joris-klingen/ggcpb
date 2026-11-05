@@ -46,7 +46,7 @@ cpb_font_files <- function(paths = cpb_font_paths()) {
     files <- list.files(p, pattern = "^Rijksoverheid.*\\.(ttf|otf)$",
                         ignore.case = TRUE, full.names = TRUE)
     found <- cpb_read_fonts(files)
-    found <- found[found$family == cpb_house_family,, drop = FALSE]
+    found <- found[found$family == cpb_house_family, , drop = FALSE]
     faces <- cpb_family_faces(found)
     if (!anyNA(faces[cpb_required_faces])) {
       return(list(family = cpb_house_family, faces = faces))
@@ -164,7 +164,7 @@ cpb_read_fonts <- function(files) {
       # slot, which is the only weight theme_cpb() asks for
       face   = cpb_font_face(
         bold   = as.character(info$weight[[1]]) %in%
-                   c("bold", "ultrabold", "heavy"),
+          c("bold", "ultrabold", "heavy"),
         italic = isTRUE(info$italic[[1]])
       ),
       stringsAsFactors = FALSE
@@ -186,8 +186,9 @@ cpb_register_windows_font <- function(family) {
   if (!identical(.Platform$OS.type, "windows")) return(FALSE)
   tryCatch({
     # fetched at run time so the call does not exist on other platforms
-    windowsFonts <- get("windowsFonts", envir = asNamespace("grDevices"))
-    windowsFont  <- get("windowsFont",  envir = asNamespace("grDevices"))
+    grd <- asNamespace("grDevices")
+    windowsFonts <- get("windowsFonts", envir = grd) # nolint: object_name_linter.
+    windowsFont <- get("windowsFont", envir = grd) # nolint: object_name_linter.
     args <- stats::setNames(list(windowsFont(family)), family)
     do.call(windowsFonts, args)
     TRUE
@@ -252,7 +253,7 @@ cpb_register_family <- function(family, faces, windows_device = TRUE) {
 #' is loaded, and safe to re-run on demand -- e.g. in a fresh parallel
 #' worker that does not inherit the main session's font registry.
 #'
-#' The default font is the Rijksoverheid font. The package will search 
+#' The default font is the Rijksoverheid font. The package will search
 #' in M-certain directories for this font. If the package can not find the font,
 #' Source Sans 3 serves as an open source default font. Its text runs about
 #' 10-15% wider, so a title or legend that only just fits may not, and
@@ -371,7 +372,7 @@ cpb_register_fonts <- function(path = NULL,
       warning("ggcpb: no font files found in '", path, "'.", call. = FALSE)
     }
     for (fam in unique(found$family)) {
-      faces <- cpb_family_faces(found[found$family == fam,, drop = FALSE])
+      faces <- cpb_family_faces(found[found$family == fam, , drop = FALSE])
       registered <- rbind(
         registered,
         cpb_register_family(fam, faces, windows_device = windows_device)
@@ -407,7 +408,7 @@ cpb_register_fonts <- function(path = NULL,
   # a `path` pointing at the font's folder re-registers that family;
   # report each family once, keeping the registration that actually took
   # effect (the later one wins in both backends)
-  registered <- registered[!duplicated(registered$family, fromLast = TRUE),,
+  registered <- registered[!duplicated(registered$family, fromLast = TRUE), ,
                            drop = FALSE]
   rownames(registered) <- NULL
   attr(registered, "showtext") <- showtext_on

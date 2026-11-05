@@ -47,8 +47,8 @@ bbp <- tibble(
 )
 
 cpb_line(bbp, x = jaar, y = index,
-  title = "Bruto binnenlands product",
-  ylab  = "index (2015 = 100)") +
+         title = "Bruto binnenlands product",
+         ylab  = "index (2015 = 100)") +
   scale_x_continuous(breaks = seq(2015, 2027, 3), minor_breaks = 2015:2027,
                      guide = guide_axis(minor.ticks = TRUE))
 #> Scale for x is already present.
@@ -67,8 +67,8 @@ groei <- expand_grid(reeks = c("arbeidsproductiviteit", "tfp"),
   mutate(waarde = round(rnorm(n(), mean = 1, sd = 1.6), 1))
 
 cpb_line(groei, x = jaar, y = waarde, colour = reeks,
-  title = "Productiviteitsgroei",
-  ylab  = "%") +
+         title = "Productiviteitsgroei",
+         ylab  = "%") +
   scale_x_continuous(
     breaks       = seq(2000, 2024, 4),
     minor_breaks = 2000:2024,
@@ -96,7 +96,8 @@ line colour, and the legend key becomes a line with a marker on it:
 leeftijden <- c("20-30", "30-40", "40-50", "50-60", "60-70", "70-80", ">80")
 tarieven <- expand_grid(
   erfenis  = factor(c("10.000 euro", "100.000 euro", "1.000.000 euro"),
-                    levels = c("10.000 euro", "100.000 euro", "1.000.000 euro")),
+                    levels = c("10.000 euro", "100.000 euro",
+                               "1.000.000 euro")),
   leeftijd = factor(leeftijden, levels = leeftijden)
 ) |>
   mutate(tarief = c(14, 12, 13, 10, 8, 10, 12,
@@ -104,10 +105,10 @@ tarieven <- expand_grid(
                     29, 27, 28, 27, 29, 37, 41))
 
 cpb_line(tarieven, x = leeftijd, y = tarief, colour = erfenis,
-  points       = TRUE,
-  value_limits = c(0, 50),
-  title = "Voorkeurstarieven erfbelasting naar leeftijd",
-  ylab  = "% gemiddeld voorkeurstarief")
+         points       = TRUE,
+         value_limits = c(0, 50),
+         title = "Voorkeurstarieven erfbelasting naar leeftijd",
+         ylab  = "% gemiddeld voorkeurstarief")
 ```
 
 <img src="chart-types_files/figure-gfm/line-points-1.png" alt="" width="350px" />
@@ -128,8 +129,8 @@ tw <- expand_grid(jaar   = 2023:2027,
   mutate(waarde = round(runif(n(), 5, 25), 1))
 
 cpb_col(tw, x = jaar, y = waarde, fill = sector,
-  title = "Toegevoegde waarde per sector",
-  ylab  = "mld euro")
+        title = "Toegevoegde waarde per sector",
+        ylab  = "mld euro")
 ```
 
 <img src="chart-types_files/figure-gfm/col-stacked-1.png" alt="" width="350px" />
@@ -144,10 +145,10 @@ scenario <- expand_grid(regio    = c("Noord", "Oost", "Zuid", "West"),
   mutate(effect = round(runif(n(), -2, 6), 1))
 
 cpb_col(scenario, x = regio, y = effect, fill = scenario,
-  position = "dodge",
-  reverse_legend = FALSE,
-  title = "Effect per regio en scenario",
-  ylab  = "% mutatie")
+        position = "dodge",
+        reverse_legend = FALSE,
+        title = "Effect per regio en scenario",
+        ylab  = "% mutatie")
 ```
 
 <img src="chart-types_files/figure-gfm/col-dodged-1.png" alt="" width="350px" />
@@ -171,13 +172,13 @@ auto <- tibble(
 )
 
 cpb_col(auto, x = inkomensgroep, y = share,
-  orientation  = "horizontal",
-  pct_axis     = TRUE,
-  value_limits = c(0, 70),
-  width        = 0.6,
-  title = "Aandeel huishoudens zonder auto naar inkomen",
-  ylab  = "inkomensgroep",
-  xlab  = "huishoudens zonder auto")
+        orientation  = "horizontal",
+        pct_axis     = TRUE,
+        value_limits = c(0, 70),
+        width        = 0.6,
+        title = "Aandeel huishoudens zonder auto naar inkomen",
+        ylab  = "inkomensgroep",
+        xlab  = "huishoudens zonder auto")
 ```
 
 <img src="chart-types_files/figure-gfm/col-horizontal-1.png" alt="" width="350px" />
@@ -196,14 +197,14 @@ pv <- expand_grid(
                    19, 25, 31, 38, 47, 59))  # 2024
 
 cpb_col(pv, x = inkomensgroep, y = share, fill = jaar,
-  position     = "dodge",
-  orientation  = "horizontal",
-  value_breaks = seq(0, 70, 10),
-  value_limits = c(0, 70),
-  width        = 0.85,
-  title = "Zonnepanelen naar inkomen",
-  ylab  = "inkomensgroepen",
-  xlab  = "aandeel binnen inkomensgroep (%)")
+        position     = "dodge",
+        orientation  = "horizontal",
+        value_breaks = seq(0, 70, 10),
+        value_limits = c(0, 70),
+        width        = 0.85,
+        title = "Zonnepanelen naar inkomen",
+        ylab  = "inkomensgroepen",
+        xlab  = "aandeel binnen inkomensgroep (%)")
 ```
 
 <img src="chart-types_files/figure-gfm/col-horizontal-dodged-1.png" alt="" width="350px" />
@@ -228,12 +229,12 @@ Automatic, on the same `auto` data as above:
 
 ``` r
 cpb_col(auto, x = inkomensgroep, y = share,
-  orientation = "horizontal",
-  pct_axis    = TRUE,
-  width       = 0.6,
-  title = "Aandeel huishoudens zonder auto naar inkomen",
-  ylab  = "inkomensgroep",
-  xlab  = "huishoudens zonder auto")
+        orientation = "horizontal",
+        pct_axis    = TRUE,
+        width       = 0.6,
+        title = "Aandeel huishoudens zonder auto naar inkomen",
+        ylab  = "inkomensgroep",
+        xlab  = "huishoudens zonder auto")
 ```
 
 <img src="chart-types_files/figure-gfm/col-auto-limits-1.png" alt="" width="350px" />
@@ -244,13 +245,13 @@ against, but not quite it. `value_limits` fixes that instead:
 
 ``` r
 cpb_col(auto, x = inkomensgroep, y = share,
-  orientation  = "horizontal",
-  pct_axis     = TRUE,
-  value_limits = c(0, 100),
-  width        = 0.6,
-  title = "Aandeel huishoudens zonder auto naar inkomen",
-  ylab  = "inkomensgroep",
-  xlab  = "huishoudens zonder auto")
+        orientation  = "horizontal",
+        pct_axis     = TRUE,
+        value_limits = c(0, 100),
+        width        = 0.6,
+        title = "Aandeel huishoudens zonder auto naar inkomen",
+        ylab  = "inkomensgroep",
+        xlab  = "huishoudens zonder auto")
 ```
 
 <img src="chart-types_files/figure-gfm/col-manual-limits-1.png" alt="" width="350px" />
@@ -300,12 +301,12 @@ erfbelasting <- tibble(
 p <- nalatenschap |>
   left_join(erfbelasting, by = "jaar") |>
   cpb_col(x = jaar, y = mld, fill = soort,
-    sec_y      = heffing,
-    sec_limits = c(0, 3),
-    sec_legend_label  = "erfbelasting",
-    sec_ylab   = "mld euro",
-    title = "Belasting over erfenissen, prijzen 2022",
-    ylab  = "mld euro")
+          sec_y      = heffing,
+          sec_limits = c(0, 3),
+          sec_legend_label  = "erfbelasting",
+          sec_ylab   = "mld euro",
+          title = "Belasting over erfenissen, prijzen 2022",
+          ylab  = "mld euro")
 
 p
 ```
@@ -332,19 +333,19 @@ lonen <- tibble(
 p <- lonen |>
   pivot_longer(c(cao, cpi), names_to = "reeks", values_to = "waarde") |>
   mutate(reeks = recode(reeks,
-    cao = "cao-loon bedrijven",
-    cpi = "inflatie (cpi)")) |>
+                        cao = "cao-loon bedrijven",
+                        cpi = "inflatie (cpi)")) |>
   cpb_line(x = jaar, y = waarde, colour = reeks,
-    sec_y      = reeel,
-    sec_limits = c(95, 110),
-    sec_legend_label  = "reële cao-loon bedrijven",
-    sec_ylab   = "geïndexeerd, 2021 = 100",
-    value_limits = c(-5, 10),
-    value_breaks = seq(-5, 10, 5),
-    forecast_x   = 2025,
-    zeroline     = TRUE,
-    title = "Cao-loon bedrijven en inflatie (cpi)",
-    ylab  = "mutatie in %") +
+           sec_y      = reeel,
+           sec_limits = c(95, 110),
+           sec_legend_label  = "reële cao-loon bedrijven",
+           sec_ylab   = "geïndexeerd, 2021 = 100",
+           value_limits = c(-5, 10),
+           value_breaks = seq(-5, 10, 5),
+           forecast_x   = 2025,
+           zeroline     = TRUE,
+           title = "Cao-loon bedrijven en inflatie (cpi)",
+           ylab  = "mutatie in %") +
   scale_x_continuous(breaks = seq(2020, 2026, 2))
 #> Scale for x is already present.
 #> Adding another scale for x, which will replace the existing scale.
@@ -384,8 +385,8 @@ energie <- tibble(
 )
 
 cpb_donut(energie, fill = bron, y = share,
-  colour_index = c(6, 5, 2, 4),
-  title = "Energiemix van huishoudens")
+          colour_index = c(6, 5, 2, 4),
+          title = "Energiemix van huishoudens")
 ```
 
 <img src="chart-types_files/figure-gfm/donut-1.png" alt="" width="350px" />
@@ -402,7 +403,7 @@ niveaus <- c("aardgas", "overig", "windenergie op land", "zonne-energie",
              "kernenergie", "windenergie op zee")
 energie2 <- tibble(
   bron  = factor(c("aardgas", "windenergie op land", "overig",
-                    "kernenergie", "windenergie op zee", "zonne-energie"),
+                   "kernenergie", "windenergie op zee", "zonne-energie"),
                  levels = niveaus),
   share = c(40, 35, 13, 3, 2, 7)
 )
@@ -410,10 +411,10 @@ energie2 <- tibble(
 # leader_length is shortened from its 0.15 default: on this narrower
 # canvas the default lines push their labels past the figure's edge
 cpb_donut(energie2, fill = bron, y = share,
-  label_style   = "leader",
-  leader_length = 0.08,
-  colour_index = c(6, 4, 5, 1, 3, 2),
-  title = "Energiemix, met lijnlabels")
+          label_style   = "leader",
+          leader_length = 0.08,
+          colour_index = c(6, 4, 5, 1, 3, 2),
+          title = "Energiemix, met lijnlabels")
 ```
 
 <img src="chart-types_files/figure-gfm/donut-leader-1.png" alt="" width="350px" />
@@ -430,7 +431,8 @@ groepen <- c("tot 120% wml", "120% wml - mod.", "1 - 1,5x mod.",
              "1,5 - 2x mod.", "2 - 3x mod.", "boven 3x mod.")
 raw <- tibble(
   groep      = factor(rep(groepen, each = 400), levels = groepen),
-  koopkracht = rnorm(2400, mean = rep(c(-3, -1.5, 0, 1, 2, 3.5), each = 400), sd = 2)
+  koopkracht = rnorm(2400, sd = 2,
+                     mean = rep(c(-3, -1.5, 0, 1, 2, 3.5), each = 400))
 )
 kk <- raw |>
   summarise(
@@ -443,11 +445,11 @@ kk <- raw |>
   )
 
 cpb_box(kk, x = groep,
-  p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-  orientation = "horizontal",
-  title    = "Koopkracht per inkomensgroep",
-  subtitle = "inkomensgroep",
-  ylab     = "% koopkrachtmutatie")
+        p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+        orientation = "horizontal",
+        title    = "Koopkracht per inkomensgroep",
+        subtitle = "inkomensgroep",
+        ylab     = "% koopkrachtmutatie")
 ```
 
 <img src="chart-types_files/figure-gfm/box-single-1.png" alt="" width="350px" />
@@ -479,9 +481,9 @@ schatting <- tibble(
 )
 
 cpb_dot(schatting, x = term, y = coef, lower = lo, upper = hi,
-  group = blok,
-  title = "Samenhang voorkeurstarieven, percepties \nen kenmerken",
-  xlab  = "%-punt verandering in voorkeurstarief")
+        group = blok,
+        title = "Samenhang voorkeurstarieven, percepties \nen kenmerken",
+        xlab  = "%-punt verandering in voorkeurstarief")
 ```
 
 <img src="chart-types_files/figure-gfm/dot-1.png" alt="" width="350px" />
@@ -509,15 +511,15 @@ hh <- tibble(inkomen = round(rlnorm(400, log(2500), 0.35))) |>
          koopkracht      = round(rnorm(n(), (inkomen - 2500) / 1500, 2), 1))
 
 cpb_scatter(hh, x = inkomen, y = energierekening,
-  colour = cpb_cut(koopkracht, c(-Inf, -2, -1, 0, 1, 2, Inf),
-                   labeller = label_pct_nl()),
-  palette   = "blues",
-  legend_ncol = 2,
-  title = "Energierekening naar inkomen",
-  ylab  = "energierekening (euro per maand)",
-  xlab  = "besteedbaar inkomen (euro per maand)",
-  x_labels = label_euro_nl(),
-  legend_title = "koopkracht (%)")
+            colour = cpb_cut(koopkracht, c(-Inf, -2, -1, 0, 1, 2, Inf),
+                             labeller = label_pct_nl()),
+            palette   = "blues",
+            legend_ncol = 2,
+            title = "Energierekening naar inkomen",
+            ylab  = "energierekening (euro per maand)",
+            xlab  = "besteedbaar inkomen (euro per maand)",
+            x_labels = label_euro_nl(),
+            legend_title = "koopkracht (%)")
 ```
 
 <img src="chart-types_files/figure-gfm/scatter-1.png" alt="" width="350px" />
@@ -532,9 +534,9 @@ histograms:
 duur <- tibble(maanden = round(rgamma(1200, 8, 0.6)))
 
 cpb_hist(duur, x = maanden, binwidth = 2,
-  title = "Verdeling van de duur",
-  ylab  = "aantal",
-  xlab  = "duur (maanden)")
+         title = "Verdeling van de duur",
+         ylab  = "aantal",
+         xlab  = "duur (maanden)")
 ```
 
 <img src="chart-types_files/figure-gfm/hist-1.png" alt="" width="350px" />

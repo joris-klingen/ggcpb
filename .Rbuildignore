@@ -16,3 +16,5 @@
 ^inst/autogenerate_plots/generated$
 ^inst/autogenerate_plots/params_log\.txt$
 ^temp$
+^\.lintr$
+^vignettes/\.lintr$

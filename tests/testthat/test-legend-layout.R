@@ -10,8 +10,8 @@
 # legend to the *plot* edge instead, which nothing inside the panel can
 # move. These tests render real PNGs and check the pixels.
 
-# Every plot below maps a series to CPB primary blue (cpb_cols(6),
-# #005faf) that ends up as the *first* (top-left) legend entry. The
+# Every plot below maps a series to the CPB primary blue
+# (colour 6, #005faf) that ends up as the *first* (top-left) legend entry. The
 # legend is the fixed legend grid (see cpb_figure_bottom()): its first row is
 # centred 1.3 cm above the figure's bottom edge, further
 # entries go below it (3 per column) and then into new columns to the
@@ -26,7 +26,7 @@ legend_key_px <- function(p, width = 4, height = 4, dpi = 96) {
   print(p)
   grDevices::dev.off()
   img <- png::readPNG(f)
-  blue <- img[,, 1] < 0.25 & img[,, 3] > 0.5 & img[,, 3] > img[,, 1] + 0.3
+  blue <- img[, , 1] < 0.25 & img[, , 3] > 0.5 & img[, , 3] > img[, , 1] + 0.3
   expect_true(any(blue))  # sanity: the blue key must exist
   bottom <- max(which(apply(blue, 1, any)))
   list(
@@ -345,13 +345,16 @@ test_that("a level with no observations still gets a coloured legend glyph", {
     f <- withr::local_tempfile(fileext = ".png")
     suppressMessages(ggplot2::ggsave(f, p, width = 4, height = 2.6, dpi = 150,
                                      device = ragg::agg_png))
-    im <- png::readPNG(f)[,, 1:3]
+    im <- png::readPNG(f)[, , 1:3]
     hex <- toupper(apply(im, c(1, 2), function(q) grDevices::rgb(q[1], q[2], q[3])))
     any(hex == toupper(lightest))
   }
-  blues <- function(p) suppressMessages(
-    p + scale_fill_cpb_d(palette = "blues", drop = FALSE) +
-        scale_colour_cpb_d(palette = "blues", drop = FALSE))
+  blues <- function(p) {
+    suppressMessages(
+      p + scale_fill_cpb_d(palette = "blues", drop = FALSE) +
+        scale_colour_cpb_d(palette = "blues", drop = FALSE)
+    )
+  }
 
   expect_true(drawn(blues(cpb_col(d, x, y, fill = g))))
   expect_true(drawn(blues(cpb_area(d, x, y, fill = g))))

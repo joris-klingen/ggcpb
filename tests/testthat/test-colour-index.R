@@ -24,16 +24,16 @@ test_that("colour_index keywords choose a palette", {
 
 test_that("colour_index works on the fill-mapped wrappers", {
   d <- data.frame(x = c("a", "b", "c"), y = 1:3, f = c("p", "q", "r"))
-  fills <- unique(ggplot2::ggplot_build(
-    cpb_col(d, x = x, y = y, fill = f, colour_index = c(2, 5, 6)))$data[[1]]$fill)
+  p <- cpb_col(d, x = x, y = y, fill = f, colour_index = c(2, 5, 6))
+  fills <- unique(ggplot2::ggplot_build(p)$data[[1]]$fill)
   expect_equal(fills, unname(cpb_cols(2, 5, 6)))
 })
 
 test_that("a keyword that contradicts `palette` is an error", {
   expect_error(
-    cpb_line(d3, x = x, y = y, colour = g,
-             colour_index = "continuous", palette = "qualitative"),
-    "both set the palette")
+               cpb_line(d3, x = x, y = y, colour = g,
+                        colour_index = "continuous", palette = "qualitative"),
+               "both set the palette")
   # agreeing is fine
   expect_no_error(cpb_line(d3, x = x, y = y, colour = g,
                            colour_index = "discrete", palette = "qualitative"))

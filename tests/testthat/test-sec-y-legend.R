@@ -45,7 +45,7 @@ test_that("cpb_dot()'s primary point layer keys on fill only, not sec_y's colour
 
 test_that("cpb_dot()'s primary point layer still gets its own key when colour is mapped", {
   d <- data.frame(x = c("a", "b"), y = c(1, 2), lo = c(0, 1), hi = c(2, 3),
-                   g = c("p", "q"))
+                  g = c("p", "q"))
   p <- cpb_dot(d, x = x, y = y, lower = lo, upper = hi, colour = g)
   is_pt <- vapply(p$layers, function(l) inherits(l$geom, "GeomPoint"), TRUE)
   point_layer <- p$layers[[which(is_pt)]]
@@ -103,7 +103,7 @@ test_that("a sec_ylab reserves the subtitle row even with no title and no ylab",
   expect_equal(p$labels$subtitle, " ")
 
   dd <- data.frame(x = c("A", "B"), p5 = 1:2, p25 = 2:3, p50 = 3:4,
-                    p75 = 4:5, p95 = 5:6, z = c(5, 6))
+                   p75 = 4:5, p95 = 5:6, z = c(5, 6))
   p <- cpb_box(dd, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
                sec_y = z, sec_ylab = "%")
   expect_equal(p$labels$subtitle, " ")

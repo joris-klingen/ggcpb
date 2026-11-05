@@ -23,7 +23,8 @@ groepen <- c("tot 120% wml", "120% wml - mod.", "1 - 1,5x mod.",
              "1,5 - 2x mod.", "2 - 3x mod.", "boven 3x mod.")
 raw <- tibble(
   groep      = factor(rep(groepen, each = 400), levels = groepen),
-  koopkracht = rnorm(2400, mean = rep(c(-3, -1.5, 0, 1, 2, 3.5), each = 400), sd = 2)
+  koopkracht = rnorm(2400, sd = 2,
+                     mean = rep(c(-3, -1.5, 0, 1, 2, 3.5), each = 400))
 )
 kk <- raw |>
   summarise(
@@ -45,11 +46,11 @@ with a median line.
 
 ``` r
 cpb_box(kk, x = groep,
-  p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-  orientation = "horizontal",
-  title    = "Koopkracht per inkomensgroep",
-  subtitle = "inkomensgroep",
-  ylab     = "% koopkrachtmutatie")
+        p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+        orientation = "horizontal",
+        title    = "Koopkracht per inkomensgroep",
+        subtitle = "inkomensgroep",
+        ylab     = "% koopkrachtmutatie")
 ```
 
 <img src="boxplots_files/figure-gfm/box-ggcpb-1.png" alt="" width="350px" />
@@ -60,12 +61,12 @@ value printed above it.
 
 ``` r
 cpb_box(kk, x = groep,
-  p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-  box_style   = "james",
-  orientation = "horizontal",
-  title    = "Koopkracht per inkomensgroep",
-  subtitle = "inkomensgroep",
-  ylab     = "% koopkrachtmutatie")
+        p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+        box_style   = "james",
+        orientation = "horizontal",
+        title    = "Koopkracht per inkomensgroep",
+        subtitle = "inkomensgroep",
+        ylab     = "% koopkrachtmutatie")
 ```
 
 <img src="boxplots_files/figure-gfm/box-james-1.png" alt="" width="350px" />
@@ -76,14 +77,14 @@ values printed below the box ends.
 
 ``` r
 cpb_box(kk, x = groep,
-  p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-  box_style      = "modern",
-  orientation    = "horizontal",
-  width          = 0.35,
-  value_accuracy = 0.1,
-  title    = "Koopkracht per inkomensgroep",
-  subtitle = "inkomensgroep",
-  ylab     = "% koopkrachtmutatie")
+        p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+        box_style      = "modern",
+        orientation    = "horizontal",
+        width          = 0.35,
+        value_accuracy = 0.1,
+        title    = "Koopkracht per inkomensgroep",
+        subtitle = "inkomensgroep",
+        ylab     = "% koopkrachtmutatie")
 ```
 
 <img src="boxplots_files/figure-gfm/box-modern-1.png" alt="" width="350px" />
@@ -111,13 +112,13 @@ voorkeur <- tibble(
 )
 
 cpb_box(voorkeur, x = erfenis,
-  p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-  mean        = gem,
-  box_style   = "dot",
-  orientation = "horizontal",
-  title = "Voorkeurstarieven erfbelasting",
-  xlab  = "omvang erfenis",
-  ylab  = "voorkeurstarief (%)")
+        p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+        mean        = gem,
+        box_style   = "dot",
+        orientation = "horizontal",
+        title = "Voorkeurstarieven erfbelasting",
+        xlab  = "omvang erfenis",
+        ylab  = "voorkeurstarief (%)")
 ```
 
 <img src="boxplots_files/figure-gfm/box-dot-1.png" alt="" width="350px" />
@@ -142,12 +143,12 @@ kk2 |>
     "2 - 3x\nmod.", "boven 3x\nmod."
   ))) |>
   cpb_box(x = groep,
-    p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-    fill     = jaar,
-    position = position_dodge(width = 0.6),
-    colour_index = c(6, 2),
-    title    = "Koopkracht per jaar, 2026 en 2027",
-    ylab     = "% koopkrachtmutatie")
+          p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+          fill     = jaar,
+          position = position_dodge(width = 0.6),
+          colour_index = c(6, 2),
+          title    = "Koopkracht per jaar, 2026 en 2027",
+          ylab     = "% koopkrachtmutatie")
 ```
 
 <img src="boxplots_files/figure-gfm/box-dodged-1.png" alt="" width="350px" />
@@ -168,15 +169,15 @@ kk3 <- kk2 |>
   ))
 
 cpb_box(kk3, x = groep,
-  p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-  fill     = jaar,
-  group    = grp,
-  position = position_dodge(width = 0.6),
-  orientation = "horizontal",
-  colour_index = c(6, 2),
-  reverse_legend = TRUE,
-  title = "Koopkracht per jaar en inkomensgroep",
-  ylab  = "% koopkrachtmutatie")
+        p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+        fill     = jaar,
+        group    = grp,
+        position = position_dodge(width = 0.6),
+        orientation = "horizontal",
+        colour_index = c(6, 2),
+        reverse_legend = TRUE,
+        title = "Koopkracht per jaar en inkomensgroep",
+        ylab  = "% koopkrachtmutatie")
 ```
 
 <img src="boxplots_files/figure-gfm/box-grouped-fill-1.png" alt="" width="350px" />
@@ -193,14 +194,14 @@ of the panel, with the income groups down the side. Pass
 
 ``` r
 cpb_box(kk, x = groep,
-  p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-  box_style    = "modern",
-  orientation  = "horizontal",
-  value_axis   = "top",
-  value_breaks = seq(-6, 6, 2),
-  width        = 0.35,
-  title    = "Koopkracht per inkomensgroep",
-  subtitle = "statisch, verandering in %")
+        p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+        box_style    = "modern",
+        orientation  = "horizontal",
+        value_axis   = "top",
+        value_breaks = seq(-6, 6, 2),
+        width        = 0.35,
+        title    = "Koopkracht per inkomensgroep",
+        subtitle = "statisch, verandering in %")
 ```
 
 <img src="boxplots_files/figure-gfm/box-top-1.png" alt="" width="350px" />
@@ -223,9 +224,9 @@ the figure is faceted – so a caller does not have to reach for a manual
 
 ``` r
 cpb_boxplot_extended(kk, x = groep,
-  p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-  title = "Koopkracht per inkomensgroep",
-  ylab  = "% koopkrachtmutatie")
+                     p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+                     title = "Koopkracht per inkomensgroep",
+                     ylab  = "% koopkrachtmutatie")
 ```
 
 <img src="boxplots_files/figure-gfm/box-extended-1.png" alt="" width="350px" />
@@ -237,11 +238,11 @@ full-width, left-aligned house title spanning all of them:
 
 ``` r
 cpb_boxplot_extended(kk2, x = groep,
-  p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-  facet      = jaar,
-  facet_ncol = 2,
-  title = "Koopkracht per jaar",
-  ylab  = "% koopkrachtmutatie")
+                     p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+                     facet      = jaar,
+                     facet_ncol = 2,
+                     title = "Koopkracht per jaar",
+                     ylab  = "% koopkrachtmutatie")
 ```
 
 <img src="boxplots_files/figure-gfm/box-extended-facet-1.png" alt="" width="700px" />
@@ -255,16 +256,15 @@ sources:
 
 ``` r
 groepen2 <- c("tot 120% wml", "120% wml - mod.", "1 - 1,5x mod.",
-             "1,5 - 2x mod.", "2 - 3x mod.", "boven 3x mod.", "nog extra boven",
-             "groep 8", "groep 9")
+              "1,5 - 2x mod.", "2 - 3x mod.", "boven 3x mod.",
+              "nog extra boven", "groep 8", "groep 9")
+
+cats <- c("Totaal", groepen2,
+          "Werkenden", "Uitkeringsgerechtigden", "Gepensioneerden",
+          "Inkomensbron 4", "Inkomensbron 5")
 
 ink <- tibble(
-  cat = factor(c("Totaal", groepen2,
-                 "Werkenden", "Uitkeringsgerechtigden", "Gepensioneerden",
-                 "Inkomensbron 4", "Inkomensbron 5"),
-               levels = c("Totaal", groepen2,
-                          "Werkenden", "Uitkeringsgerechtigden", "Gepensioneerden",
-                          "Inkomensbron 4", "Inkomensbron 5")),
+  cat = factor(cats, levels = cats),
   grp = factor(rep(c("Totaal", "Inkomensgroepen", "Inkomensbron"), c(1, 9, 5)),
                levels = c("Totaal", "Inkomensgroepen", "Inkomensbron")),
   p50 = c(0.09, 0.02, 0.07, 0.07, 0.06, 0.04, 0.05, 0.04, 0.05, 0.06,
@@ -274,9 +274,9 @@ ink <- tibble(
          p5  = p25 - runif(n(), 0.05, 0.2), p95 = p75 + runif(n(), 0.05, 0.2))
 
 cpb_boxplot_extended(ink, x = cat, group = grp,
-  p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
-  title = "Koopkracht naar inkomensgroep en -bron",
-  ylab  = "% koopkrachtmutatie")
+                     p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+                     title = "Koopkracht naar inkomensgroep en -bron",
+                     ylab  = "% koopkrachtmutatie")
 ```
 
 <img src="boxplots_files/figure-gfm/box-extended-groups-1.png" alt="" width="700px" />

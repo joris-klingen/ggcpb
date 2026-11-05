@@ -320,7 +320,8 @@ table_n <- 2
 for (t in types) {
   rows <- ref[ref$plot_type == t & !ref$param %in% shared_params, ]
   if (!nrow(rows)) next
-  cat("\n\n**Table A", table_n, ". Parameters specific to `", t, "`**\n\n", sep = "")
+  cat("\n\n**Table A", table_n, ". Parameters specific to `", t, "`**\n\n",
+      sep = "")
   show_params(rows)
   table_n <- table_n + 1
 }

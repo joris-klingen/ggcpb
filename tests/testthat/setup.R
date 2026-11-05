@@ -3,8 +3,8 @@
 # The font (RijksoverheidSansText, or the fallback font: Source Sans 3) is
 # registered with systemfonts, so it renders correctly on the ragg device
 # used by save_cpb(). Both ggplot_build() and
-# ggsave(device = ragg) are warning-free. Base graphics devices do not 
-# know the font and show a "font family ... not found in ... font database" 
+# ggsave(device = ragg) are warning-free. Base graphics devices do not
+# know the font and show a "font family ... not found in ... font database"
 # warning that says nothing about the code under test. Point the
 # default device at ragg's in-memory (systemfonts-aware) device for the test
 # run so drawn plots resolve the font -- no files written, and every genuine

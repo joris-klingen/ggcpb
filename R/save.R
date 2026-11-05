@@ -120,8 +120,8 @@ cpb_scale_y_lab_gap <- function(plot, width_cm) {
   el <- plot$theme$axis.text.y.left
   half <- grid::unit(cpb_y_lab_gap_cm(cpb_page_width_cm[["half"]]), "cm")
   if (!inherits(el, "element_text") || length(el$margin) != 4 ||
-      !isTRUE(all.equal(grid::convertWidth(el$margin[2], "cm", valueOnly = TRUE),
-                        grid::convertWidth(half, "cm", valueOnly = TRUE)))) {
+        !isTRUE(all.equal(grid::convertWidth(el$margin[2], "cm", valueOnly = TRUE),
+                          grid::convertWidth(half, "cm", valueOnly = TRUE)))) {
     return(plot)
   }
   gap_cm <- cpb_y_lab_gap_cm(width_cm)
@@ -351,7 +351,7 @@ cpb_legend_items <- function(guide_box) {
     is_label <- grepl("^label-", lay$name)
     if (!any(is_key) || !any(is_label)) return(NA)
     cells <- unique(lay[is_key, c("t", "l")])
-    cells <- cells[order(cells$l, cells$t),, drop = FALSE]
+    cells <- cells[order(cells$l, cells$t), , drop = FALSE]
     for (i in seq_len(nrow(cells))) {
       in_cell <- which(is_key & lay$t == cells$t[i] & lay$l == cells$l[i])
       label_i <- which(is_label & lay$t == cells$t[i] & lay$l > cells$l[i])
@@ -391,9 +391,13 @@ cpb_legend_grid <- function(items, rows, x, y) {
     cx <- col_x[[col_of[i] + 1]]
     cy <- y - cm(((i - 1) %% rows + 0.5) * cpb_legend_line_cm)
     children <- c(children, list(
-      grid::gTree(children = grid::gList(items[[i]]$key), vp = grid::viewport(
-        x = cx, y = cy, width = cm(sym[["width"]]), height = cm(sym[["height"]]),
-        just = c("left", "centre"))),
+      grid::gTree(
+        children = grid::gList(items[[i]]$key),
+        vp = grid::viewport(
+          x = cx, y = cy, width = cm(sym[["width"]]), height = cm(sym[["height"]]),
+          just = c("left", "centre")
+        )
+      ),
       grid::textGrob(items[[i]]$label, x = cx + cm(sym[["width"]] + cpb_legend_symbol_txt_cm),
                      y = cy, hjust = 0, vjust = 0.5, gp = items[[i]]$gp)
     ))
@@ -458,10 +462,15 @@ cpb_figure_bottom <- function(g, legend, legend_grid = NULL) {
     text <- cpb_find_grob(g$grobs[[xlab_i]], "text")
     g$grobs[[xlab_i]] <- ggplot2::zeroGrob()
     if (!is.null(text)) {
-      g <- region(g, grid::textGrob(
-        text$label, x = grid::unit(1, "npc") - cm(cpb_labels_margin_cm),
-        y = grid::unit(1, "npc") - cm(cpb_x_title_cm) - strip_h,
-        hjust = 1, vjust = 0.5, gp = text$gp), "cpb-xlab")
+      g <- region(
+        g,
+        grid::textGrob(
+          text$label, x = grid::unit(1, "npc") - cm(cpb_labels_margin_cm),
+          y = grid::unit(1, "npc") - cm(cpb_x_title_cm) - strip_h,
+          hjust = 1, vjust = 0.5, gp = text$gp
+        ),
+        "cpb-xlab"
+      )
     }
   }
 
@@ -470,11 +479,18 @@ cpb_figure_bottom <- function(g, legend, legend_grid = NULL) {
     text <- cpb_find_grob(g$grobs[[caption_i]], "text")
     g$grobs[[caption_i]] <- ggplot2::zeroGrob()
     if (!is.null(text)) {
-      g <- region(g, grid::textGrob(
-        text$label, x = grid::unit(1, "npc") - cm(cpb_footnote_cm[["x"]]),
-        y = cm(cpb_footnote_cm[["y"]]), hjust = 1, vjust = 0.5,
-        gp = grid::gpar(fontface = "italic", fontsize = cpb_font_pt * cpb_footnote_size,
-                        col = "black", fontfamily = cpb_font_family())), "cpb-caption")
+      g <- region(
+        g,
+        grid::textGrob(
+          text$label, x = grid::unit(1, "npc") - cm(cpb_footnote_cm[["x"]]),
+          y = cm(cpb_footnote_cm[["y"]]), hjust = 1, vjust = 0.5,
+          gp = grid::gpar(
+            fontface = "italic", fontsize = cpb_font_pt * cpb_footnote_size,
+            col = "black", fontfamily = cpb_font_family()
+          )
+        ),
+        "cpb-caption"
+      )
     }
   }
 
@@ -489,13 +505,18 @@ cpb_figure_bottom <- function(g, legend, legend_grid = NULL) {
       max_rows <- if (is.null(title)) Inf else cpb_legend_per_column - 1
       # legend_nrow, else enough rows for legend_ncol columns, else 3
       rows <- if (!is.null(legend_grid$nrow)) legend_grid$nrow
-        else if (!is.null(legend_grid$ncol)) ceiling(length(items) / legend_grid$ncol)
-        else cpb_legend_per_column
+      else if (!is.null(legend_grid$ncol)) ceiling(length(items) / legend_grid$ncol)
+      else cpb_legend_per_column
       rows <- min(rows, max_rows)
       if (!is.null(title)) {
-        g <- region(g, grid::textGrob(
-          title$label, x = x, y = y - cm(cpb_legend_line_cm / 2),
-          hjust = 0, vjust = 0.5, gp = title$gp), "cpb-legend-title")
+        g <- region(
+          g,
+          grid::textGrob(
+            title$label, x = x, y = y - cm(cpb_legend_line_cm / 2),
+            hjust = 0, vjust = 0.5, gp = title$gp
+          ),
+          "cpb-legend-title"
+        )
         y <- y - cm(cpb_legend_line_cm)
       }
       grid_grob <- cpb_legend_grid(items, rows, x, y)
@@ -507,9 +528,17 @@ cpb_figure_bottom <- function(g, legend, legend_grid = NULL) {
       attr(g, "cpb_legend_width") <- legend_width
       g <- region(g, grid_grob, "cpb-legend")
     } else if (identical(items, NA)) {
-      g <- region(g, grid::gTree(children = grid::gList(box), vp = grid::viewport(
-        x = x, y = y, width = grid::grobWidth(box), height = grid::grobHeight(box),
-        just = c("left", "top"))), "cpb-legend")
+      g <- region(
+        g,
+        grid::gTree(
+          children = grid::gList(box),
+          vp = grid::viewport(
+            x = x, y = y, width = grid::grobWidth(box), height = grid::grobHeight(box),
+            just = c("left", "top")
+          )
+        ),
+        "cpb-legend"
+      )
       attr(g, "cpb_legend_width") <- grid::grobWidth(box)
     }
   }
@@ -542,7 +571,7 @@ cpb_figure_top <- function(g, sec_ylab = NULL, position = "left") {
     i <- which(g$layout$name == name)
     if (length(i) != 1 || zero[i]) return(NULL)
     text <- cpb_find_grob(g$grobs[[i]], "text")
-    g$grobs[[i]] <<- ggplot2::zeroGrob()
+    g$grobs[[i]] <<- ggplot2::zeroGrob() # nolint: assignment_linter.
     text
   }
   title <- take("title")
@@ -898,17 +927,17 @@ cpb_ggsave_grob <- function(filename, grob, dpi, device, bg, width = NULL, heigh
 #' }
 #' @export
 save_cpb <- function(filename,
-                      plot = ggplot2::last_plot(),
-                      page = c("half", "full", "small"),
-                      preset = c("report", "presentation", "map"),
-                      height = NULL,
-                      width = NULL,
-                      dpi = 300,
-                      device = ragg::agg_png,
-                      bg = cpb_bg,
-                      panel_size = NULL,
-                      lock = TRUE,
-                      ...) {
+                     plot = ggplot2::last_plot(),
+                     page = c("half", "full", "small"),
+                     preset = c("report", "presentation", "map"),
+                     height = NULL,
+                     width = NULL,
+                     dpi = 300,
+                     device = ragg::agg_png,
+                     bg = cpb_bg,
+                     panel_size = NULL,
+                     lock = TRUE,
+                     ...) {
   # print.cpb_plot() (above) only exists to catch a bare print()
   # skipping the exact positioning below -- ggplot2::ggsave() itself
   # calls print() internally to render, so without this, the fast path
@@ -1032,7 +1061,7 @@ save_cpb <- function(filename,
   }
 
   if (is.null(panel_size) && is.null(sec_ylab$label) && !title_aligned &&
-      is.null(mirrored) && is.null(bottom)) {
+        is.null(mirrored) && is.null(bottom)) {
     ggplot2::ggsave(
       filename = filename,
       plot     = plot,
@@ -1107,7 +1136,7 @@ cpb_check_title <- function(g, width, lock = TRUE) {
   # Two lines fit above the y-axis titles. The plot area does not move
   # down to make room for more.
   if (is.character(title$label) &&
-      max(lengths(strsplit(title$label, "\n", fixed = TRUE))) > 2) {
+        max(lengths(strsplit(title$label, "\n", fixed = TRUE))) > 2) {
     warning("ggcpb: the title has more than two lines and runs into the ",
             "axis titles below it. Shorten it to at most two lines.", call. = FALSE)
   }

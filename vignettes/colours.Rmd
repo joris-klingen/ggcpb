@@ -54,8 +54,8 @@ then the remaining swatches. No argument needed.
 
 ```{r default-line}
 cpb_line(groei, x = jaar, y = waarde, colour = reeks,
-  title = "Default series colours",
-  ylab  = "%")
+         title = "Default series colours",
+         ylab  = "%")
 ```
 
 The same order drives fills, so a line chart and a column chart of the
@@ -63,8 +63,8 @@ same series agree:
 
 ```{r default-col}
 cpb_col(tw, x = jaar, y = waarde, fill = sector,
-  title = "Default fill colours",
-  ylab  = "mld euro")
+        title = "Default fill colours",
+        ylab  = "mld euro")
 ```
 
 A single series is not part of that cycle: it is drawn in the CPB
@@ -73,8 +73,8 @@ same as the first series of a multi-series one.
 
 ```{r single}
 cpb_line(filter(groei, reeks == "tfp"), x = jaar, y = waarde,
-  title = "A single series is always primary blue",
-  ylab  = "%")
+         title = "A single series is always primary blue",
+         ylab  = "%")
 ```
 
 # Choosing swatches by position
@@ -92,16 +92,16 @@ the default order -- `c(6, 2)` is the recurring blue/magenta pair,
 
 ```{r positions-line}
 cpb_line(groei, x = jaar, y = waarde, colour = reeks,
-  colour_index = c(7, 5, 4),
-  title = "Chosen by position: c(7, 5, 4)",
-  ylab  = "%")
+         colour_index = c(7, 5, 4),
+         title = "Chosen by position: c(7, 5, 4)",
+         ylab  = "%")
 ```
 
 ```{r positions-col}
 cpb_col(tw, x = jaar, y = waarde, fill = sector,
-  colour_index = c(6, 5, 2, 4),
-  title = "Chosen by position: c(6, 5, 2, 4)",
-  ylab  = "mld euro")
+        colour_index = c(6, 5, 2, 4),
+        title = "Chosen by position: c(6, 5, 2, 4)",
+        ylab  = "mld euro")
 ```
 
 Position numbers stay stable regardless of the default order, so
@@ -147,9 +147,9 @@ intensiteit <- expand_grid(jaar   = 2024:2027,
   mutate(n = round(runif(n(), 40, 220)))
 
 cpb_col(intensiteit, x = jaar, y = n, fill = klasse,
-  colour_index = "continuous",
-  title = "Ordered classes take the ramp",
-  ylab  = "aantal personen, x 1000")
+        colour_index = "continuous",
+        title = "Ordered classes take the ramp",
+        ylab  = "aantal personen, x 1000")
 ```
 
 `"discrete"` names the default explicitly, which is worth doing when a
@@ -158,9 +158,9 @@ be visible in the code:
 
 ```{r discrete-keyword}
 cpb_col(tw, x = jaar, y = waarde, fill = sector,
-  colour_index = "discrete",
-  title = "The default, named explicitly",
-  ylab  = "mld euro")
+        colour_index = "discrete",
+        title = "The default, named explicitly",
+        ylab  = "mld euro")
 ```
 
 The keywords `"qualitative"`, `"sequential"`, `"discr"` and `"blues"`
@@ -175,10 +175,10 @@ palette name, not both at once:
 
 ```{r palette-plus-positions}
 cpb_col(intensiteit, x = jaar, y = n, fill = klasse,
-  palette    = "blues",
-  colour_index = c(2, 3, 4, 5, 6),
-  title = "Positions out of a named palette",
-  ylab  = "aantal personen, x 1000")
+        palette    = "blues",
+        colour_index = c(2, 3, 4, 5, 6),
+        title = "Positions out of a named palette",
+        ylab  = "aantal personen, x 1000")
 ```
 
 # Colours outside the palette
@@ -188,8 +188,8 @@ plain `ggplot` objects, so an ordinary scale still applies:
 
 ```{r manual-scale}
 cpb_line(groei, x = jaar, y = waarde, colour = reeks,
-  title = "A manual scale still works",
-  ylab  = "%") +
+         title = "A manual scale still works",
+         ylab  = "%") +
   scale_colour_manual(values = c("#005faf", "#96827d", "#64504b"))
 ```
 
@@ -199,9 +199,9 @@ all:
 
 ```{r single-colour}
 cpb_line(filter(groei, reeks == "tfp"), x = jaar, y = waarde,
-  line_colour = cpb_cols(3),
-  title = "A single series in a chosen swatch",
-  ylab  = "%")
+         line_colour = cpb_cols(3),
+         title = "A single series in a chosen swatch",
+         ylab  = "%")
 ```
 
 # Summary
