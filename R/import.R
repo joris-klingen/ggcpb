@@ -311,9 +311,17 @@ cpb_import_build_one <- function(params, data_df, extra_params) {
            "\".", call. = FALSE)
     }
     classes <- paste0(".cpb_classes_", target)
-    data_df[[classes]] <- cpb_cut(data_df[[target]],
-                                  breaks = cpb_import_coerce(cut),
-                                  labeller = labeller)
+    # the open ends in the language of the figure
+    ends <- if (identical(style, "english")) {
+      list(start_label = "below ", end_label = " and above")
+    } else {
+      list()
+    }
+    data_df[[classes]] <- do.call(cpb_cut, c(
+      list(data_df[[target]], breaks = cpb_import_coerce(cut),
+           labeller = labeller),
+      ends
+    ))
     params[[target_arg]] <- classes
   }
 

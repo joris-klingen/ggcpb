@@ -61,6 +61,18 @@ test_that("cut puts numbers into classes with Dutch labels", {
                c("lager dan 2%", "2% - 3%", "3% en hoger"))
 })
 
+test_that("cut labels follow the style of the figure", {
+  params_csv <- local_folder(c(
+    "plot_type,scatter",
+    "x,jaar", "y,waarde", "colour,waarde",
+    "cut,-Inf;2.5;Inf",
+    "style,english"
+  ), list(data = series))
+  p <- cpb_import_csv(params_csv)
+  expect_equal(levels(p$data$.cpb_classes_waarde),
+               c("below 2.5", "2.5 and above"))
+})
+
 test_that("cut needs the column that sets the colours, and known labels", {
   params_csv <- local_folder(c("plot_type,col", "x,jaar", "y,waarde",
                                "cut,0;2;Inf"),

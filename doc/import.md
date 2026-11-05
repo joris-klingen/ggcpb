@@ -152,10 +152,11 @@ special form:
 
 The parameter `cut` puts numbers into classes, such as `0;20;30;40;Inf`.
 That gives the classes “lager dan 20”, “20 - 30”, “30 - 40” and “40 en
-hoger”. `cut_labels` writes them as `number` (default), `euro` or `pct`.
-It works on the column that sets the colours: `value` of a map, `colour`
-of a line, dot or scatter plot, and `fill` of the other types. The
-numbers themselves stay available, for example on the y axis.
+hoger”, or “below 20” and “40 and above” with `style = english`.
+`cut_labels` writes them as `number` (default), `euro` or `pct`. It
+works on the column that sets the colours: `value` of a map, `colour` of
+a line, dot or scatter plot, and `fill` of the other types. The numbers
+themselves stay available, for example on the y axis.
 
 ## Saving
 
