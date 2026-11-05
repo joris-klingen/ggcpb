@@ -28,6 +28,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup, message = FALSE}
+library(conflicted)
 library(ggcpb)
 library(ggplot2)
 library(dplyr)
@@ -132,9 +133,10 @@ See [`vignette("import")`](import.html).
 
 Next to plotting Excel data with ggcpb, you can also plot data that
 you already have in R. The caption below each figure in this introduction
-shows the function to use. Load the package first.
+shows the function to use. Load the packages first.
 
 ```{r library, eval = FALSE, echo = TRUE}
+library(conflicted) # optional, but recommended
 library(ggcpb)
 ```
 
@@ -624,7 +626,15 @@ described above. More options are in
 
 The code below creates the figures above in R. It first builds the data,
 then draws the figure. It is the same code that made the figures in this
-document.
+document. Start the script with these lines.
+
+```{r code-library, eval = FALSE, echo = TRUE}
+library(conflicted)
+library(ggcpb)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+```
 
 ## Line with forecast
 

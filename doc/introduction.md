@@ -78,11 +78,19 @@ settings per figure type. See [`vignette("import")`](import.md).
 
 Next to plotting Excel data with ggcpb, you can also plot data that you
 already have in R. The caption below each figure in this introduction
-shows the function to use. Load the package first.
+shows the function to use. Load the packages first.
 
 ``` r
+library(conflicted)
 library(ggcpb)
 ```
+
+We advise to load `conflicted` as well. Some functions exist in more
+than one package. Without `conflicted`, the package that you loaded last
+wins silently. A script then gives different results when a package was
+already loaded in your session. `conflicted` stops with a clear message
+instead. Choose a function with `conflicts_prefer(dplyr::filter)`, for
+example.
 
 Each figure type has its own function.
 
@@ -1784,7 +1792,15 @@ described above. More options are in [`vignette("maps")`](maps.md).
 
 The code below creates the figures above in R. It first builds the data,
 then draws the figure. It is the same code that made the figures in this
-document.
+document. Start the script with these lines.
+
+``` r
+library(conflicted)
+library(ggcpb)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+```
 
 ## Line with forecast
 

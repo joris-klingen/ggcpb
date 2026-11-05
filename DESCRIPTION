@@ -30,6 +30,7 @@ Imports:
     rlang,
     ragg
 Suggests:
+    conflicted,
     testthat (>= 3.0.0),
     png,
     withr,
