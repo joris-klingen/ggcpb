@@ -115,7 +115,10 @@ test_that("the Rijksoverheid font is taken from the first folder that has it", {
   file.copy(house$faces[!is.na(house$faces)], tmp)
   font <- cpb_font_files(c(file.path(empty, "missing"), empty, tmp))
   expect_equal(font$family, cpb_house_family)
-  expect_equal(dirname(unname(font$faces[cpb_required_faces])), rep(tmp, 3))
+  # Windows writes the temp folder with backslashes, the font paths use "/"
+  as_slashes <- function(x) gsub("\\\\", "/", x)
+  expect_equal(as_slashes(dirname(unname(font$faces[cpb_required_faces]))),
+               rep(as_slashes(tmp), 3))
 })
 
 test_that("without the Rijksoverheid font, Source Sans 3 stands in", {
