@@ -193,9 +193,8 @@ Each figure below is combined with a feature that you can also use
 with several other plot types, if not all. The parameters and their 
 corresponding values are portrayed next to the figure. Other settings keep their default.
 
-It is possible to set the style for a whole publication. 
-Dutch is the default. An English report can use `style = english` 
-in `params.csv`, or `options(ggcpb.style = "english")` in R.
+The style of the figures can be set for a whole publication. See
+[section 4](#publication-settings).
 
 ## Line with forecast
 
@@ -233,7 +232,7 @@ ptab(plot_type = "line", title = "Economische groei met onzekerheid",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_line", "line-forecast", "4.1", "code-line-forecast")
+repro("cpb_line", "line-forecast", "5.1", "code-line-forecast")
 ```
 
 ## Columns with two axes
@@ -279,7 +278,7 @@ ptab(plot_type = "col", title = "Erfenissen en erfbelasting",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_col", "col-secaxis", "4.2", "code-col-secaxis")
+repro("cpb_col", "col-secaxis", "5.2", "code-col-secaxis")
 ```
 
 ## Horizontal bars with chosen colours
@@ -324,7 +323,7 @@ ptab(plot_type = "col", title = "Zonnepanelen naar inkomen",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_col", "col-horizontal", "4.3", "code-col-horizontal")
+repro("cpb_col", "col-horizontal", "5.3", "code-col-horizontal")
 ```
 
 ## Line with markers in English
@@ -366,7 +365,7 @@ ptab(plot_type = "line", title = "Preferred tax rate by age",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_line", "line-points", "4.4", "code-line-points")
+repro("cpb_line", "line-points", "5.4", "code-line-points")
 ```
 
 ## Boxplot
@@ -412,7 +411,7 @@ ptab(plot_type = "box", title = "Koopkracht per inkomensgroep",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_box", "box", "4.5", "code-box")
+repro("cpb_box", "box", "5.5", "code-box")
 ```
 
 More box plot styles are in [`vignette("boxplots")`](boxplots.html).
@@ -453,7 +452,7 @@ ptab(plot_type = "boxplot_extended", title = "Koopkracht per inkomensgroep",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_boxplot_extended", "box-extended", "4.6", "code-box-extended")
+repro("cpb_boxplot_extended", "box-extended", "5.6", "code-box-extended")
 ```
 
 ## Donut chart
@@ -491,7 +490,7 @@ ptab(plot_type = "donut", title = "Energiemix van huishoudens",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_donut", "donut", "4.7", "code-donut")
+repro("cpb_donut", "donut", "5.7", "code-donut")
 ```
 
 ## Dot plot
@@ -538,7 +537,7 @@ ptab(plot_type = "dot", title = "Samenhang met voorkeurstarieven",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_dot", "dot", "4.8", "code-dot")
+repro("cpb_dot", "dot", "5.8", "code-dot")
 ```
 
 ## Scatter plot
@@ -581,7 +580,7 @@ ptab(plot_type = "scatter", title = "Energierekening naar inkomen",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_scatter", "scatter", "4.9", "code-scatter")
+repro("cpb_scatter", "scatter", "5.9", "code-scatter")
 ```
 
 ## Histogram
@@ -613,7 +612,7 @@ ptab(plot_type = "hist", title = "Verdeling van de duur",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_hist", "hist", "4.10", "code-hist")
+repro("cpb_hist", "hist", "5.10", "code-hist")
 ```
 
 ## Classed map
@@ -657,7 +656,7 @@ ptab(plot_type = "map", title = "Aandeel huishoudens met zonnepanelen",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_map", "map", "4.11", "code-map")
+repro("cpb_map", "map", "5.11", "code-map")
 ```
 
 More options are in [`vignette("maps")`](maps.html).
@@ -688,6 +687,25 @@ cpb_line(stijging, x = jaar, y = waarde,
 You can stack as many pieces as you need. More patterns are in
 [`vignette("annotation")`](annotation.html).
 
+<a id="publication-settings"></a>
+
+# Settings for the whole publication
+
+Some settings are the same for every figure of a publication. The main one
+is the `style`. Dutch is the default. An English report uses `english`.
+It sets the number format and the words, such as the forecast label.
+
+In R, set it once at the start of the script. Every figure then uses it,
+unless a figure sets its own `style`.
+
+```{r publication-style, eval = FALSE, echo = TRUE}
+options(ggcpb.style = "dutch") # or "english"
+```
+
+In Excel there is no single setting for all figures. Add the row `style` to
+`params.csv` and give every figure the same value in its column, such as
+`english`. A blank cell uses the Dutch default.
+
 # Example code to create figures in R
 
 The code below creates the figures above in R. It first builds the data,
@@ -700,6 +718,8 @@ library(ggcpb)
 library(ggplot2)
 library(dplyr)
 library(tidyr)
+
+options(ggcpb.style = "dutch") # style of the whole publication
 ```
 
 <a id="code-line-forecast"></a>

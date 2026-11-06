@@ -21,6 +21,8 @@ Introduction to ggcpb
   - [Classed map](#classed-map)
 - [Ggplot2 base allows for endless
   possibilities](#ggplot2-base-allows-for-endless-possibilities)
+- [Settings for the whole
+  publication](#settings-for-the-whole-publication)
 - [Example code to create figures in
   R](#example-code-to-create-figures-in-r)
   - [Line with forecast](#line-with-forecast-1)
@@ -164,9 +166,8 @@ several other plot types, if not all. The parameters and their
 corresponding values are portrayed next to the figure. Other settings
 keep their default.
 
-It is possible to set the style for a whole publication. Dutch is the
-default. An English report can use `style = english` in `params.csv`, or
-`options(ggcpb.style = "english")` in R.
+The style of the figures can be set for a whole publication. See
+[section 4](#publication-settings).
 
 ## Line with forecast
 
@@ -308,7 +309,7 @@ ylab
 `params.csv`, `generate_plot.bat` and the folder `data` with
 `line-forecast.csv` to a personal folder. Fill in the parameters above
 in `params.csv` and start the script. In R you can call `cpb_line()`
-instead. Follow the example code in [section 4.1](#code-line-forecast)
+instead. Follow the example code in [section 5.1](#code-line-forecast)
 to create the plot in R. Alternatively, the csv file can be read with
 `read.csv()` and used as input to `cpb_line()`.
 
@@ -481,7 +482,7 @@ mld euro
 `params.csv`, `generate_plot.bat` and the folder `data` with
 `col-secaxis.csv` to a personal folder. Fill in the parameters above in
 `params.csv` and start the script. In R you can call `cpb_col()`
-instead. Follow the example code in [section 4.2](#code-col-secaxis) to
+instead. Follow the example code in [section 5.2](#code-col-secaxis) to
 create the plot in R. Alternatively, the csv file can be read with
 `read.csv()` and used as input to `cpb_col()`.
 
@@ -667,7 +668,7 @@ aandeel binnen inkomensgroep (%)
 `params.csv`, `generate_plot.bat` and the folder `data` with
 `col-horizontal.csv` to a personal folder. Fill in the parameters above
 in `params.csv` and start the script. In R you can call `cpb_col()`
-instead. Follow the example code in [section 4.3](#code-col-horizontal)
+instead. Follow the example code in [section 5.3](#code-col-horizontal)
 to create the plot in R. Alternatively, the csv file can be read with
 `read.csv()` and used as input to `cpb_col()`.
 
@@ -826,7 +827,7 @@ ylab
 `params.csv`, `generate_plot.bat` and the folder `data` with
 `line-points.csv` to a personal folder. Fill in the parameters above in
 `params.csv` and start the script. In R you can call `cpb_line()`
-instead. Follow the example code in [section 4.4](#code-line-points) to
+instead. Follow the example code in [section 5.4](#code-line-points) to
 create the plot in R. Alternatively, the csv file can be read with
 `read.csv()` and used as input to `cpb_line()`.
 
@@ -1013,7 +1014,7 @@ ylab
 `params.csv`, `generate_plot.bat` and the folder `data` with `box.csv`
 to a personal folder. Fill in the parameters above in `params.csv` and
 start the script. In R you can call `cpb_box()` instead. Follow the
-example code in [section 4.5](#code-box) to create the plot in R.
+example code in [section 5.5](#code-box) to create the plot in R.
 Alternatively, the csv file can be read with `read.csv()` and used as
 input to `cpb_box()`.
 
@@ -1215,7 +1216,7 @@ full
 `box-extended.csv` to a personal folder. Fill in the parameters above in
 `params.csv` and start the script. In R you can call
 `cpb_boxplot_extended()` instead. Follow the example code in [section
-4.6](#code-box-extended) to create the plot in R. Alternatively, the csv
+5.6](#code-box-extended) to create the plot in R. Alternatively, the csv
 file can be read with `read.csv()` and used as input to
 `cpb_boxplot_extended()`.
 
@@ -1319,7 +1320,7 @@ colour_index
 `params.csv`, `generate_plot.bat` and the folder `data` with `donut.csv`
 to a personal folder. Fill in the parameters above in `params.csv` and
 start the script. In R you can call `cpb_donut()` instead. Follow the
-example code in [section 4.7](#code-donut) to create the plot in R.
+example code in [section 5.7](#code-donut) to create the plot in R.
 Alternatively, the csv file can be read with `read.csv()` and used as
 input to `cpb_donut()`.
 
@@ -1481,7 +1482,7 @@ xlab
 `params.csv`, `generate_plot.bat` and the folder `data` with `dot.csv`
 to a personal folder. Fill in the parameters above in `params.csv` and
 start the script. In R you can call `cpb_dot()` instead. Follow the
-example code in [section 4.8](#code-dot) to create the plot in R.
+example code in [section 5.8](#code-dot) to create the plot in R.
 Alternatively, the csv file can be read with `read.csv()` and used as
 input to `cpb_dot()`.
 
@@ -1668,7 +1669,7 @@ euro
 `params.csv`, `generate_plot.bat` and the folder `data` with
 `scatter.csv` to a personal folder. Fill in the parameters above in
 `params.csv` and start the script. In R you can call `cpb_scatter()`
-instead. Follow the example code in [section 4.9](#code-scatter) to
+instead. Follow the example code in [section 5.9](#code-scatter) to
 create the plot in R. Alternatively, the csv file can be read with
 `read.csv()` and used as input to `cpb_scatter()`.
 
@@ -1782,7 +1783,7 @@ duur (maanden)
 `params.csv`, `generate_plot.bat` and the folder `data` with `hist.csv`
 to a personal folder. Fill in the parameters above in `params.csv` and
 start the script. In R you can call `cpb_hist()` instead. Follow the
-example code in [section 4.10](#code-hist) to create the plot in R.
+example code in [section 5.10](#code-hist) to create the plot in R.
 Alternatively, the csv file can be read with `read.csv()` and used as
 input to `cpb_hist()`.
 
@@ -1937,7 +1938,7 @@ aandeel
 `params.csv`, `generate_plot.bat` and the folder `data` with `map.csv`
 to a personal folder. Fill in the parameters above in `params.csv` and
 start the script. In R you can call `cpb_map()` instead. Follow the
-example code in [section 4.11](#code-map) to create the plot in R.
+example code in [section 5.11](#code-map) to create the plot in R.
 Alternatively, the csv file can be read with `read.csv()` and used as
 input to `cpb_map()`.
 
@@ -1970,6 +1971,26 @@ cpb_line(stijging, x = jaar, y = waarde,
 You can stack as many pieces as you need. More patterns are in
 [`vignette("annotation")`](annotation.md).
 
+<a id="publication-settings"></a>
+
+# Settings for the whole publication
+
+Some settings are the same for every figure of a publication. The main
+one is the `style`. Dutch is the default. An English report uses
+`english`. It sets the number format and the words, such as the forecast
+label.
+
+In R, set it once at the start of the script. Every figure then uses it,
+unless a figure sets its own `style`.
+
+``` r
+options(ggcpb.style = "dutch") # or "english"
+```
+
+In Excel there is no single setting for all figures. Add the row `style`
+to `params.csv` and give every figure the same value in its column, such
+as `english`. A blank cell uses the Dutch default.
+
 # Example code to create figures in R
 
 The code below creates the figures above in R. It first builds the data,
@@ -1982,6 +2003,8 @@ library(ggcpb)
 library(ggplot2)
 library(dplyr)
 library(tidyr)
+
+options(ggcpb.style = "dutch") # style of the whole publication
 ```
 
 <a id="code-line-forecast"></a>
