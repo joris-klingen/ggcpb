@@ -458,21 +458,21 @@ path <- tempfile(fileext = ".png")
 save_cpb(path, figs$koopkracht, page = "half")
 ```
 
-<img src="import_files/figure-gfm/fig-koopkracht-show-1.png" alt="" width="350px" />
-
 <a id="figure-1"></a>**Figure 1.** The column chart of the first figure
 in `params.csv`.
 
+<img src="import_files/figure-gfm/fig-koopkracht-show-1.png" alt="" width="350px" />
+
 `werkloosheid` has no second axis, so it can be shown directly:
+
+<a id="figure-2"></a>**Figure 2.** The line chart of the second figure
+in `params.csv`.
 
 ``` r
 figs$werkloosheid
 ```
 
 <img src="import_files/figure-gfm/fig-werkloosheid-1.png" alt="" width="350px" />
-
-<a id="figure-2"></a>**Figure 2.** The line chart of the second figure
-in `params.csv`.
 
 # Several datasets
 
@@ -1938,7 +1938,7 @@ lower\_<wbr>bound
 
 <td style="text-align:left;">
 
-The column with the lower end of the interval.
+The column with the lower bound of the interval.
 </td>
 
 </tr>
@@ -2455,8 +2455,9 @@ stack
 
 <td style="text-align:left;">
 
-How bars of one category are placed: on top of each other, next to each
-other or as shares of 100%.
+How bars of one category are placed: on top of each other
+(<code>stack</code>), next to each other (<code>dodge</code>) or as
+shares of 100% (<code>fill</code>).
 </td>
 
 </tr>
@@ -2485,8 +2486,9 @@ report
 
 <td style="text-align:left;">
 
-The size preset: report, presentation or a map that is as tall as it
-needs.
+The height of the figure. <code>report</code> is 7.5 cm (6.8 cm for
+<code>small</code>), <code>presentation</code> is 6.35 cm and
+<code>map</code> is as tall as the map needs.
 </td>
 
 </tr>
@@ -2545,7 +2547,8 @@ FALSE
 
 <td style="text-align:left;">
 
-TRUE turns the colours around, so high values get the light colour.
+TRUE reverses the colours of the gradient of a numeric
+<code>value</code> column.
 </td>
 
 </tr>
@@ -3276,7 +3279,7 @@ upper\_<wbr>bound
 
 <td style="text-align:left;">
 
-The column with the upper end of the interval.
+The column with the upper bound of the interval.
 </td>
 
 </tr>

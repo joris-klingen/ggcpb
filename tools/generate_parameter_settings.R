@@ -102,8 +102,8 @@ descriptions <- c(
     "The height of the saved figure in cm. Blank gives the standard height."
   ),
   preset = paste0(
-    "The size preset: report, presentation or a map that is as tall as it ",
-    "needs."
+    "The height of the figure. `report` is 7.5 cm (6.8 cm for `small`), ",
+    "`presentation` is 6.35 cm and `map` is as tall as the map needs."
   ),
   dpi = "The sharpness of the saved image, in dots per inch.",
   lock = paste0(
@@ -125,8 +125,9 @@ descriptions <- c(
   group = "The column that splits the data into groups.",
   group_gap = "The space between the groups, in bar widths.",
   position = paste0(
-    "How bars of one category are placed: on top of each other, next to ",
-    "each other or as shares of 100%."
+    "How bars of one category are placed: on top of each other ",
+    "(`stack`), next to each other (`dodge`) or as shares of 100% ",
+    "(`fill`)."
   ),
   orientation = "Draws the figure upright (vertical) or turned (horizontal).",
   sec_y = "The column drawn on a second axis on the right.",
@@ -229,8 +230,8 @@ descriptions <- c(
   ),
   width = "The width of the bars or boxes, as a share of the space.",
   value_axis = "Whether the value axis is at the bottom or at the top.",
-  lower = "The column with the lower end of the interval.",
-  upper = "The column with the upper end of the interval.",
+  lower = "The column with the lower bound of the interval.",
+  upper = "The column with the upper bound of the interval.",
   symbol_colour = "The colour of the dots.",
   cap_width = "The width of the end caps of the interval.",
   x_labels = "How the numbers on the x axis are written, or your own labels.",
@@ -260,7 +261,8 @@ descriptions <- c(
   border_colour = "The colour of the region borders.",
   border_linewidth = "The width of the region borders.",
   reverse = paste0(
-    "TRUE turns the colours around, so high values get the light colour."
+    "TRUE reverses the colours of the gradient of a numeric `value` ",
+    "column."
   ),
   na_fill = "The colour of regions without a value.",
   panel_fill = "The colour behind the figure.",

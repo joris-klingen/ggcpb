@@ -210,21 +210,23 @@ path <- tempfile(fileext = ".png")
 save_cpb(path, figs$koopkracht, page = "half")
 ```
 
+<a id="figure-1"></a>**Figure 1.** The column chart of the first figure in
+`params.csv`.
+
 ```{r fig-koopkracht-show, echo = FALSE}
 .show_saved(path)
 ```
 
-<a id="figure-1"></a>**Figure 1.** The column chart of the first figure in
-`params.csv`.
 
 `werkloosheid` has no second axis, so it can be shown directly:
+
+<a id="figure-2"></a>**Figure 2.** The line chart of the second figure in
+`params.csv`.
 
 ```{r fig-werkloosheid}
 figs$werkloosheid
 ```
 
-<a id="figure-2"></a>**Figure 2.** The line chart of the second figure in
-`params.csv`.
 
 # Several datasets
 

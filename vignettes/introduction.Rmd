@@ -106,7 +106,11 @@ This is the general workflow to create figures with ggcpb without using R:
 3. Put your datasets in the folder `data`. 
    Open `params.csv` in Excel and describe your figures.
 4. Start `run_import.bat` by double clicking it. 
-   Your figures appear in the folder `generated`.
+   Your figures appear in the folder `generated`. Each image is named after
+   its dataset. Running the script again produces updated figures. 
+   Images with the same name are replaced. A dataset or figure that 
+   fails is skipped and listed at the end, and in `params_log.txt`. 
+   The other figures are still saved.
 
 You do not need to know R to follow this workflow. One parameter file and
 one or more datasets drive everything.
