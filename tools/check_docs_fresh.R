@@ -9,10 +9,11 @@
 #
 #   Rscript tools/check_docs_fresh.R
 #
-# Re-renders every vignette to a throwaway directory (the same way
-# tools/render_vignettes.R renders to doc/) and compares the resulting
-# .md text against what's committed in doc/, plus checks that every
-# figure the .md references actually exists in doc/. Exits non-zero,
+# Re-renders every markdown vignette to a throwaway directory (the same way
+# tools/render_vignettes.R renders) and compares the resulting .md text
+# against what's committed in doc/, plus checks that every figure the .md
+# references actually exists. The PDF vignettes (introduction and
+# import) have no .md and are not compared. Exits non-zero,
 # printing which vignette(s) are stale, if anything differs -- the fix
 # is always the same: `Rscript tools/render_vignettes.R`, review the
 # diff, commit doc/ alongside the vignette change.
@@ -43,6 +44,7 @@ if (!ggcpb:::cpb_utf8_locale()) {
        "locale is available to switch to.", call. = FALSE)
 }
 
+pdf_vignettes <- c("introduction", "import")
 doc_dir <- file.path(pkg_root, "doc")
 tmp_dir <- tempfile("ggcpb_doc_check_")
 dir.create(tmp_dir)
@@ -53,6 +55,7 @@ stale <- character(0)
 for (rmd in list.files(file.path(pkg_root, "vignettes"),
                        pattern = "\\.Rmd$", full.names = TRUE)) {
   name <- sub("\\.Rmd$", "", basename(rmd))
+  if (name %in% pdf_vignettes) next
   message("checking ", name)
 
   local_rmd <- file.path(tmp_dir, basename(rmd))
@@ -74,10 +77,16 @@ for (rmd in list.files(file.path(pkg_root, "vignettes"),
   if (!file.exists(new_md)) next # nothing to compare (shouldn't happen)
 
   txt <- readLines(new_md, warn = FALSE)
-  writeLines(gsub("(\\]\\([^):]*)\\.html\\)", "\\1.md)", txt), new_md)
+  for (nm in pdf_vignettes) {
+    txt <- gsub(sprintf("\\]\\(%s\\.html\\)", nm),
+                sprintf("](%s.pdf)", nm), txt)
+  }
+  txt <- gsub("(\\]\\([^):]*)\\.html\\)", "\\1.md)", txt)
+  writeLines(txt, new_md)
 
   if (!file.exists(old_md)) {
-    stale <- c(stale, paste0(name, ": doc/", name, ".md does not exist yet"))
+    stale <- c(stale, paste0(name, ": doc/", name,
+                             ".md does not exist yet"))
     next
   }
   if (!identical(readLines(new_md, warn = FALSE),
@@ -88,7 +97,7 @@ for (rmd in list.files(file.path(pkg_root, "vignettes"),
   }
 
   # every figure the (now known-matching) .md references must actually
-  # exist in doc/ -- catches a figure generated on disk but never
+  # exist -- catches a figure generated on disk but never
   # committed, which the text diff above can't see since the src line
   # that references it is identical either way
   refs <- regmatches(txt, regexpr('(?<=src=")[^"]+\\.png', txt, perl = TRUE))
@@ -102,10 +111,10 @@ for (rmd in list.files(file.path(pkg_root, "vignettes"),
 }
 
 if (length(stale)) {
-  message("\ndoc/ is stale:\n  - ", paste(stale, collapse = "\n  - "))
+  message("\nThe markdown is stale:\n  - ", paste(stale, collapse = "\n  - "))
   message("\nFix: Rscript tools/render_vignettes.R, review the diff, ",
           "commit doc/.")
   quit(status = 1)
 }
 
-message("doc/ matches a fresh render of every vignette.")
+message("The markdown vignettes match a fresh render.")

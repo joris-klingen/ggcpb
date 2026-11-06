@@ -76,6 +76,10 @@ table.ptab { width: 100%; }
 .below table { font-size: 0.85em; }
 .figrow h4, .below h4 { margin-top: 0; color: #c02a6a; }
 @media (max-width: 600px) { .figrow { display: block; } }
+@media print {
+  .figrow { break-inside: avoid; page-break-inside: avoid; zoom: 0.8; }
+  h2, h3, h4, p:has(+ .figrow) { break-after: avoid; }
+}
 </style>
 
 This vignette gives a short introduction to creating customizable
@@ -125,7 +129,7 @@ one or more datasets drive everything.
 * `params.csv` describes your figures. Column 1 holds the parameter
   names, such as `title`, `x` and `data`. Every other column describes
   one figure. The row `data` names the dataset of the figure. All parameters 
-  and their descriptions are given in the [import vignette](import.md).
+  and their descriptions are given in the [import vignette](import.html).
 * The folder `data` holds your datasets. Each dataset is its own CSV
   file with any name, such as `koopkracht.csv`. The first row holds the
   column names. The following rows are the observations per column.
@@ -520,7 +524,7 @@ cpb_donut(energie2, fill = bron, y = share,
           leader_length  = 0.08,
           label_accuracy = 0.01,
           palette        = "extended",
-          colour_index   = c(13, 9, 16, 10, 12, 4),
+          colour_index   = c(8, 9, 5, 6, 12, 14, 15),
           title = "Energiemix, met lijnlabels")
 ```
 
@@ -532,7 +536,7 @@ cpb_donut(energie2, fill = bron, y = share,
 ptab(plot_type = "donut", title = "Energiemix, met lijnlabels",
      fill = "bron", y = "share", label_style = "leader",
      leader_length = 0.08, label_accuracy = 0.01, palette = "extended",
-     colour_index = "13;9;16;10;12;4")
+     colour_index = "8;9;5;6;12;14;15")
 ```
 
 </div>
@@ -541,6 +545,17 @@ ptab(plot_type = "donut", title = "Energiemix, met lijnlabels",
 
 ```{r, results = "asis"}
 repro("cpb_donut", "donut-leader", "5.8", "code-donut-leader")
+```
+
+This donut uses the extended palette, which consists out of the following 20
+distinct colours:
+
+```{r extended-palette, echo = FALSE, fig.width = 15.5 / 2.54, fig.height = 2.1, out.width = "100%"}
+ext <- cpb_cols(palette = "extended")
+op <- par(mar = c(5, 0, 0.5, 0), bg = cpb_tokens()$bg)
+barplot(rep(1, 20), col = ext, border = NA, space = 0.1, axes = FALSE,
+        names.arg = names(ext), las = 2, cex.names = 0.6)
+par(op)
 ```
 
 ## Dot plot
@@ -607,7 +622,7 @@ hh <- tibble(inkomen = round(rlnorm(400, log(2500), 0.35))) |>
 cpb_scatter(hh, x = inkomen, y = energierekening,
             colour = cpb_cut(koopkracht, c(-Inf, -2, -1, 0, 1, 2, Inf),
                              labeller = label_pct_nl()),
-            palette = "discr",
+            palette = "blues",
             legend_ncol = 2,
             title = "Energierekening naar inkomen",
             ylab  = "energierekening (euro per maand)",
@@ -623,7 +638,7 @@ cpb_scatter(hh, x = inkomen, y = energierekening,
 ```{r par-scatter}
 ptab(plot_type = "scatter", title = "Energierekening naar inkomen",
      x = "inkomen", y = "energierekening", colour = "koopkracht",
-     cut = "-Inf;-2;-1;0;1;2;Inf", cut_labels = "pct", palette = "discr",
+     cut = "-Inf;-2;-1;0;1;2;Inf", cut_labels = "pct", palette = "blues",
      legend_ncol = 2, ylab = "energierekening (euro per maand)",
      xlab = "besteedbaar inkomen (euro per maand)", x_labels = "euro",
      legend_title = "koopkracht (%)")

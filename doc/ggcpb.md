@@ -19,7 +19,7 @@ type, [`vignette("layout")`](layout.md) for facets and grouped axes,
 forecast windows, [`vignette("boxplots")`](boxplots.md) for the
 box-plot styles, [`vignette("colours")`](colours.md) for how series
 get their colours, [`vignette("maps")`](maps.md) for choropleths of
-the Netherlands, and [`vignette("import")`](import.md) for building
+the Netherlands, and [`vignette("import")`](import.pdf) for building
 figures straight from a CSV, no R code beyond one function call.
 
 ``` r

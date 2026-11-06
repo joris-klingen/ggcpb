@@ -20,7 +20,7 @@ axes, [`vignette("boxplots")`](boxplots.md) for the box-plot styles
 and combinations, [`vignette("annotation")`](annotation.md) for
 reference lines and forecast windows, [`vignette("maps")`](maps.md)
 for choropleths, [`vignette("colours")`](colours.md) for picking
-series colours, [`vignette("import")`](import.md) for building figures
+series colours, [`vignette("import")`](import.pdf) for building figures
 straight from a CSV, and [`vignette("ggcpb")`](ggcpb.md) for the basic
 setup and export.
 

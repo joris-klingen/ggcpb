@@ -9,17 +9,11 @@ Rplots.pdf
 inst/examples/output
 inst/examples/generated
 inst/examples/params_log.txt
-# tools/render_vignettes.R writes doc/*.md and doc/*_files/ -- those
-# are deliberately tracked (so GitHub can render them with figures);
-# the throwaway HTML/R/Rmd copies devtools::build_vignettes() also
-# drops in doc/ are not. Scoped to these three extensions specifically,
-# not a blanket doc/ ignore, so a genuinely new tracked file under
-# doc/ (a new vignette's .md, its own _files/) still shows up as
-# untracked instead of silently needing `git add -f` to even be
-# noticed -- a blanket doc/ ignore (this repo's own past setup, in the
-# untracked .git/info/exclude rather than here) is exactly how three
-# doc/boxplots_files/figure-gfm/box-extended*.png files ended up
-# committed nowhere despite doc/boxplots.md already linking to them.
+# tools/render_vignettes.R writes the PDFs, the .md files and their
+# _files/ figures in doc/. Those are deliberately tracked, so GitHub can
+# show them. The throwaway HTML/R/Rmd copies devtools::build_vignettes()
+# also drops in doc/ are not. Scoped to these extensions, not a blanket
+# doc/ ignore, so a new tracked file still shows up as untracked.
 doc/*.html
 doc/*.R
 doc/*.Rmd

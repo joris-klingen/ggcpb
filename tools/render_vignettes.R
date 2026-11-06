@@ -1,17 +1,24 @@
 # render_vignettes.R ----
 #
-# Renders the vignettes to GitHub-flavoured markdown in doc/, so the
-# README can link to *rendered* pages (with figures) that display
-# directly in the repository UI -- GitHub shows raw HTML files as
-# source, but renders .md files. Re-run after editing a vignette:
+# Renders the vignettes for GitHub, so the README can link to *rendered*
+# pages (with figures) in the repository UI. GitHub shows raw HTML files
+# as source, so:
+#
+# * the introduction and import vignettes (the ones with the CPB layout:
+#   figures next to their parameters) are printed from their HTML to a
+#   PDF in doc/, which GitHub shows with that layout. This needs Chrome
+#   (set the CHROME environment variable to its path if it is not found).
+# * the other vignettes are rendered to GitHub-flavoured markdown in doc/.
+#
+# Re-run after editing a vignette:
 #
 #   Rscript tools/render_vignettes.R
 #
-# and commit the updated doc/ output. doc/ is .Rbuildignore'd, so the
-# built package still ships only the real (html_vignette) vignettes.
+# and commit the updated doc/ output. doc/ is .Rbuildignore'd, so the built
+# package still ships only the real (html_vignette) vignettes.
 #
-# tools/check_docs_fresh.R checks whether this needs re-running at all
-# -- run that first if unsure.
+# tools/check_docs_fresh.R checks whether the markdown needs re-running at
+# all -- run that first if unsure.
 
 pkg_root <- normalizePath(file.path(dirname(sub(
   "^--file=", "",
@@ -38,15 +45,63 @@ if (!ggcpb:::cpb_utf8_locale()) {
        "LC_ALL=C.UTF-8 Rscript tools/render_vignettes.R", call. = FALSE)
 }
 
-out_dir <- file.path(pkg_root, "doc")
-dir.create(out_dir, showWarnings = FALSE)
+pdf_vignettes <- c("introduction", "import")
 
-for (rmd in list.files(file.path(pkg_root, "vignettes"),
-                       pattern = "\\.Rmd$", full.names = TRUE)) {
+# Chrome, to print a vignette's HTML to a PDF
+find_chrome <- function() {
+  candidates <- c(
+    Sys.getenv("CHROME"),
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    Sys.which(c("google-chrome", "chromium", "chromium-browser")),
+    "C:/Program Files/Google/Chrome/Application/chrome.exe"
+  )
+  candidates <- candidates[nzchar(candidates) & file.exists(candidates)]
+  if (length(candidates)) candidates[[1]] else ""
+}
+chrome <- find_chrome()
+
+# Cross-vignette links are written as sibling .html in the .Rmd, which is
+# what the built (html_vignette) package needs. In doc/ the siblings are
+# .md, except the PDF vignettes, which are .pdf.
+repoint_links <- function(md) {
+  txt <- readLines(md, warn = FALSE)
+  for (nm in pdf_vignettes) {
+    txt <- gsub(sprintf("\\]\\(%s\\.html\\)", nm),
+                sprintf("](%s.pdf)", nm), txt)
+  }
+  writeLines(gsub("(\\]\\([^):]*)\\.html\\)", "\\1.md)", txt), md)
+}
+
+doc_dir <- file.path(pkg_root, "doc")
+dir.create(doc_dir, showWarnings = FALSE)
+vig_dir <- file.path(pkg_root, "vignettes")
+
+for (rmd in list.files(vig_dir, pattern = "\\.Rmd$", full.names = TRUE)) {
+  name <- sub("\\.Rmd$", "", basename(rmd))
   message("rendering ", basename(rmd))
-  # render from a copy inside doc/ so the figure links in the .md come
-  # out relative (chart-types_files/...), not absolute
-  local_rmd <- file.path(out_dir, basename(rmd))
+
+  if (name %in% pdf_vignettes) {
+    html <- rmarkdown::render(rmd, quiet = TRUE)
+    if (!nzchar(chrome)) {
+      warning("Chrome was not found, so doc/", name, ".pdf was not made. ",
+              "Set the CHROME environment variable to its path.",
+              call. = FALSE)
+      next
+    }
+    pdf <- file.path(doc_dir, paste0(name, ".pdf"))
+    system2(chrome, c("--headless=new", "--disable-gpu",
+                      "--no-pdf-header-footer", "--virtual-time-budget=5000",
+                      paste0("--print-to-pdf=", shQuote(pdf)),
+                      shQuote(paste0("file://", html))),
+            stdout = FALSE, stderr = FALSE)
+    if (!file.exists(pdf)) warning("doc/", name, ".pdf was not made.",
+                                   call. = FALSE)
+    next
+  }
+
+  # render from a copy inside doc/ so the figure links in the .md come out
+  # relative (chart-types_files/...), not absolute
+  local_rmd <- file.path(doc_dir, basename(rmd))
   file.copy(rmd, local_rmd, overwrite = TRUE)
   # a table of contents where the vignette itself has one
   front <- rmarkdown::yaml_front_matter(rmd)$output
@@ -60,15 +115,8 @@ for (rmd in list.files(file.path(pkg_root, "vignettes"),
     quiet         = TRUE
   )
   unlink(local_rmd)
-
-  # Cross-vignette links are written as sibling .html in the .Rmd, which
-  # is what the built (html_vignette) package needs. In doc/ the siblings
-  # are .md, so repoint them there -- otherwise the link 404s on GitHub.
   md <- sub("\\.Rmd$", ".md", local_rmd)
-  if (file.exists(md)) {
-    txt <- readLines(md, warn = FALSE)
-    writeLines(gsub("(\\]\\([^):]*)\\.html\\)", "\\1.md)", txt), md)
-  }
+  if (file.exists(md)) repoint_links(md)
 }
 
-message("rendered vignettes written to ", out_dir)
+message("rendered vignettes written to ", doc_dir)

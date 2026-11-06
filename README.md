@@ -7,7 +7,7 @@ the common CPB chart types. Everything returns real `ggplot` objects
 that you can keep extending with `+`.
 
 **New to ggcpb? Start with the introduction:
-[doc/introduction.md](doc/introduction.md).** It shows how to create
+[doc/introduction.pdf](doc/introduction.pdf).** It shows how to create
 figures with Excel and/or R.
 
 > **Status: work in progress.** The style is calibrated against a set
@@ -18,6 +18,8 @@ figures with Excel and/or R.
 
 ## Documentation
 
+- **[Import](doc/import.pdf)** -- `vignette("import")`: building figures
+  from CSV files, with Excel and without R.
 - **[Setup](doc/ggcpb.md)** -- `vignette("ggcpb")`: the basic idea in
   a couple of plots -- one wrapper call, how it relates to ggplot2,
   using only the theme without the wrappers, and export.
@@ -38,7 +40,8 @@ figures with Excel and/or R.
 - **[Maps](doc/maps.md)** -- `vignette("maps")`: choropleths of the
   Netherlands at municipality, COROP or province level.
 
-The links point to rendered versions (with figures) in `doc/`,
+The links point to rendered versions (with figures) in `doc/`. The introduction
+and the import vignette are PDFs, the others markdown files. They are
 regenerated from `vignettes/` with `Rscript tools/render_vignettes.R`.
 
 ## Install / load
