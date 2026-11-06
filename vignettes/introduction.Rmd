@@ -73,6 +73,7 @@ repro <- function(fun, dataset, section, id) {
 .figrow table { font-size: 0.85em; }
 table.ptab { width: 100%; }
 .figrow h4 { margin-top: 0; color: #c02a6a; }
+.figrow.wide > :first-child { flex: 2 1 0; }
 @media (max-width: 600px) { .figrow { display: block; } }
 </style>
 
@@ -415,8 +416,9 @@ More box plot styles are in [`vignette("boxplots")`](boxplots.html).
 
 ## Extended boxplot on a full page
 
-The extended boxplot has a light blue panel. With `facet` it draws one
-panel per value, here one per year. This figure is saved at the full
+The extended boxplot has the CPB ramingen-style. Through the `facet` parameter the data gets grouped into the year column,
+which results in one panel per year in the dataset.
+The default figure is saved at the full
 page width (15.5 cm) with `page = full`.
 
 ```{r data-box-extended}
@@ -426,6 +428,8 @@ kk_jaar <- bind_rows(
 )
 ```
 
+::: {.figrow .wide}
+
 ```{r box-extended, fig.width = 15.5 / 2.54, fig.height = 7.5 / 2.54}
 cpb_boxplot_extended(kk_jaar, x = groep,
                      p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
@@ -433,6 +437,8 @@ cpb_boxplot_extended(kk_jaar, x = groep,
                      title = "Koopkracht per inkomensgroep",
                      ylab = "% koopkrachtmutatie")
 ```
+
+<div>
 
 #### Relevant parameters {-}
 
@@ -442,6 +448,10 @@ ptab(plot_type = "boxplot_extended", title = "Koopkracht per inkomensgroep",
      p95 = "p95", facet = "jaar", facet_ncol = 2,
      ylab = "% koopkrachtmutatie", page = "full")
 ```
+
+</div>
+
+:::
 
 ```{r, results = "asis"}
 repro("cpb_boxplot_extended", "box-extended", "4.6", "code-box-extended")
@@ -531,16 +541,22 @@ repro("cpb_dot", "dot", "4.8", "code-dot")
 
 ## Scatter plot
 
+The parameter `cut` puts the energy bill into classes. The classes give
+the points their colour.
+
 ```{r data-scatter}
 hh <- tibble(inkomen = round(rlnorm(400, log(2500), 0.35))) |>
-  mutate(energierekening = round(90 + 0.04 * inkomen + rnorm(n(), 0, 35)))
+  mutate(energierekening = round(90 + 0.04 * inkomen + rnorm(n(), 0, 35)),
+         klasse = cpb_cut(energierekening, breaks = c(0, 150, 200, Inf),
+                          labeller = label_euro_nl()))
 ```
 
 ::: {.figrow}
 
 ```{r scatter}
-cpb_scatter(hh, x = inkomen, y = energierekening,
+cpb_scatter(hh, x = inkomen, y = energierekening, colour = klasse,
             title = "Energierekening naar inkomen",
+            legend_title = "energierekening",
             ylab  = "euro per maand",
             xlab  = "besteedbaar inkomen (euro per maand)",
             x_labels = label_euro_nl())
@@ -552,7 +568,9 @@ cpb_scatter(hh, x = inkomen, y = energierekening,
 
 ```{r par-scatter}
 ptab(plot_type = "scatter", title = "Energierekening naar inkomen",
-     x = "inkomen", y = "energierekening", ylab = "euro per maand",
+     x = "inkomen", y = "energierekening", colour = "energierekening",
+     cut = "0;150;200;Inf", cut_labels = "euro",
+     legend_title = "energierekening", ylab = "euro per maand",
      xlab = "besteedbaar inkomen (euro per maand)", x_labels = "euro")
 ```
 

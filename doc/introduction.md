@@ -43,6 +43,7 @@ Introduction to ggcpb
 .figrow table { font-size: 0.85em; }
 table.ptab { width: 100%; }
 .figrow h4 { margin-top: 0; color: #c02a6a; }
+.figrow.wide > :first-child { flex: 2 1 0; }
 @media (max-width: 600px) { .figrow { display: block; } }
 </style>
 
@@ -1014,11 +1015,16 @@ More box plot styles are in [`vignette("boxplots")`](boxplots.md).
 
 ## Extended boxplot on a full page
 
-The extended boxplot has a light blue panel. With `facet` it draws one
-panel per value, here one per year. This figure is saved at the full
-page width (15.5 cm) with `page = full`.
+The extended boxplot has the CPB ramingen-style. Through the `facet`
+parameter the data gets grouped into the year column, which results in
+one panel per year in the dataset. The default figure is saved at the
+full page width (15.5 cm) with `page = full`.
+
+<div class="figrow wide">
 
 <img src="introduction_files/figure-gfm/box-extended-1.png" alt="" width="100%" />
+
+<div>
 
 #### Relevant parameters
 
@@ -1197,6 +1203,10 @@ full
 </tbody>
 
 </table>
+
+</div>
+
+</div>
 
 **How to reproduce this figure:** copy `params.csv`, `run_import.bat`
 and the folder `data` with `box-extended.csv` to a personal folder. Fill
@@ -1454,6 +1464,9 @@ to create the plot in R. Alternatively, the csv file can be read with
 
 ## Scatter plot
 
+The parameter `cut` puts the energy bill into classes. The classes give
+the points their colour.
+
 <div class="figrow">
 
 <img src="introduction_files/figure-gfm/scatter-1.png" alt="" width="100%" />
@@ -1513,6 +1526,62 @@ inkomen
 <td style="text-align:left;">
 
 y
+</td>
+
+<td style="text-align:left;">
+
+energierekening
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+colour
+</td>
+
+<td style="text-align:left;">
+
+energierekening
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+cut
+</td>
+
+<td style="text-align:left;">
+
+0;150;200;Inf
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+cut_labels
+</td>
+
+<td style="text-align:left;">
+
+euro
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+legend_title
 </td>
 
 <td style="text-align:left;">
@@ -2041,9 +2110,12 @@ cpb_dot(schatting, x = term, y = coef, lower = lo, upper = hi,
 
 ``` r
 hh <- tibble(inkomen = round(rlnorm(400, log(2500), 0.35))) |>
-  mutate(energierekening = round(90 + 0.04 * inkomen + rnorm(n(), 0, 35)))
-cpb_scatter(hh, x = inkomen, y = energierekening,
+  mutate(energierekening = round(90 + 0.04 * inkomen + rnorm(n(), 0, 35)),
+         klasse = cpb_cut(energierekening, breaks = c(0, 150, 200, Inf),
+                          labeller = label_euro_nl()))
+cpb_scatter(hh, x = inkomen, y = energierekening, colour = klasse,
             title = "Energierekening naar inkomen",
+            legend_title = "energierekening",
             ylab  = "euro per maand",
             xlab  = "besteedbaar inkomen (euro per maand)",
             x_labels = label_euro_nl())

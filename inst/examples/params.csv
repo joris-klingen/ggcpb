@@ -17,7 +17,7 @@ orientation,,,horizontal,,horizontal,,,,,,
 colour_index,,,2;1,,,6;5;2;4,,,,,
 value_limits,,,0;70,0;30,,,,,,,
 xlab,,,aandeel binnen inkomensgroep (%),,,,%punt verandering,besteedbaar inkomen (euro per maand),duur (maanden),,
-colour,,,,erfenis,,,,,,,
+colour,,,,erfenis,,,,energierekening,,,
 points,,,,TRUE,,,,,,,
 style,,,,english,,,,,,,
 p5,,,,,p5,,,,,,p5
@@ -33,10 +33,10 @@ binwidth,,,,,,,,,2,,
 x_labels,,,,,,,,euro,,,
 region,,,,,,,,,,code,
 value,,,,,,,,,,aandeel,
-cut,,,,,,,,,,0;20;30;40;50;60;Inf,
-cut_labels,,,,,,,,,,pct,
+cut,,,,,,,,0;150;200;Inf,,0;20;30;40;50;60;Inf,
+cut_labels,,,,,,,,euro,,pct,
 palette,,,,,,,,,,blues,
-legend_title,,,,,,,,,,aandeel,
+legend_title,,,,,,,,energierekening,,aandeel,
 facet,,,,,,,,,,,jaar
 facet_ncol,,,,,,,,,,,2
 page,,,,,,,,,,,full

@@ -458,15 +458,15 @@ path <- tempfile(fileext = ".png")
 save_cpb(path, figs$koopkracht, page = "half")
 ```
 
-<a id="figure-1"></a>**Figure 1.** The column chart of the first figure
-in `params.csv`.
+<span id="figure-1" class="table-title">**Figure 1. The column chart of
+the first figure in params.csv**</span>
 
 <img src="import_files/figure-gfm/fig-koopkracht-show-1.png" alt="" width="350px" />
 
 `werkloosheid` has no second axis, so it can be shown directly:
 
-<a id="figure-2"></a>**Figure 2.** The line chart of the second figure
-in `params.csv`.
+<span id="figure-2" class="table-title">**Figure 2. The line chart of
+the second figure in params.csv**</span>
 
 ``` r
 figs$werkloosheid
