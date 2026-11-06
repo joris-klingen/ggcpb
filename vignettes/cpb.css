@@ -293,13 +293,13 @@ table.reftab {
   font-size: 0.85em;
 }
 table.reftab th, table.reftab td {
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
-table.reftab th:nth-child(1) { width: 16%; }
-table.reftab th:nth-child(2) { width: 23%; }
-table.reftab th:nth-child(3) { width: 11%; }
-table.reftab th:nth-child(4) { width: 11%; }
-table.reftab th:nth-child(5) { width: 39%; }
+table.reftab th:nth-child(1) { width: 17%; }
+table.reftab th:nth-child(2) { width: 20%; }
+table.reftab th:nth-child(3) { width: 14%; }
+table.reftab th:nth-child(4) { width: 17%; }
+table.reftab th:nth-child(5) { width: 32%; }
 /* Several defaults in one cell: one per line, a grey line in between. */
 table.reftab .dv + .dv {
   border-top: 1px solid #DDDDDD;
