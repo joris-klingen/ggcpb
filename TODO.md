@@ -15,9 +15,9 @@ or dropped.
    `vignettes/introduction.Rmd` and `vignettes/import.Rmd`.
 2. **CI**: push, and watch the first run. The new `lintr` job, Windows
    and ggplot2 3.5.2 have not run on these changes yet.
-3. **Version**: dev is `0.2.1.9000` and has breaking changes in the CSV
-   import (one `params.csv` layout, `cpb_import_csv()` without
-   `data_csv`). Release it as 0.3.0, and tell the users of the old kit.
+3. **Release**: the version is `0.3.0` because of the breaking changes in
+   the CSV import (one `params.csv` layout, `cpb_import_csv()` without
+   `data_csv`). Tag it after the merge, and tell the users of the old kit.
 4. **Merge dev into main**: dev already holds `origin/main` (merged on
    2026-11-05), so this merge has no conflicts.
 

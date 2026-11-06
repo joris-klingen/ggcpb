@@ -1,6 +1,7 @@
-# ggcpb (development version)
+# ggcpb 0.3.0
 
 * The CSV import can make every plot type, `map` and `boxplot_extended` included, and every argument of the wrappers can be set in `params.csv`. Formatters are named (`x_labels = euro`), `dot_labels` takes name:value pairs, a column of dates gives a date axis, `Inf` is a number and `\n` a line break. `cut` and `cut_labels` make classes, such as for a classed map. `height` (cm), `preset`, `dpi` and `lock` say how a figure is saved, next to `page`.
+* The parameter reference in the import vignette has a short description per parameter and lists the values to choose from.
 * `cpb_import_run()` saves the other figures when one figure fails while it is drawn, and lists it in the log.
 
 * `cpb_donut()` no longer makes `save_cpb()` warn on a half page. A donut fits a half page.
