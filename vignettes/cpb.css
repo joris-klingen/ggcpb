@@ -282,7 +282,7 @@ a:hover, a:visited:hover {
 }
 
 /* The long reference tables of the import vignette: every second row in a
-   very light blue. */
-table.reftab tbody tr:nth-child(even) td {
+   very light blue, starting with the row under the header. */
+table.reftab tbody tr:nth-child(odd) td {
   background: #f3f9ff !important;
 }

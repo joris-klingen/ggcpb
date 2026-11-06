@@ -289,79 +289,59 @@ and any parameter problems.
 
 # Appendix A: Parameters {-}
 
-The available parameters depend on the `plot_type`. The complete list
-is stored in `parameter_settings.csv`, and gives the available
-parameters, their default values, examples and a short description.
+A parameter that refers to a variable (such as `x`, `y` or `fill`) takes a
+column name from the dataset. Every other parameter takes a value directly
+from the parameter file.
 
-```{r params-ref-path, include=FALSE}
-ref_csv <- system.file(
-  "extdata",
-  "parameter_settings.csv",
-  package = "ggcpb"
-)
-```
-
-Many parameters are the same across every `plot_type`. Table A1 lists 
-the parameters shared, with the same meaning and default, by all plot types. 
-Table A2 onward each cover one `plot_type`, listing only what 
-is not already in Table A1.
+The available parameters depend on the `plot_type`. Table A1 lists every
+parameter once, with the plot types it belongs to, its default, an example
+and a short description. A default that differs per plot type is followed by
+the plot types it holds for.
 
 ```{r params-ref-table, echo = FALSE, results = "asis"}
 ref <- read.csv(
-  ref_csv,
+  system.file("extdata", "parameter_settings.csv", package = "ggcpb"),
   stringsAsFactors = FALSE
 )
-
 types <- unique(ref$plot_type)
 
-# a parameter belongs in the shared table only when every plot_type
-# has it, with the same kind and default -- present everywhere but
-# with a different default per type (e.g. reverse_legend) still needs
-# its own row in each type's own table, since a single shared default
-# would be wrong for the types that do not use it
-by_param <- split(ref, ref$param)
-is_shared <- vapply(by_param, function(rows) {
-  setequal(unique(rows$plot_type), types) &&
-    nrow(unique(rows[c("kind", "default")])) == 1
-}, logical(1))
-shared_params <- sort(names(by_param)[is_shared])
-
-show_params <- function(rows) {
-  rows <- rows[order(rows$param),
-               c("param", "default", "example", "description")]
-  # `x` in the reference becomes code
-  rows[] <- lapply(rows, function(col) {
-    gsub("`([^`]*)`", "<code>\\1</code>", col)
-  })
-  print(knitr::kable(
-    rows,
-    format = "html",
-    row.names = FALSE,
-    escape = FALSE,
-    table.attr = 'class="reftab"',
-    col.names = c("parameter", "default", "example", "description")
-  ))
+# One row per parameter. The plot types are listed unless it belongs to all
+# of them, and a default that differs per plot type is listed per default.
+one_row <- function(rows) {
+  where <- if (setequal(rows$plot_type, types)) {
+    "all"
+  } else {
+    paste(rows$plot_type, collapse = ", ")
+  }
+  defaults <- unique(rows$default)
+  default <- if (length(defaults) == 1) {
+    defaults
+  } else {
+    paste(vapply(defaults, function(d) {
+      paste0(d, " (", paste(rows$plot_type[rows$default == d],
+                            collapse = ", "), ")")
+    }, character(1)), collapse = "; ")
+  }
+  data.frame(param = rows$param[1], plot_types = where, default = default,
+             example = rows$example[1], description = rows$description[1],
+             stringsAsFactors = FALSE)
 }
+all_params <- do.call(rbind, lapply(split(ref, ref$param), one_row))
+all_params <- all_params[order(all_params$param), ]
+# `x` in the reference becomes code
+all_params[] <- lapply(all_params, function(col) {
+  gsub("`([^`]*)`", "<code>\\1</code>", col)
+})
 
 cat("\n\n<span class=\"table-title\">",
-    "**Table A1. Shared parameters across all plot types**",
-    "</span>\n\n", sep = "")
-show_params(ref[ref$param %in% shared_params & !duplicated(ref$param), ])
-
-table_n <- 2
-for (t in types) {
-  rows <- ref[ref$plot_type == t & !ref$param %in% shared_params, ]
-  if (!nrow(rows)) next
-  cat("\n\n<span class=\"table-title\">**Table A", table_n,
-      ". Parameters specific to `", t, "`**</span>\n\n", sep = "")
-  show_params(rows)
-  table_n <- table_n + 1
-}
+    "**Table A1. All parameters**</span>\n\n", sep = "")
+print(knitr::kable(
+  all_params,
+  format = "html",
+  row.names = FALSE,
+  escape = FALSE,
+  table.attr = 'class="reftab"',
+  col.names = c("parameter", "plot types", "default", "example",
+                "description")
+))
 ```
-
-A parameter that refers to a variable (such as `x`, `y` or `fill`)
-takes a column name from the dataset. Every other parameter takes a value
-directly from the parameter file.
-
-The `parameter_settings.csv` file can also be opened directly in a
-spreadsheet program.
