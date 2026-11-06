@@ -340,7 +340,7 @@ axis\_<wbr>text\_<wbr>size
 
 <td style="text-align:left;">
 
-col, line, box, dot, scatter, hist, boxplot\_<wbr>extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -485,7 +485,7 @@ box\_<wbr>labels
 
 <td style="text-align:left;">
 
-box, boxplot\_<wbr>extended
+box, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -514,7 +514,7 @@ box\_<wbr>style
 
 <td style="text-align:left;">
 
-box, boxplot\_<wbr>extended
+box, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -732,7 +732,7 @@ dot\_<wbr>labels
 
 <td style="text-align:left;">
 
-box, boxplot\_<wbr>extended
+box, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -790,7 +790,7 @@ facet
 
 <td style="text-align:left;">
 
-col, line, box, dot, scatter, hist, boxplot\_<wbr>extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -819,7 +819,7 @@ facet\_<wbr>ncol
 
 <td style="text-align:left;">
 
-col, line, box, dot, scatter, hist, boxplot\_<wbr>extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -848,7 +848,7 @@ facet\_<wbr>scales
 
 <td style="text-align:left;">
 
-col, line, box, dot, scatter, hist, boxplot\_<wbr>extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -879,7 +879,7 @@ fill
 
 <td style="text-align:left;">
 
-col, box, hist, donut, boxplot\_<wbr>extended
+col, box, hist, donut, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -908,7 +908,7 @@ fill\_<wbr>colour
 
 <td style="text-align:left;">
 
-col, box, hist, boxplot\_<wbr>extended
+col, box, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -1024,7 +1024,7 @@ grid\_<wbr>colour
 
 <td style="text-align:left;">
 
-col, line, box, dot, scatter, hist, boxplot\_<wbr>extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -1064,7 +1064,7 @@ grid\_<wbr>linewidth
 
 <td style="text-align:left;">
 
-col, line, box, dot, scatter, hist, boxplot\_<wbr>extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -1104,7 +1104,7 @@ group
 
 <td style="text-align:left;">
 
-col, box, dot, boxplot\_<wbr>extended
+col, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -1133,7 +1133,7 @@ group\_<wbr>gap
 
 <td style="text-align:left;">
 
-col, box, dot, boxplot\_<wbr>extended
+col, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -1231,7 +1231,7 @@ label\_<wbr>accuracy
 
 <td style="text-align:left;">
 
-box, donut, boxplot\_<wbr>extended
+box, donut, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -1574,7 +1574,7 @@ linewidth
 
 <td style="text-align:left;">
 
-line, box, dot, boxplot\_<wbr>extended
+line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -1679,7 +1679,7 @@ mean
 
 <td style="text-align:left;">
 
-box, boxplot\_<wbr>extended
+box, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -1708,7 +1708,7 @@ minor
 
 <td style="text-align:left;">
 
-col, line, box, dot, scatter, hist, boxplot\_<wbr>extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -1766,7 +1766,7 @@ orientation
 
 <td style="text-align:left;">
 
-col, box, dot, boxplot\_<wbr>extended
+col, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -1835,7 +1835,7 @@ p25
 
 <td style="text-align:left;">
 
-box, boxplot\_<wbr>extended
+box, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -1864,7 +1864,7 @@ p5
 
 <td style="text-align:left;">
 
-box, boxplot\_<wbr>extended
+box, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -1893,7 +1893,7 @@ p50
 
 <td style="text-align:left;">
 
-box, boxplot\_<wbr>extended
+box, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -1922,7 +1922,7 @@ p75
 
 <td style="text-align:left;">
 
-box, boxplot\_<wbr>extended
+box, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -1951,7 +1951,7 @@ p95
 
 <td style="text-align:left;">
 
-box, boxplot\_<wbr>extended
+box, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -2051,7 +2051,7 @@ panel\_<wbr>fill
 
 <td style="text-align:left;">
 
-boxplot\_<wbr>extended
+boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -2109,7 +2109,7 @@ pct\_<wbr>axis
 
 <td style="text-align:left;">
 
-col, line, box, dot, scatter, boxplot\_<wbr>extended
+col, line, box, dot, scatter, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -2355,7 +2355,7 @@ sec\_<wbr>accuracy
 
 <td style="text-align:left;">
 
-col, line, box, dot, boxplot\_<wbr>extended
+col, line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -2384,7 +2384,7 @@ sec\_<wbr>at
 
 <td style="text-align:left;">
 
-col, line, box, dot, boxplot\_<wbr>extended
+col, line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -2413,7 +2413,7 @@ sec\_<wbr>axis\_<wbr>labels
 
 <td style="text-align:left;">
 
-col, line, box, dot, boxplot\_<wbr>extended
+col, line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -2443,7 +2443,7 @@ sec\_<wbr>col\_<wbr>width
 
 <td style="text-align:left;">
 
-col, line, box, dot, boxplot\_<wbr>extended
+col, line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -2472,7 +2472,7 @@ sec\_<wbr>colour
 
 <td style="text-align:left;">
 
-col, line, box, dot, boxplot\_<wbr>extended
+col, line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -2501,7 +2501,7 @@ sec\_<wbr>legend\_<wbr>label
 
 <td style="text-align:left;">
 
-col, line, box, dot, boxplot\_<wbr>extended
+col, line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -2530,7 +2530,7 @@ sec\_<wbr>limits
 
 <td style="text-align:left;">
 
-col, line, box, dot, boxplot\_<wbr>extended
+col, line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -2559,7 +2559,7 @@ sec\_<wbr>linewidth
 
 <td style="text-align:left;">
 
-col, line, box, dot, boxplot\_<wbr>extended
+col, line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -2599,7 +2599,7 @@ sec\_<wbr>points
 
 <td style="text-align:left;">
 
-col, line, box, dot, boxplot\_<wbr>extended
+col, line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -2628,7 +2628,7 @@ sec\_<wbr>scale\_<wbr>auto
 
 <td style="text-align:left;">
 
-col, line, box, dot, boxplot\_<wbr>extended
+col, line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -2658,7 +2658,7 @@ sec\_<wbr>symbol\_<wbr>size
 
 <td style="text-align:left;">
 
-col, line, box, dot, boxplot\_<wbr>extended
+col, line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -2698,7 +2698,7 @@ sec\_<wbr>type
 
 <td style="text-align:left;">
 
-col, line, box, dot, boxplot\_<wbr>extended
+col, line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -2727,7 +2727,7 @@ sec\_<wbr>y
 
 <td style="text-align:left;">
 
-col, line, box, dot, boxplot\_<wbr>extended
+col, line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -2756,7 +2756,7 @@ sec\_<wbr>ylab
 
 <td style="text-align:left;">
 
-col, line, box, dot, boxplot\_<wbr>extended
+col, line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -2919,7 +2919,7 @@ ticks
 
 <td style="text-align:left;">
 
-col, line, box, dot, scatter, hist, boxplot\_<wbr>extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -3046,7 +3046,7 @@ value\_<wbr>accuracy
 
 <td style="text-align:left;">
 
-col, line, box, dot, scatter, hist, boxplot\_<wbr>extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -3075,7 +3075,7 @@ value\_<wbr>axis
 
 <td style="text-align:left;">
 
-box, boxplot\_<wbr>extended
+box, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -3115,7 +3115,7 @@ value\_<wbr>axis\_<wbr>linewidth
 
 <td style="text-align:left;">
 
-boxplot\_<wbr>extended
+boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -3144,7 +3144,7 @@ value\_<wbr>breaks
 
 <td style="text-align:left;">
 
-col, line, box, dot, scatter, hist, boxplot\_<wbr>extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -3173,7 +3173,7 @@ value\_<wbr>crop
 
 <td style="text-align:left;">
 
-col, line, box, dot, scatter, hist, boxplot\_<wbr>extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -3231,7 +3231,7 @@ value\_<wbr>limits
 
 <td style="text-align:left;">
 
-col, line, box, dot, scatter, hist, boxplot\_<wbr>extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -3289,7 +3289,7 @@ width
 
 <td style="text-align:left;">
 
-box, boxplot\_<wbr>extended
+box, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -3329,7 +3329,7 @@ x
 
 <td style="text-align:left;">
 
-col, line, box, dot, scatter, hist, boxplot\_<wbr>extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -3388,7 +3388,7 @@ x\_<wbr>lim
 
 <td style="text-align:left;">
 
-col, line, box, dot, scatter, hist, boxplot\_<wbr>extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -3417,7 +3417,7 @@ x\_<wbr>lim\_<wbr>follow\_<wbr>data
 
 <td style="text-align:left;">
 
-col, line, box, dot, scatter, hist, boxplot\_<wbr>extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -3486,7 +3486,7 @@ xlab
 
 <td style="text-align:left;">
 
-col, line, box, dot, scatter, hist, boxplot\_<wbr>extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -3544,7 +3544,7 @@ ylab
 
 <td style="text-align:left;">
 
-col, line, box, dot, scatter, hist, boxplot\_<wbr>extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -3573,7 +3573,7 @@ ylab\_<wbr>position
 
 <td style="text-align:left;">
 
-boxplot\_<wbr>extended
+boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -3660,7 +3660,7 @@ zero\_<wbr>indicator
 
 <td style="text-align:left;">
 
-boxplot\_<wbr>extended
+boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -3689,7 +3689,7 @@ zero\_<wbr>indicator\_<wbr>linewidth
 
 <td style="text-align:left;">
 
-boxplot\_<wbr>extended
+boxplot_extended
 </td>
 
 <td style="text-align:left;">

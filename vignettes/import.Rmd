@@ -345,10 +345,12 @@ all_params <- do.call(rbind, lapply(split(ref, ref$param), one_row))
 all_params <- all_params[order(all_params$param), ]
 # `x` in the reference becomes code
 all_params[] <- lapply(all_params, function(col) {
-  col <- gsub("`([^`]*)`", "<code>\\1</code>", col)
-  # a long name may only break after an underscore
-  gsub("_", "_<wbr>", col, fixed = TRUE)
+  gsub("`([^`]*)`", "<code>\\1</code>", col)
 })
+# a long name may only break after an underscore, but a plot type is not cut
+for (nm in setdiff(names(all_params), "plot_types")) {
+  all_params[[nm]] <- gsub("_", "_<wbr>", all_params[[nm]], fixed = TRUE)
+}
 
 cat("\n\n<span class=\"table-title\">",
     "**Table A1. All parameters**</span>\n\n", sep = "")
