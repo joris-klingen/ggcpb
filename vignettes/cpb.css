@@ -286,3 +286,17 @@ a:hover, a:visited:hover {
 table.reftab tbody tr:nth-child(odd) td {
   background: #f3f9ff !important;
 }
+/* Column widths of the reference tables: the description gets the most room. */
+table.reftab {
+  width: 100%;
+  table-layout: fixed;
+  font-size: 0.85em;
+}
+table.reftab th, table.reftab td {
+  overflow-wrap: anywhere;
+}
+table.reftab th:nth-child(1) { width: 17%; }
+table.reftab th:nth-child(2) { width: 15%; }
+table.reftab th:nth-child(3) { width: 11%; }
+table.reftab th:nth-child(4) { width: 11%; }
+table.reftab th:nth-child(5) { width: 46%; }
