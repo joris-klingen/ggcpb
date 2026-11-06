@@ -300,3 +300,9 @@ table.reftab th:nth-child(2) { width: 19%; }
 table.reftab th:nth-child(3) { width: 11%; }
 table.reftab th:nth-child(4) { width: 11%; }
 table.reftab th:nth-child(5) { width: 43%; }
+/* Several defaults in one cell: one per line, a grey line in between. */
+table.reftab .dv + .dv {
+  border-top: 1px solid #DDDDDD;
+  margin-top: 3px;
+  padding-top: 3px;
+}

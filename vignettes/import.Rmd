@@ -310,7 +310,8 @@ types <- unique(ref$plot_type)
 # One row per parameter. The plot types are listed unless it belongs to all
 # of them. With one default for every plot type that is the default. With
 # several, the default of most plot types is "rest" and the others are
-# listed with their plot types. A required parameter is just "required".
+# listed with their plot types, one per line. A required parameter is just
+# "required".
 one_row <- function(rows) {
   where <- if (setequal(rows$plot_type, types)) {
     "all"
@@ -327,12 +328,14 @@ one_row <- function(rows) {
     counts <- table(defaults)
     rest <- names(counts)[which.max(counts)]
     others <- setdiff(unique(defaults), rest)
-    default <- paste(c(
+    # one line per default, with a grey line in between
+    default <- paste0("<div class=\"dv\">", c(
       vapply(others, function(d) {
-        paste0(d, ": ", paste(rows$plot_type[defaults == d], collapse = ", "))
+        types_d <- paste(rows$plot_type[defaults == d], collapse = ", ")
+        paste0(d, ": ", types_d)
       }, character(1)),
       paste0(rest, ": rest")
-    ), collapse = " | ")
+    ), "</div>", collapse = "")
   }
   data.frame(param = rows$param[1], plot_types = where, default = default,
              example = rows$example[1], description = rows$description[1],

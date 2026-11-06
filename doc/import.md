@@ -519,7 +519,18 @@ box, boxplot_extended
 
 <td style="text-align:left;">
 
-modern: boxplot_extended \| ggcpb: rest
+<div class="dv">
+
+modern: boxplot_extended
+
+</div>
+
+<div class="dv">
+
+ggcpb: rest
+
+</div>
+
 </td>
 
 <td style="text-align:left;">
@@ -1018,7 +1029,18 @@ col, line, box, dot, scatter, hist, boxplot_extended
 
 <td style="text-align:left;">
 
-white: boxplot_extended \| black: rest
+<div class="dv">
+
+white: boxplot_extended
+
+</div>
+
+<div class="dv">
+
+black: rest
+
+</div>
+
 </td>
 
 <td style="text-align:left;">
@@ -1047,7 +1069,18 @@ col, line, box, dot, scatter, hist, boxplot_extended
 
 <td style="text-align:left;">
 
-0.8: boxplot_extended \| 0.1: rest
+<div class="dv">
+
+0.8: boxplot_extended
+
+</div>
+
+<div class="dv">
+
+0.1: rest
+
+</div>
+
 </td>
 
 <td style="text-align:left;">
@@ -1105,7 +1138,18 @@ col, box, dot, boxplot_extended
 
 <td style="text-align:left;">
 
-0.8: col \| 0.7: rest
+<div class="dv">
+
+0.8: col
+
+</div>
+
+<div class="dv">
+
+0.7: rest
+
+</div>
+
 </td>
 
 <td style="text-align:left;">
@@ -1192,7 +1236,18 @@ box, donut, boxplot_extended
 
 <td style="text-align:left;">
 
-1: donut \| 0.1: rest
+<div class="dv">
+
+1: donut
+
+</div>
+
+<div class="dv">
+
+0.1: rest
+
+</div>
+
 </td>
 
 <td style="text-align:left;">
@@ -1309,7 +1364,18 @@ all
 
 <td style="text-align:left;">
 
-topleft: map \| bottom: rest
+<div class="dv">
+
+topleft: map
+
+</div>
+
+<div class="dv">
+
+bottom: rest
+
+</div>
+
 </td>
 
 <td style="text-align:left;">
@@ -1513,7 +1579,24 @@ line, box, dot, boxplot_extended
 
 <td style="text-align:left;">
 
-0.55: line \| 0.4: dot \| 0.25: rest
+<div class="dv">
+
+0.55: line
+
+</div>
+
+<div class="dv">
+
+0.4: dot
+
+</div>
+
+<div class="dv">
+
+0.25: rest
+
+</div>
+
 </td>
 
 <td style="text-align:left;">
@@ -1688,7 +1771,18 @@ col, box, dot, boxplot_extended
 
 <td style="text-align:left;">
 
-vertical: col, box \| horizontal: rest
+<div class="dv">
+
+vertical: col, box
+
+</div>
+
+<div class="dv">
+
+horizontal: rest
+
+</div>
+
 </td>
 
 <td style="text-align:left;">
@@ -1921,7 +2015,18 @@ all
 
 <td style="text-align:left;">
 
-sequential: map \| qualitative: rest
+<div class="dv">
+
+sequential: map
+
+</div>
+
+<div class="dv">
+
+qualitative: rest
+
+</div>
+
 </td>
 
 <td style="text-align:left;">
@@ -2186,7 +2291,18 @@ all
 
 <td style="text-align:left;">
 
-TRUE: col, hist \| FALSE: rest
+<div class="dv">
+
+TRUE: col, hist
+
+</div>
+
+<div class="dv">
+
+FALSE: rest
+
+</div>
+
 </td>
 
 <td style="text-align:left;">
@@ -2448,7 +2564,18 @@ col, line, box, dot, boxplot_extended
 
 <td style="text-align:left;">
 
-none: line \| 0.55: rest
+<div class="dv">
+
+none: line
+
+</div>
+
+<div class="dv">
+
+0.55: rest
+
+</div>
+
 </td>
 
 <td style="text-align:left;">
@@ -2536,7 +2663,18 @@ col, line, box, dot, boxplot_extended
 
 <td style="text-align:left;">
 
-symbol_size: dot \| 1.6: rest
+<div class="dv">
+
+symbol_size: dot
+
+</div>
+
+<div class="dv">
+
+1.6: rest
+
+</div>
+
 </td>
 
 <td style="text-align:left;">
@@ -2740,7 +2878,24 @@ line, dot, scatter
 
 <td style="text-align:left;">
 
-1.1: line \| 1.4: dot \| 0.8: rest
+<div class="dv">
+
+1.1: line
+
+</div>
+
+<div class="dv">
+
+1.4: dot
+
+</div>
+
+<div class="dv">
+
+0.8: rest
+
+</div>
+
 </td>
 
 <td style="text-align:left;">
@@ -2769,7 +2924,18 @@ col, line, box, dot, scatter, hist, boxplot_extended
 
 <td style="text-align:left;">
 
-FALSE: boxplot_extended \| TRUE: rest
+<div class="dv">
+
+FALSE: boxplot_extended
+
+</div>
+
+<div class="dv">
+
+TRUE: rest
+
+</div>
+
 </td>
 
 <td style="text-align:left;">
@@ -2914,7 +3080,18 @@ box, boxplot_extended
 
 <td style="text-align:left;">
 
-none: boxplot_extended \| bottom: rest
+<div class="dv">
+
+none: boxplot_extended
+
+</div>
+
+<div class="dv">
+
+bottom: rest
+
+</div>
+
 </td>
 
 <td style="text-align:left;">
@@ -3117,7 +3294,18 @@ box, boxplot_extended
 
 <td style="text-align:left;">
 
-0.5: box \| 0.45: rest
+<div class="dv">
+
+0.5: box
+
+</div>
+
+<div class="dv">
+
+0.45: rest
+
+</div>
+
 </td>
 
 <td style="text-align:left;">
@@ -3234,7 +3422,18 @@ col, line, box, dot, scatter, hist, boxplot_extended
 
 <td style="text-align:left;">
 
-FALSE: col, scatter, hist \| TRUE: rest
+<div class="dv">
+
+FALSE: col, scatter, hist
+
+</div>
+
+<div class="dv">
+
+TRUE: rest
+
+</div>
+
 </td>
 
 <td style="text-align:left;">
@@ -3524,7 +3723,18 @@ col, line, box, dot, scatter, hist
 
 <td style="text-align:left;">
 
-TRUE: col, hist \| none: rest
+<div class="dv">
+
+TRUE: col, hist
+
+</div>
+
+<div class="dv">
+
+none: rest
+
+</div>
+
 </td>
 
 <td style="text-align:left;">
