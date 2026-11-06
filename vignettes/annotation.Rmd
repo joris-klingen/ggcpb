@@ -209,8 +209,7 @@ cpb_line(bbp, x = jaar, y = index,
 ```
 
 Later `+ theme(...)` calls override individual elements of
-`theme_cpb()` the same way -- see the per-figure margin and legend
-tweaks in `inst/examples/smoke_test_plots.R`. The one thing *not* to
+`theme_cpb()` the same way. The one thing *not* to
 add is a second value-axis scale: use the wrapper's `value_breaks`,
 `value_limits` and `pct_axis` arguments instead.
 

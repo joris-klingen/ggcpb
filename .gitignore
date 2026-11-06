@@ -7,6 +7,7 @@ inst/doc
 reports/
 Rplots.pdf
 inst/examples/output
+inst/examples/generated
 inst/examples/params_log.txt
 # tools/render_vignettes.R writes doc/*.md and doc/*_files/ -- those
 # are deliberately tracked (so GitHub can render them with figures);

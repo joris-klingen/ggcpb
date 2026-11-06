@@ -205,10 +205,9 @@ cpb_line(bbp, x = jaar, y = index,
 <img src="annotation_files/figure-gfm/layer-raming-1.png" alt="" width="350px" />
 
 Later `+ theme(...)` calls override individual elements of `theme_cpb()`
-the same way – see the per-figure margin and legend tweaks in
-`inst/examples/smoke_test_plots.R`. The one thing *not* to add is a
-second value-axis scale: use the wrapper’s `value_breaks`,
-`value_limits` and `pct_axis` arguments instead.
+the same way. The one thing *not* to add is a second value-axis scale:
+use the wrapper’s `value_breaks`, `value_limits` and `pct_axis`
+arguments instead.
 
 For building figures entirely from the composable core (no wrappers at
 all), see [`vignette("ggcpb")`](ggcpb.md).

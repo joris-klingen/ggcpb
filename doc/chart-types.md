@@ -541,9 +541,6 @@ cpb_hist(duur, x = maanden, binwidth = 2,
 
 <img src="chart-types_files/figure-gfm/hist-1.png" alt="" width="350px" />
 
-For a rendered gallery of all chart types against the published
-reference figures, run `inst/examples/smoke_test_plots.R`.
-
 # Sources
 
 Every data set above is **simulated** and every label is a placeholder –

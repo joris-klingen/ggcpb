@@ -23,7 +23,7 @@ or dropped.
 
 ### Important
 
-5. **Mac start script**: `inst/autogenerate_plots/generate_plot.command`
+5. **Mac start script**: `inst/examples/generate_plot.command`
    still ships, while the docs only name `generate_plot.bat`. Remove it, or
    document it again.
 6. **Excel CSV**: Dutch Excel writes `;` and a decimal comma, unless
