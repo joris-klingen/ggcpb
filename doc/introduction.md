@@ -1488,8 +1488,8 @@ input to `cpb_dot()`.
 
 ## Scatter plot
 
-The parameter `cut` puts the energy bill into classes. The classes give
-the points their colour.
+The parameter `cut` puts the purchasing power change into classes. The
+classes give the points their colour.
 
 <div class="figrow">
 
@@ -1568,7 +1568,7 @@ colour
 
 <td style="text-align:left;">
 
-energierekening
+koopkracht
 </td>
 
 </tr>
@@ -1582,7 +1582,7 @@ cut
 
 <td style="text-align:left;">
 
-0;150;200;Inf
+-Inf;-2;-1;0;1;2;Inf
 </td>
 
 </tr>
@@ -1596,7 +1596,7 @@ cut_labels
 
 <td style="text-align:left;">
 
-euro
+pct
 </td>
 
 </tr>
@@ -1605,12 +1605,26 @@ euro
 
 <td style="text-align:left;">
 
-legend_title
+palette
 </td>
 
 <td style="text-align:left;">
 
-energierekening
+discr
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+legend_ncol
+</td>
+
+<td style="text-align:left;">
+
+2
 </td>
 
 </tr>
@@ -1624,7 +1638,7 @@ ylab
 
 <td style="text-align:left;">
 
-euro per maand
+energierekening (euro per maand)
 </td>
 
 </tr>
@@ -1653,6 +1667,20 @@ x_labels
 <td style="text-align:left;">
 
 euro
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+legend_title
+</td>
+
+<td style="text-align:left;">
+
+koopkracht (%)
 </td>
 
 </tr>
@@ -2160,14 +2188,17 @@ cpb_dot(schatting, x = term, y = coef, lower = lo, upper = hi,
 ``` r
 hh <- tibble(inkomen = round(rlnorm(400, log(2500), 0.35))) |>
   mutate(energierekening = round(90 + 0.04 * inkomen + rnorm(n(), 0, 35)),
-         klasse = cpb_cut(energierekening, breaks = c(0, 150, 200, Inf),
-                          labeller = label_euro_nl()))
-cpb_scatter(hh, x = inkomen, y = energierekening, colour = klasse,
+         koopkracht      = round(rnorm(n(), (inkomen - 2500) / 1500, 2), 1))
+cpb_scatter(hh, x = inkomen, y = energierekening,
+            colour = cpb_cut(koopkracht, c(-Inf, -2, -1, 0, 1, 2, Inf),
+                             labeller = label_pct_nl()),
+            palette = "discr",
+            legend_ncol = 2,
             title = "Energierekening naar inkomen",
-            legend_title = "energierekening",
-            ylab  = "euro per maand",
+            ylab  = "energierekening (euro per maand)",
             xlab  = "besteedbaar inkomen (euro per maand)",
-            x_labels = label_euro_nl())
+            x_labels = label_euro_nl(),
+            legend_title = "koopkracht (%)")
 ```
 
 <a id="code-hist"></a>

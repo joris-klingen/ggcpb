@@ -6,7 +6,7 @@ y,koopkracht,werkloosheid,groei,mld,aandeel,tarief,,aandeel,coef,energierekening
 ymin,,,lo,,,,,,,,,,
 ymax,,,hi,,,,,,,,,,
 forecast_x,,,2023.5,,,,,,,,,,
-ylab,% mutatie,%,%,mld euro,inkomensgroep,% average rate,% koopkrachtmutatie,,,euro per maand,aantal,,% koopkrachtmutatie
+ylab,% mutatie,%,%,mld euro,inkomensgroep,% average rate,% koopkrachtmutatie,,,energierekening (euro per maand),aantal,,% koopkrachtmutatie
 fill,groep,,,soort,jaar,,,bron,,,,,
 sec_y,werkloosheid,,,heffing,,,,,,,,,
 sec_limits,,,,0;3,,,,,,,,,
@@ -17,7 +17,7 @@ orientation,,,,,horizontal,,horizontal,,,,,,
 colour_index,,,,,2;1,,,6;5;2;4,,,,,
 value_limits,,,,,0;70,0;30,,,,,,,
 xlab,,,,,aandeel binnen inkomensgroep (%),,,,%punt verandering,besteedbaar inkomen (euro per maand),duur (maanden),,
-colour,,,,,,erfenis,,,,energierekening,,,
+colour,,,,,,erfenis,,,,koopkracht,,,
 points,,,,,,TRUE,,,,,,,
 style,,english,,,,english,,,,,,,
 p5,,,,,,,p5,,,,,,p5
@@ -33,13 +33,14 @@ binwidth,,,,,,,,,,,2,,
 x_labels,,,,,,,,,,euro,,,
 region,,,,,,,,,,,,code,
 value,,,,,,,,,,,,aandeel,
-cut,,,,,,,,,,0;150;200;Inf,,0;20;30;40;50;60;Inf,
-cut_labels,,,,,,,,,,euro,,pct,
-palette,,,,,,,,,,,,blues,
-legend_title,,,,,,,,,,energierekening,,aandeel,
+cut,,,,,,,,,,-Inf;-2;-1;0;1;2;Inf,,0;20;30;40;50;60;Inf,
+cut_labels,,,,,,,,,,pct,,pct,
+palette,,,,,,,,,,discr,,blues,
+legend_title,,,,,,,,,,koopkracht (%),,aandeel,
 facet,,,,,,,,,,,,,jaar
 facet_ncol,,,,,,,,,,,,,2
 page,,,,,,,,,,,,,full
 sec_type,line,,,,,,,,,,,,
 create,y,y,,,,,,,,,,,
 legend,,,,,,,,,filled-empty,,,,
+legend_ncol,,,,,,,,,,2,,,

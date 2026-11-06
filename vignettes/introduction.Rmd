@@ -542,25 +542,28 @@ repro("cpb_dot", "dot", "5.8", "code-dot")
 
 ## Scatter plot
 
-The parameter `cut` puts the energy bill into classes. The classes give
-the points their colour.
+The parameter `cut` puts the purchasing power change into classes. The
+classes give the points their colour.
 
 ```{r data-scatter}
 hh <- tibble(inkomen = round(rlnorm(400, log(2500), 0.35))) |>
   mutate(energierekening = round(90 + 0.04 * inkomen + rnorm(n(), 0, 35)),
-         klasse = cpb_cut(energierekening, breaks = c(0, 150, 200, Inf),
-                          labeller = label_euro_nl()))
+         koopkracht      = round(rnorm(n(), (inkomen - 2500) / 1500, 2), 1))
 ```
 
 ::: {.figrow}
 
 ```{r scatter}
-cpb_scatter(hh, x = inkomen, y = energierekening, colour = klasse,
+cpb_scatter(hh, x = inkomen, y = energierekening,
+            colour = cpb_cut(koopkracht, c(-Inf, -2, -1, 0, 1, 2, Inf),
+                             labeller = label_pct_nl()),
+            palette = "discr",
+            legend_ncol = 2,
             title = "Energierekening naar inkomen",
-            legend_title = "energierekening",
-            ylab  = "euro per maand",
+            ylab  = "energierekening (euro per maand)",
             xlab  = "besteedbaar inkomen (euro per maand)",
-            x_labels = label_euro_nl())
+            x_labels = label_euro_nl(),
+            legend_title = "koopkracht (%)")
 ```
 
 <div>
@@ -569,10 +572,11 @@ cpb_scatter(hh, x = inkomen, y = energierekening, colour = klasse,
 
 ```{r par-scatter}
 ptab(plot_type = "scatter", title = "Energierekening naar inkomen",
-     x = "inkomen", y = "energierekening", colour = "energierekening",
-     cut = "0;150;200;Inf", cut_labels = "euro",
-     legend_title = "energierekening", ylab = "euro per maand",
-     xlab = "besteedbaar inkomen (euro per maand)", x_labels = "euro")
+     x = "inkomen", y = "energierekening", colour = "koopkracht",
+     cut = "-Inf;-2;-1;0;1;2;Inf", cut_labels = "pct", palette = "discr",
+     legend_ncol = 2, ylab = "energierekening (euro per maand)",
+     xlab = "besteedbaar inkomen (euro per maand)", x_labels = "euro",
+     legend_title = "koopkracht (%)")
 ```
 
 </div>
