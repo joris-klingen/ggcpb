@@ -50,7 +50,7 @@ literal_examples <- c(
   subtitle         = "subtitle (replaces the default unit above the figure)",
   xlab             = "unit below the x axis",
   ylab             = "% change",
-  legend_title     = "title of the legend",
+  legend_title     = "Legend",
   fill_colour      = "#005faf",
   line_colour      = "#005faf",
   symbol_colour    = "#e6006e",
@@ -331,7 +331,7 @@ for (pt in plot_types) {
       # inside the data folder, so it is a literal here
       rows[[length(rows) + 1]] <- data.frame(
         plot_type = pt, param = "data", kind = "literal",
-        default = "data", example = "koopkracht;werkloosheid",
+        default = "data", example = "koopkracht",
         description = unname(descriptions["data"]),
         stringsAsFactors = FALSE
       )

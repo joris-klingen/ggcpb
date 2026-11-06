@@ -295,8 +295,8 @@ table.reftab {
 table.reftab th, table.reftab td {
   overflow-wrap: anywhere;
 }
-table.reftab th:nth-child(1) { width: 17%; }
-table.reftab th:nth-child(2) { width: 15%; }
+table.reftab th:nth-child(1) { width: 16%; }
+table.reftab th:nth-child(2) { width: 19%; }
 table.reftab th:nth-child(3) { width: 11%; }
 table.reftab th:nth-child(4) { width: 11%; }
-table.reftab th:nth-child(5) { width: 46%; }
+table.reftab th:nth-child(5) { width: 43%; }

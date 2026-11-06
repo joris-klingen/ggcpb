@@ -701,7 +701,7 @@ data
 
 <td style="text-align:left;">
 
-koopkracht;werkloosheid
+koopkracht
 </td>
 
 <td style="text-align:left;">
@@ -1431,7 +1431,7 @@ none
 
 <td style="text-align:left;">
 
-title of the legend
+Legend
 </td>
 
 <td style="text-align:left;">
