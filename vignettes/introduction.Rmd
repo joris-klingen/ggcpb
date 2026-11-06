@@ -26,6 +26,15 @@ knitr::opts_chunk$set(
   dev = if (requireNamespace("ragg", quietly = TRUE)) "ragg_png" else "png",
   dev.args = list(background = "#eef8ff")
 )
+
+# LATER WILL USE THIS WORKFLOW IN THE MARKDOWN WHEN THE M-PATH IS KNOWN:
+# 1. Find the most recent ggcpb folder in `[path]`.
+# 2. Copy it to the place where you want to create figures.
+# 3. Put your datasets in the folder `data`. Open `params.csv` in Excel
+#    and describe your figures.
+# 4. Start `run_import.bat` by
+#    double clicking it. Your figures appear in the folder `generated`.
+
 ```
 
 ```{r setup, message = FALSE}
@@ -45,14 +54,16 @@ ptab <- function(...) {
                table.attr = 'class="ptab"')
 }
 
-# One standard sentence under every figure.
-repro <- function(fun, dataset) {
-  cat("**How to reproduce this figure:** copy `params.csv`, the folder ",
-      "`data` containing at least `", dataset, ".csv` and ",
-      "`run_import.bat` to a ",
-      "personal folder. Fill in the parameters above in `params.csv` and ",
-      "start the script. In R you can call `", fun, "()` instead. See ",
-      "section 1.3 and the example code at the end.\n", sep = "")
+# One standard sentence under every figure. `section` is the number of the
+# example code at the end, which the sentence links to (`id` is its anchor).
+repro <- function(fun, dataset, section, id) {
+  cat("**How to reproduce this figure:** copy `params.csv`, `run_import.bat` ",
+      "and the folder `data` with `", dataset, ".csv` to a personal folder. ",
+      "Fill in the parameters above in `params.csv` and start the script. ",
+      "In R you can call `", fun, "()` instead. Follow the example code in ",
+      "[section ", section, "](#", id, ") to create the plot in R. ",
+      "Alternatively, the csv file can be read with `read.csv()` and used ",
+      "as input to `", fun, "()`.\n", sep = "")
 }
 ```
 
@@ -90,19 +101,20 @@ used plotting package in R. This brings the following benefits:
 
 This is the general workflow to create figures with ggcpb without using R:
 
-1. Find the most recent ggcpb folder in `[path]`.
+1. Find the most recent ggcpb version.
 2. Copy it to the place where you want to create figures.
-3. Put your datasets in the folder `data`. Open `params.csv` in Excel
-   and describe your figures.
-4. Start `run_import.bat` by
-   double clicking it. Your figures appear in the folder `generated`.
+3. Put your datasets in the folder `data`. 
+   Open `params.csv` in Excel and describe your figures.
+4. Start `run_import.bat` by double clicking it. 
+   Your figures appear in the folder `generated`.
 
 You do not need to know R to follow this workflow. One parameter file and
 one or more datasets drive everything.
 
 * `params.csv` describes your figures. Column 1 holds the parameter
   names, such as `title`, `x` and `data`. Every other column describes
-  one figure. The row `data` names the dataset of the figure.
+  one figure. The row `data` names the dataset of the figure. All parameters 
+  and their descriptions are given in the [import vignette](import.md).
 * The folder `data` holds your datasets. Each dataset is its own CSV
   file with any name, such as `koopkracht.csv`. The first row holds the
   column names. The following rows are the observations per column.
@@ -213,7 +225,7 @@ ptab(plot_type = "line", title = "Economische groei met onzekerheid",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_line", "line-forecast")
+repro("cpb_line", "line-forecast", "4.1", "code-line-forecast")
 ```
 
 ## Columns with two axes
@@ -259,7 +271,7 @@ ptab(plot_type = "col", title = "Erfenissen en erfbelasting",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_col", "col-secaxis")
+repro("cpb_col", "col-secaxis", "4.2", "code-col-secaxis")
 ```
 
 ## Horizontal bars with chosen colours
@@ -304,7 +316,7 @@ ptab(plot_type = "col", title = "Zonnepanelen naar inkomen",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_col", "col-horizontal")
+repro("cpb_col", "col-horizontal", "4.3", "code-col-horizontal")
 ```
 
 ## Line with markers in English
@@ -346,7 +358,7 @@ ptab(plot_type = "line", title = "Preferred tax rate by age",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_line", "line-points")
+repro("cpb_line", "line-points", "4.4", "code-line-points")
 ```
 
 ## Boxplot
@@ -392,7 +404,7 @@ ptab(plot_type = "box", title = "Koopkracht per inkomensgroep",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_box", "box")
+repro("cpb_box", "box", "4.5", "code-box")
 ```
 
 More box plot styles are in [`vignette("boxplots")`](boxplots.html).
@@ -432,7 +444,7 @@ ptab(plot_type = "donut", title = "Energiemix van huishoudens",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_donut", "donut")
+repro("cpb_donut", "donut", "4.6", "code-donut")
 ```
 
 ## Dot plot
@@ -476,7 +488,7 @@ ptab(plot_type = "dot", title = "Samenhang met voorkeurstarieven",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_dot", "dot")
+repro("cpb_dot", "dot", "4.7", "code-dot")
 ```
 
 ## Scatter plot
@@ -511,7 +523,7 @@ ptab(plot_type = "scatter", title = "Energierekening naar inkomen",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_scatter", "scatter")
+repro("cpb_scatter", "scatter", "4.8", "code-scatter")
 ```
 
 ## Histogram
@@ -543,34 +555,8 @@ ptab(plot_type = "hist", title = "Verdeling van de duur",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_hist", "hist")
+repro("cpb_hist", "hist", "4.9", "code-hist")
 ```
-
-# Ggplot2 base allows for endless possibilities
-
-Every ggcpb figure is a real ggplot2 object. This means you can stack
-extra functionalities to the plot in R with `+`.
-
-The next figure has a sharp rise between 2020 and 2021. We add a
-reference line, and a text along the diagonal in dark pink italic
-letters. The position comes from the coordinates of the data. The
-`angle` follows the slope of the line.
-
-```{r diagonal, echo = TRUE, out.width = "50%"}
-stijging <- tibble(jaar = 2017:2024,
-                   waarde = c(2.1, 2.3, 2.0, 1.9, 6.4, 6.8, 6.5, 6.6))
-
-cpb_line(stijging, x = jaar, y = waarde,
-         title = "Een scherpe stijging", ylab = "%") +
-  geom_hline(yintercept = 6, linetype = "dashed", linewidth = 0.3) +
-  annotate("text", x = 2020.2, y = 4.2, label = "scherpe stijging",
-           angle = 72, colour = "#a0004e", fontface = "italic",
-           size = 2.4, family = cpb_font_family())
-```
-
-
-You can stack as many pieces as you need. More patterns are in
-[`vignette("annotation")`](annotation.html).
 
 ## Classed map
 
@@ -613,10 +599,36 @@ ptab(plot_type = "map", title = "Aandeel huishoudens met zonnepanelen",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_map", "map")
+repro("cpb_map", "map", "4.10", "code-map")
 ```
 
 More options are in [`vignette("maps")`](maps.html).
+
+# Ggplot2 base allows for endless possibilities
+
+Every ggcpb figure is a real ggplot2 object. This means you can stack
+extra functionalities to the plot in R with `+`.
+
+The next figure has a sharp rise between 2020 and 2021. We add a
+reference line, and a text along the diagonal in dark pink italic
+letters. The position comes from the coordinates of the data. The
+`angle` follows the slope of the line.
+
+```{r diagonal, echo = TRUE, out.width = "50%"}
+stijging <- tibble(jaar = 2017:2024,
+                   waarde = c(2.1, 2.3, 2.0, 1.9, 6.4, 6.8, 6.5, 6.6))
+
+cpb_line(stijging, x = jaar, y = waarde,
+         title = "Een scherpe stijging", ylab = "%") +
+  geom_hline(yintercept = 6, linetype = "dashed", linewidth = 0.3) +
+  annotate("text", x = 2020.2, y = 4.2, label = "scherpe stijging",
+           angle = 72, colour = "#a0004e", fontface = "italic",
+           size = 2.4, family = cpb_font_family())
+```
+
+
+You can stack as many pieces as you need. More patterns are in
+[`vignette("annotation")`](annotation.html).
 
 # Example code to create figures in R
 
@@ -632,50 +644,70 @@ library(dplyr)
 library(tidyr)
 ```
 
+<a id="code-line-forecast"></a>
+
 ## Line with forecast
 
 ```{r code-line-forecast, ref.label = c("data-line", "line-forecast"), echo = TRUE, eval = FALSE}
 ```
+
+<a id="code-col-secaxis"></a>
 
 ## Columns with two axes
 
 ```{r code-col-secaxis, ref.label = c("data-col", "col-secaxis"), echo = TRUE, eval = FALSE}
 ```
 
+<a id="code-col-horizontal"></a>
+
 ## Horizontal bars with chosen colours
 
 ```{r code-col-horizontal, ref.label = c("data-hbar", "col-horizontal"), echo = TRUE, eval = FALSE}
 ```
+
+<a id="code-line-points"></a>
 
 ## Line with markers in English
 
 ```{r code-line-points, ref.label = c("data-points", "line-points"), echo = TRUE, eval = FALSE}
 ```
 
+<a id="code-box"></a>
+
 ## Boxplot
 
 ```{r code-box, ref.label = c("data-box", "box"), echo = TRUE, eval = FALSE}
 ```
+
+<a id="code-donut"></a>
 
 ## Donut
 
 ```{r code-donut, ref.label = c("data-donut", "donut"), echo = TRUE, eval = FALSE}
 ```
 
+<a id="code-dot"></a>
+
 ## Dot plot
 
 ```{r code-dot, ref.label = c("data-dot", "dot"), echo = TRUE, eval = FALSE}
 ```
+
+<a id="code-scatter"></a>
 
 ## Scatter plot
 
 ```{r code-scatter, ref.label = c("data-scatter", "scatter"), echo = TRUE, eval = FALSE}
 ```
 
+<a id="code-hist"></a>
+
 ## Histogram
 
 ```{r code-hist, ref.label = c("data-hist", "hist"), echo = TRUE, eval = FALSE}
 ```
+
+<a id="code-map"></a>
 
 ## Classed map
 

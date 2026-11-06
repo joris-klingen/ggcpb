@@ -280,3 +280,9 @@ a:hover, a:visited:hover {
   color: #003c6e;
   text-decoration: underline;
 }
+
+/* The long reference tables of the import vignette: every second row in a
+   very light blue. */
+table.reftab tbody tr:nth-child(even) td {
+  background: #f3f9ff !important;
+}

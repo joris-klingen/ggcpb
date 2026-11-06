@@ -17,9 +17,9 @@ Introduction to ggcpb
   - [Dot plot](#dot-plot)
   - [Scatter plot](#scatter-plot)
   - [Histogram](#histogram)
+  - [Classed map](#classed-map)
 - [Ggplot2 base allows for endless
   possibilities](#ggplot2-base-allows-for-endless-possibilities)
-  - [Classed map](#classed-map)
 - [Example code to create figures in
   R](#example-code-to-create-figures-in-r)
   - [Line with forecast](#line-with-forecast-1)
@@ -68,7 +68,7 @@ plotting package in R. This brings the following benefits:
 This is the general workflow to create figures with ggcpb without using
 R:
 
-1.  Find the most recent ggcpb folder in `[path]`.
+1.  Find the most recent ggcpb version.
 2.  Copy it to the place where you want to create figures.
 3.  Put your datasets in the folder `data`. Open `params.csv` in Excel
     and describe your figures.
@@ -80,7 +80,9 @@ and one or more datasets drive everything.
 
 - `params.csv` describes your figures. Column 1 holds the parameter
   names, such as `title`, `x` and `data`. Every other column describes
-  one figure. The row `data` names the dataset of the figure.
+  one figure. The row `data` names the dataset of the figure. All
+  parameters and their descriptions are given in the [import
+  vignette](import.md).
 - The folder `data` holds your datasets. Each dataset is its own CSV
   file with any name, such as `koopkracht.csv`. The first row holds the
   column names. The following rows are the observations per column.
@@ -292,11 +294,13 @@ ylab
 
 </div>
 
-**How to reproduce this figure:** copy `params.csv`, the folder `data`
-containing at least `line-forecast.csv` and `run_import.bat` to a
-personal folder. Fill in the parameters above in `params.csv` and start
-the script. In R you can call `cpb_line()` instead. See section 1.3 and
-the example code at the end.
+**How to reproduce this figure:** copy `params.csv`, `run_import.bat`
+and the folder `data` with `line-forecast.csv` to a personal folder.
+Fill in the parameters above in `params.csv` and start the script. In R
+you can call `cpb_line()` instead. Follow the example code in [section
+4.1](#code-line-forecast) to create the plot in R. Alternatively, the
+csv file can be read with `read.csv()` and used as input to
+`cpb_line()`.
 
 ## Columns with two axes
 
@@ -463,11 +467,12 @@ mld euro
 
 </div>
 
-**How to reproduce this figure:** copy `params.csv`, the folder `data`
-containing at least `col-secaxis.csv` and `run_import.bat` to a personal
-folder. Fill in the parameters above in `params.csv` and start the
-script. In R you can call `cpb_col()` instead. See section 1.3 and the
-example code at the end.
+**How to reproduce this figure:** copy `params.csv`, `run_import.bat`
+and the folder `data` with `col-secaxis.csv` to a personal folder. Fill
+in the parameters above in `params.csv` and start the script. In R you
+can call `cpb_col()` instead. Follow the example code in [section
+4.2](#code-col-secaxis) to create the plot in R. Alternatively, the csv
+file can be read with `read.csv()` and used as input to `cpb_col()`.
 
 ## Horizontal bars with chosen colours
 
@@ -647,11 +652,12 @@ aandeel binnen inkomensgroep (%)
 
 </div>
 
-**How to reproduce this figure:** copy `params.csv`, the folder `data`
-containing at least `col-horizontal.csv` and `run_import.bat` to a
-personal folder. Fill in the parameters above in `params.csv` and start
-the script. In R you can call `cpb_col()` instead. See section 1.3 and
-the example code at the end.
+**How to reproduce this figure:** copy `params.csv`, `run_import.bat`
+and the folder `data` with `col-horizontal.csv` to a personal folder.
+Fill in the parameters above in `params.csv` and start the script. In R
+you can call `cpb_col()` instead. Follow the example code in [section
+4.3](#code-col-horizontal) to create the plot in R. Alternatively, the
+csv file can be read with `read.csv()` and used as input to `cpb_col()`.
 
 ## Line with markers in English
 
@@ -804,11 +810,12 @@ ylab
 
 </div>
 
-**How to reproduce this figure:** copy `params.csv`, the folder `data`
-containing at least `line-points.csv` and `run_import.bat` to a personal
-folder. Fill in the parameters above in `params.csv` and start the
-script. In R you can call `cpb_line()` instead. See section 1.3 and the
-example code at the end.
+**How to reproduce this figure:** copy `params.csv`, `run_import.bat`
+and the folder `data` with `line-points.csv` to a personal folder. Fill
+in the parameters above in `params.csv` and start the script. In R you
+can call `cpb_line()` instead. Follow the example code in [section
+4.4](#code-line-points) to create the plot in R. Alternatively, the csv
+file can be read with `read.csv()` and used as input to `cpb_line()`.
 
 ## Boxplot
 
@@ -989,11 +996,12 @@ ylab
 
 </div>
 
-**How to reproduce this figure:** copy `params.csv`, the folder `data`
-containing at least `box.csv` and `run_import.bat` to a personal folder.
-Fill in the parameters above in `params.csv` and start the script. In R
-you can call `cpb_box()` instead. See section 1.3 and the example code
-at the end.
+**How to reproduce this figure:** copy `params.csv`, `run_import.bat`
+and the folder `data` with `box.csv` to a personal folder. Fill in the
+parameters above in `params.csv` and start the script. In R you can call
+`cpb_box()` instead. Follow the example code in [section 4.5](#code-box)
+to create the plot in R. Alternatively, the csv file can be read with
+`read.csv()` and used as input to `cpb_box()`.
 
 More box plot styles are in [`vignette("boxplots")`](boxplots.md).
 
@@ -1093,11 +1101,12 @@ colour_index
 
 </div>
 
-**How to reproduce this figure:** copy `params.csv`, the folder `data`
-containing at least `donut.csv` and `run_import.bat` to a personal
-folder. Fill in the parameters above in `params.csv` and start the
-script. In R you can call `cpb_donut()` instead. See section 1.3 and the
-example code at the end.
+**How to reproduce this figure:** copy `params.csv`, `run_import.bat`
+and the folder `data` with `donut.csv` to a personal folder. Fill in the
+parameters above in `params.csv` and start the script. In R you can call
+`cpb_donut()` instead. Follow the example code in [section
+4.6](#code-donut) to create the plot in R. Alternatively, the csv file
+can be read with `read.csv()` and used as input to `cpb_donut()`.
 
 ## Dot plot
 
@@ -1235,11 +1244,12 @@ xlab
 
 </div>
 
-**How to reproduce this figure:** copy `params.csv`, the folder `data`
-containing at least `dot.csv` and `run_import.bat` to a personal folder.
-Fill in the parameters above in `params.csv` and start the script. In R
-you can call `cpb_dot()` instead. See section 1.3 and the example code
-at the end.
+**How to reproduce this figure:** copy `params.csv`, `run_import.bat`
+and the folder `data` with `dot.csv` to a personal folder. Fill in the
+parameters above in `params.csv` and start the script. In R you can call
+`cpb_dot()` instead. Follow the example code in [section 4.7](#code-dot)
+to create the plot in R. Alternatively, the csv file can be read with
+`read.csv()` and used as input to `cpb_dot()`.
 
 ## Scatter plot
 
@@ -1361,11 +1371,12 @@ euro
 
 </div>
 
-**How to reproduce this figure:** copy `params.csv`, the folder `data`
-containing at least `scatter.csv` and `run_import.bat` to a personal
-folder. Fill in the parameters above in `params.csv` and start the
-script. In R you can call `cpb_scatter()` instead. See section 1.3 and
-the example code at the end.
+**How to reproduce this figure:** copy `params.csv`, `run_import.bat`
+and the folder `data` with `scatter.csv` to a personal folder. Fill in
+the parameters above in `params.csv` and start the script. In R you can
+call `cpb_scatter()` instead. Follow the example code in [section
+4.8](#code-scatter) to create the plot in R. Alternatively, the csv file
+can be read with `read.csv()` and used as input to `cpb_scatter()`.
 
 ## Histogram
 
@@ -1473,38 +1484,12 @@ duur (maanden)
 
 </div>
 
-**How to reproduce this figure:** copy `params.csv`, the folder `data`
-containing at least `hist.csv` and `run_import.bat` to a personal
-folder. Fill in the parameters above in `params.csv` and start the
-script. In R you can call `cpb_hist()` instead. See section 1.3 and the
-example code at the end.
-
-# Ggplot2 base allows for endless possibilities
-
-Every ggcpb figure is a real ggplot2 object. This means you can stack
-extra functionalities to the plot in R with `+`.
-
-The next figure has a sharp rise between 2020 and 2021. We add a
-reference line, and a text along the diagonal in dark pink italic
-letters. The position comes from the coordinates of the data. The
-`angle` follows the slope of the line.
-
-``` r
-stijging <- tibble(jaar = 2017:2024,
-                   waarde = c(2.1, 2.3, 2.0, 1.9, 6.4, 6.8, 6.5, 6.6))
-
-cpb_line(stijging, x = jaar, y = waarde,
-         title = "Een scherpe stijging", ylab = "%") +
-  geom_hline(yintercept = 6, linetype = "dashed", linewidth = 0.3) +
-  annotate("text", x = 2020.2, y = 4.2, label = "scherpe stijging",
-           angle = 72, colour = "#a0004e", fontface = "italic",
-           size = 2.4, family = cpb_font_family())
-```
-
-<img src="introduction_files/figure-gfm/diagonal-1.png" alt="" width="50%" />
-
-You can stack as many pieces as you need. More patterns are in
-[`vignette("annotation")`](annotation.md).
+**How to reproduce this figure:** copy `params.csv`, `run_import.bat`
+and the folder `data` with `hist.csv` to a personal folder. Fill in the
+parameters above in `params.csv` and start the script. In R you can call
+`cpb_hist()` instead. Follow the example code in [section
+4.9](#code-hist) to create the plot in R. Alternatively, the csv file
+can be read with `read.csv()` and used as input to `cpb_hist()`.
 
 ## Classed map
 
@@ -1653,13 +1638,41 @@ aandeel
 
 </div>
 
-**How to reproduce this figure:** copy `params.csv`, the folder `data`
-containing at least `map.csv` and `run_import.bat` to a personal folder.
-Fill in the parameters above in `params.csv` and start the script. In R
-you can call `cpb_map()` instead. See section 1.3 and the example code
-at the end.
+**How to reproduce this figure:** copy `params.csv`, `run_import.bat`
+and the folder `data` with `map.csv` to a personal folder. Fill in the
+parameters above in `params.csv` and start the script. In R you can call
+`cpb_map()` instead. Follow the example code in [section
+4.10](#code-map) to create the plot in R. Alternatively, the csv file
+can be read with `read.csv()` and used as input to `cpb_map()`.
 
 More options are in [`vignette("maps")`](maps.md).
+
+# Ggplot2 base allows for endless possibilities
+
+Every ggcpb figure is a real ggplot2 object. This means you can stack
+extra functionalities to the plot in R with `+`.
+
+The next figure has a sharp rise between 2020 and 2021. We add a
+reference line, and a text along the diagonal in dark pink italic
+letters. The position comes from the coordinates of the data. The
+`angle` follows the slope of the line.
+
+``` r
+stijging <- tibble(jaar = 2017:2024,
+                   waarde = c(2.1, 2.3, 2.0, 1.9, 6.4, 6.8, 6.5, 6.6))
+
+cpb_line(stijging, x = jaar, y = waarde,
+         title = "Een scherpe stijging", ylab = "%") +
+  geom_hline(yintercept = 6, linetype = "dashed", linewidth = 0.3) +
+  annotate("text", x = 2020.2, y = 4.2, label = "scherpe stijging",
+           angle = 72, colour = "#a0004e", fontface = "italic",
+           size = 2.4, family = cpb_font_family())
+```
+
+<img src="introduction_files/figure-gfm/diagonal-1.png" alt="" width="50%" />
+
+You can stack as many pieces as you need. More patterns are in
+[`vignette("annotation")`](annotation.md).
 
 # Example code to create figures in R
 
@@ -1675,6 +1688,8 @@ library(dplyr)
 library(tidyr)
 ```
 
+<a id="code-line-forecast"></a>
+
 ## Line with forecast
 
 ``` r
@@ -1688,6 +1703,8 @@ cpb_line(groei, x = jaar, y = groei, ymin = lo, ymax = hi,
   scale_x_continuous(breaks = seq(2015, 2027, 3), minor_breaks = 2015:2027,
                      guide = guide_axis(minor.ticks = TRUE))
 ```
+
+<a id="code-col-secaxis"></a>
 
 ## Columns with two axes
 
@@ -1708,6 +1725,8 @@ cpb_col(erfenissen, x = jaar, y = mld, fill = soort,
         title = "Erfenissen en erfbelasting", ylab = "mld euro")
 ```
 
+<a id="code-col-horizontal"></a>
+
 ## Horizontal bars with chosen colours
 
 ``` r
@@ -1726,6 +1745,8 @@ cpb_col(zonnepanelen, x = groep, y = aandeel, fill = jaar,
         ylab  = "inkomensgroep", xlab = "aandeel binnen inkomensgroep (%)")
 ```
 
+<a id="code-line-points"></a>
+
 ## Line with markers in English
 
 ``` r
@@ -1741,6 +1762,8 @@ cpb_line(tarieven, x = leeftijd, y = tarief, colour = erfenis,
          points = TRUE, value_limits = c(0, 30), style = "english",
          title = "Preferred tax rate by age", ylab = "% average rate")
 ```
+
+<a id="code-box"></a>
 
 ## Boxplot
 
@@ -1761,6 +1784,8 @@ cpb_box(kk, x = groep,
         subtitle = "inkomensgroep", ylab = "% koopkrachtmutatie")
 ```
 
+<a id="code-donut"></a>
+
 ## Donut
 
 ``` r
@@ -1771,6 +1796,8 @@ cpb_donut(energie, fill = bron, y = aandeel,
           colour_index = c(6, 5, 2, 4),
           title = "Energiemix van huishoudens")
 ```
+
+<a id="code-dot"></a>
 
 ## Dot plot
 
@@ -1791,6 +1818,8 @@ cpb_dot(schatting, x = term, y = coef, lower = lo, upper = hi,
         xlab  = "%punt verandering")
 ```
 
+<a id="code-scatter"></a>
+
 ## Scatter plot
 
 ``` r
@@ -1803,6 +1832,8 @@ cpb_scatter(hh, x = inkomen, y = energierekening,
             x_labels = label_euro_nl())
 ```
 
+<a id="code-hist"></a>
+
 ## Histogram
 
 ``` r
@@ -1811,6 +1842,8 @@ cpb_hist(duur, x = maanden, binwidth = 2,
          title = "Verdeling van de duur", ylab = "aantal",
          xlab  = "duur (maanden)")
 ```
+
+<a id="code-map"></a>
 
 ## Classed map
 

@@ -285,7 +285,7 @@ any parameter problems.
 
 The available parameters depend on the `plot_type`. The complete list is
 stored in `parameter_settings.csv`, and gives the available parameters,
-their default values and examples.
+their default values, examples and a short description.
 
 Many parameters are the same across every `plot_type`. Table A1 lists
 the parameters shared, with the same meaning and default, by all plot
@@ -295,458 +295,9688 @@ not already in Table A1.
 <span class="table-title">**Table A1. Shared parameters across all plot
 types**</span>
 
-| parameter | default | example |
-|:---|:---|:---|
-| colour_index |  | 2;6 |
-| cut |  | 0;20;40;Inf |
-| cut_labels | number/euro/pct (default: number) | pct |
-| data | data | koopkracht;werkloosheid |
-| dpi | 300 | 800 |
-| flush_legend | TRUE | TRUE |
-| height |  | 10 (cm) |
-| legend_ncol |  | 2 |
-| legend_nrow |  | 2 |
-| legend_title |  | title of the legend |
-| lock | TRUE | FALSE |
-| page | half | full |
-| preset | report/presentation/map (default: report) | map |
-| style | dutch | dutch |
-| subtitle |  | subtitle (replaces the default unit above the figure) |
-| title |  | Title of the figure |
+<table class="reftab">
+
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+parameter
+</th>
+
+<th style="text-align:left;">
+
+default
+</th>
+
+<th style="text-align:left;">
+
+example
+</th>
+
+<th style="text-align:left;">
+
+description
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+colour_index
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+2;6
+</td>
+
+<td style="text-align:left;">
+
+Which house colours to use, by number. The first number is for the first
+category.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+cut
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;20;40;Inf
+</td>
+
+<td style="text-align:left;">
+
+Cuts the numbers of the colour column into classes. The values are the
+class limits.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+cut_labels
+</td>
+
+<td style="text-align:left;">
+
+number
+</td>
+
+<td style="text-align:left;">
+
+<code>number</code>, <code>euro</code> or <code>pct</code>
+</td>
+
+<td style="text-align:left;">
+
+How the class limits are written in the legend.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+data
+</td>
+
+<td style="text-align:left;">
+
+data
+</td>
+
+<td style="text-align:left;">
+
+koopkracht;werkloosheid
+</td>
+
+<td style="text-align:left;">
+
+The dataset (file in the folder data) to draw. Leave blank for data.csv.
+Write a;b for one figure per dataset.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+dpi
+</td>
+
+<td style="text-align:left;">
+
+300
+</td>
+
+<td style="text-align:left;">
+
+800
+</td>
+
+<td style="text-align:left;">
+
+The sharpness of the saved image, in dots per inch.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+flush_legend
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE places the legend at the left edge of the figure.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+height
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+10
+</td>
+
+<td style="text-align:left;">
+
+The height of the saved figure in cm. Blank gives the standard height.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+legend_ncol
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+2
+</td>
+
+<td style="text-align:left;">
+
+The number of columns of the legend.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+legend_nrow
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+2
+</td>
+
+<td style="text-align:left;">
+
+The number of rows of the legend.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+legend_title
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+title of the legend
+</td>
+
+<td style="text-align:left;">
+
+The title of the legend.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+lock
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE stops with a message when the title or legend is wider than the
+page. FALSE saves the figure anyway.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+page
+</td>
+
+<td style="text-align:left;">
+
+half
+</td>
+
+<td style="text-align:left;">
+
+<code>half</code>, <code>full</code> or <code>small</code>
+</td>
+
+<td style="text-align:left;">
+
+The width of the saved figure: half is 7.5 cm, full is 15.5 cm and small
+is 6.8 cm.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+preset
+</td>
+
+<td style="text-align:left;">
+
+report
+</td>
+
+<td style="text-align:left;">
+
+<code>report</code>, <code>presentation</code> or <code>map</code>
+</td>
+
+<td style="text-align:left;">
+
+The size preset: report, presentation or a map that is as tall as it
+needs.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+style
+</td>
+
+<td style="text-align:left;">
+
+dutch
+</td>
+
+<td style="text-align:left;">
+
+<code>dutch</code> or <code>english</code>
+</td>
+
+<td style="text-align:left;">
+
+The language of the figure: dutch or english. It sets the number format
+and the words.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+subtitle
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+subtitle (replaces the default unit above the figure)
+</td>
+
+<td style="text-align:left;">
+
+The text under the title. It replaces the unit.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+title
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+Title of the figure
+</td>
+
+<td style="text-align:left;">
+
+The title above the figure.
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
 
 <span class="table-title">**Table A2. Parameters specific to
 `col`**</span>
 
-| parameter | default | example |
-|:---|:---|:---|
-| axis_text_size | 7 | 7 |
-| facet |  | region |
-| facet_ncol |  | 2 |
-| facet_scales | fixed | fixed |
-| fill |  | group |
-| fill_colour |  | \#005faf |
-| forecast_label | raming | raming |
-| forecast_x |  | 2025 |
-| grid_colour | black | black |
-| grid_linewidth | 0.1 | 0.1 |
-| group |  | sector |
-| group_gap | 0.8 | 0.8 |
-| legend | bottom | bottom |
-| minor | FALSE | FALSE |
-| orientation | vertical/horizontal (default: vertical) | vertical/horizontal (default: vertical) |
-| palette | qualitative | qualitative |
-| pct_axis | FALSE | FALSE |
-| position | stack/dodge/fill (default: stack) | stack/dodge/fill (default: stack) |
-| reverse_legend | TRUE | TRUE |
-| sec_accuracy |  | 0.1 |
-| sec_at |  | 0;50;100 |
-| sec_axis_labels |  | pct (or number, euro, or labels such as a;b;c) |
-| sec_col_width | 0.3 | 0.3 |
-| sec_colour |  | \#e6006e |
-| sec_legend_label |  | name of the second series |
-| sec_limits |  | 0;100 |
-| sec_linewidth | 0.55 | 0.55 |
-| sec_points | FALSE | FALSE |
-| sec_scale_auto | TRUE | TRUE |
-| sec_symbol_size | 1.6 | 1.6 |
-| sec_type | line/point/col (default: line) | line/point/col (default: line) |
-| sec_y |  | unemployment |
-| sec_ylab |  | unit of the right axis |
-| ticks | TRUE | TRUE |
-| value_accuracy |  | 0.1 |
-| value_breaks |  | 0;25;50;75;100 |
-| value_crop | FALSE | FALSE |
-| value_labels | FALSE | FALSE |
-| value_limits |  | 0;100 |
-| x | (required) | year |
-| x_lim |  | 2015;2025 |
-| x_lim_follow_data | FALSE | FALSE |
-| x_ticks_ends | FALSE | FALSE |
-| xlab |  | unit below the x axis |
-| y | (required) | purchasing_power |
-| ylab |  | % change |
-| zeroline | TRUE | TRUE |
+<table class="reftab">
+
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+parameter
+</th>
+
+<th style="text-align:left;">
+
+default
+</th>
+
+<th style="text-align:left;">
+
+example
+</th>
+
+<th style="text-align:left;">
+
+description
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+axis_text_size
+</td>
+
+<td style="text-align:left;">
+
+7
+</td>
+
+<td style="text-align:left;">
+
+7
+</td>
+
+<td style="text-align:left;">
+
+The size of the axis text, in points.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+facet
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+region
+</td>
+
+<td style="text-align:left;">
+
+The column that splits the figure into small panels.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+facet_ncol
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+2
+</td>
+
+<td style="text-align:left;">
+
+The number of panels next to each other.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+facet_scales
+</td>
+
+<td style="text-align:left;">
+
+fixed
+</td>
+
+<td style="text-align:left;">
+
+<code>fixed</code>, <code>free</code>, <code>free_x</code> or
+<code>free_y</code>
+</td>
+
+<td style="text-align:left;">
+
+Whether the panels share their axes (fixed) or each have their own
+(free).
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+fill
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+group
+</td>
+
+<td style="text-align:left;">
+
+The column that splits the bars or areas into colours.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+fill_colour
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+\#005faf
+</td>
+
+<td style="text-align:left;">
+
+One colour for all bars or areas, when there is no fill column.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+forecast_label
+</td>
+
+<td style="text-align:left;">
+
+raming
+</td>
+
+<td style="text-align:left;">
+
+raming
+</td>
+
+<td style="text-align:left;">
+
+The word shown in the forecast area.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+forecast_x
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+2025
+</td>
+
+<td style="text-align:left;">
+
+The x value where the forecast starts. Everything after it is shaded.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+grid_colour
+</td>
+
+<td style="text-align:left;">
+
+black
+</td>
+
+<td style="text-align:left;">
+
+black
+</td>
+
+<td style="text-align:left;">
+
+The colour of the grid lines.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+grid_linewidth
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+The width of the grid lines.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+group
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+sector
+</td>
+
+<td style="text-align:left;">
+
+The column that groups the data in blocks next to each other.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+group_gap
+</td>
+
+<td style="text-align:left;">
+
+0.8
+</td>
+
+<td style="text-align:left;">
+
+0.8
+</td>
+
+<td style="text-align:left;">
+
+The space between the groups, in bar widths.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+legend
+</td>
+
+<td style="text-align:left;">
+
+bottom
+</td>
+
+<td style="text-align:left;">
+
+<code>bottom</code>, <code>right</code>, <code>left</code>,
+<code>top</code> or <code>none</code>
+</td>
+
+<td style="text-align:left;">
+
+Where the legend is placed. none removes it.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+minor
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE adds small ticks between the labels.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+orientation
+</td>
+
+<td style="text-align:left;">
+
+vertical
+</td>
+
+<td style="text-align:left;">
+
+<code>vertical</code> or <code>horizontal</code>
+</td>
+
+<td style="text-align:left;">
+
+Draws the figure upright (vertical) or turned (horizontal).
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+palette
+</td>
+
+<td style="text-align:left;">
+
+qualitative
+</td>
+
+<td style="text-align:left;">
+
+<code>qualitative</code>, <code>discr</code>, <code>sequential</code>,
+<code>blues</code> or <code>extended</code>
+</td>
+
+<td style="text-align:left;">
+
+The colour set used for the categories.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+pct_axis
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE writes the values on the axis as percentages.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+position
+</td>
+
+<td style="text-align:left;">
+
+stack
+</td>
+
+<td style="text-align:left;">
+
+<code>stack</code>, <code>dodge</code> or <code>fill</code>
+</td>
+
+<td style="text-align:left;">
+
+How bars of one category are placed: on top of each other, next to each
+other or as shares of 100%.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+reverse_legend
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE turns the order of the legend around.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_accuracy
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+The rounding of the numbers on the right axis, such as 0.1.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_at
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;50;100
+</td>
+
+<td style="text-align:left;">
+
+The values at which the right axis is labelled.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_axis_labels
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+<code>pct</code>, <code>number</code>, <code>euro</code> or labels such
+as <code>a;b;c</code>
+</td>
+
+<td style="text-align:left;">
+
+How the numbers on the right axis are written, or your own labels.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_col_width
+</td>
+
+<td style="text-align:left;">
+
+0.3
+</td>
+
+<td style="text-align:left;">
+
+0.3
+</td>
+
+<td style="text-align:left;">
+
+The width of the bars of the second series.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_colour
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+\#e6006e
+</td>
+
+<td style="text-align:left;">
+
+The colour of the second series.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_legend_label
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+name of the second series
+</td>
+
+<td style="text-align:left;">
+
+The name of the second series in the legend.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_limits
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;100
+</td>
+
+<td style="text-align:left;">
+
+The lowest and highest value of the right axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_linewidth
+</td>
+
+<td style="text-align:left;">
+
+0.55
+</td>
+
+<td style="text-align:left;">
+
+0.55
+</td>
+
+<td style="text-align:left;">
+
+The line width of the second series.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_points
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE adds points to the second series when it is a line.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_scale_auto
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE chooses the right axis automatically so it fits the left axis
+lines.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_symbol_size
+</td>
+
+<td style="text-align:left;">
+
+1.6
+</td>
+
+<td style="text-align:left;">
+
+1.6
+</td>
+
+<td style="text-align:left;">
+
+The size of the points of the second series.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_type
+</td>
+
+<td style="text-align:left;">
+
+line
+</td>
+
+<td style="text-align:left;">
+
+<code>line</code>, <code>point</code> or <code>col</code>
+</td>
+
+<td style="text-align:left;">
+
+How the second series is drawn.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_y
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+unemployment
+</td>
+
+<td style="text-align:left;">
+
+The column drawn on a second axis on the right.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_ylab
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+unit of the right axis
+</td>
+
+<td style="text-align:left;">
+
+The unit above the right axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+ticks
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE draws ticks on the axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_accuracy
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+The rounding of the numbers on the value axis, such as 0.1.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_breaks
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;25;50;75;100
+</td>
+
+<td style="text-align:left;">
+
+The values at which the value axis is labelled.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_crop
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE cuts off the data outside the value limits, with a warning.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_labels
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE prints the value on each bar.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_limits
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;100
+</td>
+
+<td style="text-align:left;">
+
+The lowest and highest value of the value axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+year
+</td>
+
+<td style="text-align:left;">
+
+The column with the categories or numbers on the x axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x_lim
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+2015;2025
+</td>
+
+<td style="text-align:left;">
+
+The first and last value shown on the x axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x_lim_follow_data
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE lets the x axis follow the data when it runs past x_lim.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x_ticks_ends
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE also labels the first and last month of a monthly axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+xlab
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+unit below the x axis
+</td>
+
+<td style="text-align:left;">
+
+The text next to the x axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+y
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+purchasing_power
+</td>
+
+<td style="text-align:left;">
+
+The column with the values.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+ylab
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+% change
+</td>
+
+<td style="text-align:left;">
+
+The unit above the value axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+zeroline
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE draws a line at zero. Blank draws it only when zero is on the axis.
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
 
 <span class="table-title">**Table A3. Parameters specific to
 `area`**</span>
 
-| parameter | default | example |
-|:---|:---|:---|
-| axis_text_size | 7 | 7 |
-| facet |  | region |
-| facet_ncol |  | 2 |
-| facet_scales | fixed | fixed |
-| fill | (required) | group |
-| forecast_label | raming | raming |
-| forecast_x |  | 2025 |
-| grid_colour | black | black |
-| grid_linewidth | 0.1 | 0.1 |
-| legend | bottom | bottom |
-| minor | FALSE | FALSE |
-| palette | qualitative | qualitative |
-| pct_axis | FALSE | FALSE |
-| reverse_legend | TRUE | TRUE |
-| sec_accuracy |  | 0.1 |
-| sec_at |  | 0;50;100 |
-| sec_axis_labels |  | pct (or number, euro, or labels such as a;b;c) |
-| sec_col_width | 0.3 | 0.3 |
-| sec_colour |  | \#e6006e |
-| sec_legend_label |  | name of the second series |
-| sec_limits |  | 0;100 |
-| sec_linewidth | 0.55 | 0.55 |
-| sec_points | FALSE | FALSE |
-| sec_scale_auto | TRUE | TRUE |
-| sec_symbol_size | 1.6 | 1.6 |
-| sec_type | line/point/col (default: line) | line/point/col (default: line) |
-| sec_y |  | unemployment |
-| sec_ylab |  | unit of the right axis |
-| ticks | TRUE | TRUE |
-| value_accuracy |  | 0.1 |
-| value_breaks |  | 0;25;50;75;100 |
-| value_crop | FALSE | FALSE |
-| value_limits |  | 0;100 |
-| x | (required) | year |
-| x_lim |  | 2015;2025 |
-| x_lim_follow_data | FALSE | FALSE |
-| x_ticks_ends | FALSE | FALSE |
-| xlab |  | unit below the x axis |
-| y | (required) | purchasing_power |
-| ylab |  | % change |
-| zeroline | TRUE | TRUE |
+<table class="reftab">
+
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+parameter
+</th>
+
+<th style="text-align:left;">
+
+default
+</th>
+
+<th style="text-align:left;">
+
+example
+</th>
+
+<th style="text-align:left;">
+
+description
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+axis_text_size
+</td>
+
+<td style="text-align:left;">
+
+7
+</td>
+
+<td style="text-align:left;">
+
+7
+</td>
+
+<td style="text-align:left;">
+
+The size of the axis text, in points.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+facet
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+region
+</td>
+
+<td style="text-align:left;">
+
+The column that splits the figure into small panels.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+facet_ncol
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+2
+</td>
+
+<td style="text-align:left;">
+
+The number of panels next to each other.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+facet_scales
+</td>
+
+<td style="text-align:left;">
+
+fixed
+</td>
+
+<td style="text-align:left;">
+
+<code>fixed</code>, <code>free</code>, <code>free_x</code> or
+<code>free_y</code>
+</td>
+
+<td style="text-align:left;">
+
+Whether the panels share their axes (fixed) or each have their own
+(free).
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+fill
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+group
+</td>
+
+<td style="text-align:left;">
+
+The column that splits the bars or areas into colours.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+forecast_label
+</td>
+
+<td style="text-align:left;">
+
+raming
+</td>
+
+<td style="text-align:left;">
+
+raming
+</td>
+
+<td style="text-align:left;">
+
+The word shown in the forecast area.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+forecast_x
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+2025
+</td>
+
+<td style="text-align:left;">
+
+The x value where the forecast starts. Everything after it is shaded.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+grid_colour
+</td>
+
+<td style="text-align:left;">
+
+black
+</td>
+
+<td style="text-align:left;">
+
+black
+</td>
+
+<td style="text-align:left;">
+
+The colour of the grid lines.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+grid_linewidth
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+The width of the grid lines.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+legend
+</td>
+
+<td style="text-align:left;">
+
+bottom
+</td>
+
+<td style="text-align:left;">
+
+<code>bottom</code>, <code>right</code>, <code>left</code>,
+<code>top</code> or <code>none</code>
+</td>
+
+<td style="text-align:left;">
+
+Where the legend is placed. none removes it.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+minor
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE adds small ticks between the labels.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+palette
+</td>
+
+<td style="text-align:left;">
+
+qualitative
+</td>
+
+<td style="text-align:left;">
+
+<code>qualitative</code>, <code>discr</code>, <code>sequential</code>,
+<code>blues</code> or <code>extended</code>
+</td>
+
+<td style="text-align:left;">
+
+The colour set used for the categories.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+pct_axis
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE writes the values on the axis as percentages.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+reverse_legend
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE turns the order of the legend around.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_accuracy
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+The rounding of the numbers on the right axis, such as 0.1.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_at
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;50;100
+</td>
+
+<td style="text-align:left;">
+
+The values at which the right axis is labelled.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_axis_labels
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+<code>pct</code>, <code>number</code>, <code>euro</code> or labels such
+as <code>a;b;c</code>
+</td>
+
+<td style="text-align:left;">
+
+How the numbers on the right axis are written, or your own labels.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_col_width
+</td>
+
+<td style="text-align:left;">
+
+0.3
+</td>
+
+<td style="text-align:left;">
+
+0.3
+</td>
+
+<td style="text-align:left;">
+
+The width of the bars of the second series.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_colour
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+\#e6006e
+</td>
+
+<td style="text-align:left;">
+
+The colour of the second series.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_legend_label
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+name of the second series
+</td>
+
+<td style="text-align:left;">
+
+The name of the second series in the legend.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_limits
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;100
+</td>
+
+<td style="text-align:left;">
+
+The lowest and highest value of the right axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_linewidth
+</td>
+
+<td style="text-align:left;">
+
+0.55
+</td>
+
+<td style="text-align:left;">
+
+0.55
+</td>
+
+<td style="text-align:left;">
+
+The line width of the second series.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_points
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE adds points to the second series when it is a line.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_scale_auto
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE chooses the right axis automatically so it fits the left axis
+lines.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_symbol_size
+</td>
+
+<td style="text-align:left;">
+
+1.6
+</td>
+
+<td style="text-align:left;">
+
+1.6
+</td>
+
+<td style="text-align:left;">
+
+The size of the points of the second series.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_type
+</td>
+
+<td style="text-align:left;">
+
+line
+</td>
+
+<td style="text-align:left;">
+
+<code>line</code>, <code>point</code> or <code>col</code>
+</td>
+
+<td style="text-align:left;">
+
+How the second series is drawn.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_y
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+unemployment
+</td>
+
+<td style="text-align:left;">
+
+The column drawn on a second axis on the right.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_ylab
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+unit of the right axis
+</td>
+
+<td style="text-align:left;">
+
+The unit above the right axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+ticks
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE draws ticks on the axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_accuracy
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+The rounding of the numbers on the value axis, such as 0.1.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_breaks
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;25;50;75;100
+</td>
+
+<td style="text-align:left;">
+
+The values at which the value axis is labelled.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_crop
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE cuts off the data outside the value limits, with a warning.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_limits
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;100
+</td>
+
+<td style="text-align:left;">
+
+The lowest and highest value of the value axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+year
+</td>
+
+<td style="text-align:left;">
+
+The column with the categories or numbers on the x axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x_lim
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+2015;2025
+</td>
+
+<td style="text-align:left;">
+
+The first and last value shown on the x axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x_lim_follow_data
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE lets the x axis follow the data when it runs past x_lim.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x_ticks_ends
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE also labels the first and last month of a monthly axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+xlab
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+unit below the x axis
+</td>
+
+<td style="text-align:left;">
+
+The text next to the x axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+y
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+purchasing_power
+</td>
+
+<td style="text-align:left;">
+
+The column with the values.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+ylab
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+% change
+</td>
+
+<td style="text-align:left;">
+
+The unit above the value axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+zeroline
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE draws a line at zero. Blank draws it only when zero is on the axis.
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
 
 <span class="table-title">**Table A4. Parameters specific to
 `line`**</span>
 
-| parameter | default | example |
-|:---|:---|:---|
-| axis_text_size | 7 | 7 |
-| colour |  | group |
-| facet |  | region |
-| facet_ncol |  | 2 |
-| facet_scales | fixed | fixed |
-| forecast_label | raming | raming |
-| forecast_x |  | 2025 |
-| grid_colour | black | black |
-| grid_linewidth | 0.1 | 0.1 |
-| legend | bottom | bottom |
-| line_colour |  | \#005faf |
-| linewidth | 0.55 | 0.55 |
-| minor | FALSE | FALSE |
-| palette | qualitative | qualitative |
-| pct_axis | FALSE | FALSE |
-| points | FALSE | FALSE |
-| reverse_legend | FALSE | FALSE |
-| sec_accuracy |  | 0.1 |
-| sec_at |  | 0;50;100 |
-| sec_axis_labels |  | pct (or number, euro, or labels such as a;b;c) |
-| sec_col_width | 0.3 | 0.3 |
-| sec_colour |  | \#e6006e |
-| sec_legend_label |  | name of the second series |
-| sec_limits |  | 0;100 |
-| sec_linewidth |  | 0.55 |
-| sec_points | FALSE | FALSE |
-| sec_scale_auto | TRUE | TRUE |
-| sec_symbol_size | 1.6 | 1.6 |
-| sec_type | line/point/col (default: line) | line/point/col (default: line) |
-| sec_y |  | unemployment |
-| sec_ylab |  | unit of the right axis |
-| symbol_size | 1.1 | 1.1 |
-| ticks | TRUE | TRUE |
-| value_accuracy |  | 0.1 |
-| value_breaks |  | 0;25;50;75;100 |
-| value_crop | FALSE | FALSE |
-| value_limits |  | 0;100 |
-| x | (required) | year |
-| x_lim |  | 2015;2025 |
-| x_lim_follow_data | TRUE | TRUE |
-| x_ticks_ends | FALSE | FALSE |
-| xlab |  | unit below the x axis |
-| y | (required) | purchasing_power |
-| ylab |  | % change |
-| ymax |  | upper_bound |
-| ymin |  | lower_bound |
-| zeroline |  | TRUE |
+<table class="reftab">
+
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+parameter
+</th>
+
+<th style="text-align:left;">
+
+default
+</th>
+
+<th style="text-align:left;">
+
+example
+</th>
+
+<th style="text-align:left;">
+
+description
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+axis_text_size
+</td>
+
+<td style="text-align:left;">
+
+7
+</td>
+
+<td style="text-align:left;">
+
+7
+</td>
+
+<td style="text-align:left;">
+
+The size of the axis text, in points.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+colour
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+group
+</td>
+
+<td style="text-align:left;">
+
+The column that gives lines or points their colour.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+facet
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+region
+</td>
+
+<td style="text-align:left;">
+
+The column that splits the figure into small panels.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+facet_ncol
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+2
+</td>
+
+<td style="text-align:left;">
+
+The number of panels next to each other.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+facet_scales
+</td>
+
+<td style="text-align:left;">
+
+fixed
+</td>
+
+<td style="text-align:left;">
+
+<code>fixed</code>, <code>free</code>, <code>free_x</code> or
+<code>free_y</code>
+</td>
+
+<td style="text-align:left;">
+
+Whether the panels share their axes (fixed) or each have their own
+(free).
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+forecast_label
+</td>
+
+<td style="text-align:left;">
+
+raming
+</td>
+
+<td style="text-align:left;">
+
+raming
+</td>
+
+<td style="text-align:left;">
+
+The word shown in the forecast area.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+forecast_x
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+2025
+</td>
+
+<td style="text-align:left;">
+
+The x value where the forecast starts. Everything after it is shaded.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+grid_colour
+</td>
+
+<td style="text-align:left;">
+
+black
+</td>
+
+<td style="text-align:left;">
+
+black
+</td>
+
+<td style="text-align:left;">
+
+The colour of the grid lines.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+grid_linewidth
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+The width of the grid lines.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+legend
+</td>
+
+<td style="text-align:left;">
+
+bottom
+</td>
+
+<td style="text-align:left;">
+
+<code>bottom</code>, <code>right</code>, <code>left</code>,
+<code>top</code> or <code>none</code>
+</td>
+
+<td style="text-align:left;">
+
+Where the legend is placed. none removes it.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+line_colour
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+\#005faf
+</td>
+
+<td style="text-align:left;">
+
+One colour for the line, when there is no colour column.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+linewidth
+</td>
+
+<td style="text-align:left;">
+
+0.55
+</td>
+
+<td style="text-align:left;">
+
+0.55
+</td>
+
+<td style="text-align:left;">
+
+The width of the line.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+minor
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE adds small ticks between the labels.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+palette
+</td>
+
+<td style="text-align:left;">
+
+qualitative
+</td>
+
+<td style="text-align:left;">
+
+<code>qualitative</code>, <code>discr</code>, <code>sequential</code>,
+<code>blues</code> or <code>extended</code>
+</td>
+
+<td style="text-align:left;">
+
+The colour set used for the categories.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+pct_axis
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE writes the values on the axis as percentages.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+points
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE adds points to the line.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+reverse_legend
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE turns the order of the legend around.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_accuracy
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+The rounding of the numbers on the right axis, such as 0.1.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_at
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;50;100
+</td>
+
+<td style="text-align:left;">
+
+The values at which the right axis is labelled.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_axis_labels
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+<code>pct</code>, <code>number</code>, <code>euro</code> or labels such
+as <code>a;b;c</code>
+</td>
+
+<td style="text-align:left;">
+
+How the numbers on the right axis are written, or your own labels.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_col_width
+</td>
+
+<td style="text-align:left;">
+
+0.3
+</td>
+
+<td style="text-align:left;">
+
+0.3
+</td>
+
+<td style="text-align:left;">
+
+The width of the bars of the second series.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_colour
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+\#e6006e
+</td>
+
+<td style="text-align:left;">
+
+The colour of the second series.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_legend_label
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+name of the second series
+</td>
+
+<td style="text-align:left;">
+
+The name of the second series in the legend.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_limits
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;100
+</td>
+
+<td style="text-align:left;">
+
+The lowest and highest value of the right axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_linewidth
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0.55
+</td>
+
+<td style="text-align:left;">
+
+The line width of the second series.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_points
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE adds points to the second series when it is a line.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_scale_auto
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE chooses the right axis automatically so it fits the left axis
+lines.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_symbol_size
+</td>
+
+<td style="text-align:left;">
+
+1.6
+</td>
+
+<td style="text-align:left;">
+
+1.6
+</td>
+
+<td style="text-align:left;">
+
+The size of the points of the second series.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_type
+</td>
+
+<td style="text-align:left;">
+
+line
+</td>
+
+<td style="text-align:left;">
+
+<code>line</code>, <code>point</code> or <code>col</code>
+</td>
+
+<td style="text-align:left;">
+
+How the second series is drawn.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_y
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+unemployment
+</td>
+
+<td style="text-align:left;">
+
+The column drawn on a second axis on the right.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_ylab
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+unit of the right axis
+</td>
+
+<td style="text-align:left;">
+
+The unit above the right axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+symbol_size
+</td>
+
+<td style="text-align:left;">
+
+1.1
+</td>
+
+<td style="text-align:left;">
+
+1.1
+</td>
+
+<td style="text-align:left;">
+
+The size of the points.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+ticks
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE draws ticks on the axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_accuracy
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+The rounding of the numbers on the value axis, such as 0.1.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_breaks
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;25;50;75;100
+</td>
+
+<td style="text-align:left;">
+
+The values at which the value axis is labelled.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_crop
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE cuts off the data outside the value limits, with a warning.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_limits
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;100
+</td>
+
+<td style="text-align:left;">
+
+The lowest and highest value of the value axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+year
+</td>
+
+<td style="text-align:left;">
+
+The column with the categories or numbers on the x axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x_lim
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+2015;2025
+</td>
+
+<td style="text-align:left;">
+
+The first and last value shown on the x axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x_lim_follow_data
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE lets the x axis follow the data when it runs past x_lim.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x_ticks_ends
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE also labels the first and last month of a monthly axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+xlab
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+unit below the x axis
+</td>
+
+<td style="text-align:left;">
+
+The text next to the x axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+y
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+purchasing_power
+</td>
+
+<td style="text-align:left;">
+
+The column with the values.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+ylab
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+% change
+</td>
+
+<td style="text-align:left;">
+
+The unit above the value axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+ymax
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+upper_bound
+</td>
+
+<td style="text-align:left;">
+
+The column with the upper end of an uncertainty band.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+ymin
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+lower_bound
+</td>
+
+<td style="text-align:left;">
+
+The column with the lower end of an uncertainty band.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+zeroline
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE draws a line at zero. Blank draws it only when zero is on the axis.
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
 
 <span class="table-title">**Table A5. Parameters specific to
 `box`**</span>
 
-| parameter | default | example |
-|:---|:---|:---|
-| axis_text_size | 7 | 7 |
-| box_labels |  | TRUE |
-| box_style | ggcpb/james/modern/dot (default: ggcpb) | ggcpb/james/modern/dot (default: ggcpb) |
-| dot_labels |  | p5:bottom 5%;p95:top 5% |
-| facet |  | region |
-| facet_ncol |  | 2 |
-| facet_scales | fixed | fixed |
-| fill |  | group |
-| fill_colour |  | \#005faf |
-| grid_colour | black | black |
-| grid_linewidth | 0.1 | 0.1 |
-| group |  | sector |
-| group_gap | 0.7 | 0.7 |
-| label_accuracy | 0.1 | 0.1 |
-| legend | bottom | bottom |
-| linewidth | 0.25 | 0.25 |
-| mean |  | mean |
-| minor | FALSE | FALSE |
-| orientation | vertical/horizontal (default: vertical) | vertical/horizontal (default: vertical) |
-| p25 | (required) | p25 |
-| p5 | (required) | p5 |
-| p50 | (required) | p50 |
-| p75 | (required) | p75 |
-| p95 | (required) | p95 |
-| palette | qualitative | qualitative |
-| pct_axis | FALSE | FALSE |
-| reverse_legend | FALSE | FALSE |
-| sec_accuracy |  | 0.1 |
-| sec_at |  | 0;50;100 |
-| sec_axis_labels |  | pct (or number, euro, or labels such as a;b;c) |
-| sec_col_width | 0.3 | 0.3 |
-| sec_colour |  | \#e6006e |
-| sec_legend_label |  | name of the second series |
-| sec_limits |  | 0;100 |
-| sec_linewidth | 0.55 | 0.55 |
-| sec_points | FALSE | FALSE |
-| sec_scale_auto | TRUE | TRUE |
-| sec_symbol_size | 1.6 | 1.6 |
-| sec_type | line/point/col (default: line) | line/point/col (default: line) |
-| sec_y |  | unemployment |
-| sec_ylab |  | unit of the right axis |
-| ticks | TRUE | TRUE |
-| value_accuracy |  | 0.1 |
-| value_axis | bottom/top (default: bottom) | bottom/top (default: bottom) |
-| value_breaks |  | 0;25;50;75;100 |
-| value_crop | FALSE | FALSE |
-| value_limits |  | 0;100 |
-| width | 0.5 | 0.5 |
-| x | (required) | year |
-| x_lim |  | 2015;2025 |
-| x_lim_follow_data | TRUE | TRUE |
-| xlab |  | unit below the x axis |
-| ylab |  | % change |
-| zeroline |  | TRUE |
+<table class="reftab">
+
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+parameter
+</th>
+
+<th style="text-align:left;">
+
+default
+</th>
+
+<th style="text-align:left;">
+
+example
+</th>
+
+<th style="text-align:left;">
+
+description
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+axis_text_size
+</td>
+
+<td style="text-align:left;">
+
+7
+</td>
+
+<td style="text-align:left;">
+
+7
+</td>
+
+<td style="text-align:left;">
+
+The size of the axis text, in points.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+box_labels
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE prints the values of the box.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+box_style
+</td>
+
+<td style="text-align:left;">
+
+ggcpb
+</td>
+
+<td style="text-align:left;">
+
+<code>ggcpb</code>, <code>james</code>, <code>modern</code> or
+<code>dot</code>
+</td>
+
+<td style="text-align:left;">
+
+The look of the boxes.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+dot_labels
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+p5:bottom 5%;p95:top 5%
+</td>
+
+<td style="text-align:left;">
+
+Names for the dots of the dot style, as name:text pairs.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+facet
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+region
+</td>
+
+<td style="text-align:left;">
+
+The column that splits the figure into small panels.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+facet_ncol
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+2
+</td>
+
+<td style="text-align:left;">
+
+The number of panels next to each other.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+facet_scales
+</td>
+
+<td style="text-align:left;">
+
+fixed
+</td>
+
+<td style="text-align:left;">
+
+<code>fixed</code>, <code>free</code>, <code>free_x</code> or
+<code>free_y</code>
+</td>
+
+<td style="text-align:left;">
+
+Whether the panels share their axes (fixed) or each have their own
+(free).
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+fill
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+group
+</td>
+
+<td style="text-align:left;">
+
+The column that splits the bars or areas into colours.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+fill_colour
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+\#005faf
+</td>
+
+<td style="text-align:left;">
+
+One colour for all bars or areas, when there is no fill column.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+grid_colour
+</td>
+
+<td style="text-align:left;">
+
+black
+</td>
+
+<td style="text-align:left;">
+
+black
+</td>
+
+<td style="text-align:left;">
+
+The colour of the grid lines.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+grid_linewidth
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+The width of the grid lines.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+group
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+sector
+</td>
+
+<td style="text-align:left;">
+
+The column that groups the data in blocks next to each other.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+group_gap
+</td>
+
+<td style="text-align:left;">
+
+0.7
+</td>
+
+<td style="text-align:left;">
+
+0.7
+</td>
+
+<td style="text-align:left;">
+
+The space between the groups, in bar widths.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+label_accuracy
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+The rounding of the printed percentages.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+legend
+</td>
+
+<td style="text-align:left;">
+
+bottom
+</td>
+
+<td style="text-align:left;">
+
+<code>bottom</code>, <code>right</code>, <code>left</code>,
+<code>top</code> or <code>none</code>
+</td>
+
+<td style="text-align:left;">
+
+Where the legend is placed. none removes it.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+linewidth
+</td>
+
+<td style="text-align:left;">
+
+0.25
+</td>
+
+<td style="text-align:left;">
+
+0.25
+</td>
+
+<td style="text-align:left;">
+
+The width of the line.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+mean
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+mean
+</td>
+
+<td style="text-align:left;">
+
+The column with the mean, drawn as a diamond.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+minor
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE adds small ticks between the labels.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+orientation
+</td>
+
+<td style="text-align:left;">
+
+vertical
+</td>
+
+<td style="text-align:left;">
+
+<code>vertical</code> or <code>horizontal</code>
+</td>
+
+<td style="text-align:left;">
+
+Draws the figure upright (vertical) or turned (horizontal).
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+p25
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+p25
+</td>
+
+<td style="text-align:left;">
+
+The column with the 25th percentile, the bottom of the box.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+p5
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+p5
+</td>
+
+<td style="text-align:left;">
+
+The column with the 5th percentile, the lower whisker.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+p50
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+p50
+</td>
+
+<td style="text-align:left;">
+
+The column with the median, the line in the box.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+p75
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+p75
+</td>
+
+<td style="text-align:left;">
+
+The column with the 75th percentile, the top of the box.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+p95
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+p95
+</td>
+
+<td style="text-align:left;">
+
+The column with the 95th percentile, the upper whisker.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+palette
+</td>
+
+<td style="text-align:left;">
+
+qualitative
+</td>
+
+<td style="text-align:left;">
+
+<code>qualitative</code>, <code>discr</code>, <code>sequential</code>,
+<code>blues</code> or <code>extended</code>
+</td>
+
+<td style="text-align:left;">
+
+The colour set used for the categories.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+pct_axis
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE writes the values on the axis as percentages.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+reverse_legend
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE turns the order of the legend around.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_accuracy
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+The rounding of the numbers on the right axis, such as 0.1.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_at
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;50;100
+</td>
+
+<td style="text-align:left;">
+
+The values at which the right axis is labelled.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_axis_labels
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+<code>pct</code>, <code>number</code>, <code>euro</code> or labels such
+as <code>a;b;c</code>
+</td>
+
+<td style="text-align:left;">
+
+How the numbers on the right axis are written, or your own labels.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_col_width
+</td>
+
+<td style="text-align:left;">
+
+0.3
+</td>
+
+<td style="text-align:left;">
+
+0.3
+</td>
+
+<td style="text-align:left;">
+
+The width of the bars of the second series.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_colour
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+\#e6006e
+</td>
+
+<td style="text-align:left;">
+
+The colour of the second series.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_legend_label
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+name of the second series
+</td>
+
+<td style="text-align:left;">
+
+The name of the second series in the legend.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_limits
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;100
+</td>
+
+<td style="text-align:left;">
+
+The lowest and highest value of the right axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_linewidth
+</td>
+
+<td style="text-align:left;">
+
+0.55
+</td>
+
+<td style="text-align:left;">
+
+0.55
+</td>
+
+<td style="text-align:left;">
+
+The line width of the second series.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_points
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE adds points to the second series when it is a line.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_scale_auto
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE chooses the right axis automatically so it fits the left axis
+lines.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_symbol_size
+</td>
+
+<td style="text-align:left;">
+
+1.6
+</td>
+
+<td style="text-align:left;">
+
+1.6
+</td>
+
+<td style="text-align:left;">
+
+The size of the points of the second series.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_type
+</td>
+
+<td style="text-align:left;">
+
+line
+</td>
+
+<td style="text-align:left;">
+
+<code>line</code>, <code>point</code> or <code>col</code>
+</td>
+
+<td style="text-align:left;">
+
+How the second series is drawn.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_y
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+unemployment
+</td>
+
+<td style="text-align:left;">
+
+The column drawn on a second axis on the right.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_ylab
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+unit of the right axis
+</td>
+
+<td style="text-align:left;">
+
+The unit above the right axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+ticks
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE draws ticks on the axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_accuracy
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+The rounding of the numbers on the value axis, such as 0.1.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_axis
+</td>
+
+<td style="text-align:left;">
+
+bottom
+</td>
+
+<td style="text-align:left;">
+
+<code>bottom</code> or <code>top</code>
+</td>
+
+<td style="text-align:left;">
+
+Whether the value axis is at the bottom or at the top.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_breaks
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;25;50;75;100
+</td>
+
+<td style="text-align:left;">
+
+The values at which the value axis is labelled.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_crop
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE cuts off the data outside the value limits, with a warning.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_limits
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;100
+</td>
+
+<td style="text-align:left;">
+
+The lowest and highest value of the value axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+width
+</td>
+
+<td style="text-align:left;">
+
+0.5
+</td>
+
+<td style="text-align:left;">
+
+0.5
+</td>
+
+<td style="text-align:left;">
+
+The width of the bars or boxes, as a share of the space.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+year
+</td>
+
+<td style="text-align:left;">
+
+The column with the categories or numbers on the x axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x_lim
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+2015;2025
+</td>
+
+<td style="text-align:left;">
+
+The first and last value shown on the x axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x_lim_follow_data
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE lets the x axis follow the data when it runs past x_lim.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+xlab
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+unit below the x axis
+</td>
+
+<td style="text-align:left;">
+
+The text next to the x axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+ylab
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+% change
+</td>
+
+<td style="text-align:left;">
+
+The unit above the value axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+zeroline
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE draws a line at zero. Blank draws it only when zero is on the axis.
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
 
 <span class="table-title">**Table A6. Parameters specific to
 `dot`**</span>
 
-| parameter | default | example |
-|:---|:---|:---|
-| axis_text_size | 7 | 7 |
-| cap_width | 0.25 | 0.25 |
-| colour |  | group |
-| facet |  | region |
-| facet_ncol |  | 2 |
-| facet_scales | fixed | fixed |
-| grid_colour | black | black |
-| grid_linewidth | 0.1 | 0.1 |
-| group |  | sector |
-| group_gap | 0.7 | 0.7 |
-| legend | bottom | bottom |
-| linewidth | 0.4 | 0.4 |
-| lower | (required) | lower_bound |
-| minor | FALSE | FALSE |
-| orientation | horizontal/vertical (default: horizontal) | horizontal/vertical (default: horizontal) |
-| palette | qualitative | qualitative |
-| pct_axis | FALSE | FALSE |
-| reverse_legend | FALSE | FALSE |
-| sec_accuracy |  | 0.1 |
-| sec_at |  | 0;50;100 |
-| sec_axis_labels |  | pct (or number, euro, or labels such as a;b;c) |
-| sec_col_width | 0.3 | 0.3 |
-| sec_colour |  | \#e6006e |
-| sec_legend_label |  | name of the second series |
-| sec_limits |  | 0;100 |
-| sec_linewidth | 0.55 | 0.55 |
-| sec_points | FALSE | FALSE |
-| sec_scale_auto | TRUE | TRUE |
-| sec_symbol_size | symbol_size | symbol_size |
-| sec_type | line/point/col (default: line) | line/point/col (default: line) |
-| sec_y |  | unemployment |
-| sec_ylab |  | unit of the right axis |
-| symbol_colour |  | \#e6006e |
-| symbol_size | 1.4 | 1.4 |
-| ticks | TRUE | TRUE |
-| upper | (required) | upper_bound |
-| value_accuracy |  | 0.1 |
-| value_breaks |  | 0;25;50;75;100 |
-| value_crop | FALSE | FALSE |
-| value_limits |  | 0;100 |
-| x | (required) | year |
-| x_lim |  | 2015;2025 |
-| x_lim_follow_data | TRUE | TRUE |
-| xlab |  | unit below the x axis |
-| y | (required) | purchasing_power |
-| ylab |  | % change |
-| zeroline |  | TRUE |
+<table class="reftab">
+
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+parameter
+</th>
+
+<th style="text-align:left;">
+
+default
+</th>
+
+<th style="text-align:left;">
+
+example
+</th>
+
+<th style="text-align:left;">
+
+description
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+axis_text_size
+</td>
+
+<td style="text-align:left;">
+
+7
+</td>
+
+<td style="text-align:left;">
+
+7
+</td>
+
+<td style="text-align:left;">
+
+The size of the axis text, in points.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+cap_width
+</td>
+
+<td style="text-align:left;">
+
+0.25
+</td>
+
+<td style="text-align:left;">
+
+0.25
+</td>
+
+<td style="text-align:left;">
+
+The width of the end caps of the interval.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+colour
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+group
+</td>
+
+<td style="text-align:left;">
+
+The column that gives lines or points their colour.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+facet
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+region
+</td>
+
+<td style="text-align:left;">
+
+The column that splits the figure into small panels.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+facet_ncol
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+2
+</td>
+
+<td style="text-align:left;">
+
+The number of panels next to each other.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+facet_scales
+</td>
+
+<td style="text-align:left;">
+
+fixed
+</td>
+
+<td style="text-align:left;">
+
+<code>fixed</code>, <code>free</code>, <code>free_x</code> or
+<code>free_y</code>
+</td>
+
+<td style="text-align:left;">
+
+Whether the panels share their axes (fixed) or each have their own
+(free).
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+grid_colour
+</td>
+
+<td style="text-align:left;">
+
+black
+</td>
+
+<td style="text-align:left;">
+
+black
+</td>
+
+<td style="text-align:left;">
+
+The colour of the grid lines.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+grid_linewidth
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+The width of the grid lines.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+group
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+sector
+</td>
+
+<td style="text-align:left;">
+
+The column that groups the data in blocks next to each other.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+group_gap
+</td>
+
+<td style="text-align:left;">
+
+0.7
+</td>
+
+<td style="text-align:left;">
+
+0.7
+</td>
+
+<td style="text-align:left;">
+
+The space between the groups, in bar widths.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+legend
+</td>
+
+<td style="text-align:left;">
+
+bottom
+</td>
+
+<td style="text-align:left;">
+
+<code>bottom</code>, <code>right</code>, <code>left</code>,
+<code>top</code> or <code>none</code>
+</td>
+
+<td style="text-align:left;">
+
+Where the legend is placed. none removes it.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+linewidth
+</td>
+
+<td style="text-align:left;">
+
+0.4
+</td>
+
+<td style="text-align:left;">
+
+0.4
+</td>
+
+<td style="text-align:left;">
+
+The width of the line.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+lower
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+lower_bound
+</td>
+
+<td style="text-align:left;">
+
+The column with the lower end of the interval.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+minor
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE adds small ticks between the labels.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+orientation
+</td>
+
+<td style="text-align:left;">
+
+horizontal
+</td>
+
+<td style="text-align:left;">
+
+<code>horizontal</code> or <code>vertical</code>
+</td>
+
+<td style="text-align:left;">
+
+Draws the figure upright (vertical) or turned (horizontal).
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+palette
+</td>
+
+<td style="text-align:left;">
+
+qualitative
+</td>
+
+<td style="text-align:left;">
+
+<code>qualitative</code>, <code>discr</code>, <code>sequential</code>,
+<code>blues</code> or <code>extended</code>
+</td>
+
+<td style="text-align:left;">
+
+The colour set used for the categories.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+pct_axis
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE writes the values on the axis as percentages.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+reverse_legend
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE turns the order of the legend around.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_accuracy
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+The rounding of the numbers on the right axis, such as 0.1.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_at
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;50;100
+</td>
+
+<td style="text-align:left;">
+
+The values at which the right axis is labelled.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_axis_labels
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+<code>pct</code>, <code>number</code>, <code>euro</code> or labels such
+as <code>a;b;c</code>
+</td>
+
+<td style="text-align:left;">
+
+How the numbers on the right axis are written, or your own labels.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_col_width
+</td>
+
+<td style="text-align:left;">
+
+0.3
+</td>
+
+<td style="text-align:left;">
+
+0.3
+</td>
+
+<td style="text-align:left;">
+
+The width of the bars of the second series.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_colour
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+\#e6006e
+</td>
+
+<td style="text-align:left;">
+
+The colour of the second series.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_legend_label
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+name of the second series
+</td>
+
+<td style="text-align:left;">
+
+The name of the second series in the legend.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_limits
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;100
+</td>
+
+<td style="text-align:left;">
+
+The lowest and highest value of the right axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_linewidth
+</td>
+
+<td style="text-align:left;">
+
+0.55
+</td>
+
+<td style="text-align:left;">
+
+0.55
+</td>
+
+<td style="text-align:left;">
+
+The line width of the second series.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_points
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE adds points to the second series when it is a line.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_scale_auto
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE chooses the right axis automatically so it fits the left axis
+lines.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_symbol_size
+</td>
+
+<td style="text-align:left;">
+
+symbol_size
+</td>
+
+<td style="text-align:left;">
+
+symbol_size
+</td>
+
+<td style="text-align:left;">
+
+The size of the points of the second series.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_type
+</td>
+
+<td style="text-align:left;">
+
+line
+</td>
+
+<td style="text-align:left;">
+
+<code>line</code>, <code>point</code> or <code>col</code>
+</td>
+
+<td style="text-align:left;">
+
+How the second series is drawn.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_y
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+unemployment
+</td>
+
+<td style="text-align:left;">
+
+The column drawn on a second axis on the right.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_ylab
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+unit of the right axis
+</td>
+
+<td style="text-align:left;">
+
+The unit above the right axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+symbol_colour
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+\#e6006e
+</td>
+
+<td style="text-align:left;">
+
+The colour of the dots.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+symbol_size
+</td>
+
+<td style="text-align:left;">
+
+1.4
+</td>
+
+<td style="text-align:left;">
+
+1.4
+</td>
+
+<td style="text-align:left;">
+
+The size of the points.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+ticks
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE draws ticks on the axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+upper
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+upper_bound
+</td>
+
+<td style="text-align:left;">
+
+The column with the upper end of the interval.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_accuracy
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+The rounding of the numbers on the value axis, such as 0.1.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_breaks
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;25;50;75;100
+</td>
+
+<td style="text-align:left;">
+
+The values at which the value axis is labelled.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_crop
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE cuts off the data outside the value limits, with a warning.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_limits
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;100
+</td>
+
+<td style="text-align:left;">
+
+The lowest and highest value of the value axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+year
+</td>
+
+<td style="text-align:left;">
+
+The column with the categories or numbers on the x axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x_lim
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+2015;2025
+</td>
+
+<td style="text-align:left;">
+
+The first and last value shown on the x axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x_lim_follow_data
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE lets the x axis follow the data when it runs past x_lim.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+xlab
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+unit below the x axis
+</td>
+
+<td style="text-align:left;">
+
+The text next to the x axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+y
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+purchasing_power
+</td>
+
+<td style="text-align:left;">
+
+The column with the values.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+ylab
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+% change
+</td>
+
+<td style="text-align:left;">
+
+The unit above the value axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+zeroline
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE draws a line at zero. Blank draws it only when zero is on the axis.
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
 
 <span class="table-title">**Table A7. Parameters specific to
 `scatter`**</span>
 
-| parameter | default | example |
-|:---|:---|:---|
-| axis_text_size | 7 | 7 |
-| colour |  | group |
-| facet |  | region |
-| facet_ncol |  | 2 |
-| facet_scales | fixed | fixed |
-| forecast_label | raming | raming |
-| forecast_x |  | 2025 |
-| grid_colour | black | black |
-| grid_linewidth | 0.1 | 0.1 |
-| legend | bottom | bottom |
-| minor | FALSE | FALSE |
-| palette | qualitative | qualitative |
-| pct_axis | FALSE | FALSE |
-| reverse_legend | FALSE | FALSE |
-| symbol_colour |  | \#e6006e |
-| symbol_size | 0.8 | 0.8 |
-| ticks | TRUE | TRUE |
-| value_accuracy |  | 0.1 |
-| value_breaks |  | 0;25;50;75;100 |
-| value_crop | FALSE | FALSE |
-| value_limits |  | 0;100 |
-| x | (required) | year |
-| x_labels |  | euro (or number, pct, or labels such as a;b;c) |
-| x_lim |  | 2015;2025 |
-| x_lim_follow_data | FALSE | FALSE |
-| xlab |  | unit below the x axis |
-| y | (required) | purchasing_power |
-| ylab |  | % change |
-| zeroline |  | TRUE |
+<table class="reftab">
+
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+parameter
+</th>
+
+<th style="text-align:left;">
+
+default
+</th>
+
+<th style="text-align:left;">
+
+example
+</th>
+
+<th style="text-align:left;">
+
+description
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+axis_text_size
+</td>
+
+<td style="text-align:left;">
+
+7
+</td>
+
+<td style="text-align:left;">
+
+7
+</td>
+
+<td style="text-align:left;">
+
+The size of the axis text, in points.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+colour
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+group
+</td>
+
+<td style="text-align:left;">
+
+The column that gives lines or points their colour.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+facet
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+region
+</td>
+
+<td style="text-align:left;">
+
+The column that splits the figure into small panels.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+facet_ncol
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+2
+</td>
+
+<td style="text-align:left;">
+
+The number of panels next to each other.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+facet_scales
+</td>
+
+<td style="text-align:left;">
+
+fixed
+</td>
+
+<td style="text-align:left;">
+
+<code>fixed</code>, <code>free</code>, <code>free_x</code> or
+<code>free_y</code>
+</td>
+
+<td style="text-align:left;">
+
+Whether the panels share their axes (fixed) or each have their own
+(free).
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+forecast_label
+</td>
+
+<td style="text-align:left;">
+
+raming
+</td>
+
+<td style="text-align:left;">
+
+raming
+</td>
+
+<td style="text-align:left;">
+
+The word shown in the forecast area.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+forecast_x
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+2025
+</td>
+
+<td style="text-align:left;">
+
+The x value where the forecast starts. Everything after it is shaded.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+grid_colour
+</td>
+
+<td style="text-align:left;">
+
+black
+</td>
+
+<td style="text-align:left;">
+
+black
+</td>
+
+<td style="text-align:left;">
+
+The colour of the grid lines.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+grid_linewidth
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+The width of the grid lines.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+legend
+</td>
+
+<td style="text-align:left;">
+
+bottom
+</td>
+
+<td style="text-align:left;">
+
+<code>bottom</code>, <code>right</code>, <code>left</code>,
+<code>top</code> or <code>none</code>
+</td>
+
+<td style="text-align:left;">
+
+Where the legend is placed. none removes it.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+minor
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE adds small ticks between the labels.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+palette
+</td>
+
+<td style="text-align:left;">
+
+qualitative
+</td>
+
+<td style="text-align:left;">
+
+<code>qualitative</code>, <code>discr</code>, <code>sequential</code>,
+<code>blues</code> or <code>extended</code>
+</td>
+
+<td style="text-align:left;">
+
+The colour set used for the categories.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+pct_axis
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE writes the values on the axis as percentages.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+reverse_legend
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE turns the order of the legend around.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+symbol_colour
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+\#e6006e
+</td>
+
+<td style="text-align:left;">
+
+The colour of the dots.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+symbol_size
+</td>
+
+<td style="text-align:left;">
+
+0.8
+</td>
+
+<td style="text-align:left;">
+
+0.8
+</td>
+
+<td style="text-align:left;">
+
+The size of the points.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+ticks
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE draws ticks on the axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_accuracy
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+The rounding of the numbers on the value axis, such as 0.1.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_breaks
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;25;50;75;100
+</td>
+
+<td style="text-align:left;">
+
+The values at which the value axis is labelled.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_crop
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE cuts off the data outside the value limits, with a warning.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_limits
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;100
+</td>
+
+<td style="text-align:left;">
+
+The lowest and highest value of the value axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+year
+</td>
+
+<td style="text-align:left;">
+
+The column with the categories or numbers on the x axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x_labels
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+<code>euro</code>, <code>number</code>, <code>pct</code> or labels such
+as <code>a;b;c</code>
+</td>
+
+<td style="text-align:left;">
+
+How the numbers on the x axis are written, or your own labels.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x_lim
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+2015;2025
+</td>
+
+<td style="text-align:left;">
+
+The first and last value shown on the x axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x_lim_follow_data
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE lets the x axis follow the data when it runs past x_lim.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+xlab
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+unit below the x axis
+</td>
+
+<td style="text-align:left;">
+
+The text next to the x axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+y
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+purchasing_power
+</td>
+
+<td style="text-align:left;">
+
+The column with the values.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+ylab
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+% change
+</td>
+
+<td style="text-align:left;">
+
+The unit above the value axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+zeroline
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE draws a line at zero. Blank draws it only when zero is on the axis.
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
 
 <span class="table-title">**Table A8. Parameters specific to
 `hist`**</span>
 
-| parameter         | default     | example               |
-|:------------------|:------------|:----------------------|
-| axis_text_size    | 7           | 7                     |
-| bins              |             | 30                    |
-| binwidth          |             | 5                     |
-| facet             |             | region                |
-| facet_ncol        |             | 2                     |
-| facet_scales      | fixed       | fixed                 |
-| fill              |             | group                 |
-| fill_colour       |             | \#005faf              |
-| grid_colour       | black       | black                 |
-| grid_linewidth    | 0.1         | 0.1                   |
-| legend            | bottom      | bottom                |
-| minor             | FALSE       | FALSE                 |
-| outline           | white       | white                 |
-| palette           | qualitative | qualitative           |
-| position          | stack       | stack                 |
-| reverse_legend    | TRUE        | TRUE                  |
-| ticks             | TRUE        | TRUE                  |
-| value_accuracy    |             | 0.1                   |
-| value_breaks      |             | 0;25;50;75;100        |
-| value_crop        | FALSE       | FALSE                 |
-| value_limits      |             | 0;100                 |
-| x                 | (required)  | year                  |
-| x_lim             |             | 2015;2025             |
-| x_lim_follow_data | FALSE       | FALSE                 |
-| xlab              |             | unit below the x axis |
-| ylab              |             | % change              |
-| zeroline          | TRUE        | TRUE                  |
+<table class="reftab">
+
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+parameter
+</th>
+
+<th style="text-align:left;">
+
+default
+</th>
+
+<th style="text-align:left;">
+
+example
+</th>
+
+<th style="text-align:left;">
+
+description
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+axis_text_size
+</td>
+
+<td style="text-align:left;">
+
+7
+</td>
+
+<td style="text-align:left;">
+
+7
+</td>
+
+<td style="text-align:left;">
+
+The size of the axis text, in points.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+bins
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+30
+</td>
+
+<td style="text-align:left;">
+
+The number of bars of the histogram.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+binwidth
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+5
+</td>
+
+<td style="text-align:left;">
+
+The width of one bar of the histogram, in the unit of the data.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+facet
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+region
+</td>
+
+<td style="text-align:left;">
+
+The column that splits the figure into small panels.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+facet_ncol
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+2
+</td>
+
+<td style="text-align:left;">
+
+The number of panels next to each other.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+facet_scales
+</td>
+
+<td style="text-align:left;">
+
+fixed
+</td>
+
+<td style="text-align:left;">
+
+<code>fixed</code>, <code>free</code>, <code>free_x</code> or
+<code>free_y</code>
+</td>
+
+<td style="text-align:left;">
+
+Whether the panels share their axes (fixed) or each have their own
+(free).
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+fill
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+group
+</td>
+
+<td style="text-align:left;">
+
+The column that splits the bars or areas into colours.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+fill_colour
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+\#005faf
+</td>
+
+<td style="text-align:left;">
+
+One colour for all bars or areas, when there is no fill column.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+grid_colour
+</td>
+
+<td style="text-align:left;">
+
+black
+</td>
+
+<td style="text-align:left;">
+
+black
+</td>
+
+<td style="text-align:left;">
+
+The colour of the grid lines.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+grid_linewidth
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+The width of the grid lines.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+legend
+</td>
+
+<td style="text-align:left;">
+
+bottom
+</td>
+
+<td style="text-align:left;">
+
+<code>bottom</code>, <code>right</code>, <code>left</code>,
+<code>top</code> or <code>none</code>
+</td>
+
+<td style="text-align:left;">
+
+Where the legend is placed. none removes it.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+minor
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE adds small ticks between the labels.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+outline
+</td>
+
+<td style="text-align:left;">
+
+white
+</td>
+
+<td style="text-align:left;">
+
+white
+</td>
+
+<td style="text-align:left;">
+
+The colour of the line around the bars.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+palette
+</td>
+
+<td style="text-align:left;">
+
+qualitative
+</td>
+
+<td style="text-align:left;">
+
+<code>qualitative</code>, <code>discr</code>, <code>sequential</code>,
+<code>blues</code> or <code>extended</code>
+</td>
+
+<td style="text-align:left;">
+
+The colour set used for the categories.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+position
+</td>
+
+<td style="text-align:left;">
+
+stack
+</td>
+
+<td style="text-align:left;">
+
+stack
+</td>
+
+<td style="text-align:left;">
+
+How bars of one category are placed: on top of each other, next to each
+other or as shares of 100%.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+reverse_legend
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE turns the order of the legend around.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+ticks
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE draws ticks on the axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_accuracy
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+The rounding of the numbers on the value axis, such as 0.1.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_breaks
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;25;50;75;100
+</td>
+
+<td style="text-align:left;">
+
+The values at which the value axis is labelled.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_crop
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE cuts off the data outside the value limits, with a warning.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_limits
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;100
+</td>
+
+<td style="text-align:left;">
+
+The lowest and highest value of the value axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+year
+</td>
+
+<td style="text-align:left;">
+
+The column with the categories or numbers on the x axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x_lim
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+2015;2025
+</td>
+
+<td style="text-align:left;">
+
+The first and last value shown on the x axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x_lim_follow_data
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE lets the x axis follow the data when it runs past x_lim.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+xlab
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+unit below the x axis
+</td>
+
+<td style="text-align:left;">
+
+The text next to the x axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+ylab
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+% change
+</td>
+
+<td style="text-align:left;">
+
+The unit above the value axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+zeroline
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE draws a line at zero. Blank draws it only when zero is on the axis.
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
 
 <span class="table-title">**Table A9. Parameters specific to
 `donut`**</span>
 
-| parameter      | default                       | example                       |
-|:---------------|:------------------------------|:------------------------------|
-| fill           | (required)                    | group                         |
-| label          |                               | name                          |
-| label_accuracy | 1                             | 1                             |
-| label_colour   | black                         | black                         |
-| label_style    | wedge/leader (default: wedge) | wedge/leader (default: wedge) |
-| leader_length  | 0.15                          | 0.15                          |
-| legend         | bottom                        | bottom                        |
-| legend_pct     | FALSE                         | FALSE                         |
-| palette        | qualitative                   | qualitative                   |
-| panel_size     |                               | 1.8                           |
-| reverse_legend | FALSE                         | FALSE                         |
-| ring_width     | 0.6                           | 0.6                           |
-| wedge_labels   | TRUE                          | TRUE                          |
-| y              | (required)                    | purchasing_power              |
+<table class="reftab">
+
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+parameter
+</th>
+
+<th style="text-align:left;">
+
+default
+</th>
+
+<th style="text-align:left;">
+
+example
+</th>
+
+<th style="text-align:left;">
+
+description
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+fill
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+group
+</td>
+
+<td style="text-align:left;">
+
+The column that splits the bars or areas into colours.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+label
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+name
+</td>
+
+<td style="text-align:left;">
+
+The column with the text of each slice.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+label_accuracy
+</td>
+
+<td style="text-align:left;">
+
+1
+</td>
+
+<td style="text-align:left;">
+
+1
+</td>
+
+<td style="text-align:left;">
+
+The rounding of the printed percentages.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+label_colour
+</td>
+
+<td style="text-align:left;">
+
+black
+</td>
+
+<td style="text-align:left;">
+
+black
+</td>
+
+<td style="text-align:left;">
+
+The colour of the labels in the slices.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+label_style
+</td>
+
+<td style="text-align:left;">
+
+wedge
+</td>
+
+<td style="text-align:left;">
+
+<code>wedge</code> or <code>leader</code>
+</td>
+
+<td style="text-align:left;">
+
+Prints the label inside the slice (wedge) or outside with a line
+(leader).
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+leader_length
+</td>
+
+<td style="text-align:left;">
+
+0.15
+</td>
+
+<td style="text-align:left;">
+
+0.15
+</td>
+
+<td style="text-align:left;">
+
+The length of the lines to the labels.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+legend
+</td>
+
+<td style="text-align:left;">
+
+bottom
+</td>
+
+<td style="text-align:left;">
+
+<code>bottom</code>, <code>right</code>, <code>left</code>,
+<code>top</code> or <code>none</code>
+</td>
+
+<td style="text-align:left;">
+
+Where the legend is placed. none removes it.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+legend_pct
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE adds the percentage to each name in the legend.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+palette
+</td>
+
+<td style="text-align:left;">
+
+qualitative
+</td>
+
+<td style="text-align:left;">
+
+<code>qualitative</code>, <code>discr</code>, <code>sequential</code>,
+<code>blues</code> or <code>extended</code>
+</td>
+
+<td style="text-align:left;">
+
+The colour set used for the categories.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+panel_size
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+1.8
+</td>
+
+<td style="text-align:left;">
+
+The size of the figure area in inches. It keeps the ring the same size.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+reverse_legend
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE turns the order of the legend around.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+ring_width
+</td>
+
+<td style="text-align:left;">
+
+0.6
+</td>
+
+<td style="text-align:left;">
+
+0.6
+</td>
+
+<td style="text-align:left;">
+
+The thickness of the ring, as a share of the radius.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+wedge_labels
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE prints the value on each slice.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+y
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+purchasing_power
+</td>
+
+<td style="text-align:left;">
+
+The column with the values.
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
 
 <span class="table-title">**Table A10. Parameters specific to
 `map`**</span>
 
-| parameter | default | example |
-|:---|:---|:---|
-| border_colour |  | white |
-| border_linewidth | 0.15 | 0.15 |
-| legend | topleft | topleft |
-| level | gemeente/corop/provincie (default: gemeente) | gemeente/corop/provincie (default: gemeente) |
-| na_fill |  | lightgrey |
-| palette | sequential | sequential |
-| region | (required) | code |
-| reverse | FALSE | FALSE |
-| reverse_legend | FALSE | FALSE |
-| value | (required) | share |
+<table class="reftab">
+
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+parameter
+</th>
+
+<th style="text-align:left;">
+
+default
+</th>
+
+<th style="text-align:left;">
+
+example
+</th>
+
+<th style="text-align:left;">
+
+description
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+border_colour
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+white
+</td>
+
+<td style="text-align:left;">
+
+The colour of the region borders.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+border_linewidth
+</td>
+
+<td style="text-align:left;">
+
+0.15
+</td>
+
+<td style="text-align:left;">
+
+0.15
+</td>
+
+<td style="text-align:left;">
+
+The width of the region borders.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+legend
+</td>
+
+<td style="text-align:left;">
+
+topleft
+</td>
+
+<td style="text-align:left;">
+
+<code>bottom</code>, <code>right</code>, <code>left</code>,
+<code>top</code> or <code>none</code>
+</td>
+
+<td style="text-align:left;">
+
+Where the legend is placed. none removes it.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+level
+</td>
+
+<td style="text-align:left;">
+
+gemeente
+</td>
+
+<td style="text-align:left;">
+
+<code>gemeente</code>, <code>corop</code> or <code>provincie</code>
+</td>
+
+<td style="text-align:left;">
+
+The kind of regions on the map.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+na_fill
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+lightgrey
+</td>
+
+<td style="text-align:left;">
+
+The colour of regions without a value.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+palette
+</td>
+
+<td style="text-align:left;">
+
+sequential
+</td>
+
+<td style="text-align:left;">
+
+<code>qualitative</code>, <code>discr</code>, <code>sequential</code>,
+<code>blues</code> or <code>extended</code>
+</td>
+
+<td style="text-align:left;">
+
+The colour set used for the categories.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+region
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+code
+</td>
+
+<td style="text-align:left;">
+
+The column with the codes of the municipalities, COROP regions or
+provinces.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+reverse
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE turns the colours around, so high values get the light colour.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+reverse_legend
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE turns the order of the legend around.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+share
+</td>
+
+<td style="text-align:left;">
+
+The column with the values that give the regions their colour.
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
 
 <span class="table-title">**Table A11. Parameters specific to
 `boxplot_extended`**</span>
 
-| parameter | default | example |
-|:---|:---|:---|
-| axis_text_size | 7 | 7 |
-| box_labels |  | TRUE |
-| box_style | modern/ggcpb/james/dot (default: modern) | modern/ggcpb/james/dot (default: modern) |
-| dot_labels |  | p5:bottom 5%;p95:top 5% |
-| facet |  | region |
-| facet_ncol |  | 2 |
-| facet_scales | fixed | fixed |
-| fill |  | group |
-| fill_colour |  | \#005faf |
-| grid_colour | white | white |
-| grid_linewidth | 0.8 | 0.8 |
-| group |  | sector |
-| group_gap | 0.7 | 0.7 |
-| label_accuracy | 0.1 | 0.1 |
-| legend | bottom | bottom |
-| linewidth | 0.25 | 0.25 |
-| mean |  | mean |
-| minor | FALSE | FALSE |
-| orientation | horizontal/vertical (default: horizontal) | horizontal/vertical (default: horizontal) |
-| p25 | (required) | p25 |
-| p5 | (required) | p5 |
-| p50 | (required) | p50 |
-| p75 | (required) | p75 |
-| p95 | (required) | p95 |
-| palette | qualitative | qualitative |
-| panel_fill | \#eef8ff | \#eef8ff |
-| pct_axis | FALSE | FALSE |
-| reverse_legend | FALSE | FALSE |
-| sec_accuracy |  | 0.1 |
-| sec_at |  | 0;50;100 |
-| sec_axis_labels |  | pct (or number, euro, or labels such as a;b;c) |
-| sec_col_width | 0.3 | 0.3 |
-| sec_colour |  | \#e6006e |
-| sec_legend_label |  | name of the second series |
-| sec_limits |  | 0;100 |
-| sec_linewidth | 0.55 | 0.55 |
-| sec_points | FALSE | FALSE |
-| sec_scale_auto | TRUE | TRUE |
-| sec_symbol_size | 1.6 | 1.6 |
-| sec_type | line/point/col (default: line) | line/point/col (default: line) |
-| sec_y |  | unemployment |
-| sec_ylab |  | unit of the right axis |
-| ticks | FALSE | FALSE |
-| value_accuracy |  | 0.1 |
-| value_axis |  | bottom |
-| value_axis_linewidth | 0.7 | 0.7 |
-| value_breaks |  | 0;25;50;75;100 |
-| value_crop | FALSE | FALSE |
-| value_limits |  | 0;100 |
-| width | 0.45 | 0.45 |
-| x | (required) | year |
-| x_lim |  | 2015;2025 |
-| x_lim_follow_data | TRUE | TRUE |
-| xlab |  | unit below the x axis |
-| ylab |  | % change |
-| ylab_position |  | left |
-| zero_indicator |  | TRUE |
-| zero_indicator_linewidth | 2 | 2 |
+<table class="reftab">
+
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+parameter
+</th>
+
+<th style="text-align:left;">
+
+default
+</th>
+
+<th style="text-align:left;">
+
+example
+</th>
+
+<th style="text-align:left;">
+
+description
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+axis_text_size
+</td>
+
+<td style="text-align:left;">
+
+7
+</td>
+
+<td style="text-align:left;">
+
+7
+</td>
+
+<td style="text-align:left;">
+
+The size of the axis text, in points.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+box_labels
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE prints the values of the box.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+box_style
+</td>
+
+<td style="text-align:left;">
+
+modern
+</td>
+
+<td style="text-align:left;">
+
+<code>modern</code>, <code>ggcpb</code>, <code>james</code> or
+<code>dot</code>
+</td>
+
+<td style="text-align:left;">
+
+The look of the boxes.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+dot_labels
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+p5:bottom 5%;p95:top 5%
+</td>
+
+<td style="text-align:left;">
+
+Names for the dots of the dot style, as name:text pairs.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+facet
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+region
+</td>
+
+<td style="text-align:left;">
+
+The column that splits the figure into small panels.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+facet_ncol
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+2
+</td>
+
+<td style="text-align:left;">
+
+The number of panels next to each other.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+facet_scales
+</td>
+
+<td style="text-align:left;">
+
+fixed
+</td>
+
+<td style="text-align:left;">
+
+<code>fixed</code>, <code>free</code>, <code>free_x</code> or
+<code>free_y</code>
+</td>
+
+<td style="text-align:left;">
+
+Whether the panels share their axes (fixed) or each have their own
+(free).
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+fill
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+group
+</td>
+
+<td style="text-align:left;">
+
+The column that splits the bars or areas into colours.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+fill_colour
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+\#005faf
+</td>
+
+<td style="text-align:left;">
+
+One colour for all bars or areas, when there is no fill column.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+grid_colour
+</td>
+
+<td style="text-align:left;">
+
+white
+</td>
+
+<td style="text-align:left;">
+
+white
+</td>
+
+<td style="text-align:left;">
+
+The colour of the grid lines.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+grid_linewidth
+</td>
+
+<td style="text-align:left;">
+
+0.8
+</td>
+
+<td style="text-align:left;">
+
+0.8
+</td>
+
+<td style="text-align:left;">
+
+The width of the grid lines.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+group
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+sector
+</td>
+
+<td style="text-align:left;">
+
+The column that groups the data in blocks next to each other.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+group_gap
+</td>
+
+<td style="text-align:left;">
+
+0.7
+</td>
+
+<td style="text-align:left;">
+
+0.7
+</td>
+
+<td style="text-align:left;">
+
+The space between the groups, in bar widths.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+label_accuracy
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+The rounding of the printed percentages.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+legend
+</td>
+
+<td style="text-align:left;">
+
+bottom
+</td>
+
+<td style="text-align:left;">
+
+<code>bottom</code>, <code>right</code>, <code>left</code>,
+<code>top</code> or <code>none</code>
+</td>
+
+<td style="text-align:left;">
+
+Where the legend is placed. none removes it.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+linewidth
+</td>
+
+<td style="text-align:left;">
+
+0.25
+</td>
+
+<td style="text-align:left;">
+
+0.25
+</td>
+
+<td style="text-align:left;">
+
+The width of the line.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+mean
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+mean
+</td>
+
+<td style="text-align:left;">
+
+The column with the mean, drawn as a diamond.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+minor
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE adds small ticks between the labels.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+orientation
+</td>
+
+<td style="text-align:left;">
+
+horizontal
+</td>
+
+<td style="text-align:left;">
+
+<code>horizontal</code> or <code>vertical</code>
+</td>
+
+<td style="text-align:left;">
+
+Draws the figure upright (vertical) or turned (horizontal).
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+p25
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+p25
+</td>
+
+<td style="text-align:left;">
+
+The column with the 25th percentile, the bottom of the box.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+p5
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+p5
+</td>
+
+<td style="text-align:left;">
+
+The column with the 5th percentile, the lower whisker.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+p50
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+p50
+</td>
+
+<td style="text-align:left;">
+
+The column with the median, the line in the box.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+p75
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+p75
+</td>
+
+<td style="text-align:left;">
+
+The column with the 75th percentile, the top of the box.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+p95
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+p95
+</td>
+
+<td style="text-align:left;">
+
+The column with the 95th percentile, the upper whisker.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+palette
+</td>
+
+<td style="text-align:left;">
+
+qualitative
+</td>
+
+<td style="text-align:left;">
+
+<code>qualitative</code>, <code>discr</code>, <code>sequential</code>,
+<code>blues</code> or <code>extended</code>
+</td>
+
+<td style="text-align:left;">
+
+The colour set used for the categories.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+panel_fill
+</td>
+
+<td style="text-align:left;">
+
+\#eef8ff
+</td>
+
+<td style="text-align:left;">
+
+\#eef8ff
+</td>
+
+<td style="text-align:left;">
+
+The colour behind the figure.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+pct_axis
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE writes the values on the axis as percentages.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+reverse_legend
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE turns the order of the legend around.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_accuracy
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+The rounding of the numbers on the right axis, such as 0.1.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_at
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;50;100
+</td>
+
+<td style="text-align:left;">
+
+The values at which the right axis is labelled.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_axis_labels
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+<code>pct</code>, <code>number</code>, <code>euro</code> or labels such
+as <code>a;b;c</code>
+</td>
+
+<td style="text-align:left;">
+
+How the numbers on the right axis are written, or your own labels.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_col_width
+</td>
+
+<td style="text-align:left;">
+
+0.3
+</td>
+
+<td style="text-align:left;">
+
+0.3
+</td>
+
+<td style="text-align:left;">
+
+The width of the bars of the second series.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_colour
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+\#e6006e
+</td>
+
+<td style="text-align:left;">
+
+The colour of the second series.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_legend_label
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+name of the second series
+</td>
+
+<td style="text-align:left;">
+
+The name of the second series in the legend.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_limits
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;100
+</td>
+
+<td style="text-align:left;">
+
+The lowest and highest value of the right axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_linewidth
+</td>
+
+<td style="text-align:left;">
+
+0.55
+</td>
+
+<td style="text-align:left;">
+
+0.55
+</td>
+
+<td style="text-align:left;">
+
+The line width of the second series.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_points
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE adds points to the second series when it is a line.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_scale_auto
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE chooses the right axis automatically so it fits the left axis
+lines.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_symbol_size
+</td>
+
+<td style="text-align:left;">
+
+1.6
+</td>
+
+<td style="text-align:left;">
+
+1.6
+</td>
+
+<td style="text-align:left;">
+
+The size of the points of the second series.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_type
+</td>
+
+<td style="text-align:left;">
+
+line
+</td>
+
+<td style="text-align:left;">
+
+<code>line</code>, <code>point</code> or <code>col</code>
+</td>
+
+<td style="text-align:left;">
+
+How the second series is drawn.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_y
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+unemployment
+</td>
+
+<td style="text-align:left;">
+
+The column drawn on a second axis on the right.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_ylab
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+unit of the right axis
+</td>
+
+<td style="text-align:left;">
+
+The unit above the right axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+ticks
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE draws ticks on the axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_accuracy
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0.1
+</td>
+
+<td style="text-align:left;">
+
+The rounding of the numbers on the value axis, such as 0.1.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_axis
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+bottom
+</td>
+
+<td style="text-align:left;">
+
+Whether the value axis is at the bottom or at the top.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_axis_linewidth
+</td>
+
+<td style="text-align:left;">
+
+0.7
+</td>
+
+<td style="text-align:left;">
+
+0.7
+</td>
+
+<td style="text-align:left;">
+
+The width of the line of the value axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_breaks
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;25;50;75;100
+</td>
+
+<td style="text-align:left;">
+
+The values at which the value axis is labelled.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_crop
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+</td>
+
+<td style="text-align:left;">
+
+TRUE cuts off the data outside the value limits, with a warning.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+value_limits
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+0;100
+</td>
+
+<td style="text-align:left;">
+
+The lowest and highest value of the value axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+width
+</td>
+
+<td style="text-align:left;">
+
+0.45
+</td>
+
+<td style="text-align:left;">
+
+0.45
+</td>
+
+<td style="text-align:left;">
+
+The width of the bars or boxes, as a share of the space.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x
+</td>
+
+<td style="text-align:left;">
+
+(required)
+</td>
+
+<td style="text-align:left;">
+
+year
+</td>
+
+<td style="text-align:left;">
+
+The column with the categories or numbers on the x axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x_lim
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+2015;2025
+</td>
+
+<td style="text-align:left;">
+
+The first and last value shown on the x axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x_lim_follow_data
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE lets the x axis follow the data when it runs past x_lim.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+xlab
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+unit below the x axis
+</td>
+
+<td style="text-align:left;">
+
+The text next to the x axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+ylab
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+% change
+</td>
+
+<td style="text-align:left;">
+
+The unit above the value axis.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+ylab_position
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+<code>left</code>, <code>middle</code> or <code>right</code>
+</td>
+
+<td style="text-align:left;">
+
+Where the unit is placed: left, middle or right.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+zero_indicator
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+</td>
+
+<td style="text-align:left;">
+
+TRUE draws a thick white line at zero behind the data.
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+zero_indicator_linewidth
+</td>
+
+<td style="text-align:left;">
+
+2
+</td>
+
+<td style="text-align:left;">
+
+2
+</td>
+
+<td style="text-align:left;">
+
+The width of the white zero line.
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
 
 A parameter that refers to a variable (such as `x`, `y` or `fill`) takes
 a column name from the dataset. Every other parameter takes a value

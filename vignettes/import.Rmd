@@ -291,7 +291,7 @@ and any parameter problems.
 
 The available parameters depend on the `plot_type`. The complete list
 is stored in `parameter_settings.csv`, and gives the available
-parameters, their default values and examples.
+parameters, their default values, examples and a short description.
 
 ```{r params-ref-path, include=FALSE}
 ref_csv <- system.file(
@@ -327,12 +327,19 @@ is_shared <- vapply(by_param, function(rows) {
 shared_params <- sort(names(by_param)[is_shared])
 
 show_params <- function(rows) {
-  rows <- rows[order(rows$param), c("param", "default", "example")]
+  rows <- rows[order(rows$param),
+               c("param", "default", "example", "description")]
+  # `x` in the reference becomes code
+  rows[] <- lapply(rows, function(col) {
+    gsub("`([^`]*)`", "<code>\\1</code>", col)
+  })
   print(knitr::kable(
     rows,
+    format = "html",
     row.names = FALSE,
-    align = "l",
-    col.names = c("parameter", "default", "example")
+    escape = FALSE,
+    table.attr = 'class="reftab"',
+    col.names = c("parameter", "default", "example", "description")
   ))
 }
 
