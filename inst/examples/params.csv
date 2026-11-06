@@ -42,3 +42,4 @@ facet_ncol,,,,,,,,,,,,,2
 page,,,,,,,,,,,,,full
 sec_type,line,,,,,,,,,,,,
 create,y,y,,,,,,,,,,,
+legend,,,,,,,,,filled-empty,,,,

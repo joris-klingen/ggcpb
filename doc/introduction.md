@@ -1327,6 +1327,10 @@ input to `cpb_donut()`.
 
 A dot plot shows an estimate with its interval.
 
+With `legend = filled-empty` the figure has no legend, but it keeps the
+space of one. This gives the same panel height as a figure with a
+legend.
+
 <div class="figrow">
 
 <img src="introduction_files/figure-gfm/dot-1.png" alt="" width="100%" />
@@ -1433,6 +1437,20 @@ group
 <td style="text-align:left;">
 
 blok
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+legend
+</td>
+
+<td style="text-align:left;">
+
+filled-empty
 </td>
 
 </tr>
@@ -2107,7 +2125,7 @@ schatting <- tibble(
   hi   = c(6.6, 3.6, -1.1, 4.3, 2.2, 0.6)
 )
 cpb_dot(schatting, x = term, y = coef, lower = lo, upper = hi,
-        group = blok,
+        group = blok, legend = "filled-empty",
         title = "Samenhang met voorkeurstarieven",
         xlab  = "%punt verandering")
 ```
