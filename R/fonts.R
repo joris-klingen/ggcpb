@@ -203,6 +203,19 @@ cpb_register_windows_font <- function(family) {
 #'   `plain`/`bold`/`italic`/`bolditalic`.
 #' @return A one-row data frame describing what happened.
 #' @noRd
+# On a Windows network drive base::file.info() warns "cannot resolve owner of
+# file ..." for every font file, because the owner of a file there cannot be
+# looked up. Nothing is wrong with the font, so only that message is muffled
+# and every other warning still comes through.
+cpb_quiet_owner_warning <- function(expr) {
+  withCallingHandlers(expr, warning = function(w) {
+    if (grepl("cannot resolve owner of file", conditionMessage(w),
+              fixed = TRUE)) {
+      invokeRestart("muffleWarning")
+    }
+  })
+}
+
 cpb_register_family <- function(family, faces, windows_device = TRUE) {
   slot <- function(nm) if (!is.na(faces[[nm]])) faces[[nm]] else NA_character_
   plain <- slot("plain")
@@ -215,17 +228,17 @@ cpb_register_family <- function(family, faces, windows_device = TRUE) {
   # the bold weight instead of erroring
   bolditalic <- if (!is.na(slot("bolditalic"))) slot("bolditalic") else bold
 
-  ok_systemfonts <- tryCatch({
+  ok_systemfonts <- tryCatch(cpb_quiet_owner_warning({
     systemfonts::register_font(name = family, plain = plain, bold = bold,
                                italic = italic, bolditalic = bolditalic)
     TRUE
-  }, error = function(e) FALSE)
+  }), error = function(e) FALSE)
 
-  ok_sysfonts <- tryCatch({
+  ok_sysfonts <- tryCatch(cpb_quiet_owner_warning({
     sysfonts::font_add(family = family, regular = plain, bold = bold,
                        italic = italic, bolditalic = bolditalic)
     TRUE
-  }, error = function(e) FALSE)
+  }), error = function(e) FALSE)
 
   ok_windows <- if (isTRUE(windows_device)) {
     cpb_register_windows_font(family)

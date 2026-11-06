@@ -163,3 +163,20 @@ test_that("a plot in the Rijksoverheid font saves without the font warning", {
   path <- withr::local_tempfile(fileext = ".png")
   expect_no_warning(save_cpb(path, cpb_col(df, x = x, y = y)))
 })
+
+test_that("the owner warning of a network drive is muffled, others are not", {
+  expect_no_warning(
+    cpb_quiet_owner_warning({
+      warning("cannot resolve owner of file 'M:/fonts/a.otf': no mapping")
+      1
+    })
+  )
+  expect_warning(
+    cpb_quiet_owner_warning({
+      warning("something else")
+      1
+    }),
+    "something else"
+  )
+  expect_equal(cpb_quiet_owner_warning(2), 2)
+})
