@@ -1,5 +1,5 @@
 #!/bin/bash
 cd "$(dirname "$0")"
-Rscript run_import.R
+Rscript generate_plot.R
 echo
 read -p "Press Enter to close this window: " dummy

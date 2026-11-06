@@ -34,7 +34,7 @@ To create a figure, you need:
   - one `params.csv` can contain the parameters for several figures
 - a `data` folder with the dataset(s)
   - each dataset is a CSV file
-- the `run_import.bat` script
+- the `generate_plot.bat` script
 
 *Please note*: The datasets must be saved as CSV, not as spreadsheet
 (`xlsx`). In Excel, choose `File` -\> `Save as` -\>
@@ -48,15 +48,17 @@ The general workflow to create figures with ggcpb is as follows:
 2.  Copy it to the place where you want to create figures.
 3.  Put your datasets in the folder `data`. Open `params.csv` in Excel
     and add your parameters.
-4.  To create a figure, double clik on `run_import.bat`. This reads
+4.  To create a figure, double clik on `generate_plot.bat`. This reads
     `params.csv`, builds every figure and saves the images in the folder
     `generated`. Each image is named after its dataset. Running the
     script again produces updated figures. Images with the same name are
     replaced. A dataset or figure that fails is skipped and listed at
     the end, and in `params_log.txt`. The other figures are still saved.
 
-R and `ggcpb` must still be installed on the computer running the
-script.
+*Please note*. The `generate_plot.bat`, `generate_plot.R` and
+`params.csv` must all be in the same folder. Within this folder, there
+must be a subfolder `data`, in which each dataset must be saved as a CSV
+file.
 
 # The dataset
 
@@ -128,6 +130,25 @@ line
 
 <td style="text-align:left;">
 
+data
+</td>
+
+<td style="text-align:left;">
+
+koopkracht
+</td>
+
+<td style="text-align:left;">
+
+werkloosheid
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
 title
 </td>
 
@@ -185,24 +206,6 @@ werkloosheid
 
 <td style="text-align:left;">
 
-fill
-</td>
-
-<td style="text-align:left;">
-
-groep
-</td>
-
-<td style="text-align:left;">
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
 ylab
 </td>
 
@@ -222,12 +225,12 @@ ylab
 
 <td style="text-align:left;">
 
-position
+fill
 </td>
 
 <td style="text-align:left;">
 
-dodge
+groep
 </td>
 
 <td style="text-align:left;">
@@ -246,24 +249,6 @@ sec_y
 <td style="text-align:left;">
 
 werkloosheid
-</td>
-
-<td style="text-align:left;">
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-sec_type
-</td>
-
-<td style="text-align:left;">
-
-line
 </td>
 
 <td style="text-align:left;">
@@ -312,36 +297,16 @@ sec_ylab
 
 <td style="text-align:left;">
 
-create
+position
 </td>
 
 <td style="text-align:left;">
 
-y
+dodge
 </td>
 
 <td style="text-align:left;">
 
-y
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-data
-</td>
-
-<td style="text-align:left;">
-
-koopkracht
-</td>
-
-<td style="text-align:left;">
-
-werkloosheid
 </td>
 
 </tr>
@@ -360,6 +325,43 @@ style
 <td style="text-align:left;">
 
 english
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_type
+</td>
+
+<td style="text-align:left;">
+
+line
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+create
+</td>
+
+<td style="text-align:left;">
+
+y
+</td>
+
+<td style="text-align:left;">
+
+y
 </td>
 
 </tr>
@@ -458,15 +460,15 @@ path <- tempfile(fileext = ".png")
 save_cpb(path, figs$koopkracht, page = "half")
 ```
 
-<span id="figure-1" class="table-title">**Figure 1. The column chart of
-the first figure in params.csv**</span>
+<span id="figure-1"><span class="table-title">**Figure 1.**</span> The
+column chart of the first figure in params.csv</span>
 
 <img src="import_files/figure-gfm/fig-koopkracht-show-1.png" alt="" width="350px" />
 
 `werkloosheid` has no second axis, so it can be shown directly:
 
-<span id="figure-2" class="table-title">**Figure 2. The line chart of
-the second figure in params.csv**</span>
+<span id="figure-2"><span class="table-title">**Figure 2.**</span> The
+line chart of the second figure in params.csv</span>
 
 ``` r
 figs$werkloosheid

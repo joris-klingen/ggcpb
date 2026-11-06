@@ -1,6 +1,6 @@
-# run_import.R
+# generate_plot.R
 #
-# This script is started by run_import.bat.
+# This script is started by generate_plot.bat.
 # It is not normally opened by hand.
 #
 # It reads params.csv from its own folder, builds every figure described

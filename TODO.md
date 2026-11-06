@@ -23,8 +23,8 @@ or dropped.
 
 ### Important
 
-5. **Mac start script**: `inst/autogenerate_plots/run_import.command`
-   still ships, while the docs only name `run_import.bat`. Remove it, or
+5. **Mac start script**: `inst/autogenerate_plots/generate_plot.command`
+   still ships, while the docs only name `generate_plot.bat`. Remove it, or
    document it again.
 6. **Excel CSV**: Dutch Excel writes `;` and a decimal comma, unless
    "CSV UTF-8 (comma delimited)" is chosen. Detect the separator and the

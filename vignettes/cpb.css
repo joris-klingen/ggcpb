@@ -316,3 +316,8 @@ table.paramtab th:not(:first-child) {
   color: #000000;
   font-weight: normal;
 }
+/* The start of the sentence under each figure: CPB blue and bold. */
+.repro-title {
+  color: #005faf;
+  font-weight: bold;
+}

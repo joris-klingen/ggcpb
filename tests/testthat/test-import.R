@@ -171,9 +171,11 @@ test_that("autogenerate_plots copies every kit file into a new folder", {
   dest <- withr::local_tempdir()
   autogenerate_plots(dest)
 
-  kit_dir <- system.file("autogenerate_plots", package = "ggcpb")
+  kit_dir <- system.file("examples", package = "ggcpb")
   expect_true(dir.exists(kit_dir))
-  expect_setequal(list.files(dest), list.files(kit_dir))
+  kit <- setdiff(list.files(kit_dir),
+                 c("generated", "output", "params_log.txt"))
+  expect_setequal(list.files(dest), kit)
 
   # the example datasets ship ready to run as-is
   expect_true(file.exists(file.path(dest, "data", "koopkracht.csv")))
@@ -181,8 +183,8 @@ test_that("autogenerate_plots copies every kit file into a new folder", {
   expect_type(p, "list")
 })
 
-test_that("autogenerate_plots keeps run_import.command executable", {
-  # run_import.command is a Mac-only double-click start script, and the
+test_that("autogenerate_plots keeps generate_plot.command executable", {
+  # generate_plot.command is a Mac-only double-click start script, and the
   # executable bit this checks is a POSIX permission concept Windows
   # doesn't have -- file.info()$mode reads back something else there
   # regardless of what Sys.chmod() was asked to do, which isn't a real
@@ -192,7 +194,7 @@ test_that("autogenerate_plots keeps run_import.command executable", {
   dest <- withr::local_tempdir()
   autogenerate_plots(dest)
 
-  command_file <- file.path(dest, "run_import.command")
+  command_file <- file.path(dest, "generate_plot.command")
   expect_true(file.exists(command_file))
   expect_equal(as.character(file.info(command_file)$mode), "755")
 })
@@ -211,7 +213,7 @@ test_that("autogenerate_plots creates the destination folder if needed", {
 
   autogenerate_plots(dest)
 
-  expect_true(file.exists(file.path(dest, "run_import.R")))
+  expect_true(file.exists(file.path(dest, "generate_plot.R")))
 })
 
 test_that("cpb_import_csv errors clearly when the dataset has no header row", {

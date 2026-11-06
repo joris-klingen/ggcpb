@@ -76,12 +76,18 @@ R:
 2.  Copy it to the place where you want to create figures.
 3.  Put your datasets in the folder `data`. Open `params.csv` in Excel
     and describe your figures.
-4.  Start `run_import.bat` by double clicking it. Your figures appear in
-    the folder `generated`. Each image is named after its dataset.
-    Running the script again produces updated figures. Images with the
-    same name are replaced. A dataset or figure that fails is skipped
-    and listed at the end, and in `params_log.txt`. The other figures
-    are still saved.
+4.  Start `generate_plot.bat` by double clicking it. This runs the
+    `generate_plot.R` script. Your figures appear in the folder
+    `generated`. Each image is named after its dataset. Running the
+    script again produces updated figures. Images with the same name are
+    replaced. A dataset or figure that fails is skipped and listed at
+    the end, and in `params_log.txt`. The other figures are still saved.
+
+*Please note*. The `generate_plot.bat`, `generate_plot.R` and
+`params.csv` must all be in the same folder. Within this folder, there
+must be a subfolder `data`, in which each dataset must be saved as a CSV
+file, and *not* as spreadsheet (`xlsx`). In Excel, choose `File` -\>
+`Save as` -\> `CSV UTF-8 (comma delimited)`.
 
 You do not need to know R to follow this workflow. One parameter file
 and one or more datasets drive everything.
@@ -102,10 +108,6 @@ to draw the same figure for both datasets. A figure is saved under the
 name of its dataset, so `koopkracht` gives `koopkracht.png`. If two
 figures use the same dataset, the figure number is added, such as
 `koopkracht_1.png`.
-
-*Please note*: The files must be saved as CSV, not as spreadsheet
-(`xlsx`). In Excel, choose `File` -\> `Save as` -\>
-`CSV UTF-8 (comma delimited)`.
 
 Run the script again after every change. This will update the figures.
 The import vignette gives a more detailed explanation and lists all
@@ -302,13 +304,13 @@ ylab
 
 </div>
 
-**How to reproduce this figure:** copy `params.csv`, `run_import.bat`
-and the folder `data` with `line-forecast.csv` to a personal folder.
-Fill in the parameters above in `params.csv` and start the script. In R
-you can call `cpb_line()` instead. Follow the example code in [section
-4.1](#code-line-forecast) to create the plot in R. Alternatively, the
-csv file can be read with `read.csv()` and used as input to
-`cpb_line()`.
+<span class="repro-title">**How to reproduce this figure:**</span> copy
+`params.csv`, `generate_plot.bat` and the folder `data` with
+`line-forecast.csv` to a personal folder. Fill in the parameters above
+in `params.csv` and start the script. In R you can call `cpb_line()`
+instead. Follow the example code in [section 4.1](#code-line-forecast)
+to create the plot in R. Alternatively, the csv file can be read with
+`read.csv()` and used as input to `cpb_line()`.
 
 ## Columns with two axes
 
@@ -475,12 +477,13 @@ mld euro
 
 </div>
 
-**How to reproduce this figure:** copy `params.csv`, `run_import.bat`
-and the folder `data` with `col-secaxis.csv` to a personal folder. Fill
-in the parameters above in `params.csv` and start the script. In R you
-can call `cpb_col()` instead. Follow the example code in [section
-4.2](#code-col-secaxis) to create the plot in R. Alternatively, the csv
-file can be read with `read.csv()` and used as input to `cpb_col()`.
+<span class="repro-title">**How to reproduce this figure:**</span> copy
+`params.csv`, `generate_plot.bat` and the folder `data` with
+`col-secaxis.csv` to a personal folder. Fill in the parameters above in
+`params.csv` and start the script. In R you can call `cpb_col()`
+instead. Follow the example code in [section 4.2](#code-col-secaxis) to
+create the plot in R. Alternatively, the csv file can be read with
+`read.csv()` and used as input to `cpb_col()`.
 
 ## Horizontal bars with chosen colours
 
@@ -660,12 +663,13 @@ aandeel binnen inkomensgroep (%)
 
 </div>
 
-**How to reproduce this figure:** copy `params.csv`, `run_import.bat`
-and the folder `data` with `col-horizontal.csv` to a personal folder.
-Fill in the parameters above in `params.csv` and start the script. In R
-you can call `cpb_col()` instead. Follow the example code in [section
-4.3](#code-col-horizontal) to create the plot in R. Alternatively, the
-csv file can be read with `read.csv()` and used as input to `cpb_col()`.
+<span class="repro-title">**How to reproduce this figure:**</span> copy
+`params.csv`, `generate_plot.bat` and the folder `data` with
+`col-horizontal.csv` to a personal folder. Fill in the parameters above
+in `params.csv` and start the script. In R you can call `cpb_col()`
+instead. Follow the example code in [section 4.3](#code-col-horizontal)
+to create the plot in R. Alternatively, the csv file can be read with
+`read.csv()` and used as input to `cpb_col()`.
 
 ## Line with markers in English
 
@@ -818,12 +822,13 @@ ylab
 
 </div>
 
-**How to reproduce this figure:** copy `params.csv`, `run_import.bat`
-and the folder `data` with `line-points.csv` to a personal folder. Fill
-in the parameters above in `params.csv` and start the script. In R you
-can call `cpb_line()` instead. Follow the example code in [section
-4.4](#code-line-points) to create the plot in R. Alternatively, the csv
-file can be read with `read.csv()` and used as input to `cpb_line()`.
+<span class="repro-title">**How to reproduce this figure:**</span> copy
+`params.csv`, `generate_plot.bat` and the folder `data` with
+`line-points.csv` to a personal folder. Fill in the parameters above in
+`params.csv` and start the script. In R you can call `cpb_line()`
+instead. Follow the example code in [section 4.4](#code-line-points) to
+create the plot in R. Alternatively, the csv file can be read with
+`read.csv()` and used as input to `cpb_line()`.
 
 ## Boxplot
 
@@ -1004,12 +1009,13 @@ ylab
 
 </div>
 
-**How to reproduce this figure:** copy `params.csv`, `run_import.bat`
-and the folder `data` with `box.csv` to a personal folder. Fill in the
-parameters above in `params.csv` and start the script. In R you can call
-`cpb_box()` instead. Follow the example code in [section 4.5](#code-box)
-to create the plot in R. Alternatively, the csv file can be read with
-`read.csv()` and used as input to `cpb_box()`.
+<span class="repro-title">**How to reproduce this figure:**</span> copy
+`params.csv`, `generate_plot.bat` and the folder `data` with `box.csv`
+to a personal folder. Fill in the parameters above in `params.csv` and
+start the script. In R you can call `cpb_box()` instead. Follow the
+example code in [section 4.5](#code-box) to create the plot in R.
+Alternatively, the csv file can be read with `read.csv()` and used as
+input to `cpb_box()`.
 
 More box plot styles are in [`vignette("boxplots")`](boxplots.md).
 
@@ -1204,13 +1210,14 @@ full
 
 </div>
 
-**How to reproduce this figure:** copy `params.csv`, `run_import.bat`
-and the folder `data` with `box-extended.csv` to a personal folder. Fill
-in the parameters above in `params.csv` and start the script. In R you
-can call `cpb_boxplot_extended()` instead. Follow the example code in
-[section 4.6](#code-box-extended) to create the plot in R.
-Alternatively, the csv file can be read with `read.csv()` and used as
-input to `cpb_boxplot_extended()`.
+<span class="repro-title">**How to reproduce this figure:**</span> copy
+`params.csv`, `generate_plot.bat` and the folder `data` with
+`box-extended.csv` to a personal folder. Fill in the parameters above in
+`params.csv` and start the script. In R you can call
+`cpb_boxplot_extended()` instead. Follow the example code in [section
+4.6](#code-box-extended) to create the plot in R. Alternatively, the csv
+file can be read with `read.csv()` and used as input to
+`cpb_boxplot_extended()`.
 
 ## Donut chart
 
@@ -1308,12 +1315,13 @@ colour_index
 
 </div>
 
-**How to reproduce this figure:** copy `params.csv`, `run_import.bat`
-and the folder `data` with `donut.csv` to a personal folder. Fill in the
-parameters above in `params.csv` and start the script. In R you can call
-`cpb_donut()` instead. Follow the example code in [section
-4.7](#code-donut) to create the plot in R. Alternatively, the csv file
-can be read with `read.csv()` and used as input to `cpb_donut()`.
+<span class="repro-title">**How to reproduce this figure:**</span> copy
+`params.csv`, `generate_plot.bat` and the folder `data` with `donut.csv`
+to a personal folder. Fill in the parameters above in `params.csv` and
+start the script. In R you can call `cpb_donut()` instead. Follow the
+example code in [section 4.7](#code-donut) to create the plot in R.
+Alternatively, the csv file can be read with `read.csv()` and used as
+input to `cpb_donut()`.
 
 ## Dot plot
 
@@ -1451,12 +1459,13 @@ xlab
 
 </div>
 
-**How to reproduce this figure:** copy `params.csv`, `run_import.bat`
-and the folder `data` with `dot.csv` to a personal folder. Fill in the
-parameters above in `params.csv` and start the script. In R you can call
-`cpb_dot()` instead. Follow the example code in [section 4.8](#code-dot)
-to create the plot in R. Alternatively, the csv file can be read with
-`read.csv()` and used as input to `cpb_dot()`.
+<span class="repro-title">**How to reproduce this figure:**</span> copy
+`params.csv`, `generate_plot.bat` and the folder `data` with `dot.csv`
+to a personal folder. Fill in the parameters above in `params.csv` and
+start the script. In R you can call `cpb_dot()` instead. Follow the
+example code in [section 4.8](#code-dot) to create the plot in R.
+Alternatively, the csv file can be read with `read.csv()` and used as
+input to `cpb_dot()`.
 
 ## Scatter plot
 
@@ -1637,12 +1646,13 @@ euro
 
 </div>
 
-**How to reproduce this figure:** copy `params.csv`, `run_import.bat`
-and the folder `data` with `scatter.csv` to a personal folder. Fill in
-the parameters above in `params.csv` and start the script. In R you can
-call `cpb_scatter()` instead. Follow the example code in [section
-4.9](#code-scatter) to create the plot in R. Alternatively, the csv file
-can be read with `read.csv()` and used as input to `cpb_scatter()`.
+<span class="repro-title">**How to reproduce this figure:**</span> copy
+`params.csv`, `generate_plot.bat` and the folder `data` with
+`scatter.csv` to a personal folder. Fill in the parameters above in
+`params.csv` and start the script. In R you can call `cpb_scatter()`
+instead. Follow the example code in [section 4.9](#code-scatter) to
+create the plot in R. Alternatively, the csv file can be read with
+`read.csv()` and used as input to `cpb_scatter()`.
 
 ## Histogram
 
@@ -1750,12 +1760,13 @@ duur (maanden)
 
 </div>
 
-**How to reproduce this figure:** copy `params.csv`, `run_import.bat`
-and the folder `data` with `hist.csv` to a personal folder. Fill in the
-parameters above in `params.csv` and start the script. In R you can call
-`cpb_hist()` instead. Follow the example code in [section
-4.10](#code-hist) to create the plot in R. Alternatively, the csv file
-can be read with `read.csv()` and used as input to `cpb_hist()`.
+<span class="repro-title">**How to reproduce this figure:**</span> copy
+`params.csv`, `generate_plot.bat` and the folder `data` with `hist.csv`
+to a personal folder. Fill in the parameters above in `params.csv` and
+start the script. In R you can call `cpb_hist()` instead. Follow the
+example code in [section 4.10](#code-hist) to create the plot in R.
+Alternatively, the csv file can be read with `read.csv()` and used as
+input to `cpb_hist()`.
 
 ## Classed map
 
@@ -1904,12 +1915,13 @@ aandeel
 
 </div>
 
-**How to reproduce this figure:** copy `params.csv`, `run_import.bat`
-and the folder `data` with `map.csv` to a personal folder. Fill in the
-parameters above in `params.csv` and start the script. In R you can call
-`cpb_map()` instead. Follow the example code in [section
-4.11](#code-map) to create the plot in R. Alternatively, the csv file
-can be read with `read.csv()` and used as input to `cpb_map()`.
+<span class="repro-title">**How to reproduce this figure:**</span> copy
+`params.csv`, `generate_plot.bat` and the folder `data` with `map.csv`
+to a personal folder. Fill in the parameters above in `params.csv` and
+start the script. In R you can call `cpb_map()` instead. Follow the
+example code in [section 4.11](#code-map) to create the plot in R.
+Alternatively, the csv file can be read with `read.csv()` and used as
+input to `cpb_map()`.
 
 More options are in [`vignette("maps")`](maps.md).
 

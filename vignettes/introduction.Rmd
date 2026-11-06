@@ -32,7 +32,7 @@ knitr::opts_chunk$set(
 # 2. Copy it to the place where you want to create figures.
 # 3. Put your datasets in the folder `data`. Open `params.csv` in Excel
 #    and describe your figures.
-# 4. Start `run_import.bat` by
+# 4. Start `generate_plot.bat` by
 #    double clicking it. Your figures appear in the folder `generated`.
 
 ```
@@ -57,7 +57,8 @@ ptab <- function(...) {
 # One standard sentence under every figure. `section` is the number of the
 # example code at the end, which the sentence links to (`id` is its anchor).
 repro <- function(fun, dataset, section, id) {
-  cat("**How to reproduce this figure:** copy `params.csv`, `run_import.bat` ",
+  cat("<span class=\"repro-title\">**How to reproduce this figure:**</span> ",
+      "copy `params.csv`, `generate_plot.bat` ",
       "and the folder `data` with `", dataset, ".csv` to a personal folder. ",
       "Fill in the parameters above in `params.csv` and start the script. ",
       "In R you can call `", fun, "()` instead. Follow the example code in ",
@@ -106,12 +107,17 @@ This is the general workflow to create figures with ggcpb without using R:
 2. Copy it to the place where you want to create figures.
 3. Put your datasets in the folder `data`. 
    Open `params.csv` in Excel and describe your figures.
-4. Start `run_import.bat` by double clicking it. 
+4. Start `generate_plot.bat` by double clicking it. This runs the `generate_plot.R` script.
    Your figures appear in the folder `generated`. Each image is named after
    its dataset. Running the script again produces updated figures. 
    Images with the same name are replaced. A dataset or figure that 
    fails is skipped and listed at the end, and in `params_log.txt`. 
    The other figures are still saved.
+
+*Please note*. The `generate_plot.bat`, `generate_plot.R` and `params.csv` must all be 
+in the same folder. Within this folder, there must be a subfolder `data`,
+in which each dataset must be saved as a CSV file, and *not* as spreadsheet (`xlsx`).
+In Excel, choose `File` -> `Save as` -> `CSV UTF-8 (comma delimited)`.
 
 You do not need to know R to follow this workflow. One parameter file and
 one or more datasets drive everything.
@@ -131,9 +137,6 @@ figure for both datasets. A figure is saved under the name of its
 dataset, so `koopkracht` gives `koopkracht.png`. If
 two figures use the same dataset, the figure number is added, such as
 `koopkracht_1.png`.
-
-*Please note*: The files must be saved as CSV, not as spreadsheet (`xlsx`).
-In Excel, choose `File` -> `Save as` -> `CSV UTF-8 (comma delimited)`.
 
 Run the script again after every change. This will update the figures. The
 import vignette gives a more detailed explanation

@@ -1,5 +1,5 @@
 @echo off
 cd /d "%~dp0"
-Rscript "run_import.R"
+Rscript "generate_plot.R"
 echo.
 pause

@@ -21,10 +21,10 @@ Invisibly, \code{dest}.
 }
 \description{
 \code{cpb_import_csv()} itself still needs R to be started by hand. This copies
-a small kit to \code{dest}: an example \code{params.csv}, a \code{data} folder with
-example datasets, a \code{run_import.R} script that reads them and saves each
-figure as a PNG
-in a \code{generated} subfolder, and a start script, \code{run_import.bat}, that
+a small kit to \code{dest}: an example \code{params.csv} that describes the figures
+of the vignettes, a \code{data} folder with their datasets, a
+\code{generate_plot.R} script that reads them and saves each figure as a PNG
+in a \code{generated} subfolder, and a start script, \code{generate_plot.bat}, that
 runs it with a double click instead of opening R at all. R itself, and
 the ggcpb package, still need to be
 installed on the machine the start script runs on.

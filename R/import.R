@@ -696,7 +696,7 @@ cpb_import_csv <- function(params_csv, sep = ",", ..., simplify = TRUE) {
 
 #' Build and save every figure of a figure folder
 #'
-#' What `run_import.bat` starts. Reads `params.csv` in `dir`,
+#' What `generate_plot.bat` starts. Reads `params.csv` in `dir`,
 #' builds the figures with [cpb_import_csv()] (datasets
 #' from `dir/data`), and saves each as a PNG in `dir/generated`, named after
 #' its dataset. A PNG that already exists is replaced. Datasets or figures
@@ -774,10 +774,10 @@ cpb_import_run <- function(dir = ".", page = "half") {
 #' Copy a ready-to-run figure-generating kit to a folder
 #'
 #' `cpb_import_csv()` itself still needs R to be started by hand. This copies
-#' a small kit to `dest`: an example `params.csv`, a `data` folder with
-#' example datasets, a `run_import.R` script that reads them and saves each
-#' figure as a PNG
-#' in a `generated` subfolder, and a start script, `run_import.bat`, that
+#' a small kit to `dest`: an example `params.csv` that describes the figures
+#' of the vignettes, a `data` folder with their datasets, a
+#' `generate_plot.R` script that reads them and saves each figure as a PNG
+#' in a `generated` subfolder, and a start script, `generate_plot.bat`, that
 #' runs it with a double click instead of opening R at all. R itself, and
 #' the ggcpb package, still need to be
 #' installed on the machine the start script runs on.
@@ -804,7 +804,7 @@ cpb_import_run <- function(dir = ".", page = "half") {
 #' }
 #' @export
 autogenerate_plots <- function(dest, overwrite = FALSE) {
-  kit_dir <- system.file("autogenerate_plots", package = "ggcpb")
+  kit_dir <- system.file("examples", package = "ggcpb")
   if (!nzchar(kit_dir)) {
     stop("The figure-generating kit was not found in the installed ggcpb ",
       "package.",
@@ -816,7 +816,9 @@ autogenerate_plots <- function(dest, overwrite = FALSE) {
     dir.create(dest, recursive = TRUE)
   }
 
-  files <- list.files(kit_dir, recursive = FALSE)
+  # the figures made by the kit itself are not part of it
+  files <- setdiff(list.files(kit_dir, recursive = FALSE),
+                   c("generated", "output", "params_log.txt"))
   already_there <- files[file.exists(file.path(dest, files))]
   if (length(already_there) && !isTRUE(overwrite)) {
     stop("The following file(s) already exist in `dest` and were not ",
@@ -826,13 +828,13 @@ autogenerate_plots <- function(dest, overwrite = FALSE) {
     )
   }
 
-  file.copy(list.files(kit_dir, full.names = TRUE), dest,
+  file.copy(file.path(kit_dir, files), dest,
             overwrite = TRUE, recursive = TRUE)
 
   # a Mac start script has to keep its executable bit to double-click at
   # all; file.copy() does not promise to carry permissions over, so it
   # is set again explicitly on the copy
-  command_file <- file.path(dest, "run_import.command")
+  command_file <- file.path(dest, "generate_plot.command")
   if (file.exists(command_file)) {
     Sys.chmod(command_file, mode = "0755")
   }

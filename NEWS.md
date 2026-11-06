@@ -6,9 +6,9 @@
 
 * `cpb_donut()` no longer makes `save_cpb()` warn on a half page. A donut fits a half page.
 
-* The CSV import reads several datasets. Datasets live in a `data` folder next to `params.csv`, and the new `data` parameter names them per figure (`koopkracht`, or `a;b` for one figure per file, the `.csv` is optional). A blank `data` uses `data/data.csv`. A missing dataset is skipped with a warning and the rest is still built. Figures are named after their dataset, with the figure number added when several figures share one. The new `cpb_import_run()` is what `run_import.bat` starts.
+* The CSV import reads several datasets. Datasets live in a `data` folder next to `params.csv`, and the new `data` parameter names them per figure (`koopkracht`, or `a;b` for one figure per file, the `.csv` is optional). A blank `data` uses `data/data.csv`. A missing dataset is skipped with a warning and the rest is still built. Figures are named after their dataset, with the figure number added when several figures share one. The new `cpb_import_run()` is what `generate_plot.bat` starts.
 * In the CSV import, text columns keep the order of the rows (not alphabetical), and a numeric `fill`, `group`, `facet` or `colour` is a category (a scatter `colour` stays numeric).
-* `inst/examples/` holds the figures of the introduction vignette as a figure folder: `data/`, `params.csv` and the generated PNGs in `generated/`.
+* `inst/examples/` is the one example folder. It holds the figures of the import and introduction vignettes: `data/`, `params.csv`, the `generate_plot` start scripts and the generated PNGs in `generated/`. `autogenerate_plots()` copies it. The start script `run_import` is now called `generate_plot`.
 * **Breaking:** `params.csv` has one layout. Column 1 holds the parameter names and every other column is one figure. The layout with one row per figure no longer works. `cpb_import_csv()` no longer takes `data_csv`. Call `cpb_import_csv("params.csv")`. The example files `import_example_data.csv` and `import_example_params.csv` are removed. `autogenerate_plots()` is the example now, with datasets in `data/`.
 
 # ggcpb 0.2.1
