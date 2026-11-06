@@ -272,7 +272,7 @@ month too, with at most 4 calendar breaks in between. Default
 \code{FALSE}. With \code{x_lim} both ends are always labelled.}
 
 \item{forecast_x}{Optional x value where the forecast window starts
-(vertical charts with a numeric/time x axis). Everything to its
+(vertical charts with a numeric/time x-axis). Everything to its
 right is overlaid with a translucent white rectangle underneath
 the bars and labelled with \code{forecast_label}. Pick a value between
 two bars (e.g. \code{2025.5}) so no bar is cut.}

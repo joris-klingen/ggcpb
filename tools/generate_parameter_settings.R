@@ -48,7 +48,7 @@ column_examples <- c(
 literal_examples <- c(
   title            = "Title of the figure",
   subtitle         = "subtitle (replaces the default unit above the figure)",
-  xlab             = "unit below the x axis",
+  xlab             = "unit below the x-axis",
   ylab             = "% change",
   legend_title     = "Legend",
   fill_colour      = "#005faf",
@@ -56,7 +56,7 @@ literal_examples <- c(
   symbol_colour    = "#e6006e",
   sec_colour       = "#e6006e",
   sec_legend_label = "name of the second series",
-  sec_ylab         = "unit of the right axis",
+  sec_ylab         = "unit of the secondary axis",
   sec_limits       = "0;100",
   sec_linewidth    = "0.55",
   sec_accuracy     = "0.1",
@@ -115,7 +115,7 @@ descriptions <- c(
     "class limits."
   ),
   cut_labels = "How the class limits are written in the legend.",
-  x = "The column with the categories or numbers on the x axis.",
+  x = "The column with the categories or numbers on the x-axis.",
   y = "The column with the values.",
   fill = "The column that splits the bars or areas into colours.",
   fill_colour = paste0(
@@ -130,24 +130,29 @@ descriptions <- c(
     "(`fill`)."
   ),
   orientation = "Draws the figure upright (vertical) or turned (horizontal).",
-  sec_y = "The column drawn on a second axis on the right.",
+  sec_y = "The column drawn on a secondary axis.",
   sec_type = "How the second series is drawn.",
-  sec_limits = "The lowest and highest value of the right axis.",
+  sec_limits = "The lowest and highest value of the secondary axis.",
   sec_legend_label = "The name of the second series in the legend.",
-  sec_ylab = "The unit above the right axis.",
+  sec_ylab = "The unit above the secondary axis.",
   sec_colour = "The colour of the second series.",
   sec_linewidth = "The line width of the second series.",
   sec_points = "TRUE adds points to the second series when it is a line.",
   sec_symbol_size = "The size of the points of the second series.",
   sec_col_width = "The width of the bars of the second series.",
-  sec_accuracy = "The rounding of the numbers on the right axis, such as 0.1.",
-  sec_scale_auto = paste0(
-    "TRUE chooses the right axis automatically so it fits the left axis ",
-    "lines."
+  sec_accuracy = paste0(
+    "The rounding of the numbers on the secondary axis. 0.001 gives ",
+    "three decimals."
   ),
-  sec_at = "The values at which the right axis is labelled.",
+  sec_scale_auto = paste0(
+    "TRUE chooses the secondary axis automatically, so its ticks line ",
+    "up with the gridlines of the value axis."
+  ),
+  sec_at = "The values at which the secondary axis is labelled.",
   sec_axis_labels = paste0(
-    "How the numbers on the right axis are written, or your own labels."
+    "How the numbers on the secondary axis are written, or your own ",
+    "labels. With a;b;c the ticks get the labels a, b and c, so use as ",
+    "many labels as ticks (see sec_at)."
   ),
   palette = "The colour set used for the categories.",
   colour_index = paste0(
@@ -159,21 +164,25 @@ descriptions <- c(
     "The rounding of the numbers on the value axis, such as 0.1."
   ),
   value_breaks = "The values at which the value axis is labelled.",
-  value_limits = "The lowest and highest value of the value axis.",
+  value_limits = paste0(
+    "The lowest and highest value of the value axis. Note: if ",
+    "value_crop is not TRUE, the axis widens when the data runs past ",
+    "these limits."
+  ),
   value_crop = paste0(
     "TRUE cuts off the data outside the value limits, with a warning."
   ),
   value_labels = "TRUE prints the value on each bar.",
-  x_lim = "The first and last value shown on the x axis.",
+  x_lim = "The first and last value shown on the x-axis.",
   x_lim_follow_data = paste0(
-    "TRUE lets the x axis follow the data when it runs past x_lim."
+    "TRUE lets the x-axis follow the data when it runs past x_lim."
   ),
   x_ticks_ends = "TRUE also labels the first and last month of a monthly axis.",
   forecast_x = paste0(
     "The x value where the forecast starts. Everything after it is shaded."
   ),
   forecast_label = "The word shown in the forecast area.",
-  reverse_legend = "TRUE turns the order of the legend around.",
+  reverse_legend = "TRUE reverses the legend order.",
   legend_ncol = "The number of columns of the legend.",
   legend_nrow = "The number of rows of the legend.",
   facet = paste0(
@@ -198,12 +207,14 @@ descriptions <- c(
   grid_linewidth = "The width of the grid lines.",
   title = "The title above the figure.",
   subtitle = "The text under the title. It replaces the unit.",
-  xlab = "The text next to the x axis.",
+  xlab = "The text next to the x-axis.",
   ylab = "The unit above the value axis.",
   legend_title = "The title of the legend.",
   style = paste0(
     "The language of the figure: dutch or english. It sets the number ",
-    "format and the words."
+    "format (1.000,5 or 1,000.5), the forecast label (raming or ",
+    "forecast), the axis names in the legend (linkeras and rechteras, ",
+    "or left axis and right axis) and the class labels of cut."
   ),
   colour = "The column that gives lines or points their colour.",
   line_colour = paste0(
@@ -234,7 +245,11 @@ descriptions <- c(
   upper = "The column with the upper bound of the interval.",
   symbol_colour = "The colour of the dots.",
   cap_width = "The width of the end caps of the interval.",
-  x_labels = "How the numbers on the x axis are written, or your own labels.",
+  x_labels = paste0(
+    "How the numbers on the x-axis are written, or your own labels. ",
+    "With a;b;c the ticks get the labels a, b and c, so use as many ",
+    "labels as ticks."
+  ),
   binwidth = "The width of one bin of the histogram.",
   bins = "The number of bins.",
   outline = "The colour of the line around the bars.",

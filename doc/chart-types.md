@@ -86,7 +86,7 @@ years in between.
 
 ## Markers on the line
 
-A dense time series is drawn as a bare line. When the x axis instead
+A dense time series is drawn as a bare line. When the x-axis instead
 holds a handful of ordered categories – age brackets, quintiles – the
 house style puts a marker on every observation, so the reader can see
 where the measurements actually are. `points = TRUE` adds them in the

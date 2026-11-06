@@ -13,6 +13,7 @@ Introduction to ggcpb
     colours](#horizontal-bars-with-chosen-colours)
   - [Line with markers in English](#line-with-markers-in-english)
   - [Boxplot](#boxplot)
+  - [Extended boxplot on a full page](#extended-boxplot-on-a-full-page)
   - [Donut chart](#donut-chart)
   - [Dot plot](#dot-plot)
   - [Scatter plot](#scatter-plot)
@@ -28,6 +29,8 @@ Introduction to ggcpb
     colours](#horizontal-bars-with-chosen-colours-1)
   - [Line with markers in English](#line-with-markers-in-english-1)
   - [Boxplot](#boxplot-1)
+  - [Extended boxplot on a full
+    page](#extended-boxplot-on-a-full-page-1)
   - [Donut](#donut)
   - [Dot plot](#dot-plot-1)
   - [Scatter plot](#scatter-plot-1)
@@ -1009,6 +1012,200 @@ to create the plot in R. Alternatively, the csv file can be read with
 
 More box plot styles are in [`vignette("boxplots")`](boxplots.md).
 
+## Extended boxplot on a full page
+
+The extended boxplot has a light blue panel. With `facet` it draws one
+panel per value, here one per year. This figure is saved at the full
+page width (15.5 cm) with `page = full`.
+
+<img src="introduction_files/figure-gfm/box-extended-1.png" alt="" width="100%" />
+
+#### Relevant parameters
+
+<table class="ptab">
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+plot_type
+</td>
+
+<td style="text-align:left;">
+
+boxplot_extended
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+title
+</td>
+
+<td style="text-align:left;">
+
+Koopkracht per inkomensgroep
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x
+</td>
+
+<td style="text-align:left;">
+
+groep
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+p5
+</td>
+
+<td style="text-align:left;">
+
+p5
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+p25
+</td>
+
+<td style="text-align:left;">
+
+p25
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+p50
+</td>
+
+<td style="text-align:left;">
+
+p50
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+p75
+</td>
+
+<td style="text-align:left;">
+
+p75
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+p95
+</td>
+
+<td style="text-align:left;">
+
+p95
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+facet
+</td>
+
+<td style="text-align:left;">
+
+jaar
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+facet_ncol
+</td>
+
+<td style="text-align:left;">
+
+2
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+ylab
+</td>
+
+<td style="text-align:left;">
+
+% koopkrachtmutatie
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+page
+</td>
+
+<td style="text-align:left;">
+
+full
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+**How to reproduce this figure:** copy `params.csv`, `run_import.bat`
+and the folder `data` with `box-extended.csv` to a personal folder. Fill
+in the parameters above in `params.csv` and start the script. In R you
+can call `cpb_boxplot_extended()` instead. Follow the example code in
+[section 4.6](#code-box-extended) to create the plot in R.
+Alternatively, the csv file can be read with `read.csv()` and used as
+input to `cpb_boxplot_extended()`.
+
 ## Donut chart
 
 Individual categories add up to 100% in the donut chart. Categories
@@ -1109,7 +1306,7 @@ colour_index
 and the folder `data` with `donut.csv` to a personal folder. Fill in the
 parameters above in `params.csv` and start the script. In R you can call
 `cpb_donut()` instead. Follow the example code in [section
-4.6](#code-donut) to create the plot in R. Alternatively, the csv file
+4.7](#code-donut) to create the plot in R. Alternatively, the csv file
 can be read with `read.csv()` and used as input to `cpb_donut()`.
 
 ## Dot plot
@@ -1251,7 +1448,7 @@ xlab
 **How to reproduce this figure:** copy `params.csv`, `run_import.bat`
 and the folder `data` with `dot.csv` to a personal folder. Fill in the
 parameters above in `params.csv` and start the script. In R you can call
-`cpb_dot()` instead. Follow the example code in [section 4.7](#code-dot)
+`cpb_dot()` instead. Follow the example code in [section 4.8](#code-dot)
 to create the plot in R. Alternatively, the csv file can be read with
 `read.csv()` and used as input to `cpb_dot()`.
 
@@ -1379,7 +1576,7 @@ euro
 and the folder `data` with `scatter.csv` to a personal folder. Fill in
 the parameters above in `params.csv` and start the script. In R you can
 call `cpb_scatter()` instead. Follow the example code in [section
-4.8](#code-scatter) to create the plot in R. Alternatively, the csv file
+4.9](#code-scatter) to create the plot in R. Alternatively, the csv file
 can be read with `read.csv()` and used as input to `cpb_scatter()`.
 
 ## Histogram
@@ -1492,7 +1689,7 @@ duur (maanden)
 and the folder `data` with `hist.csv` to a personal folder. Fill in the
 parameters above in `params.csv` and start the script. In R you can call
 `cpb_hist()` instead. Follow the example code in [section
-4.9](#code-hist) to create the plot in R. Alternatively, the csv file
+4.10](#code-hist) to create the plot in R. Alternatively, the csv file
 can be read with `read.csv()` and used as input to `cpb_hist()`.
 
 ## Classed map
@@ -1646,7 +1843,7 @@ aandeel
 and the folder `data` with `map.csv` to a personal folder. Fill in the
 parameters above in `params.csv` and start the script. In R you can call
 `cpb_map()` instead. Follow the example code in [section
-4.10](#code-map) to create the plot in R. Alternatively, the csv file
+4.11](#code-map) to create the plot in R. Alternatively, the csv file
 can be read with `read.csv()` and used as input to `cpb_map()`.
 
 More options are in [`vignette("maps")`](maps.md).
@@ -1786,6 +1983,22 @@ cpb_box(kk, x = groep,
         orientation = "horizontal",
         title = "Koopkracht per inkomensgroep",
         subtitle = "inkomensgroep", ylab = "% koopkrachtmutatie")
+```
+
+<a id="code-box-extended"></a>
+
+## Extended boxplot on a full page
+
+``` r
+kk_jaar <- bind_rows(
+  mutate(kk, jaar = "2024"),
+  mutate(kk, jaar = "2025", across(p5:p95, \(v) v + 0.5))
+)
+cpb_boxplot_extended(kk_jaar, x = groep,
+                     p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+                     facet = jaar, facet_ncol = 2,
+                     title = "Koopkracht per inkomensgroep",
+                     ylab = "% koopkrachtmutatie")
 ```
 
 <a id="code-donut"></a>

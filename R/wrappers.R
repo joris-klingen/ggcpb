@@ -1566,7 +1566,7 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #' @param value_labels If `TRUE`, add [ggplot2::geom_text()] value
 #'   labels using `y`, positioned to match `position`.
 #' @param forecast_x Optional x value where the forecast window starts
-#'   (vertical charts with a numeric/time x axis). Everything to its
+#'   (vertical charts with a numeric/time x-axis). Everything to its
 #'   right is overlaid with a translucent white rectangle underneath
 #'   the bars and labelled with `forecast_label`. Pick a value between
 #'   two bars (e.g. `2025.5`) so no bar is cut.
@@ -2187,7 +2187,7 @@ cpb_area <- function(data, x, y, fill,
 #' @param linewidth Line width; defaults to `0.55`, matching the
 #'   published CPB figures.
 #' @param points If `TRUE`, draw a point marker at every observation on
-#'   top of the line, the house variant used when the x axis holds a
+#'   top of the line, the house variant used when the x-axis holds a
 #'   handful of discrete categories (age brackets, quintiles) rather
 #'   than a dense time series. Markers take the line colour, and the
 #'   legend key shows a line with a marker on it.

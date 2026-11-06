@@ -1,39 +1,42 @@
-plot_type,line,col,col,line,box,donut,dot,scatter,hist,map
-data,line-forecast,col-secaxis,col-horizontal,line-points,box,donut,dot,scatter,hist,map
-title,Economische groei met onzekerheid,Erfenissen en erfbelasting,Zonnepanelen naar inkomen,Preferred tax rate by age,Koopkracht per inkomensgroep,Energiemix van huishoudens,Samenhang met voorkeurstarieven,Energierekening naar inkomen,Verdeling van de duur,Aandeel huishoudens met zonnepanelen
-x,jaar,jaar,groep,leeftijd,groep,,term,inkomen,maanden
-y,groei,mld,aandeel,tarief,,aandeel,coef,energierekening
-ymin,lo
-ymax,hi
-forecast_x,2023.5
-ylab,%,mld euro,inkomensgroep,% average rate,% koopkrachtmutatie,,,euro per maand,aantal
-fill,,soort,jaar,,,bron
-sec_y,,heffing
-sec_limits,,0;3
-sec_legend_label,,erfbelasting
-sec_ylab,,mld euro
-position,,,dodge
-orientation,,,horizontal,,horizontal
-colour_index,,,2;1,,,6;5;2;4
-value_limits,,,0;70,0;30
-xlab,,,aandeel binnen inkomensgroep (%),,,,%punt verandering,besteedbaar inkomen (euro per maand),duur (maanden)
-colour,,,,erfenis
-points,,,,TRUE
-style,,,,english
-p5,,,,,p5
-p25,,,,,p25
-p50,,,,,p50
-p75,,,,,p75
-p95,,,,,p95
-subtitle,,,,,inkomensgroep
-lower,,,,,,,lo
-upper,,,,,,,hi
-group,,,,,,,blok
-binwidth,,,,,,,,,2
-x_labels,,,,,,,,euro
-region,,,,,,,,,,code
-value,,,,,,,,,,aandeel
-cut,,,,,,,,,,0;20;30;40;50;60;Inf
-cut_labels,,,,,,,,,,pct
-palette,,,,,,,,,,blues
-legend_title,,,,,,,,,,aandeel
+plot_type,line,col,col,line,box,donut,dot,scatter,hist,map,boxplot_extended
+data,line-forecast,col-secaxis,col-horizontal,line-points,box,donut,dot,scatter,hist,map,box-extended
+title,Economische groei met onzekerheid,Erfenissen en erfbelasting,Zonnepanelen naar inkomen,Preferred tax rate by age,Koopkracht per inkomensgroep,Energiemix van huishoudens,Samenhang met voorkeurstarieven,Energierekening naar inkomen,Verdeling van de duur,Aandeel huishoudens met zonnepanelen,Koopkracht per inkomensgroep
+x,jaar,jaar,groep,leeftijd,groep,,term,inkomen,maanden,,groep
+y,groei,mld,aandeel,tarief,,aandeel,coef,energierekening,,,
+ymin,lo,,,,,,,,,,
+ymax,hi,,,,,,,,,,
+forecast_x,2023.5,,,,,,,,,,
+ylab,%,mld euro,inkomensgroep,% average rate,% koopkrachtmutatie,,,euro per maand,aantal,,% koopkrachtmutatie
+fill,,soort,jaar,,,bron,,,,,
+sec_y,,heffing,,,,,,,,,
+sec_limits,,0;3,,,,,,,,,
+sec_legend_label,,erfbelasting,,,,,,,,,
+sec_ylab,,mld euro,,,,,,,,,
+position,,,dodge,,,,,,,,
+orientation,,,horizontal,,horizontal,,,,,,
+colour_index,,,2;1,,,6;5;2;4,,,,,
+value_limits,,,0;70,0;30,,,,,,,
+xlab,,,aandeel binnen inkomensgroep (%),,,,%punt verandering,besteedbaar inkomen (euro per maand),duur (maanden),,
+colour,,,,erfenis,,,,,,,
+points,,,,TRUE,,,,,,,
+style,,,,english,,,,,,,
+p5,,,,,p5,,,,,,p5
+p25,,,,,p25,,,,,,p25
+p50,,,,,p50,,,,,,p50
+p75,,,,,p75,,,,,,p75
+p95,,,,,p95,,,,,,p95
+subtitle,,,,,inkomensgroep,,,,,,
+lower,,,,,,,lo,,,,
+upper,,,,,,,hi,,,,
+group,,,,,,,blok,,,,
+binwidth,,,,,,,,,2,,
+x_labels,,,,,,,,euro,,,
+region,,,,,,,,,,code,
+value,,,,,,,,,,aandeel,
+cut,,,,,,,,,,0;20;30;40;50;60;Inf,
+cut_labels,,,,,,,,,,pct,
+palette,,,,,,,,,,blues,
+legend_title,,,,,,,,,,aandeel,
+facet,,,,,,,,,,,jaar
+facet_ncol,,,,,,,,,,,2
+page,,,,,,,,,,,full

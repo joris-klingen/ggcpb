@@ -2588,7 +2588,7 @@ TRUE
 
 <td style="text-align:left;">
 
-TRUE turns the order of the legend around.
+TRUE reverses the legend order.
 </td>
 
 </tr>
@@ -2646,7 +2646,8 @@ none
 
 <td style="text-align:left;">
 
-The rounding of the numbers on the right axis, such as 0.1.
+The rounding of the numbers on the secondary axis. 0.001 gives three
+decimals.
 </td>
 
 </tr>
@@ -2675,7 +2676,7 @@ none
 
 <td style="text-align:left;">
 
-The values at which the right axis is labelled.
+The values at which the secondary axis is labelled.
 </td>
 
 </tr>
@@ -2705,7 +2706,9 @@ as <code>a;b;c</code>
 
 <td style="text-align:left;">
 
-How the numbers on the right axis are written, or your own labels.
+How the numbers on the secondary axis are written, or your own labels.
+With a;b;c the ticks get the labels a, b and c, so use as many labels as
+ticks (see sec\_<wbr>at).
 </td>
 
 </tr>
@@ -2821,7 +2824,7 @@ none
 
 <td style="text-align:left;">
 
-The lowest and highest value of the right axis.
+The lowest and highest value of the secondary axis.
 </td>
 
 </tr>
@@ -2919,8 +2922,8 @@ TRUE
 
 <td style="text-align:left;">
 
-TRUE chooses the right axis automatically so it fits the left axis
-lines.
+TRUE chooses the secondary axis automatically, so its ticks line up with
+the gridlines of the value axis.
 </td>
 
 </tr>
@@ -3018,7 +3021,7 @@ unemployment
 
 <td style="text-align:left;">
 
-The column drawn on a second axis on the right.
+The column drawn on a secondary axis.
 </td>
 
 </tr>
@@ -3042,12 +3045,12 @@ none
 
 <td style="text-align:left;">
 
-unit of the right axis
+unit of the secondary axis
 </td>
 
 <td style="text-align:left;">
 
-The unit above the right axis.
+The unit above the secondary axis.
 </td>
 
 </tr>
@@ -3077,7 +3080,9 @@ dutch
 <td style="text-align:left;">
 
 The language of the figure: dutch or english. It sets the number format
-and the words.
+(1.000,5 or 1,000.5), the forecast label (raming or forecast), the axis
+names in the legend (linkeras and rechteras, or left axis and right
+axis) and the class labels of cut.
 </td>
 
 </tr>
@@ -3522,7 +3527,9 @@ none
 
 <td style="text-align:left;">
 
-The lowest and highest value of the value axis.
+The lowest and highest value of the value axis. Note: if
+value\_<wbr>crop is not TRUE, the axis widens when the data runs past
+these limits.
 </td>
 
 </tr>
@@ -3620,7 +3627,7 @@ year
 
 <td style="text-align:left;">
 
-The column with the categories or numbers on the x axis.
+The column with the categories or numbers on the x-axis.
 </td>
 
 </tr>
@@ -3650,7 +3657,9 @@ as <code>a;b;c</code>
 
 <td style="text-align:left;">
 
-How the numbers on the x axis are written, or your own labels.
+How the numbers on the x-axis are written, or your own labels. With
+a;b;c the ticks get the labels a, b and c, so use as many labels as
+ticks.
 </td>
 
 </tr>
@@ -3679,7 +3688,7 @@ none
 
 <td style="text-align:left;">
 
-The first and last value shown on the x axis.
+The first and last value shown on the x-axis.
 </td>
 
 </tr>
@@ -3719,7 +3728,7 @@ FALSE
 
 <td style="text-align:left;">
 
-TRUE lets the x axis follow the data when it runs past x\_<wbr>lim.
+TRUE lets the x-axis follow the data when it runs past x\_<wbr>lim.
 </td>
 
 </tr>
@@ -3772,12 +3781,12 @@ none
 
 <td style="text-align:left;">
 
-unit below the x axis
+unit below the x-axis
 </td>
 
 <td style="text-align:left;">
 
-The text next to the x axis.
+The text next to the x-axis.
 </td>
 
 </tr>

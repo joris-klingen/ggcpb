@@ -48,8 +48,8 @@
 #'   major gridlines). Defaults to `FALSE`: gridlines appear only at
 #'   labelled breaks.
 #' @param ticks If `TRUE` (default), draw black axis tick marks, and
-#'   the axis line they hang from, on the *category* axis (the x axis
-#'   when `orientation = "vertical"`, the y axis when
+#'   the axis line they hang from, on the *category* axis (the x-axis
+#'   when `orientation = "vertical"`, the y-axis when
 #'   `"horizontal"`).
 #' @param flush_legend If `TRUE` (default), anchor the legend to the
 #'   left edge of the full plot area (`legend.location = "plot"` plus

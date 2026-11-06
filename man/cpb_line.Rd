@@ -85,7 +85,7 @@ supplied.}
 published CPB figures.}
 
 \item{points}{If \code{TRUE}, draw a point marker at every observation on
-top of the line, the house variant used when the x axis holds a
+top of the line, the house variant used when the x-axis holds a
 handful of discrete categories (age brackets, quintiles) rather
 than a dense time series. Markers take the line colour, and the
 legend key shows a line with a marker on it.

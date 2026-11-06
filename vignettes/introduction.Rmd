@@ -413,6 +413,40 @@ repro("cpb_box", "box", "4.5", "code-box")
 
 More box plot styles are in [`vignette("boxplots")`](boxplots.html).
 
+## Extended boxplot on a full page
+
+The extended boxplot has a light blue panel. With `facet` it draws one
+panel per value, here one per year. This figure is saved at the full
+page width (15.5 cm) with `page = full`.
+
+```{r data-box-extended}
+kk_jaar <- bind_rows(
+  mutate(kk, jaar = "2024"),
+  mutate(kk, jaar = "2025", across(p5:p95, \(v) v + 0.5))
+)
+```
+
+```{r box-extended, fig.width = 15.5 / 2.54, fig.height = 7.5 / 2.54}
+cpb_boxplot_extended(kk_jaar, x = groep,
+                     p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+                     facet = jaar, facet_ncol = 2,
+                     title = "Koopkracht per inkomensgroep",
+                     ylab = "% koopkrachtmutatie")
+```
+
+#### Relevant parameters {-}
+
+```{r par-box-extended}
+ptab(plot_type = "boxplot_extended", title = "Koopkracht per inkomensgroep",
+     x = "groep", p5 = "p5", p25 = "p25", p50 = "p50", p75 = "p75",
+     p95 = "p95", facet = "jaar", facet_ncol = 2,
+     ylab = "% koopkrachtmutatie", page = "full")
+```
+
+```{r, results = "asis"}
+repro("cpb_boxplot_extended", "box-extended", "4.6", "code-box-extended")
+```
+
 ## Donut chart
 
 Individual categories add up to 100% in the donut chart. 
@@ -448,7 +482,7 @@ ptab(plot_type = "donut", title = "Energiemix van huishoudens",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_donut", "donut", "4.6", "code-donut")
+repro("cpb_donut", "donut", "4.7", "code-donut")
 ```
 
 ## Dot plot
@@ -492,7 +526,7 @@ ptab(plot_type = "dot", title = "Samenhang met voorkeurstarieven",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_dot", "dot", "4.7", "code-dot")
+repro("cpb_dot", "dot", "4.8", "code-dot")
 ```
 
 ## Scatter plot
@@ -527,7 +561,7 @@ ptab(plot_type = "scatter", title = "Energierekening naar inkomen",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_scatter", "scatter", "4.8", "code-scatter")
+repro("cpb_scatter", "scatter", "4.9", "code-scatter")
 ```
 
 ## Histogram
@@ -559,7 +593,7 @@ ptab(plot_type = "hist", title = "Verdeling van de duur",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_hist", "hist", "4.9", "code-hist")
+repro("cpb_hist", "hist", "4.10", "code-hist")
 ```
 
 ## Classed map
@@ -603,7 +637,7 @@ ptab(plot_type = "map", title = "Aandeel huishoudens met zonnepanelen",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_map", "map", "4.10", "code-map")
+repro("cpb_map", "map", "4.11", "code-map")
 ```
 
 More options are in [`vignette("maps")`](maps.html).
@@ -681,6 +715,13 @@ library(tidyr)
 ## Boxplot
 
 ```{r code-box, ref.label = c("data-box", "box"), echo = TRUE, eval = FALSE}
+```
+
+<a id="code-box-extended"></a>
+
+## Extended boxplot on a full page
+
+```{r code-box-extended, ref.label = c("data-box-extended", "box-extended"), echo = TRUE, eval = FALSE}
 ```
 
 <a id="code-donut"></a>
