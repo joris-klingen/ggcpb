@@ -423,6 +423,15 @@ border-top: 1px solid #DDDDDD;
 margin-top: 3px;
 padding-top: 3px;
 }
+
+table.paramtab td:first-child {
+color: #005faf;
+font-weight: bold;
+}
+table.paramtab th:not(:first-child) {
+color: #000000;
+font-weight: normal;
+}
 </style>
 
 
@@ -523,7 +532,11 @@ using R:</p>
 <li>Put your datasets in the folder <code>data</code>. Open
 <code>params.csv</code> in Excel and describe your figures.</li>
 <li>Start <code>run_import.bat</code> by double clicking it. Your
-figures appear in the folder <code>generated</code>.</li>
+figures appear in the folder <code>generated</code>. Each image is named
+after its dataset. Running the script again produces updated figures.
+Images with the same name are replaced. A dataset or figure that fails
+is skipped and listed at the end, and in <code>params_log.txt</code>.
+The other figures are still saved.</li>
 </ol>
 <p>You do not need to know R to follow this workflow. One parameter file
 and one or more datasets drive everything.</p>

@@ -91,7 +91,7 @@ literal_examples <- c(
 # of every plot type needs one (the script stops when one is missing).
 descriptions <- c(
   data = paste0(
-    "The dataset (file in the folder data) to draw. Leave blank for ",
+    "Excel workflow: CSV file in the data folder. Leave blank for ",
     "data.csv. Write a;b for one figure per dataset."
   ),
   page = paste0(
@@ -119,9 +119,10 @@ descriptions <- c(
   y = "The column with the values.",
   fill = "The column that splits the bars or areas into colours.",
   fill_colour = paste0(
-    "One colour for all bars or areas, when there is no fill column."
+    "One colour for all bars or areas. It is used when `fill` is not ",
+    "set."
   ),
-  group = "The column that groups the data in blocks next to each other.",
+  group = "The column that splits the data into groups.",
   group_gap = "The space between the groups, in bar widths.",
   position = paste0(
     "How bars of one category are placed: on top of each other, next to ",
@@ -174,8 +175,11 @@ descriptions <- c(
   reverse_legend = "TRUE turns the order of the legend around.",
   legend_ncol = "The number of columns of the legend.",
   legend_nrow = "The number of rows of the legend.",
-  facet = "The column that splits the figure into small panels.",
-  facet_ncol = "The number of panels next to each other.",
+  facet = paste0(
+    "The column that splits the figure into panels. The number of ",
+    "panels equals the unique values of that column."
+  ),
+  facet_ncol = "The maximum number of panels next to each other per row.",
   facet_scales = paste0(
     "Whether the panels share their axes (fixed) or each have their own ",
     "(free)."
@@ -201,7 +205,10 @@ descriptions <- c(
     "format and the words."
   ),
   colour = "The column that gives lines or points their colour.",
-  line_colour = "One colour for the line, when there is no colour column.",
+  line_colour = paste0(
+    "One colour for the whole line. It is used when `colour` is not ",
+    "set."
+  ),
   linewidth = "The width of the line.",
   points = "TRUE adds points to the line.",
   symbol_size = "The size of the points.",
@@ -216,7 +223,10 @@ descriptions <- c(
   box_style = "The look of the boxes.",
   dot_labels = "Names for the dots of the dot style, as name:text pairs.",
   box_labels = "TRUE prints the values of the box.",
-  label_accuracy = "The rounding of the printed percentages.",
+  label_accuracy = paste0(
+    "The rounding of the printed percentages. 0.01 allows for two ",
+    "decimals."
+  ),
   width = "The width of the bars or boxes, as a share of the space.",
   value_axis = "Whether the value axis is at the bottom or at the top.",
   lower = "The column with the lower end of the interval.",
@@ -224,8 +234,8 @@ descriptions <- c(
   symbol_colour = "The colour of the dots.",
   cap_width = "The width of the end caps of the interval.",
   x_labels = "How the numbers on the x axis are written, or your own labels.",
-  binwidth = "The width of one bar of the histogram, in the unit of the data.",
-  bins = "The number of bars of the histogram.",
+  binwidth = "The width of one bin of the histogram.",
+  bins = "The number of bins.",
   outline = "The colour of the line around the bars.",
   label = "The column with the text of each slice.",
   wedge_labels = "TRUE prints the value on each slice.",

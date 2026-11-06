@@ -306,3 +306,13 @@ table.reftab .dv + .dv {
   margin-top: 3px;
   padding-top: 3px;
 }
+/* The example parameter file: parameter names in the CPB blue and bold, the
+   plot types of the header row in black. */
+table.paramtab td:first-child {
+  color: #005faf;
+  font-weight: bold;
+}
+table.paramtab th:not(:first-child) {
+  color: #000000;
+  font-weight: normal;
+}

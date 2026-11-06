@@ -10,9 +10,10 @@ Building figures from CSV files
   - [Special values](#special-values)
   - [Classes](#classes)
   - [Saving](#saving)
-- [Creating the figures in R](#creating-the-figures-in-r)
+- [Creating the figures using R](#creating-the-figures-using-r)
 - [Several datasets](#several-datasets)
-- [A parameter file with one figure](#a-parameter-file-with-one-figure)
+  - [A parameter file with one
+    figure](#a-parameter-file-with-one-figure)
 - [Handling problems](#handling-problems)
 - [Appendix A: Parameters](#appendix-a-parameters)
 
@@ -43,7 +44,7 @@ To create a figure, you need:
 
 The general workflow to create figures with ggcpb is as follows:
 
-1.  Find the most recent ggcpb folder in `[path]`.
+1.  Find the most recent ggcpb version.
 2.  Copy it to the place where you want to create figures.
 3.  Put your datasets in the folder `data`. Open `params.csv` in Excel
     and add your parameters.
@@ -59,10 +60,9 @@ script.
 
 # The dataset
 
-Each dataset is a CSV file in the `data` folder. It can have any name
-and holds the variables needed by the figures. The first row holds the
-column names. The package example has two datasets. One of the example
-datasets is shown here:
+Each dataset is a CSV file in the `data` folder. It can have any name.
+The first row holds the column names. The package example has two
+datasets. One of the example datasets is shown here:
 
 | jaar | groep           | koopkracht | werkloosheid |
 |:-----|:----------------|:-----------|:-------------|
@@ -85,7 +85,7 @@ datasets is shown here:
 The parameter file refers to variables by their column names.
 Categorical columns (e.g. `regio`, `geslacht`) keep the order of the
 rows in the created figure. So, the first group in the CSV-file
-(e.g. here `groep`) is the first on the axis and in the legend.
+(e.g. here `werkenden`) is the first on the axis and in the legend.
 
 # The parameter file
 
@@ -97,30 +97,286 @@ The first column holds the parameter names. Every other column describes
 one figure. This is the example parameter file. The first row, with the
 plot types, is the header.
 
-| plot_type        | col                               | line         |
-|:-----------------|:----------------------------------|:-------------|
-| title            | Koopkrachtontwikkeling naar groep | Werkloosheid |
-| x                | jaar                              | jaar         |
-| y                | koopkracht                        | werkloosheid |
-| fill             | groep                             |              |
-| ylab             | % mutatie                         | %            |
-| position         | dodge                             |              |
-| sec_y            | werkloosheid                      |              |
-| sec_type         | line                              |              |
-| sec_legend_label | werkloosheid                      |              |
-| sec_ylab         | %                                 |              |
-| create           | y                                 | y            |
-| data             | koopkracht                        | werkloosheid |
-| style            |                                   | english      |
+<table class="paramtab">
 
-This table shows that there are two figures. The first figure is a
-column chart (`plot_type` = `col`) that uses the `koopkracht` dataset
-(`data`) and that portrays `werkloosheid` on the second y-axis
-(`sec_y`). The second figure is a line chart (`plot_type` = `line`) that
-uses the `werkloosheid` dataset (`data`) and has no secondary y-axis. A
-parameter value can be left blank, such as `sec_y` in the second plot.
-Only the second figure sets `style` to `english`, so it gets English
-labels and number formats.
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+plot_type
+</th>
+
+<th style="text-align:left;">
+
+col
+</th>
+
+<th style="text-align:left;">
+
+line
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+title
+</td>
+
+<td style="text-align:left;">
+
+Koopkrachtontwikkeling naar groep
+</td>
+
+<td style="text-align:left;">
+
+Werkloosheid
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+x
+</td>
+
+<td style="text-align:left;">
+
+jaar
+</td>
+
+<td style="text-align:left;">
+
+jaar
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+y
+</td>
+
+<td style="text-align:left;">
+
+koopkracht
+</td>
+
+<td style="text-align:left;">
+
+werkloosheid
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+fill
+</td>
+
+<td style="text-align:left;">
+
+groep
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+ylab
+</td>
+
+<td style="text-align:left;">
+
+% mutatie
+</td>
+
+<td style="text-align:left;">
+
+%
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+position
+</td>
+
+<td style="text-align:left;">
+
+dodge
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_y
+</td>
+
+<td style="text-align:left;">
+
+werkloosheid
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_type
+</td>
+
+<td style="text-align:left;">
+
+line
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_legend_label
+</td>
+
+<td style="text-align:left;">
+
+werkloosheid
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+sec_ylab
+</td>
+
+<td style="text-align:left;">
+
+%
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+create
+</td>
+
+<td style="text-align:left;">
+
+y
+</td>
+
+<td style="text-align:left;">
+
+y
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+data
+</td>
+
+<td style="text-align:left;">
+
+koopkracht
+</td>
+
+<td style="text-align:left;">
+
+werkloosheid
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+style
+</td>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+english
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+This table shows that there are two figures. The first figure (see
+[figure 1](#figure-1)) is a column chart (`plot_type` = `col`) that uses
+the `koopkracht` dataset (`data`) and that portrays `werkloosheid` on
+the second y-axis (`sec_y`). The second figure (see [figure
+2](#figure-2)) is a line chart (`plot_type` = `line`) that uses the
+`werkloosheid` dataset (`data`) and has no secondary y-axis. A parameter
+value can be left blank, such as `sec_y` in the second plot. Only the
+second figure sets `style` to `english`, so it gets English labels and
+number formats.
 
 The parameter `page` sets the page width a figure is saved at: `half`
 (7.5 cm, the default), `full` (15.5 cm) or `small`. If left out, the
@@ -130,9 +386,9 @@ default `half` is used.
 
 `plot_type` names the figure type: `line`, `col`, `area`, `box`,
 `boxplot_extended`, `dot`, `scatter`, `hist`, `donut` or `map`. Each
-type is the `cpb_` function of the same name, such as `cpb_line()`.
+type is in R the `cpb_` function of the same name, such as `cpb_line()`.
 Every argument of that function can be a parameter. Appendix A lists
-them all per type.
+them all per plot type.
 
 ## Special values
 
@@ -142,21 +398,29 @@ special form:
 | Value | Example | What happens |
 |----|----|----|
 | a list | `0;100` | `;` separates the values. |
-| a line break | `First line\nsecond line` | `\n` starts a new line. |
+| a line break | `First sentence\nsecond sentence` | `\n` starts a new line. |
 | no upper limit | `0;20;Inf` | `Inf` and `-Inf` are numbers. |
-| a formatter | `euro` | `x_labels` and `sec_axis_labels` take `number`, `euro` or `pct`. |
+| a formatter | `euro` | `x_labels` and `sec_axis_labels` take `number` (1.000), `euro` (€1.000) or `pct` (1%). Own labels such as `a;b;c` work too. |
 | pairs | `p5:onderste 5%` | `dot_labels` takes name:value pairs. |
 | a date | `2024-01-31` | A dataset column of dates gives a date axis. `31-1-2024` works too. |
 
 ## Classes
 
 The parameter `cut` puts numbers into classes, such as `0;20;30;40;Inf`.
-That gives the classes “lager dan 20”, “20 - 30”, “30 - 40” and “40 en
-hoger”, or “below 20” and “40 and above” with `style = english`.
-`cut_labels` writes them as `number` (default), `euro` or `pct`. It
-works on the column that sets the colours: `value` of a map, `colour` of
-a line, dot or scatter plot, and `fill` of the other types. The numbers
-themselves stay available, for example on the y axis.
+That gives the classes “lager dan 20”, “20 - 30”, “30 - 40”.
+
+With `style = english` it gives the classes “below 20”, “20 - 30”, “30 -
+40” and “40 and above”.
+
+The parameter `cut_labels` says how the class limits are written:
+
+- `number` (default) writes plain numbers, such as “20”.
+- `euro` adds a euro sign, such as “€20”.
+- `pct` adds a percent sign, such as “20%”.
+
+The classes colour the figure through one column. This is `value` of a
+map, `colour` of a line, dot or scatter plot, and `fill` of the other
+types. The numbers themselves stay available, for example on the y-axis.
 
 ## Saving
 
@@ -169,7 +433,7 @@ Next to `page`, four parameters say how a figure is saved:
 | `dpi` | `800` | The resolution. The default is 300. |
 | `lock` | `FALSE` | A title that is too wide only gives a warning, instead of an error. |
 
-# Creating the figures in R
+# Creating the figures using R
 
 Pass the parameter file to `cpb_import_csv()`. The datasets are read
 from the `data` folder next to it:
@@ -196,6 +460,9 @@ save_cpb(path, figs$koopkracht, page = "half")
 
 <img src="import_files/figure-gfm/fig-koopkracht-show-1.png" alt="" width="350px" />
 
+<a id="figure-1"></a>**Figure 1.** The column chart of the first figure
+in `params.csv`.
+
 `werkloosheid` has no second axis, so it can be shown directly:
 
 ``` r
@@ -204,18 +471,21 @@ figs$werkloosheid
 
 <img src="import_files/figure-gfm/fig-werkloosheid-1.png" alt="" width="350px" />
 
+<a id="figure-2"></a>**Figure 2.** The line chart of the second figure
+in `params.csv`.
+
 # Several datasets
 
 The parameter `data` names the dataset of a figure, relative to the
 `data` folder next to `params.csv`. The extension `.csv` is optional, so
 `koopkracht` and `koopkracht.csv` are the same dataset.
 
-| `data` parameter | What happens                                |
-|------------------|---------------------------------------------|
-| `koopkracht`     | The figure uses `data/koopkracht.csv`.      |
-| `a;b`            | One figure is made from each named dataset. |
-| blank            | The figure uses `data/data.csv`.            |
-| column absent    | The same as blank.                          |
+| Parameter *data* | What happens |
+|----|----|
+| `koopkracht` | The figure uses `data/koopkracht.csv`. |
+| `koopkracht;werkloosheid` | Two figures are made: one from `data/koopkracht.csv` and one from `data/werkloosheid.csv`. |
+| blank | The figure uses `data/data.csv`. |
+| column absent | The same as blank. |
 
 The figures are named after their dataset. If several figures use the
 same dataset, the figure number is added to the name. The first figure
@@ -228,12 +498,12 @@ the same list and the other rows are still created. With `data` set to
 `a;b;c` and no `b.csv`, you get figures for `a` and `c`, and a warning
 about `b.csv`.
 
-# A parameter file with one figure
+## A parameter file with one figure
 
-A parameter file can describe a single figure. It then has one column of
-values next to the parameter names. For example, the following describes
-a line chart. It can be saved in the same folder, so it finds the same
-`data` folder:
+A parameter file can describe a single figure or several figures. When
+describing only one figure, it has one column of values next to the
+parameter names. For example, the following describes a line chart. It
+can be saved in the same folder, so it finds the same `data` folder:
 
 ``` r
 params_one <- file.path(figure_dir, "params_one.csv")
@@ -271,15 +541,15 @@ fig_one <- cpb_import_csv(params_one)
 A parameter can be left blank. In that case, the default value is used.
 
 If a parameter is not valid for the selected `plot_type`, it is ignored
-and the default is used. These cases produce a warning.
+and the default is used. This produces a warning.
 
 If a figure cannot be created, for example because a column referenced
 by a parameter does not exist in the dataset, that figure is skipped.
 Other figures in the same parameter file are still created.
 
 Each call to `cpb_import_csv()` also writes a log file next to the
-parameter file. The log records figures that were created or skipped and
-any parameter problems.
+parameter file. The log records parameter problems and figures that were
+created or skipped.
 
 # Appendix A: Parameters
 
@@ -302,27 +572,27 @@ followed by the plot types it holds for.
 
 <th style="text-align:left;">
 
-parameter
+Parameter
 </th>
 
 <th style="text-align:left;">
 
-plot types
+Plot types
 </th>
 
 <th style="text-align:left;">
 
-default
+Default
 </th>
 
 <th style="text-align:left;">
 
-example
+Example
 </th>
 
 <th style="text-align:left;">
 
-description
+Description
 </th>
 
 </tr>
@@ -384,7 +654,7 @@ none
 
 <td style="text-align:left;">
 
-The number of bars of the histogram.
+The number of bins.
 </td>
 
 </tr>
@@ -413,7 +683,7 @@ none
 
 <td style="text-align:left;">
 
-The width of one bar of the histogram, in the unit of the data.
+The width of one bin of the histogram.
 </td>
 
 </tr>
@@ -717,7 +987,7 @@ koopkracht
 
 <td style="text-align:left;">
 
-The dataset (file in the folder data) to draw. Leave blank for data.csv.
+Excel workflow: CSV file in the data folder. Leave blank for data.csv.
 Write a;b for one figure per dataset.
 </td>
 
@@ -805,7 +1075,8 @@ region
 
 <td style="text-align:left;">
 
-The column that splits the figure into small panels.
+The column that splits the figure into panels. The number of panels
+equals the unique values of that column.
 </td>
 
 </tr>
@@ -834,7 +1105,7 @@ none
 
 <td style="text-align:left;">
 
-The number of panels next to each other.
+The maximum number of panels next to each other per row.
 </td>
 
 </tr>
@@ -923,7 +1194,8 @@ none
 
 <td style="text-align:left;">
 
-One colour for all bars or areas, when there is no fill column.
+One colour for all bars or areas. It is used when <code>fill</code> is
+not set.
 </td>
 
 </tr>
@@ -1119,7 +1391,7 @@ sector
 
 <td style="text-align:left;">
 
-The column that groups the data in blocks next to each other.
+The column that splits the data into groups.
 </td>
 
 </tr>
@@ -1257,7 +1529,7 @@ box, donut, boxplot_extended
 
 <td style="text-align:left;">
 
-The rounding of the printed percentages.
+The rounding of the printed percentages. 0.01 allows for two decimals.
 </td>
 
 </tr>
@@ -1560,7 +1832,8 @@ none
 
 <td style="text-align:left;">
 
-One colour for the line, when there is no colour column.
+One colour for the whole line. It is used when <code>colour</code> is
+not set.
 </td>
 
 </tr>
