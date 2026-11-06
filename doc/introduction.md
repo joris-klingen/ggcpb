@@ -42,8 +42,8 @@ Introduction to ggcpb
 .figrow > * { flex: 1 1 0; min-width: 0; }
 .figrow table { font-size: 0.85em; }
 table.ptab { width: 100%; }
-.figrow h4 { margin-top: 0; color: #c02a6a; }
-.figrow.wide > :first-child { flex: 2 1 0; }
+.below table { font-size: 0.85em; }
+.figrow h4, .below h4 { margin-top: 0; color: #c02a6a; }
 @media (max-width: 600px) { .figrow { display: block; } }
 </style>
 
@@ -1020,11 +1020,9 @@ parameter the data gets grouped into the year column, which results in
 one panel per year in the dataset. The default figure is saved at the
 full page width (15.5 cm) with `page = full`.
 
-<div class="figrow wide">
-
 <img src="introduction_files/figure-gfm/box-extended-1.png" alt="" width="100%" />
 
-<div>
+<div class="below">
 
 #### Relevant parameters
 
@@ -1203,8 +1201,6 @@ full
 </tbody>
 
 </table>
-
-</div>
 
 </div>
 

@@ -72,8 +72,8 @@ repro <- function(fun, dataset, section, id) {
 .figrow > * { flex: 1 1 0; min-width: 0; }
 .figrow table { font-size: 0.85em; }
 table.ptab { width: 100%; }
-.figrow h4 { margin-top: 0; color: #c02a6a; }
-.figrow.wide > :first-child { flex: 2 1 0; }
+.below table { font-size: 0.85em; }
+.figrow h4, .below h4 { margin-top: 0; color: #c02a6a; }
 @media (max-width: 600px) { .figrow { display: block; } }
 </style>
 
@@ -428,8 +428,6 @@ kk_jaar <- bind_rows(
 )
 ```
 
-::: {.figrow .wide}
-
 ```{r box-extended, fig.width = 15.5 / 2.54, fig.height = 7.5 / 2.54}
 cpb_boxplot_extended(kk_jaar, x = groep,
                      p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
@@ -438,7 +436,7 @@ cpb_boxplot_extended(kk_jaar, x = groep,
                      ylab = "% koopkrachtmutatie")
 ```
 
-<div>
+::: {.below}
 
 #### Relevant parameters {-}
 
@@ -448,8 +446,6 @@ ptab(plot_type = "boxplot_extended", title = "Koopkracht per inkomensgroep",
      p95 = "p95", facet = "jaar", facet_ncol = 2,
      ylab = "% koopkrachtmutatie", page = "full")
 ```
-
-</div>
 
 :::
 
