@@ -340,7 +340,7 @@ axis_text_size
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -374,6 +374,7 @@ hist
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -402,6 +403,7 @@ hist
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -430,6 +432,7 @@ map
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -487,6 +490,7 @@ box, boxplot_extended
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -515,7 +519,7 @@ box, boxplot_extended
 
 <td style="text-align:left;">
 
-ggcpb (box); modern (boxplot_extended)
+modern: boxplot_extended \| ggcpb: rest
 </td>
 
 <td style="text-align:left;">
@@ -574,6 +578,7 @@ line, dot, scatter
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -602,6 +607,7 @@ all
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -631,6 +637,7 @@ all
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -719,6 +726,7 @@ box, boxplot_extended
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -771,11 +779,12 @@ facet
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -799,11 +808,12 @@ facet_ncol
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -827,7 +837,7 @@ facet_scales
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -858,12 +868,12 @@ fill
 
 <td style="text-align:left;">
 
-col, area, box, hist, donut, boxplot_extended
+col, box, hist, donut, boxplot_extended
 </td>
 
 <td style="text-align:left;">
 
-(col, box, hist, boxplot_extended); (required) (area, donut)
+required
 </td>
 
 <td style="text-align:left;">
@@ -892,6 +902,7 @@ col, box, hist, boxplot_extended
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -944,7 +955,7 @@ forecast_label
 
 <td style="text-align:left;">
 
-col, area, line, scatter
+col, line, scatter
 </td>
 
 <td style="text-align:left;">
@@ -973,11 +984,12 @@ forecast_x
 
 <td style="text-align:left;">
 
-col, area, line, scatter
+col, line, scatter
 </td>
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -1001,13 +1013,12 @@ grid_colour
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
 
-black (col, area, line, box, dot, scatter, hist); white
-(boxplot_extended)
+white: boxplot_extended \| black: rest
 </td>
 
 <td style="text-align:left;">
@@ -1031,12 +1042,12 @@ grid_linewidth
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
 
-0.1 (col, area, line, box, dot, scatter, hist); 0.8 (boxplot_extended)
+0.8: boxplot_extended \| 0.1: rest
 </td>
 
 <td style="text-align:left;">
@@ -1065,6 +1076,7 @@ col, box, dot, boxplot_extended
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -1093,7 +1105,7 @@ col, box, dot, boxplot_extended
 
 <td style="text-align:left;">
 
-0.8 (col); 0.7 (box, dot, boxplot_extended)
+0.8: col \| 0.7: rest
 </td>
 
 <td style="text-align:left;">
@@ -1122,6 +1134,7 @@ all
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -1150,6 +1163,7 @@ donut
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -1178,7 +1192,7 @@ box, donut, boxplot_extended
 
 <td style="text-align:left;">
 
-0.1 (box, boxplot_extended); 1 (donut)
+1: donut \| 0.1: rest
 </td>
 
 <td style="text-align:left;">
@@ -1295,8 +1309,7 @@ all
 
 <td style="text-align:left;">
 
-bottom (col, area, line, box, dot, scatter, hist, donut,
-boxplot_extended); topleft (map)
+topleft: map \| bottom: rest
 </td>
 
 <td style="text-align:left;">
@@ -1326,6 +1339,7 @@ all
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -1354,6 +1368,7 @@ all
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -1411,6 +1426,7 @@ all
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -1468,6 +1484,7 @@ line
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -1496,7 +1513,7 @@ line, box, dot, boxplot_extended
 
 <td style="text-align:left;">
 
-0.55 (line); 0.25 (box, boxplot_extended); 0.4 (dot)
+0.55: line \| 0.4: dot \| 0.25: rest
 </td>
 
 <td style="text-align:left;">
@@ -1555,7 +1572,7 @@ dot
 
 <td style="text-align:left;">
 
-(required)
+required
 </td>
 
 <td style="text-align:left;">
@@ -1584,6 +1601,7 @@ box, boxplot_extended
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -1607,7 +1625,7 @@ minor
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -1641,6 +1659,7 @@ map
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -1669,7 +1688,7 @@ col, box, dot, boxplot_extended
 
 <td style="text-align:left;">
 
-vertical (col, box); horizontal (dot, boxplot_extended)
+vertical: col, box \| horizontal: rest
 </td>
 
 <td style="text-align:left;">
@@ -1727,7 +1746,7 @@ box, boxplot_extended
 
 <td style="text-align:left;">
 
-(required)
+required
 </td>
 
 <td style="text-align:left;">
@@ -1756,7 +1775,7 @@ box, boxplot_extended
 
 <td style="text-align:left;">
 
-(required)
+required
 </td>
 
 <td style="text-align:left;">
@@ -1785,7 +1804,7 @@ box, boxplot_extended
 
 <td style="text-align:left;">
 
-(required)
+required
 </td>
 
 <td style="text-align:left;">
@@ -1814,7 +1833,7 @@ box, boxplot_extended
 
 <td style="text-align:left;">
 
-(required)
+required
 </td>
 
 <td style="text-align:left;">
@@ -1843,7 +1862,7 @@ box, boxplot_extended
 
 <td style="text-align:left;">
 
-(required)
+required
 </td>
 
 <td style="text-align:left;">
@@ -1902,8 +1921,7 @@ all
 
 <td style="text-align:left;">
 
-qualitative (col, area, line, box, dot, scatter, hist, donut,
-boxplot_extended); sequential (map)
+sequential: map \| qualitative: rest
 </td>
 
 <td style="text-align:left;">
@@ -1962,6 +1980,7 @@ donut
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -1985,7 +2004,7 @@ pct_axis
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, scatter, boxplot_extended
+col, line, box, dot, scatter, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -2108,7 +2127,7 @@ map
 
 <td style="text-align:left;">
 
-(required)
+required
 </td>
 
 <td style="text-align:left;">
@@ -2167,8 +2186,7 @@ all
 
 <td style="text-align:left;">
 
-TRUE (col, area, hist); FALSE (line, box, dot, scatter, donut, map,
-boxplot_extended)
+TRUE: col, hist \| FALSE: rest
 </td>
 
 <td style="text-align:left;">
@@ -2221,11 +2239,12 @@ sec_accuracy
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, boxplot_extended
+col, line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -2249,11 +2268,12 @@ sec_at
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, boxplot_extended
+col, line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -2277,11 +2297,12 @@ sec_axis_labels
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, boxplot_extended
+col, line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -2306,7 +2327,7 @@ sec_col_width
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, boxplot_extended
+col, line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -2335,11 +2356,12 @@ sec_colour
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, boxplot_extended
+col, line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -2363,11 +2385,12 @@ sec_legend_label
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, boxplot_extended
+col, line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -2391,11 +2414,12 @@ sec_limits
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, boxplot_extended
+col, line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -2419,12 +2443,12 @@ sec_linewidth
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, boxplot_extended
+col, line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
 
-0.55 (col, area, box, dot, boxplot_extended); (line)
+none: line \| 0.55: rest
 </td>
 
 <td style="text-align:left;">
@@ -2448,7 +2472,7 @@ sec_points
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, boxplot_extended
+col, line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -2477,7 +2501,7 @@ sec_scale_auto
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, boxplot_extended
+col, line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -2507,12 +2531,12 @@ sec_symbol_size
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, boxplot_extended
+col, line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
 
-1.6 (col, area, line, box, boxplot_extended); symbol_size (dot)
+symbol_size: dot \| 1.6: rest
 </td>
 
 <td style="text-align:left;">
@@ -2536,7 +2560,7 @@ sec_type
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, boxplot_extended
+col, line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -2565,11 +2589,12 @@ sec_y
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, boxplot_extended
+col, line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -2593,11 +2618,12 @@ sec_ylab
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, boxplot_extended
+col, line, box, dot, boxplot_extended
 </td>
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -2656,6 +2682,7 @@ all
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -2684,6 +2711,7 @@ dot, scatter
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -2712,7 +2740,7 @@ line, dot, scatter
 
 <td style="text-align:left;">
 
-1.1 (line); 1.4 (dot); 0.8 (scatter)
+1.1: line \| 1.4: dot \| 0.8: rest
 </td>
 
 <td style="text-align:left;">
@@ -2736,13 +2764,12 @@ ticks
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
 
-TRUE (col, area, line, box, dot, scatter, hist); FALSE
-(boxplot_extended)
+FALSE: boxplot_extended \| TRUE: rest
 </td>
 
 <td style="text-align:left;">
@@ -2771,6 +2798,7 @@ all
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -2799,7 +2827,7 @@ dot
 
 <td style="text-align:left;">
 
-(required)
+required
 </td>
 
 <td style="text-align:left;">
@@ -2828,7 +2856,7 @@ map
 
 <td style="text-align:left;">
 
-(required)
+required
 </td>
 
 <td style="text-align:left;">
@@ -2852,11 +2880,12 @@ value_accuracy
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -2885,7 +2914,7 @@ box, boxplot_extended
 
 <td style="text-align:left;">
 
-bottom (box); (boxplot_extended)
+none: boxplot_extended \| bottom: rest
 </td>
 
 <td style="text-align:left;">
@@ -2938,11 +2967,12 @@ value_breaks
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -2966,7 +2996,7 @@ value_crop
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
@@ -3024,11 +3054,12 @@ value_limits
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -3086,7 +3117,7 @@ box, boxplot_extended
 
 <td style="text-align:left;">
 
-0.5 (box); 0.45 (boxplot_extended)
+0.5: box \| 0.45: rest
 </td>
 
 <td style="text-align:left;">
@@ -3110,12 +3141,12 @@ x
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
 
-(required)
+required
 </td>
 
 <td style="text-align:left;">
@@ -3144,6 +3175,7 @@ scatter
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -3168,11 +3200,12 @@ x_lim
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -3196,13 +3229,12 @@ x_lim_follow_data
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
 
-FALSE (col, area, scatter, hist); TRUE (line, box, dot,
-boxplot_extended)
+FALSE: col, scatter, hist \| TRUE: rest
 </td>
 
 <td style="text-align:left;">
@@ -3226,7 +3258,7 @@ x_ticks_ends
 
 <td style="text-align:left;">
 
-col, area, line
+col, line
 </td>
 
 <td style="text-align:left;">
@@ -3255,11 +3287,12 @@ xlab
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -3283,12 +3316,12 @@ y
 
 <td style="text-align:left;">
 
-col, area, line, dot, scatter, donut
+col, line, dot, scatter, donut
 </td>
 
 <td style="text-align:left;">
 
-(required)
+required
 </td>
 
 <td style="text-align:left;">
@@ -3312,11 +3345,12 @@ ylab
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -3345,6 +3379,7 @@ boxplot_extended
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -3373,6 +3408,7 @@ line
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -3401,6 +3437,7 @@ line
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -3429,6 +3466,7 @@ boxplot_extended
 
 <td style="text-align:left;">
 
+none
 </td>
 
 <td style="text-align:left;">
@@ -3481,12 +3519,12 @@ zeroline
 
 <td style="text-align:left;">
 
-col, area, line, box, dot, scatter, hist
+col, line, box, dot, scatter, hist
 </td>
 
 <td style="text-align:left;">
 
-TRUE (col, area, hist); (line, box, dot, scatter)
+TRUE: col, hist \| none: rest
 </td>
 
 <td style="text-align:left;">

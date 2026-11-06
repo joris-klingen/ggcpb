@@ -985,7 +985,7 @@ description
 axis_text_size
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 <td style="text-align:left;">
 7
@@ -1005,6 +1005,7 @@ bins
 hist
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 30
@@ -1021,6 +1022,7 @@ binwidth
 hist
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 5
@@ -1037,6 +1039,7 @@ border_colour
 map
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 white
@@ -1070,6 +1073,7 @@ box_labels
 box, boxplot_extended
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 TRUE
@@ -1086,7 +1090,7 @@ box_style
 box, boxplot_extended
 </td>
 <td style="text-align:left;">
-ggcpb (box); modern (boxplot_extended)
+modern: boxplot_extended | ggcpb: rest
 </td>
 <td style="text-align:left;">
 <code>ggcpb</code>, <code>james</code>, <code>modern</code> or
@@ -1121,6 +1125,7 @@ colour
 line, dot, scatter
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 group
@@ -1137,6 +1142,7 @@ colour_index
 all
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 2;6
@@ -1154,6 +1160,7 @@ cut
 all
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 0;20;40;Inf
@@ -1206,6 +1213,7 @@ dot_labels
 box, boxplot_extended
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 p5:bottom 5%;p95:top 5%
@@ -1236,9 +1244,10 @@ The sharpness of the saved image, in dots per inch.
 facet
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 region
@@ -1252,9 +1261,10 @@ The column that splits the figure into small panels.
 facet_ncol
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 2
@@ -1268,7 +1278,7 @@ The number of panels next to each other.
 facet_scales
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 <td style="text-align:left;">
 fixed
@@ -1287,10 +1297,10 @@ Whether the panels share their axes (fixed) or each have their own
 fill
 </td>
 <td style="text-align:left;">
-col, area, box, hist, donut, boxplot_extended
+col, box, hist, donut, boxplot_extended
 </td>
 <td style="text-align:left;">
-(col, box, hist, boxplot_extended); (required) (area, donut)
+required
 </td>
 <td style="text-align:left;">
 group
@@ -1307,6 +1317,7 @@ fill_colour
 col, box, hist, boxplot_extended
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 #005faf
@@ -1337,7 +1348,7 @@ TRUE places the legend at the left edge of the figure.
 forecast_label
 </td>
 <td style="text-align:left;">
-col, area, line, scatter
+col, line, scatter
 </td>
 <td style="text-align:left;">
 raming
@@ -1354,9 +1365,10 @@ The word shown in the forecast area.
 forecast_x
 </td>
 <td style="text-align:left;">
-col, area, line, scatter
+col, line, scatter
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 2025
@@ -1370,11 +1382,10 @@ The x value where the forecast starts. Everything after it is shaded.
 grid_colour
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 <td style="text-align:left;">
-black (col, area, line, box, dot, scatter, hist); white
-(boxplot_extended)
+white: boxplot_extended | black: rest
 </td>
 <td style="text-align:left;">
 black
@@ -1388,10 +1399,10 @@ The colour of the grid lines.
 grid_linewidth
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 <td style="text-align:left;">
-0.1 (col, area, line, box, dot, scatter, hist); 0.8 (boxplot_extended)
+0.8: boxplot_extended | 0.1: rest
 </td>
 <td style="text-align:left;">
 0.1
@@ -1408,6 +1419,7 @@ group
 col, box, dot, boxplot_extended
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 sector
@@ -1424,7 +1436,7 @@ group_gap
 col, box, dot, boxplot_extended
 </td>
 <td style="text-align:left;">
-0.8 (col); 0.7 (box, dot, boxplot_extended)
+0.8: col | 0.7: rest
 </td>
 <td style="text-align:left;">
 0.8
@@ -1441,6 +1453,7 @@ height
 all
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 10
@@ -1457,6 +1470,7 @@ label
 donut
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 name
@@ -1473,7 +1487,7 @@ label_accuracy
 box, donut, boxplot_extended
 </td>
 <td style="text-align:left;">
-0.1 (box, boxplot_extended); 1 (donut)
+1: donut | 0.1: rest
 </td>
 <td style="text-align:left;">
 0.1
@@ -1542,8 +1556,7 @@ legend
 all
 </td>
 <td style="text-align:left;">
-bottom (col, area, line, box, dot, scatter, hist, donut,
-boxplot_extended); topleft (map)
+topleft: map | bottom: rest
 </td>
 <td style="text-align:left;">
 <code>bottom</code>, <code>right</code>, <code>left</code>,
@@ -1561,6 +1574,7 @@ legend_ncol
 all
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 2
@@ -1577,6 +1591,7 @@ legend_nrow
 all
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 2
@@ -1610,6 +1625,7 @@ legend_title
 all
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 title of the legend
@@ -1643,6 +1659,7 @@ line_colour
 line
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 #005faf
@@ -1659,7 +1676,7 @@ linewidth
 line, box, dot, boxplot_extended
 </td>
 <td style="text-align:left;">
-0.55 (line); 0.25 (box, boxplot_extended); 0.4 (dot)
+0.55: line | 0.4: dot | 0.25: rest
 </td>
 <td style="text-align:left;">
 0.55
@@ -1694,7 +1711,7 @@ lower
 dot
 </td>
 <td style="text-align:left;">
-(required)
+required
 </td>
 <td style="text-align:left;">
 lower_bound
@@ -1711,6 +1728,7 @@ mean
 box, boxplot_extended
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 mean
@@ -1724,7 +1742,7 @@ The column with the mean, drawn as a diamond.
 minor
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 <td style="text-align:left;">
 FALSE
@@ -1744,6 +1762,7 @@ na_fill
 map
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 lightgrey
@@ -1760,7 +1779,7 @@ orientation
 col, box, dot, boxplot_extended
 </td>
 <td style="text-align:left;">
-vertical (col, box); horizontal (dot, boxplot_extended)
+vertical: col, box | horizontal: rest
 </td>
 <td style="text-align:left;">
 <code>vertical</code> or <code>horizontal</code>
@@ -1794,7 +1813,7 @@ p25
 box, boxplot_extended
 </td>
 <td style="text-align:left;">
-(required)
+required
 </td>
 <td style="text-align:left;">
 p25
@@ -1811,7 +1830,7 @@ p5
 box, boxplot_extended
 </td>
 <td style="text-align:left;">
-(required)
+required
 </td>
 <td style="text-align:left;">
 p5
@@ -1828,7 +1847,7 @@ p50
 box, boxplot_extended
 </td>
 <td style="text-align:left;">
-(required)
+required
 </td>
 <td style="text-align:left;">
 p50
@@ -1845,7 +1864,7 @@ p75
 box, boxplot_extended
 </td>
 <td style="text-align:left;">
-(required)
+required
 </td>
 <td style="text-align:left;">
 p75
@@ -1862,7 +1881,7 @@ p95
 box, boxplot_extended
 </td>
 <td style="text-align:left;">
-(required)
+required
 </td>
 <td style="text-align:left;">
 p95
@@ -1897,8 +1916,7 @@ palette
 all
 </td>
 <td style="text-align:left;">
-qualitative (col, area, line, box, dot, scatter, hist, donut,
-boxplot_extended); sequential (map)
+sequential: map | qualitative: rest
 </td>
 <td style="text-align:left;">
 <code>qualitative</code>, <code>discr</code>, <code>sequential</code>,
@@ -1933,6 +1951,7 @@ panel_size
 donut
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 1.8
@@ -1946,7 +1965,7 @@ The size of the figure area in inches. It keeps the ring the same size.
 pct_axis
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, scatter, boxplot_extended
+col, line, box, dot, scatter, boxplot_extended
 </td>
 <td style="text-align:left;">
 FALSE
@@ -2019,7 +2038,7 @@ region
 map
 </td>
 <td style="text-align:left;">
-(required)
+required
 </td>
 <td style="text-align:left;">
 code
@@ -2054,8 +2073,7 @@ reverse_legend
 all
 </td>
 <td style="text-align:left;">
-TRUE (col, area, hist); FALSE (line, box, dot, scatter, donut, map,
-boxplot_extended)
+TRUE: col, hist | FALSE: rest
 </td>
 <td style="text-align:left;">
 TRUE
@@ -2086,9 +2104,10 @@ The thickness of the ring, as a share of the radius.
 sec_accuracy
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, boxplot_extended
+col, line, box, dot, boxplot_extended
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 0.1
@@ -2102,9 +2121,10 @@ The rounding of the numbers on the right axis, such as 0.1.
 sec_at
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, boxplot_extended
+col, line, box, dot, boxplot_extended
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 0;50;100
@@ -2118,9 +2138,10 @@ The values at which the right axis is labelled.
 sec_axis_labels
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, boxplot_extended
+col, line, box, dot, boxplot_extended
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 <code>pct</code>, <code>number</code>, <code>euro</code> or labels such
@@ -2135,7 +2156,7 @@ How the numbers on the right axis are written, or your own labels.
 sec_col_width
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, boxplot_extended
+col, line, box, dot, boxplot_extended
 </td>
 <td style="text-align:left;">
 0.3
@@ -2152,9 +2173,10 @@ The width of the bars of the second series.
 sec_colour
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, boxplot_extended
+col, line, box, dot, boxplot_extended
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 #e6006e
@@ -2168,9 +2190,10 @@ The colour of the second series.
 sec_legend_label
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, boxplot_extended
+col, line, box, dot, boxplot_extended
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 name of the second series
@@ -2184,9 +2207,10 @@ The name of the second series in the legend.
 sec_limits
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, boxplot_extended
+col, line, box, dot, boxplot_extended
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 0;100
@@ -2200,10 +2224,10 @@ The lowest and highest value of the right axis.
 sec_linewidth
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, boxplot_extended
+col, line, box, dot, boxplot_extended
 </td>
 <td style="text-align:left;">
-0.55 (col, area, box, dot, boxplot_extended); (line)
+none: line | 0.55: rest
 </td>
 <td style="text-align:left;">
 0.55
@@ -2217,7 +2241,7 @@ The line width of the second series.
 sec_points
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, boxplot_extended
+col, line, box, dot, boxplot_extended
 </td>
 <td style="text-align:left;">
 FALSE
@@ -2234,7 +2258,7 @@ TRUE adds points to the second series when it is a line.
 sec_scale_auto
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, boxplot_extended
+col, line, box, dot, boxplot_extended
 </td>
 <td style="text-align:left;">
 TRUE
@@ -2252,10 +2276,10 @@ lines.
 sec_symbol_size
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, boxplot_extended
+col, line, box, dot, boxplot_extended
 </td>
 <td style="text-align:left;">
-1.6 (col, area, line, box, boxplot_extended); symbol_size (dot)
+symbol_size: dot | 1.6: rest
 </td>
 <td style="text-align:left;">
 1.6
@@ -2269,7 +2293,7 @@ The size of the points of the second series.
 sec_type
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, boxplot_extended
+col, line, box, dot, boxplot_extended
 </td>
 <td style="text-align:left;">
 line
@@ -2286,9 +2310,10 @@ How the second series is drawn.
 sec_y
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, boxplot_extended
+col, line, box, dot, boxplot_extended
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 unemployment
@@ -2302,9 +2327,10 @@ The column drawn on a second axis on the right.
 sec_ylab
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, boxplot_extended
+col, line, box, dot, boxplot_extended
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 unit of the right axis
@@ -2339,6 +2365,7 @@ subtitle
 all
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 subtitle (replaces the default unit above the figure)
@@ -2355,6 +2382,7 @@ symbol_colour
 dot, scatter
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 #e6006e
@@ -2371,7 +2399,7 @@ symbol_size
 line, dot, scatter
 </td>
 <td style="text-align:left;">
-1.1 (line); 1.4 (dot); 0.8 (scatter)
+1.1: line | 1.4: dot | 0.8: rest
 </td>
 <td style="text-align:left;">
 1.1
@@ -2385,11 +2413,10 @@ The size of the points.
 ticks
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 <td style="text-align:left;">
-TRUE (col, area, line, box, dot, scatter, hist); FALSE
-(boxplot_extended)
+FALSE: boxplot_extended | TRUE: rest
 </td>
 <td style="text-align:left;">
 TRUE
@@ -2406,6 +2433,7 @@ title
 all
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 Title of the figure
@@ -2422,7 +2450,7 @@ upper
 dot
 </td>
 <td style="text-align:left;">
-(required)
+required
 </td>
 <td style="text-align:left;">
 upper_bound
@@ -2439,7 +2467,7 @@ value
 map
 </td>
 <td style="text-align:left;">
-(required)
+required
 </td>
 <td style="text-align:left;">
 share
@@ -2453,9 +2481,10 @@ The column with the values that give the regions their colour.
 value_accuracy
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 0.1
@@ -2472,7 +2501,7 @@ value_axis
 box, boxplot_extended
 </td>
 <td style="text-align:left;">
-bottom (box); (boxplot_extended)
+none: boxplot_extended | bottom: rest
 </td>
 <td style="text-align:left;">
 <code>bottom</code> or <code>top</code>
@@ -2503,9 +2532,10 @@ The width of the line of the value axis.
 value_breaks
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 0;25;50;75;100
@@ -2519,7 +2549,7 @@ The values at which the value axis is labelled.
 value_crop
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 <td style="text-align:left;">
 FALSE
@@ -2553,9 +2583,10 @@ TRUE prints the value on each bar.
 value_limits
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 0;100
@@ -2589,7 +2620,7 @@ width
 box, boxplot_extended
 </td>
 <td style="text-align:left;">
-0.5 (box); 0.45 (boxplot_extended)
+0.5: box | 0.45: rest
 </td>
 <td style="text-align:left;">
 0.5
@@ -2603,10 +2634,10 @@ The width of the bars or boxes, as a share of the space.
 x
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 <td style="text-align:left;">
-(required)
+required
 </td>
 <td style="text-align:left;">
 year
@@ -2623,6 +2654,7 @@ x_labels
 scatter
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 <code>euro</code>, <code>number</code>, <code>pct</code> or labels such
@@ -2637,9 +2669,10 @@ How the numbers on the x axis are written, or your own labels.
 x_lim
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 2015;2025
@@ -2653,11 +2686,10 @@ The first and last value shown on the x axis.
 x_lim_follow_data
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 <td style="text-align:left;">
-FALSE (col, area, scatter, hist); TRUE (line, box, dot,
-boxplot_extended)
+FALSE: col, scatter, hist | TRUE: rest
 </td>
 <td style="text-align:left;">
 FALSE
@@ -2671,7 +2703,7 @@ TRUE lets the x axis follow the data when it runs past x_lim.
 x_ticks_ends
 </td>
 <td style="text-align:left;">
-col, area, line
+col, line
 </td>
 <td style="text-align:left;">
 FALSE
@@ -2688,9 +2720,10 @@ TRUE also labels the first and last month of a monthly axis.
 xlab
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 unit below the x axis
@@ -2704,10 +2737,10 @@ The text next to the x axis.
 y
 </td>
 <td style="text-align:left;">
-col, area, line, dot, scatter, donut
+col, line, dot, scatter, donut
 </td>
 <td style="text-align:left;">
-(required)
+required
 </td>
 <td style="text-align:left;">
 purchasing_power
@@ -2721,9 +2754,10 @@ The column with the values.
 ylab
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, scatter, hist, boxplot_extended
+col, line, box, dot, scatter, hist, boxplot_extended
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 % change
@@ -2740,6 +2774,7 @@ ylab_position
 boxplot_extended
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 <code>left</code>, <code>middle</code> or <code>right</code>
@@ -2756,6 +2791,7 @@ ymax
 line
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 upper_bound
@@ -2772,6 +2808,7 @@ ymin
 line
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 lower_bound
@@ -2788,6 +2825,7 @@ zero_indicator
 boxplot_extended
 </td>
 <td style="text-align:left;">
+none
 </td>
 <td style="text-align:left;">
 TRUE
@@ -2818,10 +2856,10 @@ The width of the white zero line.
 zeroline
 </td>
 <td style="text-align:left;">
-col, area, line, box, dot, scatter, hist
+col, line, box, dot, scatter, hist
 </td>
 <td style="text-align:left;">
-TRUE (col, area, hist); (line, box, dot, scatter)
+TRUE: col, hist | none: rest
 </td>
 <td style="text-align:left;">
 TRUE

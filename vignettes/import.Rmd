@@ -303,24 +303,36 @@ ref <- read.csv(
   system.file("extdata", "parameter_settings.csv", package = "ggcpb"),
   stringsAsFactors = FALSE
 )
+# area is not shown on purpose, but it still works in params.csv
+ref <- ref[ref$plot_type != "area", ]
 types <- unique(ref$plot_type)
 
 # One row per parameter. The plot types are listed unless it belongs to all
-# of them, and a default that differs per plot type is listed per default.
+# of them. With one default for every plot type that is the default. With
+# several, the default of most plot types is "rest" and the others are
+# listed with their plot types. A required parameter is just "required".
 one_row <- function(rows) {
   where <- if (setequal(rows$plot_type, types)) {
     "all"
   } else {
     paste(rows$plot_type, collapse = ", ")
   }
-  defaults <- unique(rows$default)
-  default <- if (length(defaults) == 1) {
-    defaults
+  defaults <- ifelse(nzchar(rows$default), rows$default, "none")
+  defaults <- sub("^\\(required\\)$", "required", defaults)
+  if ("required" %in% defaults) {
+    default <- "required"
+  } else if (length(unique(defaults)) == 1) {
+    default <- defaults[1]
   } else {
-    paste(vapply(defaults, function(d) {
-      paste0(d, " (", paste(rows$plot_type[rows$default == d],
-                            collapse = ", "), ")")
-    }, character(1)), collapse = "; ")
+    counts <- table(defaults)
+    rest <- names(counts)[which.max(counts)]
+    others <- setdiff(unique(defaults), rest)
+    default <- paste(c(
+      vapply(others, function(d) {
+        paste0(d, ": ", paste(rows$plot_type[defaults == d], collapse = ", "))
+      }, character(1)),
+      paste0(rest, ": rest")
+    ), collapse = " | ")
   }
   data.frame(param = rows$param[1], plot_types = where, default = default,
              example = rows$example[1], description = rows$description[1],
