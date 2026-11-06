@@ -15,6 +15,7 @@ Introduction to ggcpb
   - [Boxplot](#boxplot)
   - [Extended boxplot on a full page](#extended-boxplot-on-a-full-page)
   - [Donut chart](#donut-chart)
+  - [Donut chart with leader labels](#donut-chart-with-leader-labels)
   - [Dot plot](#dot-plot)
   - [Scatter plot](#scatter-plot)
   - [Histogram](#histogram)
@@ -34,6 +35,7 @@ Introduction to ggcpb
   - [Extended boxplot on a full
     page](#extended-boxplot-on-a-full-page-1)
   - [Donut](#donut)
+  - [Donut chart with leader labels](#donut-chart-with-leader-labels-1)
   - [Dot plot](#dot-plot-1)
   - [Scatter plot](#scatter-plot-1)
   - [Histogram](#histogram-1)
@@ -1324,6 +1326,166 @@ example code in [section 5.7](#code-donut) to create the plot in R.
 Alternatively, the csv file can be read with `read.csv()` and used as
 input to `cpb_donut()`.
 
+## Donut chart with leader labels
+
+A donut can also print its labels outside the ring, on leader lines.
+This one uses more categories, two decimals in the percentages and
+colours from the extended palette.
+
+<div class="figrow">
+
+<img src="introduction_files/figure-gfm/donut-leader-1.png" alt="" width="100%" />
+
+<div>
+
+#### Relevant parameters
+
+<table class="ptab">
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+plot_type
+</td>
+
+<td style="text-align:left;">
+
+donut
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+title
+</td>
+
+<td style="text-align:left;">
+
+Energiemix, met lijnlabels
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+fill
+</td>
+
+<td style="text-align:left;">
+
+bron
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+y
+</td>
+
+<td style="text-align:left;">
+
+share
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+label_style
+</td>
+
+<td style="text-align:left;">
+
+leader
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+leader_length
+</td>
+
+<td style="text-align:left;">
+
+0.08
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+label_accuracy
+</td>
+
+<td style="text-align:left;">
+
+0.01
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+palette
+</td>
+
+<td style="text-align:left;">
+
+extended
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+colour_index
+</td>
+
+<td style="text-align:left;">
+
+13;9;16;10;12;4
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<span class="repro-title">**How to reproduce this figure:**</span> copy
+`params.csv`, `generate_plot.bat` and the folder `data` with
+`donut-leader.csv` to a personal folder. Fill in the parameters above in
+`params.csv` and start the script. In R you can call `cpb_donut()`
+instead. Follow the example code in [section 5.8](#code-donut-leader) to
+create the plot in R. Alternatively, the csv file can be read with
+`read.csv()` and used as input to `cpb_donut()`.
+
 ## Dot plot
 
 A dot plot shows an estimate with its interval.
@@ -1482,7 +1644,7 @@ xlab
 `params.csv`, `generate_plot.bat` and the folder `data` with `dot.csv`
 to a personal folder. Fill in the parameters above in `params.csv` and
 start the script. In R you can call `cpb_dot()` instead. Follow the
-example code in [section 5.8](#code-dot) to create the plot in R.
+example code in [section 5.9](#code-dot) to create the plot in R.
 Alternatively, the csv file can be read with `read.csv()` and used as
 input to `cpb_dot()`.
 
@@ -1697,7 +1859,7 @@ koopkracht (%)
 `params.csv`, `generate_plot.bat` and the folder `data` with
 `scatter.csv` to a personal folder. Fill in the parameters above in
 `params.csv` and start the script. In R you can call `cpb_scatter()`
-instead. Follow the example code in [section 5.9](#code-scatter) to
+instead. Follow the example code in [section 5.10](#code-scatter) to
 create the plot in R. Alternatively, the csv file can be read with
 `read.csv()` and used as input to `cpb_scatter()`.
 
@@ -1811,7 +1973,7 @@ duur (maanden)
 `params.csv`, `generate_plot.bat` and the folder `data` with `hist.csv`
 to a personal folder. Fill in the parameters above in `params.csv` and
 start the script. In R you can call `cpb_hist()` instead. Follow the
-example code in [section 5.10](#code-hist) to create the plot in R.
+example code in [section 5.11](#code-hist) to create the plot in R.
 Alternatively, the csv file can be read with `read.csv()` and used as
 input to `cpb_hist()`.
 
@@ -1966,7 +2128,7 @@ aandeel
 `params.csv`, `generate_plot.bat` and the folder `data` with `map.csv`
 to a personal folder. Fill in the parameters above in `params.csv` and
 start the script. In R you can call `cpb_map()` instead. Follow the
-example code in [section 5.11](#code-map) to create the plot in R.
+example code in [section 5.12](#code-map) to create the plot in R.
 Alternatively, the csv file can be read with `read.csv()` and used as
 input to `cpb_map()`.
 
@@ -2158,6 +2320,30 @@ energie <- tibble(bron = factor(bronnen, levels = bronnen),
 cpb_donut(energie, fill = bron, y = aandeel,
           colour_index = c(6, 5, 2, 4),
           title = "Energiemix van huishoudens")
+```
+
+<a id="code-donut-leader"></a>
+
+## Donut chart with leader labels
+
+``` r
+niveaus <- c("aardgas", "overig", "windenergie op land", "zonne-energie",
+             "kernenergie", "windenergie op zee")
+energie2 <- tibble(
+  bron  = factor(c("aardgas", "windenergie op land", "overig",
+                   "kernenergie", "windenergie op zee", "zonne-energie"),
+                 levels = niveaus),
+  share = c(40, 35, 13, 3, 2, 7)
+)
+# leader_length is shortened from its 0.15 default: on this narrower
+# canvas the default lines push their labels past the figure's edge
+cpb_donut(energie2, fill = bron, y = share,
+          label_style    = "leader",
+          leader_length  = 0.08,
+          label_accuracy = 0.01,
+          palette        = "extended",
+          colour_index   = c(13, 9, 16, 10, 12, 4),
+          title = "Energiemix, met lijnlabels")
 ```
 
 <a id="code-dot"></a>

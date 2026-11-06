@@ -493,6 +493,56 @@ ptab(plot_type = "donut", title = "Energiemix van huishoudens",
 repro("cpb_donut", "donut", "5.7", "code-donut")
 ```
 
+## Donut chart with leader labels
+
+A donut can also print its labels outside the ring, on leader lines. This
+one uses more categories, two decimals in the percentages and colours
+from the extended palette.
+
+```{r data-donut-leader}
+niveaus <- c("aardgas", "overig", "windenergie op land", "zonne-energie",
+             "kernenergie", "windenergie op zee")
+energie2 <- tibble(
+  bron  = factor(c("aardgas", "windenergie op land", "overig",
+                   "kernenergie", "windenergie op zee", "zonne-energie"),
+                 levels = niveaus),
+  share = c(40, 35, 13, 3, 2, 7)
+)
+```
+
+::: {.figrow}
+
+```{r donut-leader, warning = FALSE}
+# leader_length is shortened from its 0.15 default: on this narrower
+# canvas the default lines push their labels past the figure's edge
+cpb_donut(energie2, fill = bron, y = share,
+          label_style    = "leader",
+          leader_length  = 0.08,
+          label_accuracy = 0.01,
+          palette        = "extended",
+          colour_index   = c(13, 9, 16, 10, 12, 4),
+          title = "Energiemix, met lijnlabels")
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-donut-leader}
+ptab(plot_type = "donut", title = "Energiemix, met lijnlabels",
+     fill = "bron", y = "share", label_style = "leader",
+     leader_length = 0.08, label_accuracy = 0.01, palette = "extended",
+     colour_index = "13;9;16;10;12;4")
+```
+
+</div>
+
+:::
+
+```{r, results = "asis"}
+repro("cpb_donut", "donut-leader", "5.8", "code-donut-leader")
+```
+
 ## Dot plot
 
 A dot plot shows an estimate with its interval.
@@ -537,7 +587,7 @@ ptab(plot_type = "dot", title = "Samenhang met voorkeurstarieven",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_dot", "dot", "5.8", "code-dot")
+repro("cpb_dot", "dot", "5.9", "code-dot")
 ```
 
 ## Scatter plot
@@ -584,7 +634,7 @@ ptab(plot_type = "scatter", title = "Energierekening naar inkomen",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_scatter", "scatter", "5.9", "code-scatter")
+repro("cpb_scatter", "scatter", "5.10", "code-scatter")
 ```
 
 ## Histogram
@@ -616,7 +666,7 @@ ptab(plot_type = "hist", title = "Verdeling van de duur",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_hist", "hist", "5.10", "code-hist")
+repro("cpb_hist", "hist", "5.11", "code-hist")
 ```
 
 ## Classed map
@@ -660,7 +710,7 @@ ptab(plot_type = "map", title = "Aandeel huishoudens met zonnepanelen",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_map", "map", "5.11", "code-map")
+repro("cpb_map", "map", "5.12", "code-map")
 ```
 
 More options are in [`vignette("maps")`](maps.html).
@@ -773,6 +823,13 @@ options(ggcpb.style = "dutch") # style of the whole publication
 ## Donut
 
 ```{r code-donut, ref.label = c("data-donut", "donut"), echo = TRUE, eval = FALSE}
+```
+
+<a id="code-donut-leader"></a>
+
+## Donut chart with leader labels
+
+```{r code-donut-leader, ref.label = c("data-donut-leader", "donut-leader"), echo = TRUE, eval = FALSE}
 ```
 
 <a id="code-dot"></a>
