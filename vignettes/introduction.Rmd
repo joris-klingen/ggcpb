@@ -72,13 +72,17 @@ repro <- function(fun, dataset, section, id) {
 .figrow { display: flex; gap: 24px; align-items: flex-start; margin: 1em 0; }
 .figrow > * { flex: 1 1 0; min-width: 0; }
 .figrow table { font-size: 0.85em; }
+/* a figure alone, as wide as the figure next to its parameters */
+img.halfpage { width: calc(50% - 12px); }
 table.ptab { width: 100%; }
+table.ptab td:first-child { white-space: nowrap; }
 .below table { font-size: 0.85em; }
 .figrow h4, .below h4 { margin-top: 0; color: #c02a6a; }
 @media (max-width: 600px) { .figrow { display: block; } }
 @media print {
-  .figrow { break-inside: avoid; page-break-inside: avoid; zoom: 0.8; }
-  h2, h3, h4, p:has(+ .figrow) { break-after: avoid; }
+  .figrow { zoom: 0.8; }
+  .figrow, .keep { break-inside: avoid; page-break-inside: avoid; }
+  h2, h3, h4, p:has(+ .figrow), p:has(+ .keep) { break-after: avoid; }
 }
 </style>
 
@@ -165,8 +169,6 @@ Each figure type has its own function.
 cpb_line(data = df, x = year, y = value)
 # Bar chart
 cpb_col(data = df, x = year, y = value, fill = group)
-# Area chart
-cpb_area(data = df, x = year, y = value, fill = group)
 # Box plot
 cpb_box(data = df, x = group, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95)
 # Dot plot
@@ -261,6 +263,7 @@ erfenissen <- expand_grid(
 
 ```{r col-secaxis, warning = FALSE}
 cpb_col(erfenissen, x = jaar, y = mld, fill = soort,
+        position = "stack",
         sec_y = heffing, sec_limits = c(0, 3),
         sec_legend_label = "erfbelasting", sec_ylab = "mld euro",
         title = "Erfenissen en erfbelasting", ylab = "mld euro")
@@ -273,6 +276,7 @@ cpb_col(erfenissen, x = jaar, y = mld, fill = soort,
 ```{r par-col}
 ptab(plot_type = "col", title = "Erfenissen en erfbelasting",
      x = "jaar", y = "mld", fill = "soort", sec_y = "heffing",
+     position = "stack",
      sec_limits = "0;3", sec_legend_label = "erfbelasting",
      sec_ylab = "mld euro", ylab = "mld euro")
 ```
@@ -304,7 +308,7 @@ zonnepanelen <- expand_grid(
 
 ```{r col-horizontal}
 cpb_col(zonnepanelen, x = groep, y = aandeel, fill = jaar,
-        position = "dodge", orientation = "horizontal",
+        orientation = "horizontal", reverse_legend = TRUE,
         colour_index = c(2, 1), value_limits = c(0, 70), width = 0.85,
         title = "Zonnepanelen naar inkomen",
         ylab  = "inkomensgroep", xlab = "aandeel binnen inkomensgroep (%)")
@@ -316,9 +320,9 @@ cpb_col(zonnepanelen, x = groep, y = aandeel, fill = jaar,
 
 ```{r par-hbar}
 ptab(plot_type = "col", title = "Zonnepanelen naar inkomen",
-     x = "groep", y = "aandeel", fill = "jaar", position = "dodge",
-     orientation = "horizontal", colour_index = "2;1",
-     value_limits = "0;70", ylab = "inkomensgroep",
+     x = "groep", y = "aandeel", fill = "jaar",
+     orientation = "horizontal", reverse_legend = "TRUE",
+     colour_index = "2;1", value_limits = "0;70", ylab = "inkomensgroep",
      xlab = "aandeel binnen inkomensgroep (%)")
 ```
 
@@ -418,7 +422,7 @@ ptab(plot_type = "box", title = "Koopkracht per inkomensgroep",
 repro("cpb_box", "box", "5.5", "code-box")
 ```
 
-More box plot styles are in [`vignette("boxplots")`](boxplots.html).
+More box plot styles are in the [extended vignette](extended.html).
 
 ## Extended boxplot on a full page
 
@@ -459,6 +463,63 @@ ptab(plot_type = "boxplot_extended", title = "Koopkracht per inkomensgroep",
 repro("cpb_boxplot_extended", "box-extended", "5.6", "code-box-extended")
 ```
 
+## Dot style
+
+`dot` draws no box. A dashed line runs from p5 to p95, with a light dot at
+each end. A bar shows the interquartile range and a dot shows the median.
+The optional column `mean` adds a diamond. A legend names each marker. Use
+`dot_labels` to rename a marker, such as `p50:median` in an English figure.
+In Excel, write the pairs in one cell and separate them with a semicolon.
+
+```{r data-box-dot}
+voorkeur <- tibble(
+  erfenis = factor(c("1,000,000 euro", "100,000 euro", "10,000 euro"),
+                   levels = c("1,000,000 euro", "100,000 euro",
+                              "10,000 euro")),
+  p5  = c(0, 0, 0),
+  p25 = c(10, 4, 0),
+  p50 = c(25, 11, 4),
+  p75 = c(45, 26, 12),
+  p95 = c(75, 54, 47),
+  gem = c(30, 19, 11)
+)
+```
+
+::: {.figrow}
+
+```{r box-dot}
+cpb_box(voorkeur, x = erfenis,
+        p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95, mean = gem,
+        box_style = "dot", orientation = "horizontal", style = "english",
+        dot_labels = c(p5 = "5th percentile", iqr = "25th to 75th percentile",
+                       p50 = "median", p95 = "95th percentile",
+                       mean = "mean"),
+        title = "Preferred tax rates inheritance tax",
+        xlab = "preferred tax rate (%)", ylab = "size of inheritance")
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-box-dot}
+ptab(plot_type = "box", title = "Preferred tax rates inheritance tax",
+     x = "erfenis", p5 = "p5", p25 = "p25", p50 = "p50", p75 = "p75",
+     p95 = "p95", mean = "gem", box_style = "dot",
+     orientation = "horizontal", style = "english",
+     dot_labels = paste0("p5:5th percentile;iqr:25th to 75th percentile;",
+                         "p50:median;p95:95th percentile;mean:mean"),
+     xlab = "preferred tax rate (%)", ylab = "size of inheritance")
+```
+
+</div>
+
+:::
+
+```{r, results = "asis"}
+repro("cpb_box", "box-dot", "5.7", "code-box-dot")
+```
+
 ## Donut chart
 
 Individual categories add up to 100% in the donut chart. 
@@ -494,14 +555,14 @@ ptab(plot_type = "donut", title = "Energiemix van huishoudens",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_donut", "donut", "5.7", "code-donut")
+repro("cpb_donut", "donut", "5.8", "code-donut")
 ```
 
 ## Donut chart with leader labels
 
 A donut can also print its labels outside the ring, on leader lines. This
-one uses more categories, two decimals in the percentages and colours
-from the extended palette.
+one uses more categories, two decimals in the percentages and chosen
+colours with `colour_index`.
 
 ```{r data-donut-leader}
 niveaus <- c("aardgas", "overig", "windenergie op land", "zonne-energie",
@@ -523,8 +584,8 @@ cpb_donut(energie2, fill = bron, y = share,
           label_style    = "leader",
           leader_length  = 0.08,
           label_accuracy = 0.01,
-          palette        = "extended",
-          colour_index   = c(8, 9, 5, 6, 12, 14, 15),
+          palette        = "qualitative",
+          colour_index   = c(2, 4, 7, 6, 8, 9),
           title = "Energiemix, met lijnlabels")
 ```
 
@@ -535,8 +596,8 @@ cpb_donut(energie2, fill = bron, y = share,
 ```{r par-donut-leader}
 ptab(plot_type = "donut", title = "Energiemix, met lijnlabels",
      fill = "bron", y = "share", label_style = "leader",
-     leader_length = 0.08, label_accuracy = 0.01, palette = "extended",
-     colour_index = "8;9;5;6;12;14;15")
+     leader_length = 0.08, label_accuracy = 0.01, palette = "qualitative",
+     colour_index = "2;4;7;6;8;9")
 ```
 
 </div>
@@ -544,17 +605,34 @@ ptab(plot_type = "donut", title = "Energiemix, met lijnlabels",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_donut", "donut-leader", "5.8", "code-donut-leader")
+repro("cpb_donut", "donut-leader", "5.9", "code-donut-leader")
 ```
 
-This donut uses the extended palette, which consists out of the following 20
-distinct colours:
+This donut uses colours from the qualitative (default) palette. This whole palette is allowed for publication.
 
-```{r extended-palette, echo = FALSE, fig.width = 15.5 / 2.54, fig.height = 2.1, out.width = "100%"}
+## Extended colour palette for testing only
+
+The extended colour palette extends the qualitative palette with 11 distinct colours, so it consists out of 20 distinct colours. **Only the first nine** are the house colours of the CPB. 
+These **may be used in a publication**. **The other eleven are not allowed in a publication**. 
+Use them to explore or to test a figure. The names under the
+colours are the names in `cpb_cols(palette = "extended")`.
+
+```{r extended-palette, echo = FALSE, fig.width = 15.5 / 2.54, fig.height = 2.4, out.width = "100%"}
 ext <- cpb_cols(palette = "extended")
+n <- length(ext)
+# a small gap between the nine colours for publication and the rest
+x <- seq_len(n) + ifelse(seq_len(n) > 9, 0.6, 0)
 op <- par(mar = c(5, 0, 0.5, 0), bg = cpb_tokens()$bg)
-barplot(rep(1, 20), col = ext, border = NA, space = 0.1, axes = FALSE,
-        names.arg = names(ext), las = 2, cex.names = 0.6)
+plot.new()
+plot.window(xlim = c(0.2, n + 1.4), ylim = c(0, 1.5))
+rect(x - 0.4, 0, x + 0.4, 1, col = ext, border = NA)
+text(x, -0.2, names(ext), srt = 90, adj = c(1, 0.5), cex = 0.6, xpd = NA)
+# a green frame around the colours for publication, a dark red one around
+# the colours for testing, both a little away from the colours
+rect(0.4, -0.12, 9.6, 1.12, border = "#2e8b3d", lwd = 2)
+rect(10.0, -0.12, n + 0.6 + 0.6, 1.12, border = "#8b0000", lwd = 2)
+text(5, 1.3, "allowed for publication", cex = 0.8)
+text(15.6, 1.3, "only allowed for testing", cex = 0.8)
 par(op)
 ```
 
@@ -602,7 +680,7 @@ ptab(plot_type = "dot", title = "Samenhang met voorkeurstarieven",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_dot", "dot", "5.9", "code-dot")
+repro("cpb_dot", "dot", "5.10", "code-dot")
 ```
 
 ## Scatter plot
@@ -649,7 +727,7 @@ ptab(plot_type = "scatter", title = "Energierekening naar inkomen",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_scatter", "scatter", "5.10", "code-scatter")
+repro("cpb_scatter", "scatter", "5.11", "code-scatter")
 ```
 
 ## Histogram
@@ -681,19 +759,21 @@ ptab(plot_type = "hist", title = "Verdeling van de duur",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_hist", "hist", "5.11", "code-hist")
+repro("cpb_hist", "hist", "5.12", "code-hist")
 ```
 
 ## Facets
 
-Every function takes a `facet` column. It splits the figure into one panel
+Most functions take a `facet` column. The donut and the map do not. It splits the figure into one panel
 per value. The name of each panel is a bold text below it. Use `facet_ncol`
 for the number of panels next to each other. All panels share the same axis,
-so they can be compared. A figure with several panels is taller, so this one
-is saved with `height = 12`.
+so they can be compared. A figure with several panels is taller. Without `height` it is as tall as
+the standard height times the number of rows of panels, so four panels in
+two columns are twice as tall. This one is saved on the full page width with
+`page = full`.
 
 ```{r data-facets}
-regio_names <- c("stedelijk", "landelijk", "gemengd")
+regio_names <- c("noord", "oost", "zuid", "west")
 regios <- expand_grid(regio = factor(regio_names, levels = regio_names),
                       groep = factor(c("laag", "hoog"),
                                      levels = c("laag", "hoog")),
@@ -702,30 +782,31 @@ regios <- expand_grid(regio = factor(regio_names, levels = regio_names),
                           0.5 * sin(jaar - 2019 + as.numeric(regio)), 1))
 ```
 
-::: {.figrow}
+::: {.keep}
 
-```{r facets, fig.height = 12 / 2.54}
-cpb_line(regios, x = jaar, y = waarde, colour = groep,
-         facet = regio, facet_ncol = 1, colour_index = c(6, 2),
-         title = "Ontwikkeling per regio", ylab = "mld euro")
+```{r facets, fig.width = 15.5 / 2.54, fig.height = 15 / 2.54}
+cpb_col(regios, x = jaar, y = waarde, fill = groep,
+        facet = regio, facet_ncol = 2, colour_index = c(6, 2),
+        title = "Ontwikkeling per regio", ylab = "mld euro")
 ```
 
-<div>
+::: {.below}
 
 #### Relevant parameters {-}
 
 ```{r par-facets}
-ptab(plot_type = "line", title = "Ontwikkeling per regio",
-     x = "jaar", y = "waarde", colour = "groep", facet = "regio",
-     facet_ncol = 1, colour_index = "6;2", ylab = "mld euro", height = 12)
+ptab(plot_type = "col", title = "Ontwikkeling per regio",
+     x = "jaar", y = "waarde", fill = "groep", facet = "regio",
+     facet_ncol = 2, colour_index = "6;2",
+     ylab = "mld euro", page = "full")
 ```
 
-</div>
+:::
 
 :::
 
 ```{r, results = "asis"}
-repro("cpb_line", "facets", "5.12", "code-facets")
+repro("cpb_col", "facets", "5.13", "code-facets")
 ```
 
 ## Grouped categories
@@ -752,7 +833,7 @@ zakkans <- tibble(
 
 ```{r col-grouped}
 cpb_col(zakkans, x = cat, y = pct, fill = serie, group = grp,
-        position = "dodge", colour_index = c(6, 2), width = 0.75,
+        colour_index = c(6, 2), width = 0.75,
         value_breaks = seq(0, 12, 2), value_limits = c(0, 12),
         title = "VWO", ylab = "zakkans (%)")
 ```
@@ -763,7 +844,7 @@ cpb_col(zakkans, x = cat, y = pct, fill = serie, group = grp,
 
 ```{r par-col-grouped}
 ptab(plot_type = "col", title = "VWO", x = "cat", y = "pct", fill = "serie",
-     group = "grp", position = "dodge", colour_index = "6;2", width = 0.75,
+     group = "grp", colour_index = "6;2", width = 0.75,
      value_breaks = "0;2;4;6;8;10;12", value_limits = "0;12",
      ylab = "zakkans (%)")
 ```
@@ -773,7 +854,7 @@ ptab(plot_type = "col", title = "VWO", x = "cat", y = "pct", fill = "serie",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_col", "col-grouped", "5.13", "code-col-grouped")
+repro("cpb_col", "col-grouped", "5.14", "code-col-grouped")
 ```
 
 ## Classed map
@@ -817,12 +898,12 @@ ptab(plot_type = "map", title = "Aandeel huishoudens met zonnepanelen",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_map", "map", "5.14", "code-map")
+repro("cpb_map", "map", "5.15", "code-map")
 ```
 
-More options are in [`vignette("maps")`](maps.html).
+More map options are in the [extended vignette](extended.html).
 
-# Ggplot2 base allows for endless possibilities
+# Ggplot2 base allows for endless possibilities in R
 
 Every ggcpb figure is a real ggplot2 object. This means you can stack
 extra functionalities to the plot in R with `+`.
@@ -845,12 +926,51 @@ cpb_line(stijging, x = jaar, y = waarde,
 ```
 
 
-You can stack as many pieces as you need. More patterns are in
-[`vignette("annotation")`](annotation.html).
+You can stack as many pieces as you need. More patterns are in the
+[extended vignette](extended.html).
+
+## Create new figures beyond the existing figure types
+
+Some figures have no function in ggcpb. Build them with ggplot2 and use the
+same parts as the functions do, which are `theme_cpb()`, a colour scale and
+the formatters. Two stylistic rules go with it. The unit goes in `subtitle`, and
+the title of the horizontal axis sits at the bottom right.
+
+`cpb_cut()` turns the numbers into classes with Dutch labels. The scale
+`scale_fill_cpb_d()` colours the classes from light to dark. `drop = FALSE`
+keeps a class without observations in the legend, and `show.legend = TRUE`
+draws its colour. On a half page, `label_wrap()` breaks long labels
+over two lines, so the panel stays wide.
+
+```{r heatmap, echo = TRUE, fig.width = 7.5 / 2.54, fig.height = 7.5 / 2.54, out.width = NULL, out.extra = 'class="halfpage"'}
+raster <- expand.grid(groep = factor(groepen, levels = groepen),
+                      jaar  = 2024:2027) |>
+  mutate(mediaan = round(0.5 + 1.2 * sin(as.numeric(groep) + jaar), 1))
+
+ggplot(raster, aes(jaar, groep,
+                   fill = cpb_cut(mediaan, c(-Inf, -1, 0, 1, 2, Inf),
+                                  labeller = label_pct_nl()))) +
+  geom_tile(colour = "white", linewidth = 0.4, show.legend = TRUE) +
+  labs(title = "Mediane koopkracht per groep en jaar",
+       subtitle = "inkomensgroep",
+       x = NULL, y = NULL, fill = "mediaan (%)") +
+  scale_fill_cpb_d(palette = "blues", drop = FALSE) +
+  scale_y_discrete(labels = scales::label_wrap(12)) +
+  guides(fill = guide_legend(ncol = 2)) +
+  theme_cpb(grid = "none", ticks = FALSE)
+```
+
+Save a figure like this one with `save_cpb()`. It writes the half page width
+of 7.5 cm and the standard height of 7.5 cm, the same as the figures made by
+the functions.
+
+```{r heatmap-save, echo = TRUE, eval = FALSE}
+save_cpb("heatmap.png", page = "half")
+```
 
 <a id="publication-settings"></a>
 
-# Settings for the whole publication
+# Set settings for the whole publication
 
 Some settings are the same for every figure of a publication. The main one
 is the `style`. Dutch is the default. An English report uses `english`.
@@ -923,6 +1043,13 @@ options(ggcpb.style = "dutch") # style of the whole publication
 ## Extended boxplot on a full page
 
 ```{r code-box-extended, ref.label = c("data-box-extended", "box-extended"), echo = TRUE, eval = FALSE}
+```
+
+<a id="code-box-dot"></a>
+
+## Dot style
+
+```{r code-box-dot, ref.label = c("data-box-dot", "box-dot"), echo = TRUE, eval = FALSE}
 ```
 
 <a id="code-donut"></a>

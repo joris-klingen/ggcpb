@@ -9,44 +9,39 @@ or dropped.
 
 ## Plan (status 2026-11-11)
 
-### Critical, before a release
+### Critical, before the release of 0.3.0
 
-1. **`[path]`**: fill in the real folder of the ggcpb kit in
-   `vignettes/introduction.Rmd` and `vignettes/import.Rmd`.
-2. **CI**: push, and watch the first run. The new `lintr` job, Windows
-   and ggplot2 3.5.2 have not run on these changes yet.
-3. **Release**: the version is `0.3.0` because of the breaking changes in
-   the CSV import (one `params.csv` layout, `cpb_import_csv()` without
-   `data_csv`). Tag it after the merge, and tell the users of the old kit.
-4. **Merge dev into main**: dev already holds `origin/main` (merged on
-   2026-11-05), so this merge has no conflicts.
+1. **Installation and the kit**: the introduction does not say how to install
+   ggcpb in R, nor where the Excel users find "the most recent ggcpb
+   version" (`[path]` in the comment at the top of
+   `vignettes/introduction.Rmd`). The start script stops with "install it in
+   R first", so a new user is stuck. Write both steps in the introduction.
+2. **License**: `LICENSE` says that the package is internal and that the
+   Rijksoverheid fonts are bundled in `inst/fonts/`. The repository is
+   public and the fonts are not in it. Decide what the license is, then
+   correct the file.
+3. **Documentation**: the README tells users to download the HTML from
+   `doc/`. No GitHub Pages for now. The workflow is on the branch
+   `github-pages`.
+4. **CI**: push, and watch the first run. The `lintr` job, Windows and
+   ggplot2 3.5.2 have not run on these changes yet.
+5. **Release**: tag `0.3.0` after the merge of dev into main, and tell the
+   users of the old kit about the breaking changes in `NEWS.md`.
 
 ### Important
 
-5. **Mac start script**: `inst/examples/generate_plot.command`
-   still ships, while the docs only name `generate_plot.bat`. Remove it, or
-   document it again.
-6. **Excel CSV**: Dutch Excel writes `;` and a decimal comma, unless
+6. **Mac start script**: `inst/examples/generate_plot.command` still ships,
+   while the docs only name `generate_plot.bat`. Remove it, or document it.
+7. **Excel CSV**: Dutch Excel writes `;` and a decimal comma, unless
    "CSV UTF-8 (comma delimited)" is chosen. Detect the separator and the
    decimal mark in `cpb_import_read_data()`.
-7. **Import values that are not possible yet**: an explicit `NULL` (an
+8. **Import values that are not possible yet**: an explicit `NULL` (an
    empty cell means the default), a formatter with its own accuracy
    (`euro` with 0.1), and extra ggplot2 layers. The last one is R only by
    design.
-8. **House font in the vignette html**: Rijksoverheid Sans only shows
+9. **House font in the vignette html**: Rijksoverheid Sans only shows
    where it is installed. Embed Source Sans 3 with `@font-face` as the
    fallback, or accept this.
-9. **Vignette html and PDF**: the html of `introduction`, `import` and
-   `extended` is tracked, the other html and all PDFs are not (see
-   `.gitignore`). `tools/render_vignettes.R` makes the PDFs locally.
-   GitHub shows html as source, so `.github/workflows/pages.yaml` publishes
-   the vignettes on GitHub Pages. It needs one setting on GitHub, once:
-   Settings, Pages, Source "GitHub Actions". The README links point to
-   `joris-klingen.github.io/ggcpb`, so they only work after that.
-10. **Old vignettes**: `extended` covers the new parts of `colours`,
-    `chart-types`, `boxplots`, `maps`, `annotation`, `layout` and `ggcpb`.
-    Decide whether those seven can be removed, then update the links to them
-    (README, `vignette()` references in the vignettes and in the man pages).
 
 ## Open items
 

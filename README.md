@@ -7,7 +7,7 @@ the common CPB chart types. Everything returns real `ggplot` objects
 that you can keep extending with `+`.
 
 **New to ggcpb? Start with the introduction:
-[introduction](https://joris-klingen.github.io/ggcpb/introduction.html).**
+[introduction](doc/introduction.html).**
 It shows how to create figures with Excel and/or R.
 
 > **Status: work in progress.** The style is calibrated against a set
@@ -18,46 +18,41 @@ It shows how to create figures with Excel and/or R.
 
 ## Documentation
 
-- **[Introduction](https://joris-klingen.github.io/ggcpb/introduction.html)**
-  -- `vignette("introduction")`: creating figures with Excel and/or R.
-- **[Import](https://joris-klingen.github.io/ggcpb/import.html)** --
-  `vignette("import")`: building figures from CSV files, with Excel and
-  without R.
-- **[Extended information](https://joris-klingen.github.io/ggcpb/extended.html)**
-  -- `vignette("extended")`: more colours, columns, boxplot styles and
+The documentation is three HTML files in the [doc/](doc/) folder.
+Download the file and open it in your browser. On GitHub, open the file
+and choose "Download raw file".
+
+- **[Introduction](doc/introduction.html)** --
+  `vignette("introduction")`: creating figures with Excel and/or R.
+- **[Import](doc/import.html)** -- `vignette("import")`: building
+  figures from CSV files, with Excel and without R.
+- **[Extended information](doc/extended.html)** --
+  `vignette("extended")`: more colours, columns, boxplot styles and
   maps, and what is possible in R only.
-- **[Setup](doc/ggcpb.md)** -- `vignette("ggcpb")`: the basic idea in
-  a couple of plots -- one wrapper call, how it relates to ggplot2,
-  using only the theme without the wrappers, and export.
-- **[Chart types](doc/chart-types.md)** -- `vignette("chart-types")`:
-  every CPB chart type in its default style -- lines, columns,
-  horizontal bars, areas, quantile boxplot, scatter, histogram.
-- **[Layout](doc/layout.md)** -- `vignette("layout")`: facets, grouped
-  categories on one shared axis, and grouped boxplots.
-- **[Annotation](doc/annotation.md)** -- `vignette("annotation")`:
-  forecast windows and uncertainty bands, reference lines, text notes,
-  and composing an extra series onto a chart.
-- **[Box plots](doc/boxplots.md)** -- `vignette("boxplots")`: the
-  three box styles, a fill per year, and grouped boxes with a fill
-  per year.
-- **[Colours](doc/colours.md)** -- `vignette("colours")`: how series
-  get their house colours, choosing swatches by position, and the
-  sequential ramp for ordered classes.
-- **[Maps](doc/maps.md)** -- `vignette("maps")`: choropleths of the
-  Netherlands at municipality, COROP or province level.
 
-The first three links point to the HTML vignettes on GitHub Pages, in the CPB
-style. The others are markdown files with figures in `doc/`, regenerated from
-`vignettes/` with `Rscript tools/render_vignettes.R`. The same script makes a
-PDF of the first three (it needs Chrome). The PDFs are not in git.
+The HTML files are made from `vignettes/` with
+`Rscript tools/render_vignettes.R`.
 
-## Install / load
+## Install
+
+Open RStudio and type in the Terminal tab:
+
+```
+R -e "install.packages('remotes'); remotes::install_github('joris-klingen/ggcpb')"
+```
+
+Or type in the R Console:
 
 ```r
-devtools::load_all("path/to/ggcpb")   # develop-mode
-# or install from a checkout:
-devtools::install("path/to/ggcpb")
+install.packages("remotes")
+remotes::install_github("joris-klingen/ggcpb")
 ```
+
+Then load it with `library(ggcpb)`. The code is on
+<https://github.com/joris-klingen/ggcpb>.
+
+To develop the package, use
+`devtools::load_all("path/to/ggcpb")` on a checkout.
 
 ## Quick start
 
@@ -73,7 +68,8 @@ cpb_col(df, x = jaar, y = waarde, fill = groep,
 ```
 
 The wrappers -- `cpb_line()`, `cpb_col()`, `cpb_box()`,
-`cpb_scatter()`, `cpb_hist()` -- accept a data.frame or data.table
+`cpb_boxplot_extended()`, `cpb_dot()`, `cpb_scatter()`, `cpb_hist()`,
+`cpb_donut()` and `cpb_map()` -- accept a data.frame or data.table
 plus tidy-eval column arguments,
 and apply `theme_cpb()` and a CPB scale: the published-figure look
 (hairline black gridlines at labelled breaks, category-axis ticks,

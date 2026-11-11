@@ -9,12 +9,10 @@ Rplots.pdf
 inst/examples/output
 inst/examples/generated
 inst/examples/params_log.txt
-# tools/render_vignettes.R writes the PDFs, the .md files and their
-# _files/ figures in doc/. Those are deliberately tracked, so GitHub can
-# show them. The throwaway HTML/R/Rmd copies devtools::build_vignettes()
-# also drops in doc/ are not. Scoped to these extensions, not a blanket
-# doc/ ignore, so a new tracked file still shows up as untracked.
-doc/*.html
+# tools/render_vignettes.R writes the HTML of the vignettes in doc/. Those
+# are tracked, so they can be read without installing the package. The
+# throwaway R/Rmd copies devtools::build_vignettes() also drops in doc/ are
+# not.
 doc/*.R
 doc/*.Rmd
 Meta/
@@ -36,13 +34,5 @@ ggcpb.Rproj
 # testthat writes failing tests here during a run
 /tests/testthat/_problems/
 
-# The rendered HTML of the three main vignettes is tracked. The other
-# rendered HTML is made on the fly and is not.
+# Rendered vignettes are written to doc/, not to vignettes/
 vignettes/*.html
-!vignettes/introduction.html
-!vignettes/import.html
-!vignettes/extended.html
-
-# PDFs of the vignettes are made locally by tools/render_vignettes.R and are
-# not tracked.
-doc/*.pdf
