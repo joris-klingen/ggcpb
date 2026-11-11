@@ -83,7 +83,10 @@ test_that("the extended palette has 20 colours, led by the house nine", {
   expect_length(ext, 20)
   expect_equal(anyDuplicated(toupper(ext)), 0L)
   expect_equal(cpb_pal("extended")(9), cpb_pal("qualitative")(9))
-  expect_equal(unname(cpb_cols(palette = "extended")), ext)
+  # the same colours in the same positions as the qualitative palette
+  expect_equal(unname(cpb_cols(1:9, palette = "extended")),
+               unname(cpb_cols(1:9)))
+  expect_setequal(unname(cpb_cols(palette = "extended")), ext)
 })
 
 test_that("cpb_cols() finds extended colours by name", {
@@ -118,6 +121,6 @@ test_that("more levels than a palette has: recycling warns", {
 
 test_that("cpb_cols() with no arguments keeps the extended colour names", {
   expect_equal(names(cpb_cols(palette = "extended"))[c(1, 11, 20)],
-               c("endeavour", "apple", "kaitoke_green"))
+               c("mauvelous", "apple", "kaitoke_green"))
   expect_equal(names(cpb_cols(1:2, palette = "extended")), c("1", "2"))
 })

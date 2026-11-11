@@ -25,15 +25,17 @@ cpb_colors <- c(
 cpb_series_order <- c(6, 2, 8, 7, 3, 5, 9, 1, 4)
 
 # extended categorical palette: 20 colours ----
-# The nine house colours in their cycling order (see cpb_series_order),
-# then eleven more, ordered so the next series stay easy to tell apart.
+# The nine house colours in exactly the order of cpb_colors, so position
+# n is the same colour in both palettes, then eleven more, ordered so the
+# next series stay easy to tell apart. Series cycle through the first nine
+# in the order of cpb_series_order, as in the qualitative palette.
 # Named, so cpb_cols("apple", palette = "extended") works; the NA colour
 # is last, as in the other palettes. Used when a chart has more than nine
 # series (palette = "extended").
 cpb_colors_extended <- c(
-  endeavour = "#005faf", rose = "#e6006e", brown = "#96827d",
-  biscay = "#193c69", siren = "#820050", anakiwa = "#87d2ff",
-  dorado = "#64504b", mauvelous = "#F596AF", cold_turkey = "#d7c8c8",
+  mauvelous = "#F596AF", rose = "#e6006e", siren = "#820050",
+  cold_turkey = "#d7c8c8", anakiwa = "#87d2ff", endeavour = "#005faf",
+  biscay = "#193c69", brown = "#96827d", dorado = "#64504b",
   sun = "#FBAD1D", apple = "#43B546", scarlet_gum = "#401663",
   orange = "#FA6B09", turquoise = "#16A08C", purple1 = "#5A5895",
   cerulean = "#00aeef", crimson = "#DC143C", green2 = "#A1C720",

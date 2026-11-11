@@ -17,7 +17,8 @@
 #'   palette), `"sequential"` (the 6-colour light-to-dark pink ramp), or
 #'   `"blues"` (the 6-colour light-to-dark blue ramp for classed fills),
 #'   or `"extended"` (20 categorical colours: the nine of
-#'   `"qualitative"` in the same order, then eleven more).
+#'   `"qualitative"` first, in the same positions as in [cpb_cols()],
+#'   then eleven more).
 #'   Ramps are interpolated to any number of levels.
 #' @details For `"sequential"`, up to six levels take the darkest
 #'   swatches of the ramp: `n` levels get the `n` darkest, still ordered
@@ -48,6 +49,11 @@ cpb_pal <- function(palette = c("qualitative", "discr", "sequential",
   # the `index =` argument address swatches by position.
   if (identical(palette, "qualitative")) {
     cols <- cols[cpb_series_order[cpb_series_order <= length(cols)]]
+  }
+  # the extended palette cycles through its first nine the same way
+  if (identical(palette, "extended")) {
+    rest <- seq_along(cols)[-seq_along(cpb_series_order)]
+    cols <- cols[c(cpb_series_order, rest)]
   }
   if (identical(palette, "sequential")) {
     # the pink ramp's lightest swatches are too pale to stand on their
