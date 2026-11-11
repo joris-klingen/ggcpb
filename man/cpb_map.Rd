@@ -65,8 +65,11 @@ conflict and raise an error, since both set the same thing.}
 \item{reverse}{For a numeric \code{value} column: reverse the sequential
 gradient (passed to \code{\link[=scale_fill_cpb_c]{scale_fill_cpb_c()}}).}
 
-\item{na_fill}{Fill for regions without a value in \code{data}; defaults
-to the CPB missing-value grey.}
+\item{na_fill}{Fill for regions without a value in \code{data}. \code{NULL}
+(default) leaves them unfilled and out of the legend. A colour, or a
+position in the house palette such as \code{4}, fills them and adds a legend
+key "Geen gegevens" ("No data" in the English style). A colourbar has
+no key for it.}
 
 \item{legend}{Legend placement. \code{"topleft"} (default) puts the
 legend inside the panel at top-left -- in the empty North Sea
