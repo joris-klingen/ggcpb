@@ -103,3 +103,7 @@ not be found locally, the bundled Source Sans 3 (SIL OFL 1.1, see `inst/fonts/`)
 registers at all, the theme falls back to the ggplot2 default with a
 single warning. `cpb_register_fonts()` re-runs registration,
 `cpb_font_family()` reports the family in use.
+
+---
+
+All data in this document is made up. It is generated to show the figures and is not real data.

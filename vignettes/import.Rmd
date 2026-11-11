@@ -388,3 +388,7 @@ print(knitr::kable(
                 "Description")
 ))
 ```
+
+---
+
+All data in this document is made up. It is generated to show the figures and is not real data.

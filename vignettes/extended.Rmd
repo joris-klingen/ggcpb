@@ -936,3 +936,7 @@ options(ggcpb.style = "dutch") # style of the whole publication
 
 ```{r code-map-provinces, ref.label = c("data-map-provinces", "map-provinces"), echo = TRUE, eval = FALSE}
 ```
+
+---
+
+All data in this document is made up. It is generated to show the figures and is not real data.

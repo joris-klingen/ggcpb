@@ -1126,3 +1126,7 @@ options(ggcpb.style = "dutch") # style of the whole publication
 
 ```{r code-map, ref.label = c("data-map", "map"), echo = TRUE, eval = FALSE}
 ```
+
+---
+
+All data in this document is made up. It is generated to show the figures and is not real data.
