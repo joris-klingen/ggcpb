@@ -1,0 +1,9 @@
+"cat","grp","serie","pct"
+"jongen","geslacht","als centraal examen meetelt",8.7
+"jongen","geslacht","als centraal examen niet meetelt",8.7
+"meisje","geslacht","als centraal examen meetelt",9.7
+"meisje","geslacht","als centraal examen niet meetelt",5.1
+"laag","opleiding ouders","als centraal examen meetelt",11.2
+"laag","opleiding ouders","als centraal examen niet meetelt",8
+"hoog","opleiding ouders","als centraal examen meetelt",8.1
+"hoog","opleiding ouders","als centraal examen niet meetelt",6

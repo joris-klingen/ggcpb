@@ -684,6 +684,98 @@ ptab(plot_type = "hist", title = "Verdeling van de duur",
 repro("cpb_hist", "hist", "5.11", "code-hist")
 ```
 
+## Facets
+
+Every function takes a `facet` column. It splits the figure into one panel
+per value. The name of each panel is a bold text below it. Use `facet_ncol`
+for the number of panels next to each other. All panels share the same axis,
+so they can be compared. A figure with several panels is taller, so this one
+is saved with `height = 12`.
+
+```{r data-facets}
+regio_names <- c("stedelijk", "landelijk", "gemengd")
+regios <- expand_grid(regio = factor(regio_names, levels = regio_names),
+                      groep = factor(c("laag", "hoog"),
+                                     levels = c("laag", "hoog")),
+                      jaar  = 2019:2025) |>
+  mutate(waarde = round(3 + as.numeric(groep) +
+                          0.5 * sin(jaar - 2019 + as.numeric(regio)), 1))
+```
+
+::: {.figrow}
+
+```{r facets, fig.height = 12 / 2.54}
+cpb_line(regios, x = jaar, y = waarde, colour = groep,
+         facet = regio, facet_ncol = 1, colour_index = c(6, 2),
+         title = "Ontwikkeling per regio", ylab = "mld euro")
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-facets}
+ptab(plot_type = "line", title = "Ontwikkeling per regio",
+     x = "jaar", y = "waarde", colour = "groep", facet = "regio",
+     facet_ncol = 1, colour_index = "6;2", ylab = "mld euro", height = 12)
+```
+
+</div>
+
+:::
+
+```{r, results = "asis"}
+repro("cpb_line", "facets", "5.12", "code-facets")
+```
+
+## Grouped categories
+
+Facets split the figure into separate panels. The parameter `group` keeps
+all categories on one axis. The categories are placed in blocks, with a gap
+between the groups and the name of the group in bold below the labels. Each
+category belongs to one group. Use `group_gap` for the size of the gap. The
+names of the groups take the place of `xlab`, so use only one of the two.
+
+```{r data-col-grouped}
+cats <- c("jongen", "meisje", "laag", "hoog")
+grps <- c("geslacht", "opleiding ouders")
+zakkans <- tibble(
+  cat   = factor(rep(cats, each = 2), levels = cats),
+  grp   = factor(rep(grps, each = 4), levels = grps),
+  serie = rep(c("als centraal examen meetelt",
+                "als centraal examen niet meetelt"), 4),
+  pct   = c(8.7, 8.7, 9.7, 5.1, 11.2, 8.0, 8.1, 6.0)
+)
+```
+
+::: {.figrow}
+
+```{r col-grouped}
+cpb_col(zakkans, x = cat, y = pct, fill = serie, group = grp,
+        position = "dodge", colour_index = c(6, 2), width = 0.75,
+        value_breaks = seq(0, 12, 2), value_limits = c(0, 12),
+        title = "VWO", ylab = "zakkans (%)")
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-col-grouped}
+ptab(plot_type = "col", title = "VWO", x = "cat", y = "pct", fill = "serie",
+     group = "grp", position = "dodge", colour_index = "6;2", width = 0.75,
+     value_breaks = "0;2;4;6;8;10;12", value_limits = "0;12",
+     ylab = "zakkans (%)")
+```
+
+</div>
+
+:::
+
+```{r, results = "asis"}
+repro("cpb_col", "col-grouped", "5.13", "code-col-grouped")
+```
+
 ## Classed map
 
 The maps can display municipalities or provinces 
@@ -725,7 +817,7 @@ ptab(plot_type = "map", title = "Aandeel huishoudens met zonnepanelen",
 :::
 
 ```{r, results = "asis"}
-repro("cpb_map", "map", "5.12", "code-map")
+repro("cpb_map", "map", "5.14", "code-map")
 ```
 
 More options are in [`vignette("maps")`](maps.html).
@@ -866,6 +958,20 @@ options(ggcpb.style = "dutch") # style of the whole publication
 ## Histogram
 
 ```{r code-hist, ref.label = c("data-hist", "hist"), echo = TRUE, eval = FALSE}
+```
+
+<a id="code-facets"></a>
+
+## Facets
+
+```{r code-facets, ref.label = c("data-facets", "facets"), echo = TRUE, eval = FALSE}
+```
+
+<a id="code-col-grouped"></a>
+
+## Grouped categories
+
+```{r code-col-grouped, ref.label = c("data-col-grouped", "col-grouped"), echo = TRUE, eval = FALSE}
 ```
 
 <a id="code-map"></a>
