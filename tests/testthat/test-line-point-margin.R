@@ -96,7 +96,8 @@ test_that("a stacked total a rounding error over 100 is drawn, not censored", {
     ))
   }
 
-  col <- cpb_col(d, x = jaar, y = share, fill = grp, pct_axis = TRUE)
+  col <- cpb_col(d, x = jaar, y = share, fill = grp, pct_axis = TRUE,
+                 position = "stack")
   expect_false(has_na(col))
 
   area <- cpb_area(d, x = jaar, y = share, fill = grp, pct_axis = TRUE)
@@ -138,7 +139,9 @@ test_that("the axis covers every stack as ggplot2 draws it", {
   fac <- data.frame(x = rep(c("a", "b"), 4),
                     s = rep(c("s1", "s1", "s2", "s2"), 2),
                     j = rep(c("2020", "2021"), each = 4), y = rep(c(10, 20), 4))
-  expect_equal(y_lims(cpb_col(fac, x = x, y = y, fill = s, facet = j))[2], 40)
+  stacked <- cpb_col(fac, x = x, y = y, fill = s, facet = j,
+                     position = "stack")
+  expect_equal(y_lims(stacked)[2], 40)
   expect_equal(y_lims(cpb_area(transform(fac, x = rep(1:2, 4)), x = x, y = y,
                                fill = s, facet = j))[2], 40)
 })

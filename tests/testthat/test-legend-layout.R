@@ -212,15 +212,19 @@ test_that("legend key pixel is invariant to chart type", {
   # rect keys: their leftmost/lowest blue pixel is the key's own corner
   rect_variants <- list(
     col_dodge      = cpb_col(cat2, x = x, y = y, fill = g, position = "dodge",
+                             reverse_legend = TRUE,
                              colour_index = c(6, 2), title = "t"),
-    col_stack      = cpb_col(cat2, x = x, y = y, fill = g,
+    col_stack      = cpb_col(cat2, x = x, y = y, fill = g, position = "stack",
+                             reverse_legend = TRUE,
                              colour_index = c(6, 2), title = "t"),
     col_horizontal = cpb_col(cat2, x = x, y = y, fill = g, position = "dodge",
-                             orientation = "horizontal",
+                             orientation = "horizontal", reverse_legend = TRUE,
                              colour_index = c(6, 2), title = "t"),
     area           = cpb_area(num2, x = x, y = y, fill = g,
+                              reverse_legend = TRUE,
                               colour_index = c(6, 2), title = "t"),
     hist           = cpb_hist(hist_df, x = v, fill = g, binwidth = 1,
+                              reverse_legend = TRUE,
                               colour_index = c(6, 2), title = "t"),
     box            = cpb_box(box_df,
                              x = x, p5 = p5, p25 = p25, p50 = p50,
@@ -230,6 +234,7 @@ test_that("legend key pixel is invariant to chart type", {
     col_facet      = cpb_col(transform(cat2,
                                        f = rep(c("paneel 1", "paneel 2"), 2)),
                              x = x, y = y, fill = g, position = "dodge",
+                             reverse_legend = TRUE,
                              facet = f, colour_index = c(6, 2), title = "t")
   )
   # line keys: stroke centred in the key box, so bottoms sit ~half a
@@ -383,4 +388,15 @@ test_that("a level with no observations still gets a coloured legend glyph", {
   expect_true(drawn(blues(cpb_line(d, x, y, colour = g))))
   expect_true(drawn(blues(cpb_scatter(d, x, y, colour = g))))
   expect_true(drawn(blues(cpb_dot(d, x, y, lower = y, upper = y, colour = g))))
+})
+
+test_that("cpb_col keeps the legend order unless reverse_legend is TRUE", {
+  d <- data.frame(x = rep(c("a", "b"), 2), g = rep(c("s1", "s2"), each = 2),
+                  y = 1:4)
+  rev_of <- function(...) {
+    cpb_col(d, x = x, y = y, fill = g, ...)$guides$guides$fill$params$reverse
+  }
+  expect_false(isTRUE(rev_of()))
+  expect_false(isTRUE(rev_of(position = "stack")))
+  expect_true(isTRUE(rev_of(position = "stack", reverse_legend = TRUE)))
 })

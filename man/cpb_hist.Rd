@@ -21,7 +21,7 @@ cpb_hist(
   value_crop = FALSE,
   x_lim = NULL,
   x_lim_follow_data = FALSE,
-  reverse_legend = TRUE,
+  reverse_legend = FALSE,
   legend_ncol = NULL,
   legend_nrow = NULL,
   facet = NULL,
@@ -126,8 +126,8 @@ binning itself. \code{NULL} (default) shows the full range.}
 outer bin edges instead of on round values. Both ends are still
 labelled. Defaults to \code{FALSE}. Ignored when \code{x_lim} is set.}
 
-\item{reverse_legend}{If \code{TRUE} (default), reverse the fill legend
-order via \code{guide_legend(reverse = TRUE)}.}
+\item{reverse_legend}{If \code{TRUE}, reverse the fill legend
+order via \code{guide_legend(reverse = TRUE)}. Defaults to \code{FALSE}.}
 
 \item{legend_ncol}{Number of columns to lay the legend keys out in,
 passed to \code{guide_legend(ncol = )}. \code{NULL} (default) keeps

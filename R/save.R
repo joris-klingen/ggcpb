@@ -72,6 +72,17 @@ print.cpb_plot <- function(x, newpage = is.null(vp), vp = NULL, ...) {
   NextMethod()
 }
 
+# The number of rows of panels of a faceted plot, 1 without facets.
+# @noRd
+cpb_facet_rows <- function(plot) {
+  if (inherits(plot$facet, "FacetNull")) return(1L)
+  rows <- tryCatch(
+    max(ggplot2::ggplot_build(plot)$layout$layout$ROW),
+    error = function(e) 1L
+  )
+  if (!is.finite(rows) || rows < 1) 1L else as.integer(rows)
+}
+
 # Draws x the way save_cpb() does (tick-label gap, right axis margin,
 # fixed figure top and bottom, sec_ylab), at whatever size print()
 # lands on. `newpage` and `vp` work as in ggplot2's print().
@@ -951,7 +962,9 @@ cpb_ggsave_grob <- function(filename, grob, dpi, device, bg, width = NULL,
 #'   page's full width, and works as `"report"` for any other plot.
 #'   Ignored if `height` is supplied explicitly.
 #' @param height Explicit height in inches. `NULL` (default) uses
-#'   `preset` to determine the height.
+#'   `preset` to determine the height. A faceted plot is that height
+#'   times its number of rows of panels, so two columns of four panels
+#'   are twice as tall.
 #' @param width Explicit width in inches. Must be `7.5 / 2.54`,
 #'   `15.5 / 2.54` or `6.8 / 2.54`.
 #'   `NULL` (default) uses `page` to determine the width.
@@ -1055,6 +1068,10 @@ save_cpb <- function(filename,
       cpb_cm_to_in(cpb_page_height_cm[[page]])
     }
   }
+
+  # a faceted figure is as many standard heights tall as it has rows of
+  # panels, unless the height was given
+  if (height_auto) height <- height * cpb_facet_rows(plot)
 
   plot <- cpb_scale_y_lab_gap(plot, cpb_in_to_cm(width))
 

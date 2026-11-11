@@ -1414,9 +1414,12 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   one group; groups and categories follow their factor-level order.
 #'   The group labels occupy the x-axis-title line, so `xlab` is not
 #'   available; vertical charts only.
+#' @param width Width of the bars, as a share of the room of one
+#'   category. `NULL` (default) is `0.9`.
 #' @param group_gap Gap between group blocks, in category widths;
 #'   defaults to `0.8`.
-#' @param position One of `"stack"` (default), `"dodge"`, or `"fill"`.
+#' @param position One of `"dodge"` (default, the columns next to each
+#'   other), `"stack"` or `"fill"`.
 #' @param orientation `"vertical"` (default) or `"horizontal"` (adds
 #'   [ggplot2::coord_flip()] and is forwarded to [theme_cpb()]).
 #' @param sec_y Optional column (tidy eval) holding a series to draw
@@ -1572,9 +1575,10 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   two bars (e.g. `2025.5`) so no bar is cut.
 #' @param forecast_label Label for the forecast window; defaults to
 #'   `"raming"`. Use `NULL` (or `""`) for no label.
-#' @param reverse_legend If `TRUE` (default), reverse the fill legend
-#'   order via `guide_legend(reverse = TRUE)` -- stacking otherwise
-#'   makes the legend order counter-intuitive.
+#' @param reverse_legend If `TRUE`, reverse the fill legend order via
+#'   `guide_legend(reverse = TRUE)`. The default `FALSE` keeps the order of
+#'   the series. A stack reads from the bottom up when it is `TRUE`, and
+#'   so do horizontal dodged bars that list their levels in reverse.
 #' @param legend_ncol Number of columns to lay the legend keys out in,
 #'   passed to `guide_legend(ncol = )`. `NULL` (default) keeps
 #'   the house 3 keys per column, filled column by column. A set
@@ -1642,7 +1646,7 @@ cpb_col <- function(data, x, y, fill = NULL,
                     fill_colour = NULL,
                     group = NULL,
                     group_gap = 0.8,
-                    position = c("stack", "dodge", "fill"),
+                    position = c("dodge", "stack", "fill"),
                     orientation = c("vertical", "horizontal"),
                     sec_y = NULL,
                     sec_type = c("line", "point", "col"),
@@ -1671,7 +1675,7 @@ cpb_col <- function(data, x, y, fill = NULL,
                     x_ticks_ends = FALSE,
                     forecast_x = NULL,
                     forecast_label = "raming",
-                    reverse_legend = TRUE,
+                    reverse_legend = FALSE,
                     legend_ncol = NULL,
                     legend_nrow = NULL,
                     facet = NULL,
@@ -1691,6 +1695,7 @@ cpb_col <- function(data, x, y, fill = NULL,
                     ylab = NULL,
                     legend_title = NULL,
                     style = getOption("ggcpb.style", "dutch"),
+                    width = NULL,
                     ...) {
   style <- match.arg(style, c("dutch", "english"))
   .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette),
@@ -1699,6 +1704,8 @@ cpb_col <- function(data, x, y, fill = NULL,
   palette <- .cpb_idx$palette
   position <- match.arg(position)
   orientation <- match.arg(orientation)
+  # passing width = NULL on would make ggplot2 warn about an empty aesthetic
+  width_arg <- if (is.null(width)) list() else list(width = width)
   sec_type <- match.arg(sec_type)
 
   x <- rlang::enquo(x)
@@ -1790,14 +1797,15 @@ cpb_col <- function(data, x, y, fill = NULL,
     # line/point/col key (see the "sec_y helpers" block near the top
     # of this file). Naming fill = TRUE, colour = FALSE keeps the key
     # in the one guide it actually belongs to.
-    ggplot2::geom_col(position = position,
-                      show.legend = c(fill = TRUE, colour = FALSE),
-                      key_glyph = "rect", ...)
+    rlang::exec(ggplot2::geom_col, position = position,
+                show.legend = c(fill = TRUE, colour = FALSE),
+                key_glyph = "rect", !!!width_arg, ...)
   } else {
     # No fill mapping and no secondary axis: draw one flat house-style
     # colour (CPB primary blue by default) rather than ggplot2's grey,
     # with no legend -- a single-series bar chart needs none.
-    ggplot2::geom_col(position = position, fill = single_fill, ...)
+    rlang::exec(ggplot2::geom_col, position = position, fill = single_fill,
+                !!!width_arg, ...)
   }
 
   # the axis spans the bars as drawn: a stack reaches its total
@@ -1828,7 +1836,7 @@ cpb_col <- function(data, x, y, fill = NULL,
   p <- p + cpb_forecast_label(forecast_x, rlang::eval_tidy(x, data),
                               forecast_label, style = style)
 
-  bar_width <- list(...)$width
+  bar_width <- width
   if (is.null(bar_width)) {
     xvals_for_width <- rlang::eval_tidy(x, data)
     bar_width <- if (is.numeric(xvals_for_width) ||
@@ -1982,8 +1990,8 @@ cpb_col <- function(data, x, y, fill = NULL,
 #'   range, without dropping data -- applied as a coordinate-system
 #'   zoom ([ggplot2::coord_cartesian()] `xlim`). `NULL` (default) shows
 #'   the full range.
-#' @param reverse_legend If `TRUE` (default), reverse the fill legend
-#'   order via `guide_legend(reverse = TRUE)`.
+#' @param reverse_legend If `TRUE`, reverse the fill legend
+#'   order via `guide_legend(reverse = TRUE)`. Defaults to `FALSE`.
 #' @param forecast_x Optional x value where the forecast window
 #'   starts; overlaid and labelled as in [cpb_line()].
 #' @param legend Legend position, forwarded to [theme_cpb()].
@@ -2035,7 +2043,7 @@ cpb_area <- function(data, x, y, fill,
                      x_ticks_ends = FALSE,
                      forecast_x = NULL,
                      forecast_label = "raming",
-                     reverse_legend = TRUE,
+                     reverse_legend = FALSE,
                      legend_ncol = NULL,
                      legend_nrow = NULL,
                      facet = NULL,
@@ -2660,6 +2668,10 @@ cpb_line <- function(data, x, y, colour = NULL,
 #'   errorbars in the `"ggcpb"` style. Defaults to `0.25`, matching
 #'   the thin strokes of the published CPB distributional figures.
 #' @inheritParams cpb_col
+#' @param colour_index Which house colours the series get, as for
+#'   [cpb_col()]. For the `"james"` and `"modern"` styles, which have no
+#'   `fill` mapping, the positions colour the boxes instead: one position
+#'   per `group`, or one per row of `data`, recycled.
 #' @param value_axis Where the value axis is drawn: `"bottom"`
 #'   (default) or `"top"`. `"top"` places the numeric scale along the
 #'   top of the panel, the convention of the CPB koopkracht figures;
@@ -2900,6 +2912,18 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
   # column and mapped with I(), because ggplot2 reorders rows by axis
   # position and a plain parameter vector would not travel with them.
   row_cols <- NULL
+  # colour_index gives the same, by palette position: one position per
+  # group (with `group`), else one per row, recycled
+  if (box_style != "ggcpb" && is.null(fill_colour) && !has_fill &&
+        !is.null(index)) {
+    pal <- unname(cpb_cols(index, palette = palette))
+    grp_val <- if (has_group) factor(rlang::eval_tidy(group, data))
+    fill_colour <- if (!is.null(grp_val) && nlevels(grp_val) == length(pal)) {
+      pal[as.integer(grp_val)]
+    } else {
+      rep_len(pal, nrow(data))
+    }
+  }
   if (box_style != "ggcpb" && length(fill_colour) > 1) {
     data <- as.data.frame(data)
     data[["cpb__boxcol"]] <- rep_len(fill_colour, nrow(data))
@@ -3467,8 +3491,8 @@ cpb_hist_bin_args <- function(xvals, binwidth, bins, dots, facet_scales) {
 #' @param x_lim_follow_data If `TRUE`, the `x` axis ends exactly at the
 #'   outer bin edges instead of on round values. Both ends are still
 #'   labelled. Defaults to `FALSE`. Ignored when `x_lim` is set.
-#' @param reverse_legend If `TRUE` (default), reverse the fill legend
-#'   order via `guide_legend(reverse = TRUE)`.
+#' @param reverse_legend If `TRUE`, reverse the fill legend
+#'   order via `guide_legend(reverse = TRUE)`. Defaults to `FALSE`.
 #' @param legend Legend position, forwarded to [theme_cpb()].
 #' @param zeroline If `TRUE` (default), draw a solid black line at
 #'   zero on the count axis on top of the bars.
@@ -3502,7 +3526,7 @@ cpb_hist <- function(data, x, fill = NULL,
                      value_crop = FALSE,
                      x_lim = NULL,
                      x_lim_follow_data = FALSE,
-                     reverse_legend = TRUE,
+                     reverse_legend = FALSE,
                      legend_ncol = NULL,
                      legend_nrow = NULL,
                      facet = NULL,

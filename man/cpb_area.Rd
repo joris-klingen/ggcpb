@@ -35,7 +35,7 @@ cpb_area(
   x_ticks_ends = FALSE,
   forecast_x = NULL,
   forecast_label = "raming",
-  reverse_legend = TRUE,
+  reverse_legend = FALSE,
   legend_ncol = NULL,
   legend_nrow = NULL,
   facet = NULL,
@@ -240,8 +240,8 @@ starts; overlaid and labelled as in \code{\link[=cpb_line]{cpb_line()}}.}
 \item{forecast_label}{Label for the forecast window; defaults to
 \code{"raming"}. Use \code{NULL} (or \code{""}) for no label.}
 
-\item{reverse_legend}{If \code{TRUE} (default), reverse the fill legend
-order via \code{guide_legend(reverse = TRUE)}.}
+\item{reverse_legend}{If \code{TRUE}, reverse the fill legend
+order via \code{guide_legend(reverse = TRUE)}. Defaults to \code{FALSE}.}
 
 \item{legend_ncol}{Number of columns to lay the legend keys out in,
 passed to \code{guide_legend(ncol = )}. \code{NULL} (default) keeps

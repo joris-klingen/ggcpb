@@ -690,3 +690,20 @@ test_that("save_cpb warns for a title of more than two lines, not for two", {
                           cpb_line(d, x = x, y = y, title = "een\ntwee\ndrie")),
                  "more than two lines")
 })
+
+test_that("a faceted figure is as tall as its rows of panels", {
+  d <- data.frame(x = rep(1:3, 4), y = 1:12,
+                  f = rep(c("a", "b", "c", "d"), each = 3))
+  height_of <- function(p, ...) {
+    f <- tempfile(fileext = ".png")
+    suppressMessages(save_cpb(f, p, page = "full", ...))
+    dim(png::readPNG(f))[1] / 300
+  }
+  one <- cpb_line(d, x = x, y = y)
+  two <- cpb_line(d, x = x, y = y, facet = f, facet_ncol = 2)
+  expect_equal(cpb_facet_rows(one), 1L)
+  expect_equal(cpb_facet_rows(two), 2L)
+  expect_equal(height_of(two), 2 * height_of(one), tolerance = 0.01)
+  # an explicit height wins
+  expect_equal(height_of(two, height = 4), 4, tolerance = 0.01)
+})

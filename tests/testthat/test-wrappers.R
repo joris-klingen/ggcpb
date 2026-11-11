@@ -1418,7 +1418,8 @@ test_that("cpb_col(sec_y) rescales a line onto a secondary axis", {
                    soort = rep(c("a", "b"), each = 3),
                    klein = rep(c(0.5, 1, 1.5), 2))
   p <- cpb_col(df, x = jaar, y = v, fill = soort, sec_y = klein,
-               sec_limits = c(0, 2), sec_legend_label = "klein")
+               position = "stack", sec_limits = c(0, 2),
+               sec_legend_label = "klein")
   sc <- p$scales$get_scales("y")
   expect_s3_class(sc$secondary.axis, "AxisSecondary")
   # the primary stack tops out at 15, so the secondary maximum of 2
@@ -2537,4 +2538,16 @@ test_that("a tick label names the value its tick sits at", {
   expect_equal(sc$get_labels(br),
                c("0,52", "0,63", "0,74", "0,85", "0,96", "1,07", "1,18"))
   expect_equal(length(unique(round(diff(br), 9))), 1)
+})
+
+test_that("cpb_box colours james boxes by palette position per group", {
+  d <- data.frame(x = factor(c("a", "b", "c", "d"), levels = letters[1:4]),
+                  g = factor(c("g1", "g1", "g2", "g3")),
+                  p5 = 0, p25 = 1, p50 = 2, p75 = 3, p95 = 4)
+  p <- cpb_box(d, x = x, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+               group = g, box_style = "james", colour_index = c(7, 5, 2))
+  cols <- unlist(lapply(ggplot2::ggplot_build(p)$data, function(l) {
+    c(l$fill, l$colour)
+  }))
+  expect_true(all(unname(cpb_cols(c(7, 5, 2))) %in% cols))
 })

@@ -12,7 +12,7 @@ cpb_col(
   fill_colour = NULL,
   group = NULL,
   group_gap = 0.8,
-  position = c("stack", "dodge", "fill"),
+  position = c("dodge", "stack", "fill"),
   orientation = c("vertical", "horizontal"),
   sec_y = NULL,
   sec_type = c("line", "point", "col"),
@@ -41,7 +41,7 @@ cpb_col(
   x_ticks_ends = FALSE,
   forecast_x = NULL,
   forecast_label = "raming",
-  reverse_legend = TRUE,
+  reverse_legend = FALSE,
   legend_ncol = NULL,
   legend_nrow = NULL,
   facet = NULL,
@@ -61,6 +61,7 @@ cpb_col(
   ylab = NULL,
   legend_title = NULL,
   style = getOption("ggcpb.style", "dutch"),
+  width = NULL,
   ...
 )
 }
@@ -96,7 +97,8 @@ available; vertical charts only.}
 \item{group_gap}{Gap between group blocks, in category widths;
 defaults to \code{0.8}.}
 
-\item{position}{One of \code{"stack"} (default), \code{"dodge"}, or \code{"fill"}.}
+\item{position}{One of \code{"dodge"} (default, the columns next to each
+other), \code{"stack"} or \code{"fill"}.}
 
 \item{orientation}{\code{"vertical"} (default) or \code{"horizontal"} (adds
 \code{\link[ggplot2:coord_flip]{ggplot2::coord_flip()}} and is forwarded to \code{\link[=theme_cpb]{theme_cpb()}}).}
@@ -280,9 +282,10 @@ two bars (e.g. \code{2025.5}) so no bar is cut.}
 \item{forecast_label}{Label for the forecast window; defaults to
 \code{"raming"}. Use \code{NULL} (or \code{""}) for no label.}
 
-\item{reverse_legend}{If \code{TRUE} (default), reverse the fill legend
-order via \code{guide_legend(reverse = TRUE)} -- stacking otherwise
-makes the legend order counter-intuitive.}
+\item{reverse_legend}{If \code{TRUE}, reverse the fill legend order via
+\code{guide_legend(reverse = TRUE)}. The default \code{FALSE} keeps the order of
+the series. A stack reads from the bottom up when it is \code{TRUE}, and
+so do horizontal dodged bars that list their levels in reverse.}
 
 \item{legend_ncol}{Number of columns to lay the legend keys out in,
 passed to \code{guide_legend(ncol = )}. \code{NULL} (default) keeps
@@ -347,6 +350,9 @@ labels).
 Taken from \code{getOption("ggcpb.style")}, so an English report can set
 \code{options(ggcpb.style = "english")} once rather than passing \code{style} to
 every figure and risking a stray Dutch decimal comma.}
+
+\item{width}{Width of the bars, as a share of the room of one
+category. \code{NULL} (default) is \code{0.9}.}
 
 \item{...}{Further arguments passed to \code{\link[ggplot2:geom_col]{ggplot2::geom_col()}}.}
 }
