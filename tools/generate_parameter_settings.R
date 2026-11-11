@@ -69,14 +69,15 @@ literal_examples <- c(
   facet_ncol       = "2",
   bins             = "30",
   binwidth         = "5",
+  width            = "0.75",
   box_labels       = "TRUE",
   dot_labels       = "p5:bottom 5%;p95:top 5%",
   zeroline         = "TRUE",
-  colour_index     = "2;6",
+  colour_index     = "`2;6`, `continuous`",
   x_labels         = "`euro`, `number`, `pct` or labels such as `a;b;c`",
   sec_axis_labels  = "`pct`, `number`, `euro` or labels such as `a;b;c`",
   border_colour    = "white",
-  na_fill          = "lightgrey",
+  na_fill          = "`4`, `lightgrey`",
   label_colour     = "white",
   value_axis       = "bottom",
   sec_at           = "0;50;100",
@@ -125,8 +126,8 @@ descriptions <- c(
   group = "The column that splits the data into groups.",
   group_gap = "The space between the groups, in bar widths.",
   position = paste0(
-    "How bars of one category are placed: on top of each other ",
-    "(`stack`), next to each other (`dodge`) or as shares of 100% ",
+    "How bars of one category are placed: next to each other ",
+    "(`dodge`), on top of each other (`stack`) or as shares of 100% ",
     "(`fill`)."
   ),
   orientation = "Draws the figure upright (vertical) or turned (horizontal).",
@@ -157,7 +158,8 @@ descriptions <- c(
   palette = "The colour set used for the categories.",
   colour_index = paste0(
     "Which house colours to use, by number. The first number is for the ",
-    "first category."
+    "first category. `continuous` gives a ramp from light to dark, for ",
+    "ordered classes."
   ),
   pct_axis = "TRUE writes the values on the axis as percentages.",
   value_accuracy = paste0(
@@ -279,7 +281,12 @@ descriptions <- c(
     "TRUE reverses the colours of the gradient of a numeric `value` ",
     "column."
   ),
-  na_fill = "The colour of regions without a value.",
+  na_fill = paste0(
+    "The colour of regions without a value. Blank leaves them unfilled and ",
+    "out of the legend. A number is a position in the house colours, a ",
+    "colour name or hexadecimal code works too. The legend then names them ",
+    "Geen gegevens, or No data in the English style."
+  ),
   panel_fill = "The colour behind the figure.",
   value_axis_linewidth = "The width of the line of the value axis.",
   zero_indicator = "TRUE draws a thick white line at zero behind the data.",

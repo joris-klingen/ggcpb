@@ -1,0 +1,16 @@
+"cat","grp","p50","p25","p75","p5","p95"
+"Totaal","Totaal",0.09,-0.077,0.184,-0.23,0.324
+"tot 120% wml","Inkomensgroepen",0.02,-0.069,0.146,-0.214,0.236
+"120% wml - mod.","Inkomensgroepen",0.07,-0.022,0.206,-0.18,0.334
+"1 - 1,5x mod.","Inkomensgroepen",0.07,-0.098,0.155,-0.238,0.353
+"1,5 - 2x mod.","Inkomensgroepen",0.06,-0.056,0.227,-0.219,0.425
+"2 - 3x mod.","Inkomensgroepen",0.04,-0.034,0.11,-0.169,0.238
+"boven 3x mod.","Inkomensgroepen",0.05,-0.103,0.213,-0.271,0.304
+"nog extra boven","Inkomensgroepen",0.04,-0.104,0.131,-0.235,0.271
+"groep 8","Inkomensgroepen",0.05,-0.021,0.178,-0.193,0.383
+"groep 9","Inkomensgroepen",0.06,-0.067,0.194,-0.193,0.383
+"Werkenden","Inkomensbron",0.09,-0.074,0.177,-0.251,0.294
+"Uitkeringsgerechtigden","Inkomensbron",0.04,-0.044,0.206,-0.165,0.299
+"Gepensioneerden","Inkomensbron",0.05,-0.049,0.12,-0.23,0.273
+"Inkomensbron 4","Inkomensbron",0.06,-0.11,0.225,-0.227,0.433
+"Inkomensbron 5","Inkomensbron",0.07,-0.039,0.159,-0.224,0.338
