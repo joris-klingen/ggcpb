@@ -1,20 +1,13 @@
 # ggcpb
 
-`ggcpb` encodes the CPB (Centraal Planbureau) house plotting style on
-a `ggplot2` backend: a theme, colour palettes and scales, Dutch-locale
-number formatters, a figure export helper, and high-level wrappers for
-the common CPB chart types. Everything returns real `ggplot` objects
-that you can keep extending with `+`.
+`ggcpb` is the new version of James. It draws figures in the 
+CPB house style from Excel or from R. 
 
-**New to ggcpb? Start with the introduction:
+**New to ggcpb? Download the introduction file and open it in your browser:
 [introduction](doc/introduction.html).**
 It shows how to create figures with Excel and/or R.
 
-> **Status: work in progress.** The style is calibrated against a set
-> of published reference figures, but robustness still needs to be
-> checked and improved (edge cases, unusual data shapes, device/font
-> environments), and wrappers for more chart types will be added
-> later. 
+> **Status: in development.** 
 
 ## Documentation
 
@@ -27,8 +20,8 @@ and choose "Download raw file".
 - **[Import](doc/import.html)** -- `vignette("import")`: building
   figures from CSV files, with Excel and without R.
 - **[Extended information](doc/extended.html)** --
-  `vignette("extended")`: more colours, columns, boxplot styles and
-  maps, and what is possible in R only.
+  `vignette("extended")`: extended information about colours, columns, 
+  boxplot styles and maps, and extra functionalities in R.
 
 The HTML files are made from `vignettes/` with
 `Rscript tools/render_vignettes.R`.
@@ -51,10 +44,22 @@ remotes::install_github("joris-klingen/ggcpb")
 Then load it with `library(ggcpb)`. The code is on
 <https://github.com/joris-klingen/ggcpb>.
 
-To develop the package, use
-`devtools::load_all("path/to/ggcpb")` on a checkout.
+## Quick start in Excel
 
-## Quick start
+This is the general workflow to create figures with ggcpb without using R:
+
+1. Find the most recent ggcpb version (and install it following the steps above).
+2. Copy it to the place where you want to create figures.
+3. Put your datasets in the folder `data`. 
+   Open `params.csv` in Excel and describe your figures.
+4. Start `generate_plot.bat` by double clicking it. This runs the `generate_plot.R` script.
+   Your figures appear in the folder `generated`. Each image is named after
+   its dataset. Running the script again produces updated figures. 
+   Images with the same name are replaced. A dataset or figure that 
+   fails is skipped and listed at the end, and in `params_log.txt`. 
+   The other figures are still saved.
+
+## How to use ggcpb in R?
 
 ```r
 library(ggcpb)
@@ -66,66 +71,35 @@ cpb_col(df, x = jaar, y = waarde, fill = groep,
   title = "Waarde per groep",
   ylab  = "mld euro")
 ```
+The CPB plotting functions accept a data.frame or data.table
+plus tidy-eval column arguments:
 
-The wrappers -- `cpb_line()`, `cpb_col()`, `cpb_box()`,
-`cpb_boxplot_extended()`, `cpb_dot()`, `cpb_scatter()`, `cpb_hist()`,
-`cpb_donut()` and `cpb_map()` -- accept a data.frame or data.table
-plus tidy-eval column arguments,
-and apply `theme_cpb()` and a CPB scale: the published-figure look
-(hairline black gridlines at labelled breaks, category-axis ticks,
-black zero line, flush-left bottom legend). Time-series wrappers can
-mark a forecast window (`forecast_x`) and `cpb_line()` can draw an
-uncertainty band (`ymin`/`ymax`). Every style element is also an
-individual argument for per-figure deviations.
-
-On top of the wrappers sits the composable core: `theme_cpb()`,
-`cpb_pal()`/`cpb_cols()`/`cpb_tokens()`, discrete/continuous/manual
-`scale_*_cpb_*()` scales, the `label_euro_nl()`/`label_pct_nl()`/
-`label_number_nl()` formatters, and `save_cpb()` for export at the
-strict CPB half/full page widths.
+```r
+# Line chart
+cpb_line(data = df, x = year, y = value)
+# Bar chart
+cpb_col(data = df, x = year, y = value, fill = group)
+# Box plot
+cpb_box(data = df, x = group, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95)
+# Dot plot
+cpb_dot(data = df, x = term, y = estimate, lower = lower, upper = upper)
+# Donut chart
+cpb_donut(data = df, fill = group, y = share)
+# Scatter plot
+cpb_scatter(data = df, x = income, y = spending)
+# Histogram
+cpb_hist(data = df, x = duration)
+# Map
+cpb_map(data = df, region = code, value = share)
+```
 
 ## Fonts
 
-The house font, Rijksoverheid Sans Text, may not be published, so it
-is not in this repository. 
-
-Without it, the bundled Source Sans 3 (SIL OFL 1.1, see `inst/fonts/`)
-stands in. Its text runs about 10-15% wider. `save_cpb()` and printing
-a chart then warn that the figure does not meet the Rijkshuisstijl.
+The house font, Rijksoverheid Sans Text is not in this repository,
+because it may not be published. If the Rijksoverheid font can
+not be found locally, the bundled Source Sans 3 (SIL OFL 1.1, see `inst/fonts/`) stands in.
+`save_cpb()` and printing a chart then warn that the figure does not meet the Rijkshuisstijl.
 `options(ggcpb.font_warning = FALSE)` turns that off. If no font
 registers at all, the theme falls back to the ggplot2 default with a
 single warning. `cpb_register_fonts()` re-runs registration,
 `cpb_font_family()` reports the family in use.
-
-Point it at a directory to register your own fonts alongside the house
-one -- family and regular/bold/italic face are read from each file's
-metadata, falling back to the file name:
-
-```r
-cpb_register_fonts(path = "~/fonts", recursive = TRUE)
-```
-
-Registering a font does not by itself teach a graphics device about
-it: on the base Windows device that shows up as `"font family not
-found in Windows font database"` even though the font is registered.
-`cpb_register_fonts()` therefore calls `showtext::showtext_auto()` by
-default, which draws text on *any* device. (Attaching the package does
-not -- `.onLoad` registers with `enable_showtext = FALSE`, so
-`library(ggcpb)` never changes how the rest of your session renders
-text.) The `ragg`/`svglite` devices consult `systemfonts` and need
-none of this, which is why `save_cpb()` works either way.
-
-With showtext on, keep its DPI equal to the device's or text comes out
-the wrong size while the rest of the plot is fine:
-
-```r
-showtext::showtext_opts(dpi = 300)
-ggsave("fig.png", p, dpi = 300)
-showtext::showtext_opts(dpi = 96)   # back to screen
-```
-
-## Tests
-
-```r
-devtools::test()
-```

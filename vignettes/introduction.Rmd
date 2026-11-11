@@ -107,6 +107,25 @@ used plotting package in R. This brings the following benefits:
 * **Easier to maintain.** ggcpb adds a thin layer to a well tested
   package.
 
+## Before you start: Install ggcpb
+
+**Follow the following steps to install ggcpb:**
+
+Open RStudio and type in the Terminal tab:
+
+```
+R -e "install.packages('remotes'); remotes::install_github('joris-klingen/ggcpb')"
+```
+
+Or type in the R Console:
+
+```r
+install.packages("remotes")
+remotes::install_github("joris-klingen/ggcpb")
+```
+
+Then load it with `library(ggcpb)`.
+
 ## What you need to know to use ggcpb in Excel
 
 This is the general workflow to create figures with ggcpb without using R:
