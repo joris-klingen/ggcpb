@@ -28,13 +28,7 @@ The HTML files are made from `vignettes/` with
 
 ## Install
 
-Open RStudio and type in the Terminal tab:
-
-```
-R -e "install.packages('remotes'); remotes::install_github('joris-klingen/ggcpb')"
-```
-
-Or type in the R Console:
+Open RStudio and type in the Console:
 
 ```r
 install.packages("remotes")
