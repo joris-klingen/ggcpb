@@ -7,8 +7,8 @@ the common CPB chart types. Everything returns real `ggplot` objects
 that you can keep extending with `+`.
 
 **New to ggcpb? Start with the introduction:
-[doc/introduction.pdf](doc/introduction.pdf).** It shows how to create
-figures with Excel and/or R.
+[introduction](https://joris-klingen.github.io/ggcpb/introduction.html).**
+It shows how to create figures with Excel and/or R.
 
 > **Status: work in progress.** The style is calibrated against a set
 > of published reference figures, but robustness still needs to be
@@ -18,8 +18,14 @@ figures with Excel and/or R.
 
 ## Documentation
 
-- **[Import](doc/import.pdf)** -- `vignette("import")`: building figures
-  from CSV files, with Excel and without R.
+- **[Introduction](https://joris-klingen.github.io/ggcpb/introduction.html)**
+  -- `vignette("introduction")`: creating figures with Excel and/or R.
+- **[Import](https://joris-klingen.github.io/ggcpb/import.html)** --
+  `vignette("import")`: building figures from CSV files, with Excel and
+  without R.
+- **[Extended information](https://joris-klingen.github.io/ggcpb/extended.html)**
+  -- `vignette("extended")`: more colours, columns, boxplot styles and
+  maps, and what is possible in R only.
 - **[Setup](doc/ggcpb.md)** -- `vignette("ggcpb")`: the basic idea in
   a couple of plots -- one wrapper call, how it relates to ggplot2,
   using only the theme without the wrappers, and export.
@@ -40,9 +46,10 @@ figures with Excel and/or R.
 - **[Maps](doc/maps.md)** -- `vignette("maps")`: choropleths of the
   Netherlands at municipality, COROP or province level.
 
-The links point to rendered versions (with figures) in `doc/`. The introduction
-and the import vignette are PDFs, the others markdown files. They are
-regenerated from `vignettes/` with `Rscript tools/render_vignettes.R`.
+The first three links point to the HTML vignettes on GitHub Pages, in the CPB
+style. The others are markdown files with figures in `doc/`, regenerated from
+`vignettes/` with `Rscript tools/render_vignettes.R`. The same script makes a
+PDF of the first three (it needs Chrome). The PDFs are not in git.
 
 ## Install / load
 

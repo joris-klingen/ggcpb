@@ -36,6 +36,13 @@ ggcpb.Rproj
 # testthat writes failing tests here during a run
 /tests/testthat/_problems/
 
-# the rendered vignette HTML is made on the fly (and printed to the PDFs in
-# doc/ by tools/render_vignettes.R); only the .Rmd source is tracked
+# The rendered HTML of the three main vignettes is tracked. The other
+# rendered HTML is made on the fly and is not.
 vignettes/*.html
+!vignettes/introduction.html
+!vignettes/import.html
+!vignettes/extended.html
+
+# PDFs of the vignettes are made locally by tools/render_vignettes.R and are
+# not tracked.
+doc/*.pdf

@@ -4,10 +4,11 @@
 # pages (with figures) in the repository UI. GitHub shows raw HTML files
 # as source, so:
 #
-# * the introduction and import vignettes (the ones with the CPB layout:
-#   figures next to their parameters) are printed from their HTML to a
-#   PDF in doc/, which GitHub shows with that layout. This needs Chrome
-#   (set the CHROME environment variable to its path if it is not found).
+# * the introduction, import and extended vignettes (the ones with the CPB
+#   layout: figures next to their parameters) are printed from their HTML
+#   to a PDF in doc/. The PDFs are not tracked in git (they are in
+#   .gitignore), so everybody makes their own. This needs Chrome (set the
+#   CHROME environment variable to its path if it is not found).
 # * the other vignettes are rendered to GitHub-flavoured markdown in doc/.
 #
 # Re-run after editing a vignette:
@@ -45,7 +46,7 @@ if (!ggcpb:::cpb_utf8_locale()) {
        "LC_ALL=C.UTF-8 Rscript tools/render_vignettes.R", call. = FALSE)
 }
 
-pdf_vignettes <- c("introduction", "import")
+pdf_vignettes <- c("introduction", "import", "extended")
 
 # Chrome, to print a vignette's HTML to a PDF
 find_chrome <- function() {

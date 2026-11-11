@@ -44,7 +44,7 @@ if (!ggcpb:::cpb_utf8_locale()) {
        "locale is available to switch to.", call. = FALSE)
 }
 
-pdf_vignettes <- c("introduction", "import")
+pdf_vignettes <- c("introduction", "import", "extended")
 doc_dir <- file.path(pkg_root, "doc")
 tmp_dir <- tempfile("ggcpb_doc_check_")
 dir.create(tmp_dir)

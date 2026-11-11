@@ -7,7 +7,7 @@ published reference figures in `references/plots/`.
 MEV 2026, zonnepanelen, erfbelasting) and which of its items were kept
 or dropped.
 
-## Plan (status 2026-11-05)
+## Plan (status 2026-11-11)
 
 ### Critical, before a release
 
@@ -36,11 +36,17 @@ or dropped.
 8. **House font in the vignette html**: Rijksoverheid Sans only shows
    where it is installed. Embed Source Sans 3 with `@font-face` as the
    fallback, or accept this.
-9. **Vignette html**: only `annotation`, `import` and `introduction` are
-   tracked. Decide for the other six (`boxplots`, `chart-types`,
-   `colours`, `ggcpb`, `layout`, `maps`).
-10. **Scatter with classes** (question 4): this is possible now with
-    `cut`. Add it to `inst/examples/` if wanted.
+9. **Vignette html and PDF**: the html of `introduction`, `import` and
+   `extended` is tracked, the other html and all PDFs are not (see
+   `.gitignore`). `tools/render_vignettes.R` makes the PDFs locally.
+   GitHub shows html as source, so `.github/workflows/pages.yaml` publishes
+   the vignettes on GitHub Pages. It needs one setting on GitHub, once:
+   Settings, Pages, Source "GitHub Actions". The README links point to
+   `joris-klingen.github.io/ggcpb`, so they only work after that.
+10. **Old vignettes**: `extended` covers the new parts of `colours`,
+    `chart-types`, `boxplots`, `maps`, `annotation`, `layout` and `ggcpb`.
+    Decide whether those seven can be removed, then update the links to them
+    (README, `vignette()` references in the vignettes and in the man pages).
 
 ## Open items
 
