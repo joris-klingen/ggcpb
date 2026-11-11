@@ -1,6 +1,7 @@
 # ggcpb 0.3.0
 
 * The CSV import can make every plot type, `map` and `boxplot_extended` included, and every argument of the wrappers can be set in `params.csv`. Formatters are named (`x_labels = euro`), `dot_labels` takes name:value pairs, a column of dates gives a date axis, `Inf` is a number and `\n` a line break. `cut` and `cut_labels` make classes, such as for a classed map. `height` (cm), `preset`, `dpi` and `lock` say how a figure is saved, next to `page`.
+* New vignette `extended`. It extends the introduction with colours, columns, boxplot styles and maps, each with its parameters for Excel, and with what is possible in R only. The introduction also shows facets and grouped categories.
 * The parameter reference in the import vignette has a short description per parameter and lists the values to choose from.
 * `cpb_import_run()` saves the other figures when one figure fails while it is drawn, and lists it in the log.
 
@@ -8,7 +9,7 @@
 
 * The CSV import reads several datasets. Datasets live in a `data` folder next to `params.csv`, and the new `data` parameter names them per figure (`koopkracht`, or `a;b` for one figure per file, the `.csv` is optional). A blank `data` uses `data/data.csv`. A missing dataset is skipped with a warning and the rest is still built. Figures are named after their dataset, with the figure number added when several figures share one. The new `cpb_import_run()` is what `generate_plot.bat` starts.
 * In the CSV import, text columns keep the order of the rows (not alphabetical), and a numeric `fill`, `group`, `facet` or `colour` is a category (a scatter `colour` stays numeric).
-* `inst/examples/` is the one example folder. It holds the figures of the import and introduction vignettes: `data/`, `params.csv`, the `generate_plot` start scripts and the generated PNGs in `generated/`. `autogenerate_plots()` copies it. The start script `run_import` is now called `generate_plot`.
+* `inst/examples/` is the one example folder. It holds the figures of the import, introduction and extended vignettes: `data/`, `params.csv`, the `generate_plot` start scripts and the generated PNGs in `generated/`. `autogenerate_plots()` copies it. The start script `run_import` is now called `generate_plot`.
 * **Breaking:** `params.csv` has one layout. Column 1 holds the parameter names and every other column is one figure. The layout with one row per figure no longer works. `cpb_import_csv()` no longer takes `data_csv`. Call `cpb_import_csv("params.csv")`. The example files `import_example_data.csv` and `import_example_params.csv` are removed. `autogenerate_plots()` is the example now, with datasets in `data/`.
 
 # ggcpb 0.2.1

@@ -1,0 +1,975 @@
+---
+title: "Extended information on ggcpb"
+output:
+  rmarkdown::html_vignette:
+    css: cpb.css
+    toc: true
+    number_sections: true
+vignette: >
+  %\VignetteIndexEntry{Extended information on ggcpb}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+# Figures are drawn on the real CPB canvas (half page is 7.5 cm, full
+# page is 15.5 cm) and only displayed smaller. Code is hidden by default
+# so that readers who do not use R see the figure and its parameters.
+knitr::opts_chunk$set(
+  echo = FALSE, message = FALSE, warning = FALSE,
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7.5 / 2.54,
+  fig.height = 7.5 / 2.54,
+  dpi = 300,
+  out.width = "100%",
+  dev = if (requireNamespace("ragg", quietly = TRUE)) "ragg_png" else "png",
+  dev.args = list(background = "#eef8ff")
+)
+```
+
+```{r setup, message = FALSE}
+library(conflicted)
+library(ggcpb)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+# Shows the parameters that build a figure, as a small table.
+ptab <- function(...) {
+  p <- list(...)
+  knitr::kable(data.frame(parameter = names(p), value = unlist(p),
+                          row.names = NULL),
+               align = "l", format = "html", col.names = NULL,
+               table.attr = 'class="ptab"')
+}
+
+# One standard sentence under every figure. `section` is the number of the
+# example code at the end, which the sentence links to (`id` is its anchor).
+repro <- function(fun, dataset, section, id) {
+  cat("<span class=\"repro-title\">**How to reproduce this figure:**</span> ",
+      "copy `params.csv`, `generate_plot.bat` ",
+      "and the folder `data` with `", dataset, ".csv` to a personal folder. ",
+      "Fill in the parameters above in `params.csv` and start the script. ",
+      "In R you can call `", fun, "()` instead. Follow the example code in ",
+      "[section ", section, "](#", id, ") to create the plot in R. ",
+      "Alternatively, the csv file can be read with `read.csv()` and used ",
+      "as input to `", fun, "()`.\n", sep = "")
+}
+```
+
+<style>
+.figrow { display: flex; gap: 24px; align-items: flex-start; margin: 1em 0; }
+.figrow > * { flex: 1 1 0; min-width: 0; }
+.figrow table { font-size: 0.85em; }
+table.ptab { width: 100%; }
+table.ptab td { overflow-wrap: anywhere; }
+.below table { font-size: 0.85em; }
+.figrow h4, .below h4 { margin-top: 0; color: #c02a6a; }
+@media (max-width: 600px) { .figrow { display: block; } }
+@media print {
+  .figrow { break-inside: avoid; page-break-inside: avoid; zoom: 0.8; }
+  h2, h3, h4, p:has(+ .figrow) { break-after: avoid; }
+}
+</style>
+
+This vignette extends the [introduction](introduction.html). It shows more
+options for the figure types, such as colours, columns, boxplots and maps.
+The parameters next to a figure work in Excel, as explained in the
+introduction and in the [import vignette](import.html). The same figures can
+be made in R. The last sections show what is possible in R only.
+
+# Colours
+
+The colours of a figure follow from the parameters `colour` or `fill`. This
+section shows how to choose them.
+
+## Default colours
+
+Map a column to `colour` or `fill` and the series get the house colours. The
+order is the same as in the published figures. It is blue, magenta and
+taupe, followed by the other colours. A line chart and a column chart of the
+same series have the same colours. A single series is always blue.
+
+```{r data-colour-default}
+reeksen <- c("arbeidsproductiviteit", "tfp", "arbeidsvolume")
+groei <- tibble(
+  reeks = factor(rep(reeksen, each = 10), levels = reeksen),
+  jaar  = rep(2015:2024, 3),
+  waarde = c(1.2, 0.8, 1.5, 0.3, 0.9, -1.4, 3.1, 1.6, -0.2, 0.7,
+             0.9, 0.2, 1.1, -0.4, 0.6, -1.9, 2.8, 1.0, -0.7, 0.3,
+             0.4, 1.2, 1.8, 1.1, 0.5, -0.9, 1.6, 2.1, 1.3, 0.8)
+)
+```
+
+::: {.figrow}
+
+```{r colour-default}
+cpb_line(groei, x = jaar, y = waarde, colour = reeks,
+         title = "Standaardkleuren van reeksen", ylab = "%")
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-colour-default}
+ptab(plot_type = "line", title = "Standaardkleuren van reeksen",
+     x = "jaar", y = "waarde", colour = "reeks", ylab = "%")
+```
+
+</div>
+
+:::
+
+```{r, results = "asis"}
+repro("cpb_line", "colour-default", "6.1", "code-colour-default")
+```
+
+## Colours by position
+
+The house palette has nine colours. Use `colour_index` to choose them by
+position. The position of a colour does not change when the default order
+changes.
+
+```{r swatches, fig.width = 15.5 / 2.54, fig.height = 1.6}
+sw <- cpb_cols()
+op <- par(mar = c(2.5, 0, 0.5, 0), bg = cpb_tokens()$bg)
+barplot(rep(1, 9), col = sw, border = NA, space = 0.1, axes = FALSE,
+        names.arg = seq_along(sw), cex.names = 0.8)
+par(op)
+```
+
+Choose the positions yourself to keep a series on its colour, for example
+after you reorder the levels. Do the same when you rebuild a published
+figure.
+
+::: {.figrow}
+
+```{r colour-positions}
+cpb_line(groei, x = jaar, y = waarde, colour = reeks,
+         colour_index = c(7, 5, 4),
+         title = "Gekozen kleuren op positie", ylab = "%")
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-colour-positions}
+ptab(plot_type = "line", title = "Gekozen kleuren op positie",
+     x = "jaar", y = "waarde", colour = "reeks",
+     colour_index = "7;5;4", ylab = "%")
+```
+
+</div>
+
+:::
+
+```{r, results = "asis"}
+repro("cpb_line", "colour-positions", "6.2", "code-colour-positions")
+```
+
+## Ordered classes
+
+Ordered classes, such as income groups, need a ramp from light to dark. The
+default colours are meant to be distinct, so they do not show an order. Set
+`colour_index` to `continuous` for the ramp. Fewer than six classes take the
+darkest shades. The word `discrete` gives the default colours again. The
+words `qualitative`, `sequential`, `discr` and `blues` name a palette.
+
+```{r data-colour-ramp}
+klassen <- c("0 tot 5%", "5 tot 10%", "10 tot 20%", "20 tot 30%",
+             "meer dan 30%")
+intensiteit <- tibble(
+  jaar   = rep(2024:2027, each = 5),
+  klasse = factor(rep(klassen, 4), levels = klassen),
+  n      = c(60, 120, 180, 90, 50, 70, 130, 170, 100, 60,
+             80, 125, 160, 110, 75, 90, 120, 150, 120, 95)
+)
+```
+
+::: {.figrow}
+
+```{r colour-ramp}
+cpb_col(intensiteit, x = jaar, y = n, fill = klasse,
+        colour_index = "continuous",
+        title = "Geordende klassen", ylab = "aantal personen, x 1000")
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-colour-ramp}
+ptab(plot_type = "col", title = "Geordende klassen",
+     x = "jaar", y = "n", fill = "klasse", colour_index = "continuous",
+     ylab = "aantal personen, x 1000")
+```
+
+</div>
+
+:::
+
+```{r, results = "asis"}
+repro("cpb_col", "colour-ramp", "6.3", "code-colour-ramp")
+```
+
+## A palette with positions
+
+`colour_index` takes positions or the name of a palette, not both. Use
+`palette` to choose a palette and `colour_index` to choose the colours in it.
+
+::: {.figrow}
+
+```{r colour-palette}
+cpb_col(intensiteit, x = jaar, y = n, fill = klasse,
+        palette = "blues", colour_index = c(2, 3, 4, 5, 6),
+        title = "Posities in een palet", ylab = "aantal personen, x 1000")
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-colour-palette}
+ptab(plot_type = "col", title = "Posities in een palet",
+     x = "jaar", y = "n", fill = "klasse", palette = "blues",
+     colour_index = "2;3;4;5;6", ylab = "aantal personen, x 1000")
+```
+
+</div>
+
+:::
+
+```{r, results = "asis"}
+repro("cpb_col", "colour-palette", "6.4", "code-colour-palette")
+```
+
+## One colour
+
+A single series has one colour. `line_colour` sets it for a line and
+`fill_colour` for columns. A colour from outside the palette is possible
+as a hexadecimal code, such as `#820050`.
+
+```{r data-colour-single}
+tfp <- dplyr::filter(groei, reeks == "tfp")
+```
+
+::: {.figrow}
+
+```{r colour-single}
+cpb_line(tfp, x = jaar, y = waarde, line_colour = cpb_cols(3),
+         title = "Een reeks in een gekozen kleur", ylab = "%")
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-colour-single}
+ptab(plot_type = "line", title = "Een reeks in een gekozen kleur",
+     x = "jaar", y = "waarde", line_colour = "#820050", ylab = "%")
+```
+
+</div>
+
+:::
+
+```{r, results = "asis"}
+repro("cpb_line", "colour-single", "6.5", "code-colour-single")
+```
+
+# Columns
+
+The introduction shows columns with a second axis and horizontal bars. This
+section shows the position of the columns and the limits of the value axis.
+
+## Stacked columns
+
+Stacked is the default position. The legend is reversed, so it reads in the
+same order as the stack.
+
+```{r data-col-stacked}
+sectoren <- c("industrie", "diensten", "landbouw", "overheid")
+tw <- tibble(
+  jaar   = rep(2023:2027, each = 4),
+  sector = factor(rep(sectoren, 5), levels = sectoren),
+  waarde = c(18.2, 11.5, 24.1, 7.6, 17.4, 12.9, 22.8, 8.1, 19.6, 13.4, 21.5,
+             8.8, 20.1, 12.2, 23.3, 9.4, 21.3, 14.0, 22.1, 10.2)
+)
+```
+
+::: {.figrow}
+
+```{r col-stacked}
+cpb_col(tw, x = jaar, y = waarde, fill = sector,
+        title = "Toegevoegde waarde per sector", ylab = "mld euro")
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-col-stacked}
+ptab(plot_type = "col", title = "Toegevoegde waarde per sector",
+     x = "jaar", y = "waarde", fill = "sector", ylab = "mld euro")
+```
+
+</div>
+
+:::
+
+```{r, results = "asis"}
+repro("cpb_col", "col-stacked", "6.6", "code-col-stacked")
+```
+
+## Dodged columns
+
+With `position = dodge` the columns stand next to each other. The legend
+then follows the order of the series, so set `reverse_legend` to `FALSE`.
+
+```{r data-col-dodged}
+regios <- c("Noord", "Oost", "Zuid", "West")
+scenarios <- c("basispad", "beleidsvariant")
+scenario <- tibble(
+  regio    = factor(rep(regios, each = 2), levels = regios),
+  scenario = factor(rep(scenarios, 4), levels = scenarios),
+  effect   = c(2.4, 3.1, -0.8, 1.2, 4.6, 5.2, 1.9, 3.3)
+)
+```
+
+::: {.figrow}
+
+```{r col-dodged}
+cpb_col(scenario, x = regio, y = effect, fill = scenario,
+        position = "dodge", reverse_legend = FALSE,
+        title = "Effect per regio en scenario", ylab = "% mutatie")
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-col-dodged}
+ptab(plot_type = "col", title = "Effect per regio en scenario",
+     x = "regio", y = "effect", fill = "scenario", position = "dodge",
+     reverse_legend = "FALSE", ylab = "% mutatie")
+```
+
+</div>
+
+:::
+
+```{r, results = "asis"}
+repro("cpb_col", "col-dodged", "6.7", "code-col-dodged")
+```
+
+## Limits and percentages
+
+The value axis follows the data. It starts and ends where the data does. Use
+`value_limits` to set the limits yourself, such as 0 and 100 for a share.
+`pct_axis` writes the values as percentages. The axis widens when the data
+runs past the limits. With `value_crop` set to `TRUE` the data outside the
+limits is cut off, with a warning.
+
+```{r data-col-limits}
+groepen <- c("boven 3x modaal", "2 tot 3x modaal", "1,5 tot 2x modaal",
+             "1 tot 1,5x modaal", "120% wml tot modaal", "tot 120% wml")
+auto <- tibble(
+  inkomensgroep = factor(groepen, levels = groepen),
+  share         = c(13, 14, 19, 26, 35, 62)
+)
+```
+
+::: {.figrow}
+
+```{r col-limits}
+cpb_col(auto, x = inkomensgroep, y = share,
+        orientation = "horizontal", pct_axis = TRUE,
+        value_limits = c(0, 100), width = 0.6,
+        title = "Huishoudens zonder auto", ylab = "inkomensgroep",
+        xlab = "aandeel huishoudens")
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-col-limits}
+ptab(plot_type = "col", title = "Huishoudens zonder auto",
+     x = "inkomensgroep", y = "share", orientation = "horizontal",
+     pct_axis = "TRUE", value_limits = "0;100", width = 0.6,
+     ylab = "inkomensgroep", xlab = "aandeel huishoudens")
+```
+
+</div>
+
+:::
+
+```{r, results = "asis"}
+repro("cpb_col", "col-limits", "6.8", "code-col-limits")
+```
+
+# Boxplot styles
+
+The introduction shows the default style of `cpb_box()` and the extended
+boxplot. `box_style` sets how a box is drawn. This section shows the other
+styles. All styles need the quantiles in columns, so aggregate the data
+first.
+
+## James style
+
+`james` is the box of the old James plotter. It has no border, and a black
+median that sticks out. The value of the median is printed above it.
+
+```{r data-box-james}
+groepen <- c("boven 3x modaal", "2 tot 3x modaal", "1,5 tot 2x modaal",
+             "1 tot 1,5x modaal", "120% wml tot modaal", "tot 120% wml")
+kk <- tibble(
+  groep = factor(groepen, levels = groepen),
+  p5  = c(0.23, -1.23, -2.29, -3.35, -4.98, -6.19),
+  p25 = c(2.30, 0.60, -0.21, -1.47, -2.83, -4.38),
+  p50 = c(3.48, 2.01, 0.91, 0.16, -1.62, -3.06),
+  p75 = c(4.92, 3.30, 2.39, 1.37, -0.27, -1.75),
+  p95 = c(6.77, 5.39, 4.04, 3.37, 1.54, -0.11)
+)
+```
+
+::: {.figrow}
+
+```{r box-james}
+cpb_box(kk, x = groep,
+        p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+        box_style = "james", orientation = "horizontal",
+        title = "Koopkracht per inkomensgroep", subtitle = "inkomensgroep",
+        ylab = "% koopkrachtmutatie")
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-box-james}
+ptab(plot_type = "box", title = "Koopkracht per inkomensgroep",
+     x = "groep", p5 = "p5", p25 = "p25", p50 = "p50", p75 = "p75",
+     p95 = "p95", box_style = "james", orientation = "horizontal",
+     subtitle = "inkomensgroep", ylab = "% koopkrachtmutatie")
+```
+
+</div>
+
+:::
+
+```{r, results = "asis"}
+repro("cpb_box", "box-james", "6.9", "code-box-james")
+```
+
+## Modern style
+
+`modern` has light blue boxes, a thick dark blue median and the values of the
+quartiles below the box. The values are printed by default. Use `box_labels`
+to turn them off and `label_accuracy` for the rounding. `james` and `modern`
+draw boxes of one colour, which is set by `fill_colour`.
+
+::: {.figrow}
+
+```{r box-modern}
+cpb_box(kk, x = groep,
+        p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+        box_style = "modern", orientation = "horizontal", width = 0.35,
+        value_accuracy = 0.1,
+        title = "Koopkracht per inkomensgroep", subtitle = "inkomensgroep",
+        ylab = "% koopkrachtmutatie")
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-box-modern}
+ptab(plot_type = "box", title = "Koopkracht per inkomensgroep",
+     x = "groep", p5 = "p5", p25 = "p25", p50 = "p50", p75 = "p75",
+     p95 = "p95", box_style = "modern", orientation = "horizontal",
+     width = 0.35, value_accuracy = 0.1, subtitle = "inkomensgroep",
+     ylab = "% koopkrachtmutatie")
+```
+
+</div>
+
+:::
+
+```{r, results = "asis"}
+repro("cpb_box", "box-modern", "6.10", "code-box-modern")
+```
+
+## Dot style
+
+`dot` draws no box. A dashed line runs from p5 to p95, with a light dot at
+each end. A bar shows the interquartile range and a dot shows the median.
+The optional column `mean` adds a diamond. A legend names each marker. Use
+`dot_labels` to rename a marker, such as `p50:median` in an English figure.
+
+```{r data-box-dot}
+voorkeur <- tibble(
+  erfenis = factor(c("1.000.000 euro", "100.000 euro", "10.000 euro"),
+                   levels = c("1.000.000 euro", "100.000 euro",
+                              "10.000 euro")),
+  p5  = c(0, 0, 0),
+  p25 = c(10, 4, 0),
+  p50 = c(25, 11, 4),
+  p75 = c(45, 26, 12),
+  p95 = c(75, 54, 47),
+  gem = c(30, 19, 11)
+)
+```
+
+::: {.figrow}
+
+```{r box-dot}
+cpb_box(voorkeur, x = erfenis,
+        p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95, mean = gem,
+        box_style = "dot", orientation = "horizontal",
+        title = "Voorkeurstarieven erfbelasting", xlab = "omvang erfenis",
+        ylab = "voorkeurstarief (%)")
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-box-dot}
+ptab(plot_type = "box", title = "Voorkeurstarieven erfbelasting",
+     x = "erfenis", p5 = "p5", p25 = "p25", p50 = "p50", p75 = "p75",
+     p95 = "p95", mean = "gem", box_style = "dot",
+     orientation = "horizontal", xlab = "omvang erfenis",
+     ylab = "voorkeurstarief (%)")
+```
+
+</div>
+
+:::
+
+```{r, results = "asis"}
+repro("cpb_box", "box-dot", "6.11", "code-box-dot")
+```
+
+## Value axis on top
+
+`value_axis = top` puts the value axis along the top of the figure. This
+works for horizontal boxes. Set the ticks with `value_breaks`.
+
+::: {.figrow}
+
+```{r box-top}
+cpb_box(kk, x = groep,
+        p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+        box_style = "modern", orientation = "horizontal",
+        value_axis = "top", value_breaks = seq(-6, 6, 2), width = 0.35,
+        title = "Koopkracht per inkomensgroep",
+        subtitle = "statisch, verandering in %")
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-box-top}
+ptab(plot_type = "box", title = "Koopkracht per inkomensgroep",
+     x = "groep", p5 = "p5", p25 = "p25", p50 = "p50", p75 = "p75",
+     p95 = "p95", box_style = "modern", orientation = "horizontal",
+     value_axis = "top", value_breaks = "-6;-4;-2;0;2;4;6", width = 0.35,
+     subtitle = "statisch, verandering in %")
+```
+
+</div>
+
+:::
+
+```{r, results = "asis"}
+repro("cpb_box", "box-top", "6.12", "code-box-top")
+```
+
+## Grouped boxes
+
+`group` places the categories under bold group names. All boxes share one
+value axis. A group with one category of the same name, such as Totaal,
+takes one row. `fill_colour` takes one colour per row. A grouped figure is
+taller, so this one is saved with `height = 11.4`.
+
+```{r data-box-grouped}
+inkomen <- c("tot 120% wml", "120% wml tot modaal", "1 tot 1,5x modaal",
+             "1,5 tot 2x modaal", "2 tot 3x modaal", "boven 3x modaal")
+bron <- c("Werkenden", "Uitkeringsgerechtigden", "Gepensioneerden")
+categorieen <- c("Totaal", inkomen, bron)
+ink <- tibble(
+  cat = factor(categorieen, levels = categorieen),
+  grp = factor(rep(c("Totaal", "Inkomensgroepen", "Inkomensbron"),
+                   c(1, 6, 3)),
+               levels = c("Totaal", "Inkomensgroepen", "Inkomensbron")),
+  p50 = c(0.09, 0.02, 0.07, 0.07, 0.06, 0.04, 0.05, 0.09, 0.04, 0.05)
+) |>
+  mutate(p25 = p50 - 0.08, p75 = p50 + 0.07,
+         p5 = p25 - 0.35, p95 = p75 + 0.35)
+```
+
+::: {.figrow}
+
+```{r box-grouped, fig.height = 11.4 / 2.54}
+cpb_box(ink, x = cat, p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+        group = grp, box_style = "james", orientation = "horizontal",
+        fill_colour = c("#193c69", rep("#87d2ff", 6), rep("#e6006e", 3)),
+        width = 0.45, title = "Inkomenseffecten plannen stelsel",
+        ylab = "verandering in 2025 (%)")
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-box-grouped}
+ptab(plot_type = "box", title = "Inkomenseffecten plannen stelsel",
+     x = "cat", p5 = "p5", p25 = "p25", p50 = "p50", p75 = "p75",
+     p95 = "p95", group = "grp", box_style = "james",
+     orientation = "horizontal",
+     fill_colour = paste(c("#193c69", rep("#87d2ff", 6), rep("#e6006e", 3)),
+                         collapse = ";"),
+     width = 0.45, ylab = "verandering in 2025 (%)", height = 11.4)
+```
+
+</div>
+
+:::
+
+```{r, results = "asis"}
+repro("cpb_box", "box-grouped", "6.13", "code-box-grouped")
+```
+
+# Maps
+
+The introduction shows a map with classes. This section shows a map with
+numbers and a map of provinces. All maps use the boundaries that come with
+the package, so no other packages are needed. A map keeps its real
+proportions. `save_cpb(preset = "map")` makes it as tall as it needs. The
+regions are joined by their CBS code, such as `GM0014`, or by their name.
+A region without a value is grey and a region that is not found gives a
+warning.
+
+## Numbers on a map
+
+A numeric `value` gets the sequential gradient and a colour bar. The unit
+goes in `subtitle`. A map has no value axis, so `ylab` does not exist.
+`reverse` turns the gradient around and `na_fill` sets the colour of the
+regions without a value.
+
+```{r data-map-numbers}
+codes <- unique(cpb_nl_geo("gemeente")$code)
+gemeenten_ct <- tibble(
+  code  = codes,
+  index = round(100 + 12 * sin(seq_along(codes) / 9), 1)
+)
+```
+
+::: {.figrow}
+
+```{r map-numbers}
+cpb_map(gemeenten_ct, region = code, value = index,
+        title = "Voorbeeldindex per gemeente",
+        subtitle = "index (Nederland = 100)")
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-map-numbers}
+ptab(plot_type = "map", title = "Voorbeeldindex per gemeente",
+     region = "code", value = "index",
+     subtitle = "index (Nederland = 100)")
+```
+
+</div>
+
+:::
+
+```{r, results = "asis"}
+repro("cpb_map", "map-numbers", "6.14", "code-map-numbers")
+```
+
+## Provinces
+
+`level = provincie` draws the provinces and `corop` draws the COROP regions.
+The default level is `gemeente`. A text value gets the house colours.
+`border_colour` sets the colour of the borders. White gives more contrast on
+a map with two classes. `legend = bottom` puts the legend below the map and
+`none` removes it. A title wider than the map gives a warning of
+`save_cpb()`. Break it with `\n`, as is done here.
+
+```{r data-map-provinces}
+namen <- unique(cpb_nl_geo("provincie")$name)
+provincies <- tibble(
+  naam   = namen,
+  klasse = factor(rep(c("onder gemiddeld", "boven gemiddeld"), 6),
+                  levels = c("onder gemiddeld", "boven gemiddeld"))
+)
+```
+
+::: {.figrow}
+
+```{r map-provinces}
+cpb_map(provincies, region = naam, value = klasse, level = "provincie",
+        colour_index = c(2, 6), border_colour = "white",
+        title = "Groei ten opzichte van het\nlandelijk gemiddelde")
+```
+
+<div>
+
+#### Relevant parameters {-}
+
+```{r par-map-provinces}
+ptab(plot_type = "map",
+     title = "Groei ten opzichte van het\\nlandelijk gemiddelde",
+     region = "naam", value = "klasse", level = "provincie",
+     colour_index = "2;6", border_colour = "white")
+```
+
+</div>
+
+:::
+
+```{r, results = "asis"}
+repro("cpb_map", "map-provinces", "6.15", "code-map-provinces")
+```
+
+# More possibilities in R
+
+The figures in this section need R. Every function returns a ggplot2 object,
+so you can add layers and scales with `+`. See also the section on ggplot2
+in the [introduction](introduction.html).
+
+## A line over stacked columns
+
+A decomposition has stacked columns and the total as a line. This is
+`cpb_col()` plus a `geom_line()`.
+
+```{r overlay, echo = TRUE, out.width = "50%"}
+componenten <- c("kapitaal/uren", "arbeidssamenstelling", "tfp")
+dec <- expand_grid(
+  jaar = 2000:2024,
+  # reversed levels stack the first component nearest to zero
+  component = factor(componenten, levels = rev(componenten))
+) |>
+  mutate(bijdrage = round(0.4 + 0.9 * sin(jaar * 1.3 +
+                                            as.numeric(component) * 2), 1))
+totaal <- dec |>
+  summarise(bijdrage = sum(bijdrage), .by = jaar)
+
+cpb_col(dec, x = jaar, y = bijdrage, fill = component,
+        position = "stack", colour_index = c(2, 5, 6), width = 0.75,
+        title = "Opbouw productiviteitsgroei", ylab = "%") +
+  geom_line(
+    data = totaal,
+    mapping = aes(x = jaar, y = bijdrage, colour = "arbeidsproductiviteit"),
+    linewidth = 0.55, inherit.aes = FALSE
+  ) +
+  scale_colour_cpb_manual(index = 1) +
+  labs(colour = NULL) +
+  guides(fill = guide_legend(reverse = TRUE, order = 1),
+         colour = guide_legend(order = 2)) +
+  theme(legend.box = "horizontal", legend.box.just = "top")
+```
+
+## Boxes with a fill per year
+
+Map `fill` and pass a `position_dodge()` for two boxes per category. This
+works with the default style `ggcpb` only.
+
+```{r box-dodged, echo = TRUE, out.width = "50%"}
+kk2 <- expand_grid(kk, jaar = factor(c(2026, 2027))) |>
+  mutate(across(p5:p95, \(q) q + (jaar == "2027") * 0.8),
+         groep = factor(groep, levels = rev(groepen),
+                        labels = c("tot 120%\nwml", "120% wml\ntot modaal",
+                                   "1 tot 1,5x\nmodaal", "1,5 tot 2x\nmodaal",
+                                   "2 tot 3x\nmodaal", "boven 3x\nmodaal")))
+
+cpb_box(kk2, x = groep,
+        p5 = p5, p25 = p25, p50 = p50, p75 = p75, p95 = p95,
+        fill = jaar, position = position_dodge(width = 0.6),
+        colour_index = c(6, 2),
+        title = "Koopkracht per jaar, 2026 en 2027",
+        ylab = "% koopkrachtmutatie")
+```
+
+## Without a wrapper
+
+Some figures have no function in ggcpb. Build them with ggplot2 and use the
+same parts as the functions do, which are `theme_cpb()`, a colour scale and
+the formatters. Two house rules go with it. The unit goes in `subtitle`, and
+the title of the horizontal axis sits at the bottom right.
+
+`cpb_cut()` turns the numbers into classes with Dutch labels. The scale
+`scale_fill_cpb_d()` colours the classes from light to dark. `drop = FALSE`
+keeps a class without observations in the legend, and `show.legend = TRUE`
+draws its colour.
+
+```{r heatmap, echo = TRUE, fig.width = 15.5 / 2.54, fig.height = 2.4}
+raster <- expand.grid(groep = factor(groepen, levels = groepen),
+                      jaar  = 2024:2027) |>
+  mutate(mediaan = round(0.5 + 1.2 * sin(as.numeric(groep) + jaar), 1))
+
+ggplot(raster, aes(jaar, groep,
+                   fill = cpb_cut(mediaan, c(-Inf, -1, 0, 1, 2, Inf),
+                                  labeller = label_pct_nl()))) +
+  geom_tile(colour = "white", linewidth = 0.4, show.legend = TRUE) +
+  labs(title = "Mediane koopkracht per groep en jaar",
+       subtitle = "inkomensgroep",
+       x = NULL, y = NULL, fill = "mediaan (%)") +
+  scale_fill_cpb_d(palette = "blues", drop = FALSE) +
+  guides(fill = guide_legend(ncol = 2)) +
+  theme_cpb(grid = "none", ticks = FALSE)
+```
+
+## Colours outside the palette
+
+A colour that is not in the palette needs an ordinary ggplot2 scale.
+
+```{r manual-scale, echo = TRUE, eval = FALSE}
+cpb_line(groei, x = jaar, y = waarde, colour = reeks,
+         title = "Een eigen kleurenschaal", ylab = "%") +
+  scale_colour_manual(values = c("#005faf", "#96827d", "#64504b"))
+```
+
+## Export
+
+`save_cpb()` writes a figure at the page width. It is 7.5 cm for `half`,
+15.5 cm for `full` and 6.8 cm for `small`. The height is the report height,
+unless you set `height`. Use `preset = "map"` for a map and `dpi` for the
+resolution. Text sizes are absolute, so the size of the canvas is part of the
+design. Draw at the page width and scale only the display.
+
+```{r export, echo = TRUE, eval = FALSE}
+p <- cpb_col(auto, x = inkomensgroep, y = share, orientation = "horizontal")
+save_cpb("koopkracht.png", p, page = "half")
+save_cpb("koopkracht_breed.png", p, page = "full", height = 8 / 2.54)
+```
+
+# Example code to create figures in R
+
+The code below creates the figures above in R. It first builds the data,
+then draws the figure. It is the same code that made the figures in this
+document. Start the script with these lines.
+
+```{r code-library, eval = FALSE, echo = TRUE}
+library(conflicted)
+library(ggcpb)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+options(ggcpb.style = "dutch") # style of the whole publication
+```
+
+<a id="code-colour-default"></a>
+
+## Default colours
+
+```{r code-colour-default, ref.label = c("data-colour-default", "colour-default"), echo = TRUE, eval = FALSE}
+```
+
+<a id="code-colour-positions"></a>
+
+## Colours by position
+
+```{r code-colour-positions, ref.label = c("data-colour-default", "colour-positions"), echo = TRUE, eval = FALSE}
+```
+
+<a id="code-colour-ramp"></a>
+
+## Ordered classes
+
+```{r code-colour-ramp, ref.label = c("data-colour-ramp", "colour-ramp"), echo = TRUE, eval = FALSE}
+```
+
+<a id="code-colour-palette"></a>
+
+## A palette with positions
+
+```{r code-colour-palette, ref.label = c("data-colour-ramp", "colour-palette"), echo = TRUE, eval = FALSE}
+```
+
+<a id="code-colour-single"></a>
+
+## One colour
+
+```{r code-colour-single, ref.label = c("data-colour-default", "data-colour-single", "colour-single"), echo = TRUE, eval = FALSE}
+```
+
+<a id="code-col-stacked"></a>
+
+## Stacked columns
+
+```{r code-col-stacked, ref.label = c("data-col-stacked", "col-stacked"), echo = TRUE, eval = FALSE}
+```
+
+<a id="code-col-dodged"></a>
+
+## Dodged columns
+
+```{r code-col-dodged, ref.label = c("data-col-dodged", "col-dodged"), echo = TRUE, eval = FALSE}
+```
+
+<a id="code-col-limits"></a>
+
+## Limits and percentages
+
+```{r code-col-limits, ref.label = c("data-col-limits", "col-limits"), echo = TRUE, eval = FALSE}
+```
+
+<a id="code-box-james"></a>
+
+## James style
+
+```{r code-box-james, ref.label = c("data-box-james", "box-james"), echo = TRUE, eval = FALSE}
+```
+
+<a id="code-box-modern"></a>
+
+## Modern style
+
+```{r code-box-modern, ref.label = c("data-box-james", "box-modern"), echo = TRUE, eval = FALSE}
+```
+
+<a id="code-box-dot"></a>
+
+## Dot style
+
+```{r code-box-dot, ref.label = c("data-box-dot", "box-dot"), echo = TRUE, eval = FALSE}
+```
+
+<a id="code-box-top"></a>
+
+## Value axis on top
+
+```{r code-box-top, ref.label = c("data-box-james", "box-top"), echo = TRUE, eval = FALSE}
+```
+
+<a id="code-box-grouped"></a>
+
+## Grouped boxes
+
+```{r code-box-grouped, ref.label = c("data-box-grouped", "box-grouped"), echo = TRUE, eval = FALSE}
+```
+
+<a id="code-map-numbers"></a>
+
+## Numbers on a map
+
+```{r code-map-numbers, ref.label = c("data-map-numbers", "map-numbers"), echo = TRUE, eval = FALSE}
+```
+
+<a id="code-map-provinces"></a>
+
+## Provinces
+
+```{r code-map-provinces, ref.label = c("data-map-provinces", "map-provinces"), echo = TRUE, eval = FALSE}
+```
