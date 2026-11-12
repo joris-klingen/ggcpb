@@ -53,7 +53,7 @@ This is the general workflow to create figures with ggcpb without using R:
    fails is skipped and listed at the end, and in `params_log.txt`. 
    The other figures are still saved.
 
-For more information, take a look at the **[introduction](doc/introduction.html)** and **[import](doc/import.html)** files. 
+For more information, take a look at the **[introduction](doc/introduction.html)** and **[import](doc/import.html)** vignettes. 
 
 ## Quick start in R
 
