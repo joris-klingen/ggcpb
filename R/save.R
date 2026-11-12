@@ -27,9 +27,15 @@ print.cpb_plot <- function(x, newpage = is.null(vp), vp = NULL, ...) {
   features <- c(
     # A ring that fills the figure is drawn exactly. A pinned ring may
     # not fit the size print() happens to land on.
-    if (is.numeric(attr(x, "cpb_panel_size"))) "a fixed panel size (cpb_donut())",
-    if (!drawn && !is.null(attr(x, "cpb_sec_ylab"))) "a secondary-axis caption (sec_ylab)",
-    if (!is.null(attr(x, "cpb_map_aspect"))) "a geographic aspect fit (cpb_map())"
+    if (is.numeric(attr(x, "cpb_panel_size"))) {
+      "a fixed panel size (cpb_donut())"
+    },
+    if (!drawn && !is.null(attr(x, "cpb_sec_ylab"))) {
+      "a secondary-axis caption (sec_ylab)"
+    },
+    if (!is.null(attr(x, "cpb_map_aspect"))) {
+      "a geographic aspect fit (cpb_map())"
+    }
   )
   if (length(features)) {
     rlang::warn(
@@ -40,7 +46,8 @@ print.cpb_plot <- function(x, newpage = is.null(vp), vp = NULL, ...) {
         "approximate placement instead."
       ),
       .frequency = "once",
-      .frequency_id = paste("cpb_plot_approx_print", paste(features, collapse = "|"))
+      .frequency_id = paste("cpb_plot_approx_print",
+                            paste(features, collapse = "|"))
     )
   }
   # An error here means print() and save_cpb() may disagree. It gets
@@ -65,6 +72,17 @@ print.cpb_plot <- function(x, newpage = is.null(vp), vp = NULL, ...) {
   NextMethod()
 }
 
+# The number of rows of panels of a faceted plot, 1 without facets.
+# @noRd
+cpb_facet_rows <- function(plot) {
+  if (inherits(plot$facet, "FacetNull")) return(1L)
+  rows <- tryCatch(
+    max(ggplot2::ggplot_build(plot)$layout$layout$ROW),
+    error = function(e) 1L
+  )
+  if (!is.finite(rows) || rows < 1) 1L else as.integer(rows)
+}
+
 # Draws x the way save_cpb() does (tick-label gap, right axis margin,
 # fixed figure top and bottom, sec_ylab), at whatever size print()
 # lands on. `newpage` and `vp` work as in ggplot2's print().
@@ -77,7 +95,9 @@ cpb_print_exact <- function(x, newpage = TRUE, vp = NULL) {
     if (is.character(vp)) grid::seekViewport(vp) else grid::pushViewport(vp)
     on.exit(grid::upViewport())
   }
-  x <- cpb_scale_y_lab_gap(x, grid::convertWidth(grid::unit(1, "npc"), "cm", valueOnly = TRUE))
+  x <- cpb_scale_y_lab_gap(x,
+                           grid::convertWidth(grid::unit(1, "npc"), "cm",
+                                              valueOnly = TRUE))
   taken <- cpb_take_sec_ylab(x)
   # cpb_donut()'s square panel, sized as save_cpb() does: left to
   # ggplot2, the title and legend would be centred around it instead
@@ -85,21 +105,25 @@ cpb_print_exact <- function(x, newpage = TRUE, vp = NULL) {
   panel_size <- attr(x, "cpb_panel_size")
   fill_panel <- identical(panel_size, "fill")
   size_in <- c(grid::convertWidth(grid::unit(1, "npc"), "in", valueOnly = TRUE),
-               grid::convertHeight(grid::unit(1, "npc"), "in", valueOnly = TRUE))
+               grid::convertHeight(grid::unit(1, "npc"), "in",
+                                   valueOnly = TRUE))
   # cpb_map()'s panel has a fixed shape too
   map_aspect <- attr(x, "cpb_map_aspect")
   if (is.null(panel_size) && !is.null(map_aspect)) {
-    panel_size <- cpb_map_panel_size(taken$plot, map_aspect, size_in[1], size_in[2])
+    panel_size <- cpb_map_panel_size(taken$plot, map_aspect,
+                                     size_in[1], size_in[2])
   }
   g <- if (is.null(panel_size)) {
     ggplot2::ggplotGrob(taken$plot)
   } else {
-    cpb_fix_panel_size(taken$plot, if (fill_panel) 1.8 else panel_size, size_in[1], size_in[2])
+    cpb_fix_panel_size(taken$plot, if (fill_panel) 1.8 else panel_size,
+                       size_in[1], size_in[2])
   }
   if (!is.null(map_aspect)) g <- cpb_map_legend_left(g)
   mirrored <- cpb_mirror_sec_axis_margin(g)
   if (!is.null(mirrored)) g <- mirrored
-  bottom <- cpb_figure_bottom(g, attr(x, "cpb_legend"), attr(x, "cpb_legend_grid"))
+  bottom <- cpb_figure_bottom(g, attr(x, "cpb_legend"),
+                              attr(x, "cpb_legend_grid"))
   if (!is.null(bottom)) {
     # the fixed top places sec_ylab itself
     g <- cpb_figure_top(bottom, taken$label, attr(x, "cpb_ylab_position"))
@@ -120,14 +144,19 @@ cpb_scale_y_lab_gap <- function(plot, width_cm) {
   el <- plot$theme$axis.text.y.left
   half <- grid::unit(cpb_y_lab_gap_cm(cpb_page_width_cm[["half"]]), "cm")
   if (!inherits(el, "element_text") || length(el$margin) != 4 ||
-      !isTRUE(all.equal(grid::convertWidth(el$margin[2], "cm", valueOnly = TRUE),
-                        grid::convertWidth(half, "cm", valueOnly = TRUE)))) {
+        !isTRUE(all.equal(grid::convertWidth(el$margin[2], "cm",
+                                             valueOnly = TRUE),
+                          grid::convertWidth(half, "cm", valueOnly = TRUE)))) {
     return(plot)
   }
   gap_cm <- cpb_y_lab_gap_cm(width_cm)
   plot + ggplot2::theme(
-    axis.text.y.left  = ggplot2::element_text(margin = ggplot2::margin(r = gap_cm, unit = "cm"), inherit.blank = TRUE),
-    axis.text.y.right = ggplot2::element_text(margin = ggplot2::margin(l = gap_cm, unit = "cm"), inherit.blank = TRUE)
+    axis.text.y.left  = ggplot2::element_text(
+      margin = ggplot2::margin(r = gap_cm, unit = "cm"), inherit.blank = TRUE
+    ),
+    axis.text.y.right = ggplot2::element_text(
+      margin = ggplot2::margin(l = gap_cm, unit = "cm"), inherit.blank = TRUE
+    )
   )
 }
 
@@ -160,7 +189,8 @@ cpb_scale_y_lab_gap <- function(plot, width_cm) {
 cpb_resolve_gtable_units <- function(g, page_width, page_height) {
   tmp <- tempfile(fileext = ".png")
   on.exit(unlink(tmp))
-  ragg::agg_png(tmp, width = page_width, height = page_height, units = "in", res = 72)
+  ragg::agg_png(tmp, width = page_width, height = page_height,
+                units = "in", res = 72)
   on.exit(grDevices::dev.off(), add = TRUE)
 
   grid::pushViewport(grid::viewport(
@@ -190,7 +220,8 @@ cpb_resolve_gtable_units <- function(g, page_width, page_height) {
     g$widths[col] <- g$widths[col] +
       grid::unit(page_width - sum(inches(g$widths, grid::convertWidth)), "in")
     g$heights[row] <- g$heights[row] +
-      grid::unit(page_height - sum(inches(g$heights, grid::convertHeight)), "in")
+      grid::unit(page_height - sum(inches(g$heights,
+                                          grid::convertHeight)), "in")
   }
   g
 }
@@ -296,7 +327,8 @@ cpb_place_sec_ylab <- function(g, label) {
     label, x = grid::unit(1, "npc") - grid::unit(cpb_labels_margin_cm, "cm"),
     y = grid::unit(1, "npc"), hjust = 1, vjust = 1, gp = subtitle$gp
   )
-  gtable::gtable_add_grob(g, grob, t = row, l = 1, r = ncol(g), clip = "off", name = "sec-ylab")
+  gtable::gtable_add_grob(g, grob, t = row, l = 1, r = ncol(g), clip = "off",
+                          name = "sec-ylab")
 }
 
 # With a right axis the right margin is as wide as the left one, so the
@@ -314,7 +346,8 @@ cpb_mirror_sec_axis_margin <- function(g) {
   first <- min(g$layout$l[is_panel])
   last <- max(g$layout$r[is_panel])
   n <- ncol(g)
-  g$widths[n] <- sum(g$widths[seq_len(first - 1)]) - sum(g$widths[(last + 1):(n - 1)])
+  right <- sum(g$widths[(last + 1):(n - 1)])
+  g$widths[n] <- sum(g$widths[seq_len(first - 1)]) - right
   g
 }
 
@@ -352,46 +385,67 @@ cpb_legend_items <- function(guide_box) {
       in_cell <- which(is_key & lay$t == cells$t[i] & lay$l == cells$l[i])
       label_i <- which(is_label & lay$t == cells$t[i] & lay$l > cells$l[i])
       if (!length(label_i)) return(NA)
-      text <- cpb_find_grob(gd$grobs[[label_i[which.min(lay$l[label_i])]]], "text")
+      text <- cpb_find_grob(gd$grobs[[label_i[which.min(lay$l[label_i])]]],
+                            "text")
       if (is.null(text)) return(NA)
       items[[length(items) + 1]] <- list(
-        key = grid::gTree(children = do.call(grid::gList, gd$grobs[in_cell[order(lay$z[in_cell])]])),
+        key = grid::gTree(
+          children = do.call(grid::gList,
+                             gd$grobs[in_cell[order(lay$z[in_cell])]])
+        ),
         label = text$label, gp = text$gp
       )
     }
   }
-  if (!is.null(title)) attr(items, "title") <- list(label = title$label, gp = title$gp)
+  if (!is.null(title)) attr(items, "title") <- list(label = title$label,
+                                                    gp = title$gp)
   items
 }
 
-# The legend grid: `rows` items per column, filled column by column, from the top-left corner (`x`, `y`): symbol, a gap,
-# the label, and a fixed gap before the next column. Returns the grob
-# with its total width as attribute "cpb_width".
+# The legend grid: `rows` items per column, filled column by column, from the
+# top-left corner (`x`, `y`): symbol, a gap, the label, and a fixed gap before
+# the next column. Returns the grob with its total width as attribute
+# "cpb_width".
 # @noRd
 cpb_legend_grid <- function(items, rows, x, y) {
   cm <- function(v) grid::unit(v, "cm")
   sym <- cpb_legend_symbol_cm
   col_of <- (seq_along(items) - 1) %/% rows
-  label_w <- lapply(items, function(it) grid::grobWidth(grid::textGrob(it$label, gp = it$gp)))
+  label_w <- lapply(items,
+                    function(it) {
+                      grid::grobWidth(grid::textGrob(it$label,
+                                                     gp = it$gp))
+                    })
   col_w <- lapply(sort(unique(col_of)), function(k) {
-    cm(sym[["width"]] + cpb_legend_symbol_txt_cm) + max(do.call(grid::unit.c, label_w[col_of == k]))
+    cm(sym[["width"]] + cpb_legend_symbol_txt_cm) +
+      max(do.call(grid::unit.c, label_w[col_of == k]))
   })
   col_x <- list(x)
-  for (k in seq_along(col_w)[-1]) col_x[[k]] <- col_x[[k - 1]] + col_w[[k - 1]] + cm(cpb_legend_column_cm)
+  for (k in seq_along(col_w)[-1]) {
+    col_x[[k]] <- col_x[[k - 1]] + col_w[[k - 1]] + cm(cpb_legend_column_cm)
+  }
   children <- list()
   for (i in seq_along(items)) {
     cx <- col_x[[col_of[i] + 1]]
     cy <- y - cm(((i - 1) %% rows + 0.5) * cpb_legend_line_cm)
     children <- c(children, list(
-      grid::gTree(children = grid::gList(items[[i]]$key), vp = grid::viewport(
-        x = cx, y = cy, width = cm(sym[["width"]]), height = cm(sym[["height"]]),
-        just = c("left", "centre"))),
-      grid::textGrob(items[[i]]$label, x = cx + cm(sym[["width"]] + cpb_legend_symbol_txt_cm),
+      grid::gTree(
+        children = grid::gList(items[[i]]$key),
+        vp = grid::viewport(
+          x = cx, y = cy, width = cm(sym[["width"]]),
+          height = cm(sym[["height"]]),
+          just = c("left", "centre")
+        )
+      ),
+      grid::textGrob(items[[i]]$label, x = cx +
+                       cm(sym[["width"]] + cpb_legend_symbol_txt_cm),
                      y = cy, hjust = 0, vjust = 0.5, gp = items[[i]]$gp)
     ))
   }
-  grob <- grid::gTree(children = do.call(grid::gList, children), name = "cpb-legend")
-  attr(grob, "cpb_width") <- sum(do.call(grid::unit.c, col_w)) + cm((length(col_w) - 1) * cpb_legend_column_cm)
+  grob <- grid::gTree(children = do.call(grid::gList, children),
+                      name = "cpb-legend")
+  attr(grob, "cpb_width") <- sum(do.call(grid::unit.c, col_w)) +
+    cm((length(col_w) - 1) * cpb_legend_column_cm)
   grob
 }
 
@@ -409,22 +463,33 @@ cpb_legend_grid <- function(items, rows, x, y) {
 #   "cpb_legend_width" (a unit) when a legend was drawn.
 # @noRd
 cpb_figure_bottom <- function(g, legend, legend_grid = NULL) {
-  if (!is.character(legend) || !legend %in% c("bottom", "none", "filled-empty")) return(NULL)
+  if (!is.character(legend) ||
+        !legend %in% c("bottom", "none", "filled-empty")) return(NULL)
   cm <- function(v) grid::unit(v, "cm")
   zero <- vapply(g$grobs, inherits, logical(1), what = "zeroGrob")
   panel_b <- max(g$layout$b[grepl("^panel", g$layout$name)])
   below <- (panel_b + 1):nrow(g)
 
   box_i <- which(g$layout$name == "guide-box-bottom")
-  items <- if (identical(legend, "bottom") && length(box_i)) cpb_legend_items(g$grobs[[box_i]]) else NULL
+  items <- if (identical(legend, "bottom") && length(box_i)) {
+    cpb_legend_items(g$grobs[[box_i]])
+  } else {
+    NULL
+  }
   has_legend <- !is.null(items) || identical(legend, "filled-empty")
-  total <- cm(if (has_legend) cpb_margin_south_cm else cpb_margin_south_no_legend_cm)
+  south <- if (has_legend) {
+    cpb_margin_south_cm
+  } else {
+    cpb_margin_south_no_legend_cm
+  }
+  total <- cm(south)
 
   # Keep only the rows holding tick labels or facet strips. The
   # x-title, legend and caption are redrawn at fixed positions below.
   single_row <- g$layout$t == g$layout$b
   kept <- vapply(below, function(r) {
-    any(single_row & g$layout$t == r & !zero & grepl("^(axis-b|strip-b)", g$layout$name))
+    any(single_row & g$layout$t == r & !zero &
+          grepl("^(axis-b|strip-b)", g$layout$name))
   }, logical(1))
   strips <- vapply(below, function(r) {
     any(single_row & g$layout$t == r & !zero & grepl("^strip-b", g$layout$name))
@@ -432,11 +497,16 @@ cpb_figure_bottom <- function(g, legend, legend_grid = NULL) {
   strip_h <- if (any(strips)) sum(g$heights[below[strips]]) else cm(0)
   last <- nrow(g)
   for (r in below[!kept & below != last]) g$heights[r] <- cm(0)
-  kept_h <- if (any(kept[below != last])) sum(g$heights[below[kept & below != last]]) else cm(0)
+  kept_h <- if (any(kept[below != last])) {
+    sum(g$heights[below[kept & below != last]])
+  } else {
+    cm(0)
+  }
   g$heights[last] <- max(cm(0), total + strip_h - kept_h)
 
   region <- function(g, grob, name) {
-    gtable::gtable_add_grob(g, grob, t = panel_b + 1, b = last, l = 1, r = ncol(g),
+    gtable::gtable_add_grob(g, grob, t = panel_b + 1, b = last, l = 1,
+                            r = ncol(g),
                             clip = "off", name = name)
   }
 
@@ -445,10 +515,15 @@ cpb_figure_bottom <- function(g, legend, legend_grid = NULL) {
     text <- cpb_find_grob(g$grobs[[xlab_i]], "text")
     g$grobs[[xlab_i]] <- ggplot2::zeroGrob()
     if (!is.null(text)) {
-      g <- region(g, grid::textGrob(
-        text$label, x = grid::unit(1, "npc") - cm(cpb_labels_margin_cm),
-        y = grid::unit(1, "npc") - cm(cpb_x_title_cm) - strip_h,
-        hjust = 1, vjust = 0.5, gp = text$gp), "cpb-xlab")
+      g <- region(
+        g,
+        grid::textGrob(
+          text$label, x = grid::unit(1, "npc") - cm(cpb_labels_margin_cm),
+          y = grid::unit(1, "npc") - cm(cpb_x_title_cm) - strip_h,
+          hjust = 1, vjust = 0.5, gp = text$gp
+        ),
+        "cpb-xlab"
+      )
     }
   }
 
@@ -457,11 +532,18 @@ cpb_figure_bottom <- function(g, legend, legend_grid = NULL) {
     text <- cpb_find_grob(g$grobs[[caption_i]], "text")
     g$grobs[[caption_i]] <- ggplot2::zeroGrob()
     if (!is.null(text)) {
-      g <- region(g, grid::textGrob(
-        text$label, x = grid::unit(1, "npc") - cm(cpb_footnote_cm[["x"]]),
-        y = cm(cpb_footnote_cm[["y"]]), hjust = 1, vjust = 0.5,
-        gp = grid::gpar(fontface = "italic", fontsize = cpb_font_pt * cpb_footnote_size,
-                        col = "black", fontfamily = cpb_font_family())), "cpb-caption")
+      g <- region(
+        g,
+        grid::textGrob(
+          text$label, x = grid::unit(1, "npc") - cm(cpb_footnote_cm[["x"]]),
+          y = cm(cpb_footnote_cm[["y"]]), hjust = 1, vjust = 0.5,
+          gp = grid::gpar(
+            fontface = "italic", fontsize = cpb_font_pt * cpb_footnote_size,
+            col = "black", fontfamily = cpb_font_family()
+          )
+        ),
+        "cpb-caption"
+      )
     }
   }
 
@@ -475,27 +557,47 @@ cpb_figure_bottom <- function(g, legend, legend_grid = NULL) {
       title <- attr(items, "title")
       max_rows <- if (is.null(title)) Inf else cpb_legend_per_column - 1
       # legend_nrow, else enough rows for legend_ncol columns, else 3
-      rows <- if (!is.null(legend_grid$nrow)) legend_grid$nrow
-        else if (!is.null(legend_grid$ncol)) ceiling(length(items) / legend_grid$ncol)
-        else cpb_legend_per_column
+      rows <- if (!is.null(legend_grid$nrow)) {
+        legend_grid$nrow
+      } else if (!is.null(legend_grid$ncol)) {
+        ceiling(length(items) / legend_grid$ncol)
+      } else {
+        cpb_legend_per_column
+      }
       rows <- min(rows, max_rows)
       if (!is.null(title)) {
-        g <- region(g, grid::textGrob(
-          title$label, x = x, y = y - cm(cpb_legend_line_cm / 2),
-          hjust = 0, vjust = 0.5, gp = title$gp), "cpb-legend-title")
+        g <- region(
+          g,
+          grid::textGrob(
+            title$label, x = x, y = y - cm(cpb_legend_line_cm / 2),
+            hjust = 0, vjust = 0.5, gp = title$gp
+          ),
+          "cpb-legend-title"
+        )
         y <- y - cm(cpb_legend_line_cm)
       }
       grid_grob <- cpb_legend_grid(items, rows, x, y)
       legend_width <- attr(grid_grob, "cpb_width")
       if (!is.null(title)) {
-        legend_width <- max(legend_width, grid::grobWidth(grid::textGrob(title$label, gp = title$gp)))
+        title_width <- grid::grobWidth(grid::textGrob(title$label,
+                                                      gp = title$gp))
+        legend_width <- max(legend_width, title_width)
       }
       attr(g, "cpb_legend_width") <- legend_width
       g <- region(g, grid_grob, "cpb-legend")
     } else if (identical(items, NA)) {
-      g <- region(g, grid::gTree(children = grid::gList(box), vp = grid::viewport(
-        x = x, y = y, width = grid::grobWidth(box), height = grid::grobHeight(box),
-        just = c("left", "top"))), "cpb-legend")
+      g <- region(
+        g,
+        grid::gTree(
+          children = grid::gList(box),
+          vp = grid::viewport(
+            x = x, y = y, width = grid::grobWidth(box),
+            height = grid::grobHeight(box),
+            just = c("left", "top")
+          )
+        ),
+        "cpb-legend"
+      )
       attr(g, "cpb_legend_width") <- grid::grobWidth(box)
     }
   }
@@ -527,12 +629,14 @@ cpb_figure_top <- function(g, sec_ylab = NULL, position = "left") {
   take <- function(name) {
     i <- which(g$layout$name == name)
     if (length(i) != 1 || zero[i]) return(NULL)
-    text <- cpb_find_grob(g$grobs[[i]], "text")
-    g$grobs[[i]] <<- ggplot2::zeroGrob()
-    text
+    cpb_find_grob(g$grobs[[i]], "text")
   }
   title <- take("title")
   subtitle <- take("subtitle")
+  for (name in c("title", "subtitle")) {
+    i <- which(g$layout$name == name)
+    if (length(i) == 1 && !zero[i]) g$grobs[[i]] <- ggplot2::zeroGrob()
+  }
   has_title <- !is.null(title) && any(nzchar(title$label))
 
   north <- if (has_title) cpb_margin_north_cm else cpb_margin_north_no_title_cm
@@ -540,7 +644,8 @@ cpb_figure_top <- function(g, sec_ylab = NULL, position = "left") {
   # keep only the rows holding facet strips or a top axis
   single_row <- g$layout$t == g$layout$b
   kept <- vapply(above, function(r) {
-    any(single_row & g$layout$t == r & !zero & grepl("^(axis-t|strip-t)", g$layout$name))
+    any(single_row & g$layout$t == r & !zero &
+          grepl("^(axis-t|strip-t)", g$layout$name))
   }, logical(1))
   for (r in above[!kept]) g$heights[r] <- cm(0)
   g$heights[1] <- cm(north)
@@ -549,7 +654,8 @@ cpb_figure_top <- function(g, sec_ylab = NULL, position = "left") {
   # whole figure
   add <- function(g, label, gp, x, y_cm, hjust, name, cols = c(1, ncol(g))) {
     gtable::gtable_add_grob(g, grid::textGrob(
-      label, x = x, y = grid::unit(1, "npc") - cm(y_cm), hjust = hjust, vjust = 0.5, gp = gp
+      label, x = x, y = grid::unit(1, "npc") - cm(y_cm), hjust = hjust,
+      vjust = 0.5, gp = gp
     ), t = 1, b = 1, l = cols[1], r = cols[2], clip = "off", name = name)
   }
   left <- cm(cpb_labels_margin_cm)
@@ -561,7 +667,8 @@ cpb_figure_top <- function(g, sec_ylab = NULL, position = "left") {
   middle <- identical(position, "middle")
   if (has_title) {
     g <- if (middle) {
-      add(g, title$label, title$gp, grid::unit(0.5, "npc"), cpb_title_cm, 0.5, "cpb-title", panel)
+      add(g, title$label, title$gp, grid::unit(0.5, "npc"), cpb_title_cm, 0.5,
+          "cpb-title", panel)
     } else {
       add(g, title$label, title$gp, left, cpb_title_cm, 0, "cpb-title")
     }
@@ -570,7 +677,8 @@ cpb_figure_top <- function(g, sec_ylab = NULL, position = "left") {
     # on the right only when sec_ylab doesn't need that place itself
     on_right <- identical(position, "right") && is.null(sec_ylab)
     g <- if (middle) {
-      add(g, subtitle$label, subtitle$gp, grid::unit(0, "npc"), y_title, 0, "cpb-subtitle", panel)
+      add(g, subtitle$label, subtitle$gp, grid::unit(0, "npc"), y_title, 0,
+          "cpb-subtitle", panel)
     } else if (on_right && length(strips)) {
       # one caption per panel: a new line under each row of strips,
       # right-aligned with the panel below it (bottom row first, so the
@@ -579,9 +687,15 @@ cpb_figure_top <- function(g, sec_ylab = NULL, position = "left") {
       for (row in sort(unique(cells$t), decreasing = TRUE)) {
         g <- gtable::gtable_add_rows(g, cm(cpb_y_title_cm), pos = row)
         for (i in which(cells$t == row)) {
-          g <- gtable::gtable_add_grob(g, grid::textGrob(
-            subtitle$label, x = grid::unit(1, "npc"), hjust = 1, vjust = 0.5, gp = subtitle$gp
-          ), t = row + 1, l = cells$l[i], r = cells$r[i], clip = "off", name = paste0("cpb-subtitle-", i))
+          g <- gtable::gtable_add_grob(
+            g,
+            grid::textGrob(
+              subtitle$label, x = grid::unit(1, "npc"), hjust = 1, vjust = 0.5,
+              gp = subtitle$gp
+            ),
+            t = row + 1, l = cells$l[i], r = cells$r[i], clip = "off",
+            name = paste0("cpb-subtitle-", i)
+          )
         }
       }
       g
@@ -591,7 +705,8 @@ cpb_figure_top <- function(g, sec_ylab = NULL, position = "left") {
       add(g, subtitle$label, subtitle$gp, left, y_title, 0, "cpb-subtitle")
     }
     # sec_ylab is styled like the subtitle (ylab's caption) it mirrors
-    if (!is.null(sec_ylab)) g <- add(g, sec_ylab, subtitle$gp, right, y_title, 1, "sec-ylab")
+    if (!is.null(sec_ylab)) g <- add(g, sec_ylab, subtitle$gp, right, y_title,
+                                     1, "sec-ylab")
   }
   g
 }
@@ -604,8 +719,10 @@ cpb_figure_top <- function(g, sec_ylab = NULL, position = "left") {
 cpb_map_panel_size <- function(plot, aspect, width, height) {
   g <- cpb_resolve_gtable_units(ggplot2::ggplotGrob(plot), width, height)
   panel <- which(g$layout$name == "panel")
-  room_w <- grid::convertWidth(g$widths[g$layout$l[panel]], "in", valueOnly = TRUE)
-  room_h <- grid::convertHeight(g$heights[g$layout$t[panel]], "in", valueOnly = TRUE)
+  room_w <- grid::convertWidth(g$widths[g$layout$l[panel]], "in",
+                               valueOnly = TRUE)
+  room_h <- grid::convertHeight(g$heights[g$layout$t[panel]], "in",
+                                valueOnly = TRUE)
   panel_w <- min(room_w, room_h / aspect)
   c(panel_w, panel_w * aspect)
 }
@@ -632,14 +749,18 @@ cpb_fill_panel <- function(g, page_height) {
   panel <- which(g$layout$name == "panel")
   row <- g$layout$t[panel]
   col <- g$layout$l[panel]
-  size <- page_height - (sum(inches(g$heights, grid::convertHeight)) - inches(g$heights[row], grid::convertHeight))
+  size <- page_height - (
+    sum(inches(g$heights, grid::convertHeight)) - inches(g$heights[row],
+                                                         grid::convertHeight)
+  )
   delta <- (inches(g$widths[col], grid::convertWidth) - size) / 2
   g$heights[row] <- grid::unit(size, "in")
   g$widths[col] <- grid::unit(size, "in")
   for (name in c("axis-l", "axis-r")) {
     i <- g$layout$l[g$layout$name == name]
     if (length(i) == 1) {
-      g$widths[i] <- grid::unit(max(inches(g$widths[i], grid::convertWidth) + delta, 0), "in")
+      g$widths[i] <- grid::unit(max(inches(g$widths[i], grid::convertWidth) +
+                                      delta, 0), "in")
     }
   }
   g
@@ -712,7 +833,8 @@ cpb_align_value_axis_title <- function(g) {
     if (!isTRUE(title_text$hjust %in% c(0, 1))) next
 
     tick_text <- cpb_find_grob(g$grobs[[axis_idx]], "text")
-    if (is.null(tick_text) || is.null(tick_text$label) || is.null(tick_text$x)) next
+    if (is.null(tick_text) || is.null(tick_text$label) ||
+          is.null(tick_text$x)) next
     xs <- suppressWarnings(as.numeric(tick_text$x))
     if (!length(xs) || anyNA(xs)) next
 
@@ -727,7 +849,8 @@ cpb_align_value_axis_title <- function(g) {
       ),
       error = function(e) NA_real_
     )
-    if (!length(label_width_in) || is.na(label_width_in) || label_width_in <= 0) next
+    if (!length(label_width_in) || is.na(label_width_in) ||
+          label_width_in <= 0) next
 
     shift <- grid::unit(label_width_in / 2, "in")
     new_x <- if (title_text$hjust == 1) {
@@ -781,7 +904,8 @@ cpb_replace_grob <- function(parent, old, new) {
 # natural size instead -- forcing it back to the original page size
 # would just be the "shrink the panel to fit" behaviour this avoids.
 # @noRd
-cpb_ggsave_grob <- function(filename, grob, dpi, device, bg, width = NULL, height = NULL, ...) {
+cpb_ggsave_grob <- function(filename, grob, dpi, device, bg, width = NULL,
+                            height = NULL, ...) {
   if (is.null(width)) {
     width <- sum(grid::convertWidth(grob$widths, "in", valueOnly = TRUE))
   }
@@ -838,7 +962,9 @@ cpb_ggsave_grob <- function(filename, grob, dpi, device, bg, width = NULL, heigh
 #'   page's full width, and works as `"report"` for any other plot.
 #'   Ignored if `height` is supplied explicitly.
 #' @param height Explicit height in inches. `NULL` (default) uses
-#'   `preset` to determine the height.
+#'   `preset` to determine the height. A faceted plot is that height
+#'   times its number of rows of panels, so two columns of four panels
+#'   are twice as tall.
 #' @param width Explicit width in inches. Must be `7.5 / 2.54`,
 #'   `15.5 / 2.54` or `6.8 / 2.54`.
 #'   `NULL` (default) uses `page` to determine the width.
@@ -877,17 +1003,17 @@ cpb_ggsave_grob <- function(filename, grob, dpi, device, bg, width = NULL, heigh
 #' }
 #' @export
 save_cpb <- function(filename,
-                      plot = ggplot2::last_plot(),
-                      page = c("half", "full", "small"),
-                      preset = c("report", "presentation", "map"),
-                      height = NULL,
-                      width = NULL,
-                      dpi = 300,
-                      device = ragg::agg_png,
-                      bg = cpb_bg,
-                      panel_size = NULL,
-                      lock = TRUE,
-                      ...) {
+                     plot = ggplot2::last_plot(),
+                     page = c("half", "full", "small"),
+                     preset = c("report", "presentation", "map"),
+                     height = NULL,
+                     width = NULL,
+                     dpi = 300,
+                     device = ragg::agg_png,
+                     bg = cpb_bg,
+                     panel_size = NULL,
+                     lock = TRUE,
+                     ...) {
   # print.cpb_plot() (above) only exists to catch a bare print()
   # skipping the exact positioning below -- ggplot2::ggsave() itself
   # calls print() internally to render, so without this, the fast path
@@ -936,8 +1062,16 @@ save_cpb <- function(filename,
   # wins outright, like an explicit panel_size does
   height_auto <- is.null(height)
   if (is.null(height)) {
-    height <- if (preset == "presentation") 2.5 else cpb_cm_to_in(cpb_page_height_cm[[page]])
+    height <- if (preset == "presentation") {
+      2.5
+    } else {
+      cpb_cm_to_in(cpb_page_height_cm[[page]])
+    }
   }
+
+  # a faceted figure is as many standard heights tall as it has rows of
+  # panels, unless the height was given
+  if (height_auto) height <- height * cpb_facet_rows(plot)
 
   plot <- cpb_scale_y_lab_gap(plot, cpb_in_to_cm(width))
 
@@ -967,7 +1101,8 @@ save_cpb <- function(filename,
       if (preset == "map" && height_auto) {
         g0 <- cpb_resolve_gtable_units(ggplot2::ggplotGrob(plot), width, height)
         panel_col <- unique(g0$layout$l[g0$layout$name == "panel"])
-        panel_w <- grid::convertWidth(g0$widths[panel_col], "in", valueOnly = TRUE)
+        panel_w <- grid::convertWidth(g0$widths[panel_col], "in",
+                                      valueOnly = TRUE)
         panel_size <- c(panel_w, panel_w * map_aspect)
       } else {
         panel_size <- cpb_map_panel_size(plot, map_aspect, width, height)
@@ -1001,17 +1136,19 @@ save_cpb <- function(filename,
   mirrored <- cpb_mirror_sec_axis_margin(grob)
   if (!is.null(mirrored)) grob <- mirrored
 
-  bottom <- cpb_figure_bottom(grob, attr(plot, "cpb_legend"), attr(plot, "cpb_legend_grid"))
+  bottom <- cpb_figure_bottom(grob, attr(plot, "cpb_legend"),
+                              attr(plot, "cpb_legend_grid"))
   if (!is.null(bottom)) {
     cpb_check_legend(attr(bottom, "cpb_legend_width"), width, lock)
     # the fixed top places sec_ylab itself
-    grob <- cpb_figure_top(bottom, sec_ylab$label, attr(plot, "cpb_ylab_position"))
+    grob <- cpb_figure_top(bottom, sec_ylab$label,
+                           attr(plot, "cpb_ylab_position"))
     sec_ylab$label <- NULL
     if (fill_panel) grob <- cpb_fill_panel(grob, height)
   }
 
   if (is.null(panel_size) && is.null(sec_ylab$label) && !title_aligned &&
-      is.null(mirrored) && is.null(bottom)) {
+        is.null(mirrored) && is.null(bottom)) {
     ggplot2::ggsave(
       filename = filename,
       plot     = plot,
@@ -1058,7 +1195,10 @@ save_cpb <- function(filename,
     }
   }
 
-  tcat("ggcpb: wrote ", filename, " (", round(width, 2), " x ", round(height, 2), " in, ", dpi, " dpi)")
+  tcat(
+    "ggcpb: wrote ", filename,
+    " (", round(width, 2), " x ", round(height, 2), " in, ", dpi, " dpi)"
+  )
 
   invisible(filename)
 }
@@ -1083,9 +1223,10 @@ cpb_check_title <- function(g, width, lock = TRUE) {
   # Two lines fit above the y-axis titles. The plot area does not move
   # down to make room for more.
   if (is.character(title$label) &&
-      max(lengths(strsplit(title$label, "\n", fixed = TRUE))) > 2) {
+        max(lengths(strsplit(title$label, "\n", fixed = TRUE))) > 2) {
     warning("ggcpb: the title has more than two lines and runs into the ",
-            "axis titles below it. Shorten it to at most two lines.", call. = FALSE)
+            "axis titles below it. Shorten it to at most two lines.",
+            call. = FALSE)
   }
   # The widest line, measured as drawn, must fit the figure width
   # minus the 0.45 cm margin on both sides.
@@ -1118,8 +1259,10 @@ cpb_check_fits <- function(what, width_cm, width, lock, advice) {
 # @noRd
 cpb_check_legend <- function(legend_width, width, lock) {
   if (is.null(legend_width)) return(invisible(TRUE))
-  cpb_check_fits("legend", grid::convertWidth(legend_width, "cm", valueOnly = TRUE),
-                 width, lock, "Shorten the legend labels, or set legend_ncol/legend_nrow.")
+  cpb_check_fits("legend",
+                 grid::convertWidth(legend_width, "cm", valueOnly = TRUE),
+                 width, lock,
+                 "Shorten the legend labels, or set legend_ncol/legend_nrow.")
 }
 
 #' Warn when the category labels are too long to sit side by side
@@ -1151,14 +1294,18 @@ cpb_check_category_labels <- function(plot, width) {
 
   # Measured as drawn. A label broken with "\n" counts by its longest
   # line.
-  el <- ggplot2::calc_element("axis.text.x.bottom", ggplot2::theme_get() + plot$theme)
+  el <- ggplot2::calc_element("axis.text.x.bottom",
+                              ggplot2::theme_get() + plot$theme)
   if (!inherits(el, "element_text")) return(invisible(TRUE))
-  gp <- grid::gpar(fontsize = el$size, fontface = el$face, fontfamily = el$family)
+  gp <- grid::gpar(fontsize = el$size, fontface = el$face,
+                   fontfamily = el$family)
   widest <- max(vapply(labels, function(l) {
-    grid::convertWidth(grid::grobWidth(grid::textGrob(l, gp = gp)), "cm", valueOnly = TRUE)
+    grid::convertWidth(grid::grobWidth(grid::textGrob(l, gp = gp)), "cm",
+                       valueOnly = TRUE)
   }, numeric(1)))
   # the figure's width within the house left and right margins, shared
-  slot <- (cpb_in_to_cm(width) - cpb_labels_margin_cm - cpb_margin_east_cm) / length(labels)
+  usable <- cpb_in_to_cm(width) - cpb_labels_margin_cm - cpb_margin_east_cm
+  slot <- usable / length(labels)
   if (widest > slot) {
     warning(
       "ggcpb: the longest category label is ", round(widest, 2), " cm wide, ",
@@ -1178,8 +1325,8 @@ cpb_check_category_labels <- function(plot, width) {
 #' Some wrappers tag their own output with a plain-English reason (via
 #' the `cpb_half_page_unsuitable` attribute) when their layout
 #' fundamentally needs more width than a half page gives -- an extended
-#' boxplot split into several facet panels, say, or a donut chart's
-#' ring plus its (often long) legend. Checked here, once, rather than
+#' boxplot split into several facet panels, say. Checked here, once,
+#' rather than
 #' in each wrapper: `width` is only known for certain at save time (a
 #' bare `print()`/knitr chunk never goes through save_cpb() at all, and
 #' `page`/`width` can still be overridden here regardless of what the
@@ -1194,7 +1341,8 @@ cpb_check_category_labels <- function(plot, width) {
 cpb_check_half_page <- function(plot, width) {
   reason <- attr(plot, "cpb_half_page_unsuitable")
   # a half page, or the still narrower small figure
-  if (is.null(reason) || !isTRUE(width < cpb_cm_to_in(cpb_page_width_cm[["half"]]) + 1e-6)) {
+  if (is.null(reason) ||
+        !isTRUE(width < cpb_cm_to_in(cpb_page_width_cm[["half"]]) + 1e-6)) {
     return(invisible(TRUE))
   }
   # phrased so `reason` sits as the object of "room for", not the

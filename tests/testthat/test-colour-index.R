@@ -24,16 +24,16 @@ test_that("colour_index keywords choose a palette", {
 
 test_that("colour_index works on the fill-mapped wrappers", {
   d <- data.frame(x = c("a", "b", "c"), y = 1:3, f = c("p", "q", "r"))
-  fills <- unique(ggplot2::ggplot_build(
-    cpb_col(d, x = x, y = y, fill = f, colour_index = c(2, 5, 6)))$data[[1]]$fill)
+  p <- cpb_col(d, x = x, y = y, fill = f, colour_index = c(2, 5, 6))
+  fills <- unique(ggplot2::ggplot_build(p)$data[[1]]$fill)
   expect_equal(fills, unname(cpb_cols(2, 5, 6)))
 })
 
 test_that("a keyword that contradicts `palette` is an error", {
   expect_error(
-    cpb_line(d3, x = x, y = y, colour = g,
-             colour_index = "continuous", palette = "qualitative"),
-    "both set the palette")
+               cpb_line(d3, x = x, y = y, colour = g,
+                        colour_index = "continuous", palette = "qualitative"),
+               "both set the palette")
   # agreeing is fine
   expect_no_error(cpb_line(d3, x = x, y = y, colour = g,
                            colour_index = "discrete", palette = "qualitative"))
@@ -50,16 +50,23 @@ test_that("bad colour_index values are rejected clearly", {
 
 test_that("cpb_donut takes colour_index like the other fill charts", {
   d <- data.frame(g = c("a", "b", "c"), v = c(3, 2, 1))
-  fills <- function(...) ggplot2::ggplot_build(cpb_donut(d, fill = g, y = v, ...))$data[[1]]$fill
+  fills <- function(...) {
+    ggplot2::ggplot_build(cpb_donut(d, fill = g, y = v,
+                                    ...))$data[[1]]$fill
+  }
   expect_equal(fills(colour_index = c(2, 5, 6)), unname(cpb_cols(2, 5, 6)))
   expect_equal(fills(colour_index = "discrete"), fills())
-  expect_error(cpb_donut(d, fill = g, y = v, colour_index = "rainbow"), "not recognised")
+  expect_error(cpb_donut(d, fill = g, y = v, colour_index = "rainbow"),
+               "not recognised")
 })
 
 test_that("the wrappers have no index or color_index argument", {
   fns <- list(cpb_col, cpb_area, cpb_line, cpb_box, cpb_boxplot_extended,
               cpb_scatter, cpb_hist, cpb_dot, cpb_donut, cpb_map)
-  has <- function(name) vapply(fns, function(f) name %in% names(formals(f)), TRUE)
+  has <- function(name) {
+    vapply(fns,
+           function(f) name %in% names(formals(f)), TRUE)
+  }
   expect_false(any(has("index")))
   expect_false(any(has("color_index")))
 })

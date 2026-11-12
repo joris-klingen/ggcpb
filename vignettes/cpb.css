@@ -1,0 +1,341 @@
+/* The default css of rmarkdown::html_vignette, followed by the CPB colours. */
+body {
+  background-color: #fff;
+  margin: 1em auto;
+  max-width: 700px;
+  overflow: visible;
+  padding-left: 2em;
+  padding-right: 2em;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+#TOC {
+  clear: both;
+  margin: 0 0 10px 10px;
+  padding: 4px;
+  width: 400px;
+  border: 1px solid #CCCCCC;
+  border-radius: 5px;
+
+  background-color: #f6f6f6;
+  font-size: 13px;
+  line-height: 1.3;
+}
+  #TOC .toctitle {
+    font-weight: bold;
+    font-size: 15px;
+    margin-left: 5px;
+  }
+
+  #TOC ul {
+    padding-left: 40px;
+    margin-left: -1.5em;
+    margin-top: 5px;
+    margin-bottom: 5px;
+  }
+  #TOC ul ul {
+    margin-left: -2em;
+  }
+  #TOC li {
+    line-height: 16px;
+  }
+
+table {
+  margin: 1em auto;
+  border-collapse: collapse;
+  border: none;
+}
+table th {
+  padding: 5px;
+}
+table td {
+  line-height: 18px;
+  padding: 5px 5px;
+}
+
+p {
+  margin: 0.5em 0;
+}
+
+blockquote {
+  background-color: #f6f6f6;
+  padding: 0.25em 0.75em;
+}
+
+hr {
+  border-style: solid;
+  border: none;
+  border-top: 1px solid #777;
+  margin: 28px 0;
+}
+
+dl {
+  margin-left: 0;
+}
+  dl dd {
+    margin-bottom: 13px;
+    margin-left: 13px;
+  }
+  dl dt {
+    font-weight: bold;
+  }
+
+ul {
+  margin-top: 0;
+}
+  ul li {
+    list-style: circle outside;
+  }
+  ul ul {
+    margin-bottom: 0;
+  }
+
+pre, code {
+  background-color: #f7f7f7;
+  border-radius: 3px;
+  color: #333;
+  white-space: pre-wrap;    /* Wrap long lines */
+}
+pre {
+  border-radius: 3px;
+  margin: 5px 0px 10px 0px;
+  padding: 10px;
+}
+pre:not([class]) {
+  background-color: #f7f7f7;
+}
+
+code {
+  font-family: Consolas, Monaco, 'Courier New', monospace;
+  font-size: 85%;
+}
+p > code, li > code {
+  padding: 2px 0px;
+}
+
+div.figure {
+  text-align: center;
+}
+img {
+  background-color: #FFFFFF;
+  padding: 2px;
+  border: 1px solid #DDDDDD;
+  border-radius: 3px;
+  border: 1px solid #CCCCCC;
+  margin: 0 5px;
+}
+
+h1 {
+  margin-top: 0;
+  font-size: 35px;
+  line-height: 40px;
+}
+
+h2 {
+  border-bottom: 4px solid #f7f7f7;
+  padding-top: 10px;
+  padding-bottom: 2px;
+  font-size: 145%;
+}
+
+h3 {
+  border-bottom: 2px solid #f7f7f7;
+  padding-top: 10px;
+  font-size: 120%;
+}
+
+h4 {
+  border-bottom: 1px solid #f7f7f7;
+  margin-left: 8px;
+  font-size: 105%;
+}
+
+h5, h6 {
+  border-bottom: 1px solid #ccc;
+  font-size: 105%;
+}
+
+a {
+  color: #0033dd;
+  text-decoration: none;
+}
+  a:hover {
+    color: #6666ff; }
+  a:visited {
+    color: #800080; }
+  a:visited:hover {
+    color: #BB00BB; }
+  a[href^="http:"] {
+    text-decoration: underline; }
+  a[href^="https:"] {
+    text-decoration: underline; }
+
+/* Colours from https://gist.github.com/robsimmons/1172277 */
+
+code > span.kw { color: #555; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal (decimal values) */
+code > span.bn { color: #d14; } /* BaseN */
+code > span.fl { color: #d14; } /* Float */
+code > span.ch { color: #d14; } /* Char */
+code > span.st { color: #d14; } /* String */
+code > span.co { color: #888888; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* OtherToken */
+code > span.al { color: #ff0000; font-weight: bold; } /* AlertToken */
+code > span.fu { color: #900; font-weight: bold; } /* Function calls */
+code > span.er { color: #a61717; background-color: #e3d2d2; } /* ErrorTok */
+
+/* The CPB blue (cpb_cols(6)) for the title and the headings. */
+h1, h2, h3, h4, h5, h6, h1.title {
+  color: #005faf;
+}
+
+/* The titles of the tables in the appendix: the CPB pink (cpb_cols(2)). */
+.table-title {
+  color: #e6006e;
+}
+.table-title code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+/* Tables: no background colours, no vertical borders, a light grey line
+   between the rows. The header row is in the CPB blue and bold. In the
+   parameter tables next to a figure (class ptab) the first column is. */
+table, table thead, table tr, table tr.even, table th, table td {
+  background: none !important;
+  border-left: none;
+  border-right: none;
+}
+table th, table td {
+  border-top: none;
+  border-bottom: 1px solid #DDDDDD;
+}
+table thead th {
+  border-top: 1px solid #DDDDDD;
+}
+table th {
+  color: #005faf;
+  font-weight: bold;
+}
+/* every header and cell aligned left */
+table th, table td {
+  text-align: left !important;
+}
+/* code in a table header looks like the rest of the header */
+table th code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+table.ptab td:first-child {
+  color: #005faf;
+  font-weight: bold;
+}
+
+/* Headings: 14 pt titles, 12 pt subtitles. */
+h1, h1.title {
+  font-size: 14pt;
+}
+h2 {
+  font-size: 12pt;
+}
+h3 {
+  font-size: 11pt;
+}
+h4, h5, h6 {
+  font-size: 10.5pt;
+}
+
+/* The house font (when it is installed, else Source Sans 3), and a table
+   of contents in the same style as the rest: no box, links in the CPB blue. */
+body, h1, h2, h3, h4, h5, h6, table, #TOC {
+  font-family: "Rijksoverheid Sans Text", "Rijksoverheid Sans",
+    "Source Sans 3", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+#TOC {
+  border: none;
+  border-radius: 0;
+  background: none;
+  margin: 0 0 1em 0;
+  padding: 0;
+  width: auto;
+  font-size: 14px;
+}
+a, a:visited {
+  color: #005faf;
+}
+a:hover, a:visited:hover {
+  color: #003c6e;
+  text-decoration: underline;
+}
+
+/* The long reference tables of the import vignette: every second row in a
+   very light blue, starting with the row under the header. */
+table.reftab tbody tr:nth-child(odd) td {
+  background: #f3f9ff !important;
+}
+/* Column widths of the reference tables: the description gets the most room. */
+table.reftab {
+  width: 100%;
+  table-layout: fixed;
+  font-size: 0.85em;
+}
+table.reftab th, table.reftab td {
+  overflow-wrap: break-word;
+}
+table.reftab th:nth-child(1) { width: 17%; }
+table.reftab th:nth-child(2) { width: 20%; }
+table.reftab th:nth-child(3) { width: 14%; }
+table.reftab th:nth-child(4) { width: 17%; }
+table.reftab th:nth-child(5) { width: 32%; }
+/* Several defaults in one cell: one per line, a grey line in between. */
+table.reftab .dv + .dv {
+  border-top: 1px solid #DDDDDD;
+  margin-top: 3px;
+  padding-top: 3px;
+}
+/* The example parameter file: parameter names in the CPB blue and bold, the
+   plot types of the header row in black. */
+table.paramtab td:first-child {
+  color: #005faf;
+  font-weight: bold;
+}
+table.paramtab th:not(:first-child) {
+  color: #000000;
+  font-weight: normal;
+}
+/* The start of the sentence under each figure: CPB pink and bold. */
+.repro-title {
+  color: #e6006e;
+  font-weight: bold;
+}
+
+/* The label of a figure caption (Figure 1.): CPB blue and bold. */
+.fig-label {
+  color: #005faf;
+  font-weight: bold;
+}
+
+/* Printed to PDF: section 1.2 starts on a new page. */
+@media print {
+  #what-you-need-to-know-to-use-ggcpb-in-excel {
+    break-before: page;
+  }
+}
+
+/* Printed to PDF: smaller margins, so more fits on a page. */
+@page {
+  margin: 10mm 12mm;
+}

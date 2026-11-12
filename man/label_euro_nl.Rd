@@ -10,7 +10,8 @@ label_euro_nl(accuracy = NULL, style = getOption("ggcpb.style", "dutch"), ...)
 \item{accuracy}{Passed to \code{\link[scales:label_currency]{scales::label_currency()}}; \code{NULL}
 (default) lets \code{scales} pick a sensible accuracy from the data.}
 
-\item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
+\item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,}
+decimal)
 or \code{"english"} (\verb{,} thousands, \code{.} decimal). Taken from
 \code{getOption("ggcpb.style")}, so an English report can set
 \code{options(ggcpb.style = "english")} once rather than passing \code{style}

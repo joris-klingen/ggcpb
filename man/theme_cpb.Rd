@@ -53,8 +53,8 @@ major gridlines). Defaults to \code{FALSE}: gridlines appear only at
 labelled breaks.}
 
 \item{ticks}{If \code{TRUE} (default), draw black axis tick marks, and
-the axis line they hang from, on the \emph{category} axis (the x axis
-when \code{orientation = "vertical"}, the y axis when
+the axis line they hang from, on the \emph{category} axis (the x-axis
+when \code{orientation = "vertical"}, the y-axis when
 \code{"horizontal"}).}
 
 \item{flush_legend}{If \code{TRUE} (default), anchor the legend to the

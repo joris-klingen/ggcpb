@@ -1,17 +1,15 @@
 # render_vignettes.R ----
 #
-# Renders the vignettes to GitHub-flavoured markdown in doc/, so the
-# README can link to *rendered* pages (with figures) that display
-# directly in the repository UI -- GitHub shows raw HTML files as
-# source, but renders .md files. Re-run after editing a vignette:
+# Renders the vignettes to HTML in doc/, so there is a readable copy with
+# the CPB layout (figures next to their parameters) without installing the
+# package.
+#
+# Re-run after editing a vignette:
 #
 #   Rscript tools/render_vignettes.R
 #
-# and commit the updated doc/ output. doc/ is .Rbuildignore'd, so the
-# built package still ships only the real (html_vignette) vignettes.
-#
-# tools/check_docs_fresh.R checks whether this needs re-running at all
-# -- run that first if unsure.
+# and commit the updated doc/*.html. doc/ is .Rbuildignore'd, so the built
+# package ships only the real vignettes.
 
 pkg_root <- normalizePath(file.path(dirname(sub(
   "^--file=", "",
@@ -20,13 +18,14 @@ pkg_root <- normalizePath(file.path(dirname(sub(
 
 devtools::load_all(pkg_root, quiet = TRUE)
 
-# Dutch figures carry accented characters ("reele", "geindexeerd" with
-# their diaereses). Under a non-UTF-8 locale R reads each of those as
-# two undefined bytes, and the graphics device silently draws them as
-# missing glyphs -- so the rendered figures look fine to the build and
-# wrong to the reader. Fail loudly instead of committing that.
+# Dutch figures carry accented characters. Under a non-UTF-8 locale R
+# reads each of those as two undefined bytes, and the graphics device
+# silently draws them as missing glyphs, so the rendered figures look fine
+# to the build and wrong to the reader. Fail loudly instead of committing
+# that.
 if (!ggcpb:::cpb_utf8_locale()) {
-  for (loc in c("C.UTF-8", "en_US.UTF-8", "nl_NL.UTF-8", "English_United States.utf8")) {
+  for (loc in c("C.UTF-8", "en_US.UTF-8", "nl_NL.UTF-8",
+                "English_United States.utf8")) {
     if (suppressWarnings(Sys.setlocale("LC_CTYPE", loc)) != "") break
   }
 }
@@ -37,31 +36,24 @@ if (!ggcpb:::cpb_utf8_locale()) {
        "LC_ALL=C.UTF-8 Rscript tools/render_vignettes.R", call. = FALSE)
 }
 
-out_dir <- file.path(pkg_root, "doc")
-dir.create(out_dir, showWarnings = FALSE)
+doc_dir <- file.path(pkg_root, "doc")
+dir.create(doc_dir, showWarnings = FALSE)
 
 for (rmd in list.files(file.path(pkg_root, "vignettes"),
                        pattern = "\\.Rmd$", full.names = TRUE)) {
   message("rendering ", basename(rmd))
-  # render from a copy inside doc/ so the figure links in the .md come
-  # out relative (chart-types_files/...), not absolute
-  local_rmd <- file.path(out_dir, basename(rmd))
-  file.copy(rmd, local_rmd, overwrite = TRUE)
-  rmarkdown::render(
-    local_rmd,
-    output_format = rmarkdown::github_document(html_preview = FALSE),
-    quiet         = TRUE
-  )
-  unlink(local_rmd)
-
-  # Cross-vignette links are written as sibling .html in the .Rmd, which
-  # is what the built (html_vignette) package needs. In doc/ the siblings
-  # are .md, so repoint them there -- otherwise the link 404s on GitHub.
-  md <- sub("\\.Rmd$", ".md", local_rmd)
-  if (file.exists(md)) {
-    txt <- readLines(md, warn = FALSE)
-    writeLines(gsub("(\\]\\([^):]*)\\.html\\)", "\\1.md)", txt), md)
-  }
+  rmarkdown::render(rmd, output_dir = doc_dir, quiet = TRUE)
 }
 
-message("rendered vignettes written to ", out_dir)
+# the installed package carries the same pages in inst/doc, so they show up
+# under "User guides" in the help after install_github(), which does not
+# build vignettes
+inst_doc <- file.path(pkg_root, "inst", "doc")
+dir.create(inst_doc, showWarnings = FALSE, recursive = TRUE)
+for (rmd in list.files(file.path(pkg_root, "vignettes"),
+                       pattern = "\\.Rmd$", full.names = TRUE)) {
+  html <- file.path(doc_dir, sub("\\.Rmd$", ".html", basename(rmd)))
+  file.copy(c(rmd, html), inst_doc, overwrite = TRUE)
+}
+
+message("rendered vignettes written to ", doc_dir, " and ", inst_doc)

@@ -2,6 +2,7 @@
 title: "Building figures from CSV files"
 output:
   rmarkdown::html_vignette:
+    css: cpb.css
     toc: true
     number_sections: true
 vignette: >
@@ -11,11 +12,7 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-# Figures are drawn on the REAL CPB canvas (page = "half" is 7.5 cm,
-# "full" is 15.5 cm; text sizes in theme_cpb() are absolute points, so
-# any other canvas distorts the text-to-figure proportion) and only
-# *displayed* smaller via out.width, at a consistent 2:1 scale:
-# half-page figures at 350px, full-page figures at 700px.
+# Page = "half" is 7.5 cm and "full" is 15.5 cm.
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -32,11 +29,9 @@ library(ggcpb)
 ```
 
 ```{r show-saved-helper, include = FALSE}
-# Displays a file save_cpb() already wrote to a temporary path, at a
-# stable location knitr manages itself -- so the rendered copy of this
-# page (e.g. on GitHub) keeps a working image link rather than one
-# pointing at a temp file that no longer exists. Purely a display
-# detail for this page, not part of the save_cpb() example above it.
+# Displays a file save_cpb() already wrote to a temporary path.
+# The rendered copy of this page keeps a working image link rather than one
+# pointing at a temp file that no longer exists.
 .show_saved <- function(path) {
   stable <- knitr::fig_path(".png")
   dir.create(dirname(stable), recursive = TRUE, showWarnings = FALSE)
@@ -47,181 +42,259 @@ library(ggcpb)
 
 # Introduction
 
-Most figures in this package are built by calling one of its
-functions directly in R code. This vignette describes an alternative
-based on two CSV files, a data file and a parameter file.
+Figures can be created directly with or without using R. 
+This vignette described the method to create figures **using only 
+Excel**. 
 
-The data file contains the data used in the figures. The parameter
-file specifies which figures to create and how they should be
-configured. The `cpb_import_csv()` function reads both files and creates
-the figures.
+To create a figure, you need:
 
-This approach is useful when figure specifications need to be kept
-separate from R code, for example when the data and figure settings
-are maintained outside an R script.
+* a `params.csv` file
+  * this is the parameter file, which specifies which figures to create 
+    and how they should be configured
+  * one `params.csv` can contain the parameters for several figures
+* a `data` folder with the dataset(s)
+  * each dataset is a CSV file
+* the `generate_plot.bat` script
 
-# The data file
+*Please note*: The datasets must be saved as CSV, not as spreadsheet (`xlsx`).
+In Excel, choose `File` -> `Save as` -> `CSV UTF-8 (comma delimited)`.
 
-The data file can be any CSV file containing the variables needed by
-the figures. For this example, the package includes
-`import_example_data.csv`.
+## How to create a figure without opening R?
 
-```{r data-path}
-data_csv <- system.file(
-  "extdata",
-  "import_example_data.csv",
-  package = "ggcpb"
-)
+The general workflow to create figures with ggcpb is as follows: 
+
+1. Find the folder `examples` in the installed ggcpb package.
+   In R, `system.file("examples", package = "ggcpb")` returns the path
+   to this folder.
+2. Copy it to the place where you want to create figures.
+3. Put your datasets in the folder `data`. Open `params.csv` in Excel
+   and add your parameters.
+4. To create a figure, double clik on `generate_plot.bat`. 
+   This reads `params.csv`, builds every figure and
+   saves the images in the folder `generated`. Each image is named after
+   its dataset. Running the script again produces updated figures. 
+   Images with the same name are replaced. A dataset or figure that 
+   fails is skipped and listed at the end, and in `params_log.txt`. 
+   The other figures are still saved.
+
+*Please note*. The `generate_plot.bat`, `generate_plot.R` and `params.csv` must all be 
+in the same folder. Within this folder, there must be a subfolder `data`,
+in which each dataset must be saved as a CSV file.
+
+```{r, loading, include=FALSE, echo = FALSE}
+figure_dir <- file.path(tempdir(), "figures")
+dir.create(figure_dir)
+file.copy(list.files(system.file("examples", package = "ggcpb"),
+                     full.names = TRUE), figure_dir, recursive = TRUE)
+params_csv <- file.path(figure_dir, "params.csv")
 ```
 
-The file can be read in the usual way:
+# The dataset
 
-```{r data-frame}
-read.csv(data_csv)
+Each dataset is a CSV file in the `data` folder. It can have any name. 
+The first row holds the column names. The package example has two datasets. 
+One of the example datasets is shown here:
+
+```{r data-frame, echo = FALSE}
+knitr::kable(read.csv(file.path(figure_dir, "data", "koopkracht.csv")),
+             align = "l")
 ```
 
-The important point for the import method is that the parameter file
-refers to variables by their column names. For example, if a
-parameter contains `jaar`, `cpb_import_csv()` looks for a column named
-`jaar` in the data file.
+The parameter file refers to variables by their column names. 
+Categorical columns (e.g. `regio`, `geslacht`) keep the order of the rows
+in the created figure. So, the first group in the CSV-file (e.g. here `werkenden`) 
+is the first on the axis and in the legend. 
 
 # The parameter file
 
 The parameter file determines which figures are created. Each figure
-has a `plot_type` and an `id`, together with the settings required
-for that plot type.
+has a `plot_type`, together with the settings required
+for that plot type. The parameter `data` names the dataset of the
+figure.
 
-The example parameter file is `import_example_params.csv`.
-
-```{r params-path}
-params_csv <- system.file(
-  "extdata",
-  "import_example_params.csv",
-  package = "ggcpb"
-)
-```
-
-This example uses the horizontal layout:
-
-```{r params-raw, echo = FALSE, comment = ""}
-cat(readLines(params_csv), sep = "\n")
-```
-
-The same content, split on the comma and shown as a table:
+The first column holds the parameter names. Every other column
+describes one figure. This is the example parameter file. The first row,
+with the plot types, is the header.
 
 ```{r params-table, echo = FALSE}
-knitr::kable(read.csv(params_csv, stringsAsFactors = FALSE))
+params_df <- read.csv(params_csv, header = FALSE, fill = TRUE,
+                      stringsAsFactors = FALSE)
+params_df[is.na(params_df)] <- ""
+# the package example also holds the figures of the introduction: show
+# the first two figures here
+params_df <- params_df[, 1:3]
+params_df <- params_df[params_df[[1]] == "plot_type" |
+                         apply(params_df[-1], 1, function(r) any(nzchar(r))), ]
+names(params_df) <- as.character(unlist(params_df[1, ]))
+knitr::kable(params_df[-1, ], format = "html", row.names = FALSE,
+             align = "l", table.attr = 'class="paramtab"')
 ```
 
-Each row describes one figure. The column names are parameter names.
+This table shows that there are two figures. The first figure (see [figure 1](#figure-1)) is a column chart
+(`plot_type` = `col`) that uses the `koopkracht` 
+dataset (`data`) and that portrays `werkloosheid` on the second y-axis (`sec_y`). 
+The second figure (see [figure 2](#figure-2)) is a line chart
+(`plot_type` = `line`) that uses the `werkloosheid` 
+dataset (`data`) and has no secondary y-axis. A parameter value can be left blank, such as `sec_y` in the second plot.
+Only the second figure sets `style` to `english`, so it gets English labels
+and number formats.
 
-Some parameters refer to columns in the data file. For example:
+The parameter `page` sets the page width a figure is saved at: `half`
+(7.5 cm, the default), `full` (15.5 cm) or `small`. 
+If left out, the default `half` is used. 
 
-* `x`, `y`, `fill` and `sec_y` are column references.
-* `title`, `ylab` and `position` are literal values.
+## Plot types
 
-The distinction is important. `y,koopkracht` means that the `y`
-variable should be taken from the `koopkracht` column, while
-`ylab,% mutatie` supplies the text `% mutatie` directly.
+`plot_type` names the figure type: `line`, `col`, `area`, `box`,
+`boxplot_extended`, `dot`, `scatter`, `hist`, `donut` or `map`. Each
+type is in R the `cpb_` function of the same name, such as `cpb_line()`.
+Every argument of that function can be a parameter. Appendix A lists
+them all per plot type.
 
-# Creating the figures
+## Special values
 
-Once the two files are available, pass them to `cpb_import_csv()`:
+Most values are plain text, a number, `TRUE` or `FALSE`. A few need a
+special form:
+
+| Value | Example | What happens |
+|---|---|---|
+| a list | `0;100` | `;` separates the values. |
+| a line break | `First sentence\nsecond sentence` | `\n` starts a new line. |
+| no upper limit | `0;20;Inf` | `Inf` and `-Inf` are numbers. |
+| a formatter | `euro` | `x_labels` and `sec_axis_labels` take `number` (1.000), `euro` (€1.000) or `pct` (1%). Own labels such as `a;b;c` work too. |
+| pairs | `p5:onderste 5%` | `dot_labels` takes name:value pairs. |
+| a date | `2024-01-31` | A dataset column of dates gives a date axis. `31-1-2024` works too. |
+
+## Classes
+
+The parameter `cut` puts numbers into classes, such as
+`0;20;30;40;Inf`. That gives the classes "lager dan 20", "20 - 30",
+"30 - 40". 
+
+With `style = english` it gives the classes
+"below 20", "20 - 30", "30 - 40" and "40 and above". 
+
+The parameter `cut_labels` says how the class limits are written:
+
+* `number` (default) writes plain numbers, such as "20".
+* `euro` adds a euro sign, such as "€20".
+* `pct` adds a percent sign, such as "20%".
+
+The classes colour the figure through one column. This is `value` of a map,
+`colour` of a line, dot or scatter plot, and `fill` of the other types.
+The numbers themselves stay available, for example on the y-axis.
+
+## Saving
+
+Next to `page`, four parameters say how a figure is saved:
+
+| Parameter | Example | What happens |
+|---|---|---|
+| `height` | `10` | The height in cm. Left out, the page height is used. |
+| `preset` | `map` | `map` makes a map as tall as it needs. `presentation` is for slides. |
+| `dpi` | `800` | The resolution. The default is 300. |
+| `lock` | `FALSE` | A title that is too wide only gives a warning, instead of an error. |
+
+# Creating the figures using R
+
+Pass the parameter file to `cpb_import_csv()`. The datasets are read
+from the `data` folder next to it:
 
 ```{r build, results = "hide"}
-tmp_params <- tempfile(fileext = ".csv")
-file.copy(params_csv, tmp_params, overwrite = TRUE)
-
-figs <- cpb_import_csv(data_csv, tmp_params)
+figure_dir <- file.path(tempdir(), "figures")
+params_csv <- file.path(figure_dir, "params.csv")
+figs <- cpb_import_csv(params_csv)
 ```
 
 When the parameter file contains multiple figures, `cpb_import_csv()`
-returns a named list. The names come from the `id` parameter.
+returns a named list. The names come from the datasets. Here the two
+figures use different datasets, so they are called `koopkracht` and
+`werkloosheid`.
 
-The `koopkracht` figure has a second value axis (`sec_y`), and its
-right side caption is only placed exactly by `save_cpb()`. Printed
-directly, an approximate placement is shown instead, close but not
-exact, since at that point the figure has not actually been saved yet
-to measure against. So, rather than printing it directly, it is
-written out through `save_cpb()` first and shown from that file:
+`save_cpb()` precisely positions the secondary-axis caption in the
+`koopkracht` figure, so the figure is saved using `save_cpb()` rather than
+printed directly.
 
 ```{r fig-koopkracht, results = "hide"}
 path <- tempfile(fileext = ".png")
 save_cpb(path, figs$koopkracht, page = "half")
 ```
 
+<span id="figure-1"><span class="fig-label">**Figure 1.**</span> The column
+chart of the first figure in params.csv</span>
+
 ```{r fig-koopkracht-show, echo = FALSE}
 .show_saved(path)
 ```
 
+
 `werkloosheid` has no second axis, so it can be shown directly:
+
+<span id="figure-2"><span class="fig-label">**Figure 2.**</span> The line
+chart of the second figure in params.csv</span>
 
 ```{r fig-werkloosheid}
 figs$werkloosheid
 ```
 
-In normal use, the data and parameter files can be stored in an
-ordinary writable folder. The temporary copy above is only needed
-here because the example parameter file is part of the installed
-package.
 
-# One figure per parameter file
+# Several datasets
 
-There is a second parameter file layout for cases where one parameter
-file describes a single figure.
+The parameter `data` names the dataset of a figure, relative to the
+`data` folder next to `params.csv`. The extension `.csv` is optional,
+so `koopkracht` and `koopkracht.csv` are the same dataset.
 
-In the horizontal layout, each row is a figure and each column is a
-parameter. In the vertical layout, each row is a parameter and the
-two columns contain the parameter name and its value.
+| Parameter *data* | What happens |
+|---|---|
+| `koopkracht` | The figure uses `data/koopkracht.csv`. |
+| `koopkracht;werkloosheid` | Two figures are made: one from `data/koopkracht.csv` and one from `data/werkloosheid.csv`. |
+| blank | The figure uses `data/data.csv`. |
+| column absent | The same as blank. |
 
-For example, the following describes a line chart:
+The figures are named after their dataset. If several figures use the
+same dataset, the figure number is added to the name. The first figure
+column in `params.csv` is number 1. For example, `koopkracht_1.png`
+and `koopkracht_3.png`.
 
-```{r vertical}
-params_vertical <- tempfile(fileext = ".csv")
+A named dataset that does not exist in the `data` folder is skipped
+with a warning. Nothing
+falls back to another dataset. The other datasets in the same list
+and the other rows are still created. With `data` set to
+`a;b;c` and no `b.csv`, you get figures for `a` and `c`, and a
+warning about `b.csv`.
+
+## A parameter file with one figure
+
+A parameter file can describe a single figure or several figures. When describing only one figure,
+it has one column of values next to the parameter names. For example, the following
+describes a line chart. It can be saved in the same folder, so it finds
+the same `data` folder:
+
+```{r one-figure}
+params_one <- file.path(figure_dir, "params_one.csv")
 
 writeLines(c(
   "plot_type,line",
   "title,Werkloosheid",
+  "data,werkloosheid",
   "x,jaar",
   "y,werkloosheid",
   "ylab,%"
-), params_vertical)
+), params_one)
 
-cat(readLines(params_vertical), sep = "\n")
+cat(readLines(params_one), sep = "\n")
 ```
-
-The first column contains the parameter names:
-
-```text
-plot_type
-title
-x
-y
-ylab
-```
-
-The second column contains their values:
-
-```text
-line
-Werkloosheid
-jaar
-werkloosheid
-%
-```
-
-This layout can be convenient when a figure has many parameters,
-because each setting has its own row.
 
 When the parameter file describes one figure, `cpb_import_csv()` returns
-that figure directly rather than a named list.
+that figure directly rather than a named list. Use `simplify = FALSE`
+to always get a named list.
 
-```{r vertical-build, results = "hide"}
-fig_vertical <- cpb_import_csv(data_csv, params_vertical)
+```{r one-figure-build, results = "hide"}
+fig_one <- cpb_import_csv(params_one)
 ```
 
-```{r vertical-build-show, echo = FALSE}
-fig_vertical
+```{r one-figure-show, echo = FALSE}
+fig_one
 ```
 
 # Handling problems
@@ -230,105 +303,96 @@ A parameter can be left blank. In that case, the default value is
 used.
 
 If a parameter is not valid for the selected `plot_type`, it is
-ignored and the default is used. These cases produce a warning.
+ignored and the default is used. This produces a warning.
 
 If a figure cannot be created, for example because a column
-referenced by a parameter does not exist in the data file, that
+referenced by a parameter does not exist in the dataset, that
 figure is skipped. Other figures in the same parameter file are still
 created.
 
 Each call to `cpb_import_csv()` also writes a log file next to the
-parameter file. The log records figures that were created or skipped
-and any parameter problems.
+parameter file. The log records parameter problems and
+figures that were created or skipped.
 
-# Run the import without opening R
 
-The same CSV based method can also be used without opening R.
+# Appendix A: Parameters {-}
 
-The `autogenerate_plots()` function creates a ready to use folder
-containing:
+A parameter that refers to a variable (such as `x`, `y` or `fill`) takes a
+column name from the dataset. Every other parameter takes a value directly
+from the parameter file.
 
-* a data file
-* a parameter file
-* a script for Windows (a `.bat` file)
-* a script for a Mac (a `.command` file)
-
-After editing the data and parameter files, run the appropriate
-script. It reads both files and saves the resulting figures as
-images.
-
-Running the script again after changing either CSV file produces
-updated figures.
-
-R and `ggcpb` must still be installed on the computer running the
-script.
-
-# Appendix A: Parameter values {-}
-
-The available parameters depend on the `plot_type`. The complete list
-is stored in `parameter_settings.csv`, and gives the available
-parameters, their kind, default values and examples.
-
-```{r params-ref-path}
-ref_csv <- system.file(
-  "extdata",
-  "parameter_settings.csv",
-  package = "ggcpb"
-)
-```
-
-Many parameters are the same across every `plot_type`. To avoid
-repeating those in every table, Table A1 lists the parameters shared,
-with the same meaning and default, by all plot types. Table A2 onward
-each cover one `plot_type`, listing only what is not already in Table
-A1. A parameter is only listed for the plot types it actually applies
-to, so a table for one `plot_type` does not necessarily match another.
+The available parameters depend on the `plot_type`. Table A1 lists every
+parameter once, with the plot types it belongs to, its default, an example
+and a short description. A default that differs per plot type is followed by
+the plot types it holds for.
 
 ```{r params-ref-table, echo = FALSE, results = "asis"}
 ref <- read.csv(
-  ref_csv,
+  system.file("extdata", "parameter_settings.csv", package = "ggcpb"),
   stringsAsFactors = FALSE
 )
-
+# area is not shown on purpose, but it still works in params.csv
+ref <- ref[ref$plot_type != "area", ]
 types <- unique(ref$plot_type)
 
-# a parameter belongs in the shared table only when every plot_type
-# has it, with the same kind and default -- present everywhere but
-# with a different default per type (e.g. reverse_legend) still needs
-# its own row in each type's own table, since a single shared default
-# would be wrong for the types that do not use it
-by_param <- split(ref, ref$param)
-is_shared <- vapply(by_param, function(rows) {
-  setequal(unique(rows$plot_type), types) &&
-    nrow(unique(rows[c("kind", "default")])) == 1
-}, logical(1))
-shared_params <- sort(names(by_param)[is_shared])
-
-show_params <- function(rows) {
-  rows <- rows[order(rows$param), c("param", "kind", "default", "example")]
-  print(knitr::kable(
-    rows,
-    row.names = FALSE,
-    col.names = c("setting", "kind", "default", "example")
-  ))
+# One row per parameter. The plot types are listed unless it belongs to all
+# of them. With one default for every plot type that is the default. With
+# several, the default of most plot types is "rest" and the others are
+# listed with their plot types, one per line. A required parameter is just
+# "required".
+one_row <- function(rows) {
+  where <- if (setequal(rows$plot_type, types)) {
+    "all"
+  } else {
+    paste(rows$plot_type, collapse = ", ")
+  }
+  defaults <- ifelse(nzchar(rows$default), rows$default, "none")
+  defaults <- sub("^\\(required\\)$", "required", defaults)
+  if ("required" %in% defaults) {
+    default <- "required"
+  } else if (length(unique(defaults)) == 1) {
+    default <- defaults[1]
+  } else {
+    counts <- table(defaults)
+    rest <- names(counts)[which.max(counts)]
+    others <- setdiff(unique(defaults), rest)
+    # one line per default, with a grey line in between
+    default <- paste0("<div class=\"dv\">", c(
+      vapply(others, function(d) {
+        types_d <- paste(rows$plot_type[defaults == d], collapse = ", ")
+        paste0(d, ": ", types_d)
+      }, character(1)),
+      paste0(rest, ": rest")
+    ), "</div>", collapse = "")
+  }
+  data.frame(param = rows$param[1], plot_types = where, default = default,
+             example = rows$example[1], description = rows$description[1],
+             stringsAsFactors = FALSE)
+}
+all_params <- do.call(rbind, lapply(split(ref, ref$param), one_row))
+all_params <- all_params[order(all_params$param), ]
+# `x` in the reference becomes code
+all_params[] <- lapply(all_params, function(col) {
+  gsub("`([^`]*)`", "<code>\\1</code>", col)
+})
+# a long name may only break after an underscore, but a plot type is not cut
+for (nm in setdiff(names(all_params), "plot_types")) {
+  all_params[[nm]] <- gsub("_", "_<wbr>", all_params[[nm]], fixed = TRUE)
 }
 
-cat("\n\n**Table A1. Shared parameters across all plot types**\n\n")
-show_params(ref[ref$param %in% shared_params & !duplicated(ref$param), ])
-
-table_n <- 2
-for (t in types) {
-  rows <- ref[ref$plot_type == t & !ref$param %in% shared_params, ]
-  if (!nrow(rows)) next
-  cat("\n\n**Table A", table_n, ". Parameters specific to `", t, "`**\n\n", sep = "")
-  show_params(rows)
-  table_n <- table_n + 1
-}
+cat("\n\n<span class=\"table-title\">",
+    "**Table A1. All parameters**</span>\n\n", sep = "")
+print(knitr::kable(
+  all_params,
+  format = "html",
+  row.names = FALSE,
+  escape = FALSE,
+  table.attr = 'class="reftab"',
+  col.names = c("Parameter", "Plot types", "Default", "Example",
+                "Description")
+))
 ```
 
-A parameter of kind `column` takes a column name from the data file.
-A parameter of kind `literal` takes a value directly from the
-parameter file.
+---
 
-The `parameter_settings.csv` file can also be opened directly in a
-spreadsheet program.
+All data in this document is made up. It is generated to show the figures and is not real data.

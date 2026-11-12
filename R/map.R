@@ -79,8 +79,11 @@ cpb_nl_geo <- function(level = c("gemeente", "corop", "provincie")) {
 #'   conflict and raise an error, since both set the same thing.
 #' @param reverse For a numeric `value` column: reverse the sequential
 #'   gradient (passed to [scale_fill_cpb_c()]).
-#' @param na_fill Fill for regions without a value in `data`; defaults
-#'   to the CPB missing-value grey.
+#' @param na_fill Fill for regions without a value in `data`. `NULL`
+#'   (default) leaves them unfilled and out of the legend. A colour, or a
+#'   position in the house palette such as `4`, fills them and adds a legend
+#'   key "Geen gegevens" ("No data" in the English style). A colourbar has
+#'   no key for it.
 #' @param legend Legend placement. `"topleft"` (default) puts the
 #'   legend inside the panel at top-left -- in the empty North Sea
 #'   corner of the Netherlands -- as a vertical block. Any other value
@@ -123,7 +126,8 @@ cpb_map <- function(data, region, value,
                     legend_title = NULL,
                     style = getOption("ggcpb.style", "dutch"),
                     ...) {
-  .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette), "colour_index")
+  .cpb_idx <- cpb_resolve_index(colour_index, palette, !missing(palette),
+                                "colour_index")
   index <- .cpb_idx$index
   palette <- .cpb_idx$palette
   style <- match.arg(style, c("dutch", "english"))
@@ -141,7 +145,8 @@ cpb_map <- function(data, region, value,
   geo_key <- if (by_code >= by_name) geo$code else geo$name
   unmatched <- setdiff(keys, geo_key)
   if (length(unmatched)) {
-    warning("ggcpb: ", length(unmatched), " region(s) in `data` not found on the ",
+    warning("ggcpb: ", length(unmatched),
+            " region(s) in `data` not found on the ",
             level, " map (", paste(utils::head(unmatched, 5), collapse = ", "),
             if (length(unmatched) > 5) ", ..." else "",
             "); check the level and the region codes/names.", call. = FALSE)
@@ -158,7 +163,20 @@ cpb_map <- function(data, region, value,
   # classed/continuous fill neighbouring classes already differ, so a
   # soft seam is enough. Pass border_colour = "white" for more contrast.
   if (is.null(border_colour)) border_colour <- tokens$bg
-  if (is.null(na_fill)) na_fill <- tokens$na
+  # no na_fill: regions without a value stay unfilled and get no legend
+  # key; with one, they are filled and the key says so
+  na_args <- list(na.value = NA, na.translate = FALSE)
+  if (!is.null(na_fill)) {
+    if (grepl("^[0-9]+$", as.character(na_fill))) {
+      # a palette position, as in colour_index
+      na_fill <- unname(cpb_cols(as.integer(na_fill)))
+    }
+    no_data <- if (style == "english") "No data" else "Geen gegevens"
+    na_args <- list(
+      na.value = na_fill,
+      labels = function(x) ifelse(is.na(x), no_data, x)
+    )
+  }
 
   # the legend sits inside the panel, top-left, by default -- the empty
   # North Sea corner of the Netherlands leaves room for it there
@@ -176,16 +194,18 @@ cpb_map <- function(data, region, value,
   # a numeric colour bar runs between two labelled round values
   bar_breaks <- if (is.numeric(vals)) cpb_bar_breaks(vals)
   p <- p + if (is.numeric(vals)) {
-    scale_fill_cpb_c(reverse = reverse, na.value = na_fill,
+    scale_fill_cpb_c(reverse = reverse, na.value = na_args$na.value,
                      limits = range(bar_breaks), breaks = bar_breaks,
                      labels = label_number_nl(style = style))
   } else if (!is.null(index)) {
-    scale_fill_cpb_manual(index = index, palette = palette, na.value = na_fill)
+    do.call(scale_fill_cpb_manual,
+            c(list(index = index, palette = palette), na_args))
   } else {
-    scale_fill_cpb_d(palette = palette, na.value = na_fill)
+    do.call(scale_fill_cpb_d, c(list(palette = palette), na_args))
   }
   if (!is.numeric(vals)) {
-    p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol, legend_nrow)
+    p <- cpb_add_legend_guide(p, "fill", reverse_legend, legend_ncol,
+                              legend_nrow)
   }
   if (is.numeric(vals)) {
     # a compact colourbar, thin like the legend keys; vertical when the

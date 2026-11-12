@@ -21,7 +21,7 @@ test_that("theme_cpb sets the fixed house text sizes and faces", {
   expect_equal(th$strip.text$size, 7)
 })
 
-test_that("theme_cpb fills the plot background with the CPB colour by default", {
+test_that("theme_cpb fills the plot background with the CPB colour", {
   th <- theme_cpb()
   expect_s3_class(th$plot.background, "element_rect")
   expect_equal(th$plot.background$fill, cpb_tokens()$bg)
@@ -108,7 +108,8 @@ test_that("theme_cpb sets the fixed left and right margins", {
   th <- theme_cpb()
   cm <- function(u) grid::convertUnit(u, "cm", valueOnly = TRUE)
   # top and bottom in pt, right 0.635 cm, left 0.45 cm
-  expect_equal(cm(th$plot.margin), c(10 / 72.27 * 2.54, 0.635, 8 / 72.27 * 2.54, 0.45))
+  expect_equal(cm(th$plot.margin),
+               c(10 / 72.27 * 2.54, 0.635, 8 / 72.27 * 2.54, 0.45))
 })
 
 test_that("theme_cpb pins the axis spacing that ggplot2 4.0 changed", {
@@ -123,13 +124,17 @@ test_that("theme_cpb pins the axis spacing that ggplot2 4.0 changed", {
   expect_equal(mar("axis.text.y.left"), c(0, 0.015 * 7.5, 0, 0))
   expect_equal(mar("axis.text.y.right"), c(0, 0, 0, 0.015 * 7.5))
   # 3.5 reserves the tick length even on an axis whose ticks are blank
-  expect_equal(as.numeric(ggplot2::calc_element("axis.ticks.length.y.left", th)), 0)
-  expect_equal(as.numeric(ggplot2::calc_element("axis.ticks.length.x.bottom", th)), 2.2)
+  expect_equal(as.numeric(ggplot2::calc_element("axis.ticks.length.y.left",
+                                                th)), 0)
+  expect_equal(as.numeric(ggplot2::calc_element("axis.ticks.length.x.bottom",
+                                                th)), 2.2)
 })
 
 test_that("the pinned axis text still disappears when a plot blanks it", {
-  th <- ggplot2::theme_grey() + theme_cpb() + ggplot2::theme(axis.text = ggplot2::element_blank())
-  expect_s3_class(ggplot2::calc_element("axis.text.y.left", th), "element_blank")
+  th <- ggplot2::theme_grey() + theme_cpb() +
+    ggplot2::theme(axis.text = ggplot2::element_blank())
+  expect_s3_class(ggplot2::calc_element("axis.text.y.left", th),
+                  "element_blank")
 })
 
 test_that("cpb_font_family falls back on devices without TTF lookup", {

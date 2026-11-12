@@ -12,7 +12,7 @@ cpb_col(
   fill_colour = NULL,
   group = NULL,
   group_gap = 0.8,
-  position = c("stack", "dodge", "fill"),
+  position = c("dodge", "stack", "fill"),
   orientation = c("vertical", "horizontal"),
   sec_y = NULL,
   sec_type = c("line", "point", "col"),
@@ -41,7 +41,7 @@ cpb_col(
   x_ticks_ends = FALSE,
   forecast_x = NULL,
   forecast_label = "raming",
-  reverse_legend = TRUE,
+  reverse_legend = FALSE,
   legend_ncol = NULL,
   legend_nrow = NULL,
   facet = NULL,
@@ -61,6 +61,7 @@ cpb_col(
   ylab = NULL,
   legend_title = NULL,
   style = getOption("ggcpb.style", "dutch"),
+  width = NULL,
   ...
 )
 }
@@ -96,7 +97,8 @@ available; vertical charts only.}
 \item{group_gap}{Gap between group blocks, in category widths;
 defaults to \code{0.8}.}
 
-\item{position}{One of \code{"stack"} (default), \code{"dodge"}, or \code{"fill"}.}
+\item{position}{One of \code{"dodge"} (default, the columns next to each
+other), \code{"stack"} or \code{"fill"}.}
 
 \item{orientation}{\code{"vertical"} (default) or \code{"horizontal"} (adds
 \code{\link[ggplot2:coord_flip]{ggplot2::coord_flip()}} and is forwarded to \code{\link[=theme_cpb]{theme_cpb()}}).}
@@ -123,7 +125,8 @@ past it, the axis is widened to round values (with a message), so
 no value is cut off.}
 
 \item{sec_legend_label}{Name of the \code{sec_y} series in the legend.
-\code{NULL} (default) uses the \code{sec_y} column name. Automatically suffixed \code{"(rechteras)"}
+\code{NULL} (default) uses the \code{sec_y} column name. Automatically suffixed
+\code{"(rechteras)"}
 (right axis) -- don't add it yourself, e.g. \code{sec_legend_label = "erfbelasting"} shows as \code{"erfbelasting (rechteras)"}.}
 
 \item{sec_ylab}{Unit caption for the secondary axis, drawn
@@ -185,7 +188,8 @@ labelling function such as \code{\link[scales:label_number]{scales::label_number
 
 \item{colour_index}{Which house colours the series get. Either a vector
 of palette positions -- \code{c(2, 5, 6)}, forwarded to
-\code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} or \code{\link[=scale_colour_cpb_manual]{scale_colour_cpb_manual()}} -- or a keyword naming a palette:
+\code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} or \code{\link[=scale_colour_cpb_manual]{scale_colour_cpb_manual()}} -- or a keyword
+naming a palette:
 \code{"discrete"} for the qualitative house palette (blue, magenta,
 taupe, ...) and \code{"continuous"} for the sequential ramp; the palette
 names (such as \code{"extended"}, 20 colours for charts with more than
@@ -270,7 +274,7 @@ month too, with at most 4 calendar breaks in between. Default
 \code{FALSE}. With \code{x_lim} both ends are always labelled.}
 
 \item{forecast_x}{Optional x value where the forecast window starts
-(vertical charts with a numeric/time x axis). Everything to its
+(vertical charts with a numeric/time x-axis). Everything to its
 right is overlaid with a translucent white rectangle underneath
 the bars and labelled with \code{forecast_label}. Pick a value between
 two bars (e.g. \code{2025.5}) so no bar is cut.}
@@ -278,9 +282,10 @@ two bars (e.g. \code{2025.5}) so no bar is cut.}
 \item{forecast_label}{Label for the forecast window; defaults to
 \code{"raming"}. Use \code{NULL} (or \code{""}) for no label.}
 
-\item{reverse_legend}{If \code{TRUE} (default), reverse the fill legend
-order via \code{guide_legend(reverse = TRUE)} -- stacking otherwise
-makes the legend order counter-intuitive.}
+\item{reverse_legend}{If \code{TRUE}, reverse the fill legend order via
+\code{guide_legend(reverse = TRUE)}. The default \code{FALSE} keeps the order of
+the series. A stack reads from the bottom up when it is \code{TRUE}, and
+so do horizontal dodged bars that list their levels in reverse.}
 
 \item{legend_ncol}{Number of columns to lay the legend keys out in,
 passed to \code{guide_legend(ncol = )}. \code{NULL} (default) keeps
@@ -338,11 +343,16 @@ the legend, with at most 2 rows of legend items below it (title and
 items together take the 3 rows a legend has without a title).
 \code{NULL} (default) draws no title, matching CPB house style.}
 
-\item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
-or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).
+\item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,}
+decimal)
+or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis
+labels).
 Taken from \code{getOption("ggcpb.style")}, so an English report can set
 \code{options(ggcpb.style = "english")} once rather than passing \code{style} to
 every figure and risking a stray Dutch decimal comma.}
+
+\item{width}{Width of the bars, as a share of the room of one
+category. \code{NULL} (default) is \code{0.9}.}
 
 \item{...}{Further arguments passed to \code{\link[ggplot2:geom_col]{ggplot2::geom_col()}}.}
 }

@@ -1,4 +1,4 @@
-# tools/generate_parameter_settings.R
+# Regenerates the parameter reference.
 #
 # Regenerates inst/extdata/parameter_settings.csv from the cpb_*()
 # wrappers' own formals(), so the reference file can never silently
@@ -13,7 +13,7 @@ plot_types <- names(cpb_import_col_args)
 
 # Shown for a "column" kind parameter with no example of its own
 # below: always a plausible, generic column name, since the real one
-# depends entirely on data_csv. Keyed by parameter name, not
+# depends entirely on the dataset. Keyed by parameter name, not
 # plot_type + parameter, since the same name (x, fill, sec_y, ...)
 # means the same thing across every wrapper that has it.
 column_examples <- c(
@@ -34,7 +34,9 @@ column_examples <- c(
   p25     = "p25",
   p50     = "p50",
   p75     = "p75",
-  p95     = "p95"
+  p95     = "p95",
+  region  = "code",
+  value   = "share"
 )
 
 # Shown for a "literal" kind parameter whose own default is blank
@@ -46,15 +48,15 @@ column_examples <- c(
 literal_examples <- c(
   title            = "Title of the figure",
   subtitle         = "subtitle (replaces the default unit above the figure)",
-  xlab             = "unit below the x axis",
+  xlab             = "unit below the x-axis",
   ylab             = "% change",
-  legend_title     = "title of the legend",
+  legend_title     = "Legend",
   fill_colour      = "#005faf",
   line_colour      = "#005faf",
   symbol_colour    = "#e6006e",
   sec_colour       = "#e6006e",
   sec_legend_label = "name of the second series",
-  sec_ylab         = "unit of the right axis",
+  sec_ylab         = "unit of the secondary axis",
   sec_limits       = "0;100",
   sec_linewidth    = "0.55",
   sec_accuracy     = "0.1",
@@ -67,11 +69,260 @@ literal_examples <- c(
   facet_ncol       = "2",
   bins             = "30",
   binwidth         = "5",
+  width            = "0.75",
   box_labels       = "TRUE",
   dot_labels       = "p5:bottom 5%;p95:top 5%",
   zeroline         = "TRUE",
-  colour_index     = "2;6",
-  colour_index       = "2;6"
+  colour_index     = "`2;6`, `continuous`",
+  x_labels         = "`euro`, `number`, `pct` or labels such as `a;b;c`",
+  sec_axis_labels  = "`pct`, `number`, `euro` or labels such as `a;b;c`",
+  border_colour    = "white",
+  na_fill          = "`4`, `lightgrey`",
+  label_colour     = "white",
+  value_axis       = "bottom",
+  sec_at           = "0;50;100",
+  legend_nrow      = "2",
+  x_lim_follow_data = "TRUE",
+  panel_size       = "1.8",
+  zero_indicator   = "TRUE",
+  ylab_position    = "left"
+)
+
+# A short description per parameter, in plain language. Every parameter
+# of every plot type needs one (the script stops when one is missing).
+descriptions <- c(
+  data = paste0(
+    "Excel workflow: CSV file in the data folder. Leave blank for ",
+    "data.csv. Write a;b for one figure per dataset."
+  ),
+  page = paste0(
+    "The width of the saved figure: half is 7.5 cm, full is 15.5 cm and ",
+    "small is 6.8 cm."
+  ),
+  height = paste0(
+    "The height of the saved figure in cm. Blank gives the standard height."
+  ),
+  preset = paste0(
+    "The height of the figure. `report` is 7.5 cm (6.8 cm for `small`), ",
+    "`presentation` is 6.35 cm and `map` is as tall as the map needs."
+  ),
+  dpi = "The sharpness of the saved image, in dots per inch.",
+  lock = paste0(
+    "TRUE stops with a message when the title or legend is wider than the ",
+    "page. FALSE saves the figure anyway."
+  ),
+  cut = paste0(
+    "Cuts the numbers of the colour column into classes. The values are the ",
+    "class limits."
+  ),
+  cut_labels = "How the class limits are written in the legend.",
+  x = "The column with the categories or numbers on the x-axis.",
+  y = "The column with the values.",
+  fill = "The column that splits the bars or areas into colours.",
+  fill_colour = paste0(
+    "One colour for all bars or areas. It is used when `fill` is not ",
+    "set."
+  ),
+  group = "The column that splits the data into groups.",
+  group_gap = "The space between the groups, in bar widths.",
+  position = paste0(
+    "How bars of one category are placed: next to each other ",
+    "(`dodge`), on top of each other (`stack`) or as shares of 100% ",
+    "(`fill`)."
+  ),
+  orientation = "Draws the figure upright (vertical) or turned (horizontal).",
+  sec_y = "The column drawn on a secondary axis.",
+  sec_type = "How the second series is drawn.",
+  sec_limits = "The lowest and highest value of the secondary axis.",
+  sec_legend_label = "The name of the second series in the legend.",
+  sec_ylab = "The unit above the secondary axis.",
+  sec_colour = "The colour of the second series.",
+  sec_linewidth = "The line width of the second series.",
+  sec_points = "TRUE adds points to the second series when it is a line.",
+  sec_symbol_size = "The size of the points of the second series.",
+  sec_col_width = "The width of the bars of the second series.",
+  sec_accuracy = paste0(
+    "The rounding of the numbers on the secondary axis. 0.001 gives ",
+    "three decimals."
+  ),
+  sec_scale_auto = paste0(
+    "TRUE chooses the secondary axis automatically, so its ticks line ",
+    "up with the gridlines of the value axis."
+  ),
+  sec_at = "The values at which the secondary axis is labelled.",
+  sec_axis_labels = paste0(
+    "How the numbers on the secondary axis are written, or your own ",
+    "labels. With a;b;c the ticks get the labels a, b and c, so use as ",
+    "many labels as ticks (see sec_at)."
+  ),
+  palette = "The colour set used for the categories.",
+  colour_index = paste0(
+    "Which house colours to use, by number. The first number is for the ",
+    "first category. `continuous` gives a ramp from light to dark, for ",
+    "ordered classes."
+  ),
+  pct_axis = "TRUE writes the values on the axis as percentages.",
+  value_accuracy = paste0(
+    "The rounding of the numbers on the value axis, such as 0.1."
+  ),
+  value_breaks = "The values at which the value axis is labelled.",
+  value_limits = paste0(
+    "The lowest and highest value of the value axis. Note: if ",
+    "value_crop is not TRUE, the axis widens when the data runs past ",
+    "these limits."
+  ),
+  value_crop = paste0(
+    "TRUE cuts off the data outside the value limits, with a warning."
+  ),
+  value_labels = "TRUE prints the value on each bar.",
+  x_lim = "The first and last value shown on the x-axis.",
+  x_lim_follow_data = paste0(
+    "TRUE lets the x-axis follow the data when it runs past x_lim."
+  ),
+  x_ticks_ends = "TRUE also labels the first and last month of a monthly axis.",
+  forecast_x = paste0(
+    "The x value where the forecast starts. Everything after it is shaded."
+  ),
+  forecast_label = "The word shown in the forecast area.",
+  reverse_legend = "TRUE reverses the legend order.",
+  legend_ncol = "The number of columns of the legend.",
+  legend_nrow = "The number of rows of the legend.",
+  facet = paste0(
+    "The column that splits the figure into panels. The number of ",
+    "panels equals the unique values of that column."
+  ),
+  facet_ncol = "The maximum number of panels next to each other per row.",
+  facet_scales = paste0(
+    "Whether the panels share their axes (fixed) or each have their own ",
+    "(free)."
+  ),
+  legend = "Where the legend is placed. none removes it.",
+  zeroline = paste0(
+    "TRUE draws a line at zero. Blank draws it only when zero is on the ",
+    "axis."
+  ),
+  minor = "TRUE adds small ticks between the labels.",
+  ticks = "TRUE draws ticks on the axis.",
+  flush_legend = "TRUE places the legend at the left edge of the figure.",
+  axis_text_size = "The size of the axis text, in points.",
+  grid_colour = "The colour of the grid lines.",
+  grid_linewidth = "The width of the grid lines.",
+  title = "The title above the figure.",
+  subtitle = "The text under the title. It replaces the unit.",
+  xlab = "The text next to the x-axis.",
+  ylab = "The unit above the value axis.",
+  legend_title = "The title of the legend.",
+  style = paste0(
+    "The language of the figure: dutch or english. It sets the number ",
+    "format (1.000,5 or 1,000.5), the forecast label (raming or ",
+    "forecast), the axis names in the legend (linkeras and rechteras, ",
+    "or left axis and right axis) and the class labels of cut."
+  ),
+  colour = "The column that gives lines or points their colour.",
+  line_colour = paste0(
+    "One colour for the whole line. It is used when `colour` is not ",
+    "set."
+  ),
+  linewidth = "The width of the line.",
+  points = "TRUE adds points to the line.",
+  symbol_size = "The size of the points.",
+  ymin = "The column with the lower end of an uncertainty band.",
+  ymax = "The column with the upper end of an uncertainty band.",
+  p5 = "The column with the 5th percentile, the lower whisker.",
+  p25 = "The column with the 25th percentile, the bottom of the box.",
+  p50 = "The column with the median, the line in the box.",
+  p75 = "The column with the 75th percentile, the top of the box.",
+  p95 = "The column with the 95th percentile, the upper whisker.",
+  mean = "The column with the mean, drawn as a diamond.",
+  box_style = "The look of the boxes.",
+  dot_labels = "Names for the dots of the dot style, as name:text pairs.",
+  box_labels = "TRUE prints the values of the box.",
+  label_accuracy = paste0(
+    "The rounding of the printed percentages. 0.01 allows for two ",
+    "decimals."
+  ),
+  width = "The width of the bars or boxes, as a share of the space.",
+  value_axis = "Whether the value axis is at the bottom or at the top.",
+  lower = "The column with the lower bound of the interval.",
+  upper = "The column with the upper bound of the interval.",
+  symbol_colour = "The colour of the dots.",
+  cap_width = "The width of the end caps of the interval.",
+  x_labels = paste0(
+    "How the numbers on the x-axis are written, or your own labels. ",
+    "With a;b;c the ticks get the labels a, b and c, so use as many ",
+    "labels as ticks."
+  ),
+  binwidth = "The width of one bin of the histogram.",
+  bins = "The number of bins.",
+  outline = "The colour of the line around the bars.",
+  label = "The column with the text of each slice.",
+  wedge_labels = "TRUE prints the value on each slice.",
+  label_style = paste0(
+    "Prints the label inside the slice (wedge) or outside with a line ",
+    "(leader)."
+  ),
+  label_colour = "The colour of the labels in the slices.",
+  leader_length = "The length of the lines to the labels.",
+  legend_pct = "TRUE adds the percentage to each name in the legend.",
+  ring_width = "The thickness of the ring, as a share of the radius.",
+  panel_size = paste0(
+    "The size of the figure area in inches. It keeps the ring the same ",
+    "size."
+  ),
+  region = paste0(
+    "The column with the codes of the municipalities, COROP regions or ",
+    "provinces."
+  ),
+  value = "The column with the values that give the regions their colour.",
+  level = "The kind of regions on the map.",
+  border_colour = "The colour of the region borders.",
+  border_linewidth = "The width of the region borders.",
+  reverse = paste0(
+    "TRUE reverses the colours of the gradient of a numeric `value` ",
+    "column."
+  ),
+  na_fill = paste0(
+    "The colour of regions without a value. Blank leaves them unfilled and ",
+    "out of the legend. A number is a position in the house colours, a ",
+    "colour name or hexadecimal code works too. The legend then names them ",
+    "Geen gegevens, or No data in the English style."
+  ),
+  panel_fill = "The colour behind the figure.",
+  value_axis_linewidth = "The width of the line of the value axis.",
+  zero_indicator = "TRUE draws a thick white line at zero behind the data.",
+  zero_indicator_linewidth = "The width of the white zero line.",
+  ylab_position = "Where the unit is placed: left, middle or right."
+)
+
+# The values to choose from, for a parameter that takes a few words. Shown
+# as the example. A parameter that is a function argument with several
+# choices (position, orientation, ...) gets its choices from the formals.
+choices <- list(
+  page = c("half", "full", "small"),
+  preset = c("report", "presentation", "map"),
+  cut_labels = c("number", "euro", "pct"),
+  palette = c("qualitative", "discr", "sequential", "blues", "extended"),
+  legend = c("bottom", "right", "left", "top", "none"),
+  facet_scales = c("fixed", "free", "free_x", "free_y"),
+  style = c("dutch", "english"),
+  ylab_position = c("left", "middle", "right")
+)
+
+# `a`, `b` or `c`
+choice_text <- function(x) {
+  q <- paste0("`", x, "`")
+  if (length(x) == 1) return(q)
+  paste0(paste(q[-length(q)], collapse = ", "), " or ", q[length(q)])
+}
+
+# Parameters read by the import itself, the same for every plot type:
+# how the figure is saved, and the classes of `cut`.
+import_rows <- data.frame(
+  param = c("page", "height", "preset", "dpi", "lock", "cut", "cut_labels"),
+  default = c("half", "", "report", "300", "TRUE", "", "number"),
+  example = c(choice_text(choices$page), "10", choice_text(choices$preset),
+              "800", "FALSE", "0;20;40;Inf", choice_text(choices$cut_labels)),
+  stringsAsFactors = FALSE
 )
 
 fmt_default <- function(val) {
@@ -88,8 +339,7 @@ fmt_default <- function(val) {
   if (is.character(evaluated) && length(evaluated) > 1) {
     return(list(
       kind = "enum",
-      text = paste0(paste(evaluated, collapse = "/"),
-        " (default: ", evaluated[[1]], ")"),
+      text = evaluated[[1]], choices = evaluated,
       is_blank = FALSE
     ))
   }
@@ -109,17 +359,33 @@ for (pt in plot_types) {
   f <- formals(fn)
   col_args <- cpb_import_col_args[[pt]]
   for (nm in names(f)) {
-    # a function cannot be given in a CSV
-    if (nm %in% c("data", "...", "x_labels")) next
+    if (nm == "...") next
+    if (nm == "data") {
+      # in a CSV `data` is not the data frame but the dataset file name(s)
+      # inside the data folder, so it is a literal here
+      rows[[length(rows) + 1]] <- data.frame(
+        plot_type = pt, param = "data", kind = "literal",
+        default = "data", example = "koopkracht",
+        description = unname(descriptions["data"]),
+        stringsAsFactors = FALSE
+      )
+      rows[[length(rows) + 1]] <- data.frame(
+        plot_type = pt, import_rows[, "param", drop = FALSE],
+        kind = "literal", import_rows[, c("default", "example")],
+        description = unname(descriptions[import_rows$param]),
+        stringsAsFactors = FALSE
+      )
+      next
+    }
     is_column <- nm %in% col_args
     default <- fmt_default(f[[nm]])
 
+    own_choices <- if (!is.null(default$choices)) default$choices else
+      choices[[nm]]
     example <- if (is_column) {
-      if (default$kind == "required") {
-        unname(column_examples[nm])
-      } else {
-        unname(column_examples[nm])
-      }
+      unname(column_examples[nm])
+    } else if (!is.null(own_choices)) {
+      choice_text(own_choices)
     } else if (default$kind %in% c("literal", "enum") && !default$is_blank) {
       default$text
     } else {
@@ -129,20 +395,28 @@ for (pt in plot_types) {
 
     rows[[length(rows) + 1]] <- data.frame(
       plot_type = pt, param = nm,
-      kind = if (is_column) "column (from data_csv)" else "literal",
+      kind = if (is_column) "column (from dataset)" else "literal",
       default = default$text, example = example,
+      description = unname(descriptions[nm]),
       stringsAsFactors = FALSE
     )
   }
 }
 
 out <- do.call(rbind, rows)
+no_description <- unique(out$param[is.na(out$description)])
+if (length(no_description)) {
+  stop("No description for: ", paste(no_description, collapse = ", "),
+       " (add them to `descriptions` in this script).", call. = FALSE)
+}
 write.csv(out, "inst/extdata/parameter_settings.csv", row.names = FALSE)
-cat("Wrote inst/extdata/parameter_settings.csv (", nrow(out), " rows).\n", sep = "")
+cat("Wrote inst/extdata/parameter_settings.csv (", nrow(out),
+    " rows).\n", sep = "")
 
-missing_example <- out[!nzchar(out$example), c("plot_type", "param", "kind", "default")]
+missing_example <- out[!nzchar(out$example),
+                       c("plot_type", "param", "kind", "default")]
 if (nrow(missing_example)) {
   cat("\nNo example value for these (add one to column_examples or ",
-    "literal_examples in this script):\n", sep = "")
+      "literal_examples in this script):\n", sep = "")
   print(missing_example, row.names = FALSE)
 }

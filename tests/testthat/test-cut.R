@@ -6,8 +6,8 @@ test_that("cpb_cut builds open-ended Dutch class labels", {
                labeller = label_pct_nl())
   expect_s3_class(f, "ordered")
   expect_equal(levels(f),
-    c("lager dan 20%", "20% - 30%", "30% - 40%",
-      "40% - 50%", "50% - 60%", "60% en hoger"))
+               c("lager dan 20%", "20% - 30%", "30% - 40%",
+                 "40% - 50%", "50% - 60%", "60% en hoger"))
   # values land in the right classes
   expect_equal(as.character(f[1]), "lager dan 20%")
   expect_equal(as.character(f[6]), "60% en hoger")
@@ -43,7 +43,8 @@ test_that("the blues palette ramps light to dark and integrates with scales", {
   lum <- colSums(grDevices::col2rgb(six))
   expect_true(all(diff(lum) < 0))
   # exposed in tokens and usable as a discrete scale palette
-  expect_true("blues" %in% names(cpb_tokens()) || !is.null(cpb_tokens()$colors_blues))
+  expect_true("blues" %in% names(cpb_tokens()) ||
+                !is.null(cpb_tokens()$colors_blues))
   sc <- scale_fill_cpb_d(palette = "blues")
   expect_s3_class(sc, "Scale")
   scc <- scale_fill_cpb_c()  # continuous still fine

@@ -4,20 +4,23 @@
 \alias{cpb_import_csv}
 \title{Import a plot (or set of plots) from a data CSV and a parameters CSV}
 \usage{
-cpb_import_csv(data_csv, params_csv, sep = ",", ...)
+cpb_import_csv(params_csv, sep = ",", ..., simplify = TRUE)
 }
 \arguments{
-\item{data_csv}{Path to the data CSV. Read with
-\code{read.csv(check.names = FALSE)}, so column names are kept exactly
-as written (spaces and all).}
-
-\item{params_csv}{Path to the parameters CSV (see Details).}
+\item{params_csv}{Path to the parameters CSV (see Details). The datasets
+are read from the \code{data} folder next to it, with
+\code{read.csv(check.names = FALSE)}, so column names are kept exactly as
+written (spaces and all).}
 
 \item{sep}{Field separator for both CSVs; defaults to \verb{,}.}
 
 \item{...}{Optional overrides applied to every figure, taking
 priority over \code{params_csv} -- actual R values (not CSV strings),
 e.g. \code{legend = "right"}.}
+
+\item{simplify}{If \code{TRUE} (default), a single figure is returned as a
+\code{ggplot} rather than a list of one. Set \code{FALSE} to always get the
+named list.}
 }
 \value{
 A single \code{ggplot} object if \code{params_csv} defines one figure,
@@ -26,18 +29,39 @@ or a named list of them (named from each figure's \code{id}, else
 several. Also writes a run log as a side effect -- see Details.
 }
 \description{
-A CSV-only alternative to an Excel workbook: \code{data_csv} holds the
-plain series data (long format -- one row per x/series combination),
-and \code{params_csv} names which \code{cpb_col()}/\code{cpb_area()}/... wrapper to
-call for each figure and its arguments, in one of two layouts.
+A CSV-only alternative to an Excel workbook: the datasets are plain CSV
+files (long format -- one row per x/series combination) in a \code{data}
+folder next to \code{params_csv}, and \code{params_csv} names which
+\code{cpb_col()}/\code{cpb_area()}/... wrapper to call for each figure and its
+arguments, in one of two layouts.
 }
 \details{
+Each figure names its dataset in the \code{data} parameter, with or without
+the \code{.csv} extension. \code{data} = \code{koopkracht} reads \code{data/koopkracht.csv},
+relative to the folder holding \code{params_csv}. \code{data} = \verb{a;b} builds the
+figure once per file. A blank or absent \code{data} reads \code{data/data.csv}. A
+dataset that
+is missing or cannot be read is skipped with a warning, and every other
+figure (and every other dataset in the same list) is still built.
+
+The optional \code{page} parameter (\code{half}, \code{full} or \code{small}, default \code{half})
+sets the page width a figure is saved at by \code{\link[=cpb_import_run]{cpb_import_run()}}.
+
+Figures in the returned list are named after their dataset
+(\code{koopkracht} for \code{koopkracht.csv}). When several figures use the same
+dataset, the figure number in \code{params_csv} (the first figure column is
+\enumerate{
+\item is added:
+\code{koopkracht_1}, \code{koopkracht_3}.
+}
+
 \code{params_csv} needs a \code{plot_type} field naming the wrapper to use
-(\code{"col"}, \code{"area"}, \code{"line"}, \code{"box"}, \code{"dot"}, \code{"scatter"}, or
-\code{"hist"} -- i.e. the \verb{cpb_*()} name without the prefix), plus whichever
+(\code{"col"}, \code{"area"}, \code{"line"}, \code{"box"}, \code{"boxplot_extended"}, \code{"dot"},
+\code{"scatter"}, \code{"hist"}, \code{"donut"} or \code{"map"} -- i.e. the \verb{cpb_*()} name
+without the prefix), plus whichever
 of that wrapper's own arguments the figure needs. Column-referencing
 arguments (\code{x}, \code{y}, \code{fill}, \code{colour}, \code{p5}..\code{p95}, \code{sec_y}, ...) take
-a column name from \code{data_csv}; everything else (\code{title}, \code{ylab},
+a column name from the dataset; everything else (\code{title}, \code{ylab},
 \code{palette}, \code{pct_axis}, \code{sec_type}, ...) is a literal value. A cell
 containing \verb{;} becomes a vector (e.g. \code{colour_index} = \code{"6;2"} becomes
 \code{c(6, 2)}). Blank
@@ -47,14 +71,26 @@ applies, so a typo or a stray column never breaks the import (a
 \code{warning()} is still raised for each one). Set \code{create} to
 \code{"n"}/\code{"no"}/\code{"false"}/\code{"f"} to skip a figure entirely.
 
-\code{params_csv} can be laid out either way, and the layout is detected
-automatically:
+Some values are read specially, so that every argument can be set from a
+CSV:
 \itemize{
-\item \strong{Vertical} (meta-tab style): column 1 holds parameter names, one
-row each; columns 2..N hold one figure's values apiece.
-\item \strong{Horizontal} (key-value table): row 1 holds parameter names as
-column headers; every other row is one figure.
+\item \code{Inf} and \code{-Inf} are numbers, and a written \verb{\\n} is a line break.
+\item \code{x_labels} and \code{sec_axis_labels} take the name of a formatter:
+\code{number}, \code{euro} or \code{pct}.
+\item \code{dot_labels} takes name:value pairs, such as \verb{p5:onderste 5\%}.
+\item A dataset column of dates (\code{2024-01-31}, or \code{31-1-2024}) becomes a
+date axis, and \code{x_lim} on it is given as dates.
+\item \code{cut} (such as \verb{0;20;40;Inf}) puts the numbers of the column that sets
+the colours (\code{value} of a map, \code{colour} of a line, dot or scatter plot,
+\code{fill} of the others) into classes. \code{cut_labels} (\code{number}, \code{euro} or
+\code{pct}) formats the class labels, as \code{\link[=cpb_cut]{cpb_cut()}} does.
+\item \code{page}, \code{height} (in cm), \code{preset}, \code{dpi} and \code{lock} say how
+\code{\link[=cpb_import_run]{cpb_import_run()}} saves the figure, see \code{\link[=save_cpb]{save_cpb()}}.
 }
+
+In \code{params_csv} column 1 holds the parameter names, one per row. Every
+other column is one figure. Fields at the end of a row can be left
+out when they are blank.
 
 Every call also (over)writes a plain-text run log next to
 \code{params_csv}, named \verb{<params_csv>_log.txt}: one line per figure
@@ -71,10 +107,8 @@ reference or literal, and its default), see
 }
 \examples{
 \dontrun{
-p <- cpb_import_csv("data.csv", "params.csv")
-p
-
-ps <- cpb_import_csv("data.csv", "params_multi.csv")
+# datasets in ./data, named in the `data` column of params.csv
+ps <- cpb_import_csv("params.csv")
 ps$koopkracht
 }
 }

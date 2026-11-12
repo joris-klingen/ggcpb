@@ -147,16 +147,10 @@ the thin strokes of the published CPB distributional figures.}
 (pink ramp), \verb{\\"blues\\"} (blue ramp) or \verb{\\"extended\\"}
 (20 categorical colours).}
 
-\item{colour_index}{Which house colours the series get. Either a vector
-of palette positions -- \code{c(2, 5, 6)}, forwarded to
-\code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} or \code{\link[=scale_colour_cpb_manual]{scale_colour_cpb_manual()}} -- or a keyword naming a palette:
-\code{"discrete"} for the qualitative house palette (blue, magenta,
-taupe, ...) and \code{"continuous"} for the sequential ramp; the palette
-names (such as \code{"extended"}, 20 colours for charts with more than
-nine series) work as keywords too. \code{NULL}
-(default) uses \code{palette}, which is \code{"discrete"} for every wrapper
-except \code{\link[=cpb_map]{cpb_map()}}. A keyword and a non-matching \code{palette} are a
-conflict and raise an error, since both set the same thing.}
+\item{colour_index}{Which house colours the series get, as for
+\code{\link[=cpb_col]{cpb_col()}}. For the \code{"james"} and \code{"modern"} styles, which have no
+\code{fill} mapping, the positions colour the boxes instead: one position
+per \code{group}, or one per row of \code{data}, recycled.}
 
 \item{pct_axis}{If \code{TRUE}, format the value axis with
 \code{\link[=label_pct_nl]{label_pct_nl()}}, for values already in percentage points. With
@@ -251,7 +245,8 @@ secondary axis spans. \code{NULL} (default) uses zero to the maximum of
 the primary (p5-p95) range, so the two axes always start together.}
 
 \item{sec_legend_label}{Name of the \code{sec_y} series in the legend.
-\code{NULL} (default) uses the \code{sec_y} column name. Automatically suffixed \code{"(rechteras)"}
+\code{NULL} (default) uses the \code{sec_y} column name. Automatically suffixed
+\code{"(rechteras)"}
 (right axis) -- don't add it yourself, e.g. \code{sec_legend_label = "erfbelasting"} shows as \code{"erfbelasting (rechteras)"}.}
 
 \item{sec_ylab}{Unit caption for the secondary axis, drawn
@@ -400,8 +395,10 @@ over the panel.
 top, and \code{"left"} otherwise (\code{orientation = "vertical"},
 \code{value_axis = "bottom"}).}
 
-\item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,} decimal)
-or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis labels).
+\item{style}{Formatting style: \code{"dutch"} (default, \code{.} thousands, \verb{,}
+decimal)
+or \code{"english"} (\verb{,} thousands, \code{.} decimal, English forecast / axis
+labels).
 Taken from \code{getOption("ggcpb.style")}, so an English report can set
 \code{options(ggcpb.style = "english")} once rather than passing \code{style} to
 every figure and risking a stray Dutch decimal comma.}

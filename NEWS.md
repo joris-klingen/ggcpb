@@ -1,3 +1,26 @@
+# ggcpb 0.3.0
+
+* **Breaking:** `cpb_col()` places columns next to each other by default (`position = "dodge"`). Before, they were stacked. Use `position = "stack"` to stack them.
+* **Breaking:** the legend keeps the order of the series by default (`reverse_legend = FALSE`) in `cpb_col()`, `cpb_area()` and `cpb_hist()`. Before, it was reversed. Set `reverse_legend = TRUE` for the old order, or for horizontal dodged bars with reversed levels.
+* **Breaking:** the first nine colours of `palette = "extended"` are now in the order of the qualitative palette, so `colour_index = c(6, 2)` picks the same colours in both. Positions you used with `"extended"` before now give other colours. The series colours without `colour_index` are unchanged.
+* **Breaking:** `cpb_map()` leaves a region without a value unfilled, and out of the legend. Before, it was grey. Set `na_fill` (a colour or a position in the house colours) to fill it. The legend then has an item "Geen gegevens", or "No data" in the English style.
+* `save_cpb()` makes a faceted figure as tall as the standard height times its number of rows of panels, unless `height` is given.
+* `cpb_box()` with `box_style = "james"` or `"modern"` takes `colour_index` to colour the boxes, one position per `group`.
+* `cpb_col()` has the argument `width` for the width of the bars, so it can be set in `params.csv`.
+* Only three vignettes are left: `introduction`, `import` and `extended`. The other vignettes are removed. `doc/` holds the HTML of the three, made with `tools/render_vignettes.R`.
+
+* The CSV import can make every plot type, `map` and `boxplot_extended` included, and every argument of the wrappers can be set in `params.csv`. Formatters are named (`x_labels = euro`), `dot_labels` takes name:value pairs, a column of dates gives a date axis, `Inf` is a number and `\n` a line break. `cut` and `cut_labels` make classes, such as for a classed map. `height` (cm), `preset`, `dpi` and `lock` say how a figure is saved, next to `page`.
+* New vignette `extended`. It extends the introduction with colours, columns, boxplot styles and maps, each with its parameters for Excel, and with what is possible in R only. The introduction also shows facets and grouped categories.
+* The parameter reference in the import vignette has a short description per parameter and lists the values to choose from.
+* `cpb_import_run()` saves the other figures when one figure fails while it is drawn, and lists it in the log.
+
+* `cpb_donut()` no longer makes `save_cpb()` warn on a half page. A donut fits a half page.
+
+* The CSV import reads several datasets. Datasets live in a `data` folder next to `params.csv`, and the new `data` parameter names them per figure (`koopkracht`, or `a;b` for one figure per file, the `.csv` is optional). A blank `data` uses `data/data.csv`. A missing dataset is skipped with a warning and the rest is still built. Figures are named after their dataset, with the figure number added when several figures share one. The new `cpb_import_run()` is what `generate_plot.bat` starts.
+* In the CSV import, text columns keep the order of the rows (not alphabetical), and a numeric `fill`, `group`, `facet` or `colour` is a category (a scatter `colour` stays numeric).
+* `inst/examples/` is the one example folder. It holds the figures of the import, introduction and extended vignettes: `data/`, `params.csv`, the `generate_plot` start scripts and the generated PNGs in `generated/`. Copy the folder from the installed package. `autogenerate_plots()` is removed. The start script `run_import` is now called `generate_plot`.
+* **Breaking:** `params.csv` has one layout. Column 1 holds the parameter names and every other column is one figure. The layout with one row per figure no longer works. `cpb_import_csv()` no longer takes `data_csv`. Call `cpb_import_csv("params.csv")`. The example files `import_example_data.csv` and `import_example_params.csv` are removed. The folder `examples` is the example now, with datasets in `data/`.
+
 # ggcpb 0.2.1
 
 * A monthly date `x` axis (all dates on the 1st of a month, incl.

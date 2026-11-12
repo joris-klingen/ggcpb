@@ -35,7 +35,9 @@ page's full width, and works as \code{"report"} for any other plot.
 Ignored if \code{height} is supplied explicitly.}
 
 \item{height}{Explicit height in inches. \code{NULL} (default) uses
-\code{preset} to determine the height.}
+\code{preset} to determine the height. A faceted plot is that height
+times its number of rows of panels, so two columns of four panels
+are twice as tall.}
 
 \item{width}{Explicit width in inches. Must be \code{7.5 / 2.54},
 \code{15.5 / 2.54} or \code{6.8 / 2.54}.

@@ -23,7 +23,7 @@ test_that("label_number_nl uses Dutch grouping and decimal marks", {
   expect_equal(out_dec, "1.234,5")
 })
 
-test_that("label_number_nl auto-detects decimal accuracy when accuracy is NULL", {
+test_that("label_number_nl detects the decimal accuracy when NULL", {
   breaks <- c(7.0, 20.8, 34.6, 48.4, 62.2, 76.0)
   out_dutch <- label_number_nl(style = "dutch")(breaks)
   expect_equal(out_dutch, c("7,0", "20,8", "34,6", "48,4", "62,2", "76,0"))
@@ -41,7 +41,8 @@ test_that("the ggcpb.style option supplies the default style", {
     expect_equal(label_pct_nl(accuracy = 0.1)(4.5), "4.5%")
     expect_match(label_euro_nl()(1234.5), "1,234.50", fixed = TRUE)
     # an explicit argument still wins over the option
-    expect_equal(label_number_nl(accuracy = 0.1, style = "dutch")(1234.5), "1.234,5")
+    expect_equal(label_number_nl(accuracy = 0.1,
+                                 style = "dutch")(1234.5), "1.234,5")
   })
   # unset, the Dutch house style is unchanged
   expect_equal(label_number_nl(accuracy = 0.1)(1234.5), "1.234,5")

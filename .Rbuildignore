@@ -13,6 +13,8 @@
 ^Meta$
 \.DS_Store$
 \.Rapp\.history$
-^inst/autogenerate_plots/generated$
-^inst/autogenerate_plots/params_log\.txt$
+^inst/examples/generated$
+^inst/examples/output$
+^inst/examples/params_log\.txt$
 ^temp$
+^\.lintr$

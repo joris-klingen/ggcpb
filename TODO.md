@@ -1,12 +1,47 @@
 # TODO
 
 The package encodes a single CPB house style, calibrated against the
-published reference figures in `references/plots/` (see the smoke test
-`inst/examples/smoke_test_plots.R` for side-by-side recreations).
+published reference figures in `references/plots/`.
 
 **See `PLAN.md`** for the roadmap from the publication audit (CEP 2026,
 MEV 2026, zonnepanelen, erfbelasting) and which of its items were kept
 or dropped.
+
+## Plan (status 2026-11-11)
+
+### Critical, before the release of 0.3.0
+
+1. **Installation and the kit**: the introduction does not say how to install
+   ggcpb in R, nor where the Excel users find "the most recent ggcpb
+   version" (`[path]` in the comment at the top of
+   `vignettes/introduction.Rmd`). The start script stops with "install it in
+   R first", so a new user is stuck. Write both steps in the introduction.
+2. **License**: `LICENSE` says that the package is internal and that the
+   Rijksoverheid fonts are bundled in `inst/fonts/`. The repository is
+   public and the fonts are not in it. Decide what the license is, then
+   correct the file.
+3. **Documentation**: the README tells users to download the HTML from
+   `doc/`. No GitHub Pages for now. The workflow is on the branch
+   `github-pages`.
+4. **CI**: push, and watch the first run. The `lintr` job, Windows and
+   ggplot2 3.5.2 have not run on these changes yet.
+5. **Release**: tag `0.3.0` after the merge of dev into main, and tell the
+   users of the old kit about the breaking changes in `NEWS.md`.
+
+### Important
+
+6. **Mac start script**: `inst/examples/generate_plot.command` still ships,
+   while the docs only name `generate_plot.bat`. Remove it, or document it.
+7. **Excel CSV**: Dutch Excel writes `;` and a decimal comma, unless
+   "CSV UTF-8 (comma delimited)" is chosen. Detect the separator and the
+   decimal mark in `cpb_import_read_data()`.
+8. **Import values that are not possible yet**: an explicit `NULL` (an
+   empty cell means the default), a formatter with its own accuracy
+   (`euro` with 0.1), and extra ggplot2 layers. The last one is R only by
+   design.
+9. **House font in the vignette html**: Rijksoverheid Sans only shows
+   where it is installed. Embed Source Sans 3 with `@font-face` as the
+   fallback, or accept this.
 
 ## Open items
 
