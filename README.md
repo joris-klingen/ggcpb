@@ -65,9 +65,11 @@ library(ggcpb)
 df <- data.frame(jaar = 2021:2024, groep = rep(c("a", "b"), 4),
                  waarde = c(10, 15, 12, 18, 14, 20, 16, 22))
 
-cpb_col(df, x = jaar, y = waarde, fill = groep,
+p <- cpb_col(df, x = jaar, y = waarde, fill = groep,
   title = "Waarde per groep",
   ylab  = "mld euro")
+
+p
 ```
 The CPB plotting functions accept a data.frame or data.table
 plus tidy-eval column arguments:
@@ -90,6 +92,10 @@ cpb_hist(data = df, x = duration)
 # Map
 cpb_map(data = df, region = code, value = share)
 ```
+
+To export a figure, use save_cpb(). It writes the figure at the CPB page widths. Use page = "half" for 7.5 cm  (default) and page = "full" for 15.5 cm.
+
+save_cpb("name_plot.png", p, page = "half")
 
 ## Fonts
 
