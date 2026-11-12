@@ -593,8 +593,10 @@ cpb_import_csv <- function(params_csv, sep = ",", ..., simplify = TRUE) {
       files <- files[nzchar(files)]
       # the extension is optional: `koopkracht` and `koopkracht.csv` are one
       # dataset
-      files <- unique(ifelse(grepl("[.]csv$", files, ignore.case = TRUE),
-                             files, paste0(files, ".csv")))
+      # (also as `.CSV`, which is the same file on Windows and Mac, but not
+      # on Linux)
+      files <- unique(paste0(sub("[.]csv$", "", files, ignore.case = TRUE),
+                             ".csv"))
     }
     if (!length(files)) files <- "data.csv"
     for (f in files) {
