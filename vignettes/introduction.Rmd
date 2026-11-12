@@ -65,7 +65,16 @@ repro <- function(fun, dataset, section, id) {
       "[section ", section, "](#", id, ") to create the plot in R. ",
       "Alternatively, the csv file can be read with `read.csv()` and used ",
       "as input to `", fun, "()`.\n", sep = "")
+  # said once, under the first figure
+  if (!repro_noted) {
+    cat("\nThe example data and `params.csv` are in the folder `examples` ",
+        "of the installed package. Run the script again after every ",
+        "change to update the figures. The [import vignette](import.html) ",
+        "explains all settings per figure type.\n", sep = "")
+    repro_noted <<- TRUE
+  }
 }
+repro_noted <- FALSE
 ```
 
 <style>
