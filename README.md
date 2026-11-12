@@ -4,7 +4,7 @@
 CPB house style from Excel or from R. 
 
 **New to ggcpb? Download the introduction file and open it in your browser:
-[introduction](doc/introduction.html).**
+[Introduction](doc/introduction.html).**
 It shows how to create figures with Excel and/or R.
 
 > **Status: in development.** 
@@ -38,7 +38,7 @@ remotes::install_github("joris-klingen/ggcpb")
 Then load it with `library(ggcpb)`. The code is on
 <https://github.com/joris-klingen/ggcpb>.
 
-## Quick start in Excel
+## How to use ggcpb in Excel?
 
 This is the general workflow to create figures with ggcpb without using R:
 
@@ -55,7 +55,9 @@ This is the general workflow to create figures with ggcpb without using R:
    fails is skipped and listed at the end, and in `params_log.txt`. 
    The other figures are still saved.
 
-## How to use ggcpb in R?
+For more information, **download and open** the **[introduction](doc/introduction.html)** and **[import](doc/import.html)** vignettes. 
+
+## Quick start in R
 
 ```r
 library(ggcpb)
