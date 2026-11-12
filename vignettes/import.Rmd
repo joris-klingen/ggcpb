@@ -63,7 +63,9 @@ In Excel, choose `File` -> `Save as` -> `CSV UTF-8 (comma delimited)`.
 
 The general workflow to create figures with ggcpb is as follows: 
 
-1. Find the most recent ggcpb version.
+1. Find the folder `examples` in the installed ggcpb package.
+   In R, `system.file("examples", package = "ggcpb")` shows
+   where it is.
 2. Copy it to the place where you want to create figures.
 3. Put your datasets in the folder `data`. Open `params.csv` in Excel
    and add your parameters.
@@ -81,7 +83,9 @@ in which each dataset must be saved as a CSV file.
 
 ```{r, loading, include=FALSE, echo = FALSE}
 figure_dir <- file.path(tempdir(), "figures")
-autogenerate_plots(figure_dir)
+dir.create(figure_dir)
+file.copy(list.files(system.file("examples", package = "ggcpb"),
+                     full.names = TRUE), figure_dir, recursive = TRUE)
 params_csv <- file.path(figure_dir, "params.csv")
 ```
 

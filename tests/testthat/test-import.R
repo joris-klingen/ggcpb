@@ -167,53 +167,15 @@ test_that("cpb_import_csv applies ... overrides on top of params.csv", {
   expect_equal(p$theme$legend.position, "right")
 })
 
-test_that("autogenerate_plots copies every kit file into a new folder", {
-  dest <- withr::local_tempdir()
-  autogenerate_plots(dest)
-
+test_that("the example folder ships ready to run", {
   kit_dir <- system.file("examples", package = "ggcpb")
   expect_true(dir.exists(kit_dir))
-  kit <- setdiff(list.files(kit_dir),
-                 c("generated", "output", "params_log.txt"))
-  expect_setequal(list.files(dest), kit)
+  kit_files <- c("params.csv", "generate_plot.R", "generate_plot.bat")
+  expect_true(all(file.exists(file.path(kit_dir, kit_files))))
+  expect_true(file.exists(file.path(kit_dir, "data", "koopkracht.csv")))
 
-  # the example datasets ship ready to run as-is
-  expect_true(file.exists(file.path(dest, "data", "koopkracht.csv")))
-  p <- cpb_import_csv(params_csv = file.path(dest, "params.csv"))
+  p <- cpb_import_csv(params_csv = file.path(kit_dir, "params.csv"))
   expect_type(p, "list")
-})
-
-test_that("autogenerate_plots keeps generate_plot.command executable", {
-  # generate_plot.command is a Mac-only double-click start script, and the
-  # executable bit this checks is a POSIX permission concept Windows
-  # doesn't have -- file.info()$mode reads back something else there
-  # regardless of what Sys.chmod() was asked to do, which isn't a real
-  # failure, just this check not applying on that platform
-  skip_on_os("windows")
-
-  dest <- withr::local_tempdir()
-  autogenerate_plots(dest)
-
-  command_file <- file.path(dest, "generate_plot.command")
-  expect_true(file.exists(command_file))
-  expect_equal(as.character(file.info(command_file)$mode), "755")
-})
-
-test_that("autogenerate_plots refuses to overwrite without being asked to", {
-  dest <- withr::local_tempdir()
-  autogenerate_plots(dest)
-
-  expect_error(autogenerate_plots(dest), "already exist")
-  expect_no_error(autogenerate_plots(dest, overwrite = TRUE))
-})
-
-test_that("autogenerate_plots creates the destination folder if needed", {
-  dest <- file.path(withr::local_tempdir(), "nieuwe_map")
-  expect_false(dir.exists(dest))
-
-  autogenerate_plots(dest)
-
-  expect_true(file.exists(file.path(dest, "generate_plot.R")))
 })
 
 test_that("cpb_import_csv errors clearly when the dataset has no header row", {
@@ -356,7 +318,9 @@ test_that("other CSV files in data/ are ignored unless named", {
 test_that("running the import twice replaces the PNGs", {
   skip_on_cran()
   dir <- withr::local_tempdir()
-  autogenerate_plots(dir)
+  file.copy(list.files(system.file("examples",
+                                   package = "ggcpb"), full.names = TRUE),
+            dir, recursive = TRUE)
   png_files <- function() {
     list.files(file.path(dir, "generated"),
                pattern = "[.]png$")

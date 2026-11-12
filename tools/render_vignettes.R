@@ -2,7 +2,7 @@
 #
 # Renders the vignettes to HTML in doc/, so there is a readable copy with
 # the CPB layout (figures next to their parameters) without installing the
-# package. The README links to the same pages on GitHub Pages.
+# package.
 #
 # Re-run after editing a vignette:
 #
@@ -45,4 +45,15 @@ for (rmd in list.files(file.path(pkg_root, "vignettes"),
   rmarkdown::render(rmd, output_dir = doc_dir, quiet = TRUE)
 }
 
-message("rendered vignettes written to ", doc_dir)
+# the installed package carries the same pages in inst/doc, so they show up
+# under "User guides" in the help after install_github(), which does not
+# build vignettes
+inst_doc <- file.path(pkg_root, "inst", "doc")
+dir.create(inst_doc, showWarnings = FALSE, recursive = TRUE)
+for (rmd in list.files(file.path(pkg_root, "vignettes"),
+                       pattern = "\\.Rmd$", full.names = TRUE)) {
+  html <- file.path(doc_dir, sub("\\.Rmd$", ".html", basename(rmd)))
+  file.copy(c(rmd, html), inst_doc, overwrite = TRUE)
+}
+
+message("rendered vignettes written to ", doc_dir, " and ", inst_doc)
