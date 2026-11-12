@@ -95,7 +95,9 @@ cpb_map(data = df, region = code, value = share)
 
 To export a figure, use save_cpb(). It writes the figure at the CPB page widths. Use page = "half" for 7.5 cm  (default) and page = "full" for 15.5 cm.
 
+```r
 save_cpb("name_plot.png", p, page = "half")
+```
 
 ## Fonts
 
