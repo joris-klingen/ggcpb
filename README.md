@@ -43,8 +43,8 @@ Then load it with `library(ggcpb)`. The code is on
 This is the general workflow to create figures with ggcpb without using R:
 
 1. Find the folder `examples` in the installed ggcpb package.
-   In R, `system.file("examples", package = "ggcpb")` shows
-   where it is.
+   In R, `system.file("examples", package = "ggcpb")` returns the path
+   to this folder.
 2. Copy it to the place where you want to create figures.
 3. Put your datasets in the folder `data`. 
    Open `params.csv` in Excel and describe your figures.
