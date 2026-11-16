@@ -13,7 +13,7 @@ It shows how to create figures with Excel and/or R.
 
 The documentation is three HTML files in the [doc/](doc/) folder.
 The links below open the rendered pages in your browser. GitHub itself
-shows HTML files as source code; to read them offline, open the file in
+shows HTML files as source code. To read them offline, open the file in
 [doc/](doc/), choose "Download raw file" and open it in your browser.
 
 - **[Introduction](https://joris-klingen.github.io/ggcpb/doc/introduction.html)** --
