@@ -2,22 +2,30 @@ library(tidyverse)
 library(ggcpb)
 
 # simulate data ----
-# one block per sector/instrument: emissions (Mton) and effective CO2 price
+# per sector a few blocks: emissions (Mton) and effective CO2 price
+# within a sector the blocks are sorted from high to low price (staircase)
 blocks <- tribble(
   ~sector,         ~instrument,        ~emission, ~price,
-  "Elektriciteit", "Energiebelasting",        15,    250,
-  "Elektriciteit", "ETS",                      7,     70,
-  "Industrie",     "Energiebelasting",        10,    300,
-  "Industrie",     "ETS",                     33,     70,
-  "Mobiliteit",    "Accijns",                 35,    300,
-  "Gebouwen",      "Energiebelasting",        18,    330,
-  "Landbouw",      "Energiebelasting",         6,    400,
-  "Landbouw",      "Geen",                    16,      0,
-  "Scheepvaart",   "ETS",                     10,     70,
-  "Scheepvaart",   "Geen",                    25,      0,
-  "Luchtvaart",    "Vliegbelasting",          10,    200,
-  "Bio-energie",   "Accijns",                 13,    250
+  "Elektriciteit", "Energiebelasting",         2,    450,
+  "Elektriciteit", "Energiebelasting",         4,    300,
+  "Elektriciteit", "Energiebelasting",         6,    180,
+  "Elektriciteit", "ETS",                     10,     70,
+  "Industrie",     "Energiebelasting",         3,    380,
+  "Industrie",     "Energiebelasting",         5,    220,
+  "Industrie",     "ETS",                     15,     90,
+  "Industrie",     "ETS",                     20,     70,
+  "Industrie",     "Geen",                     5,      0,
+  "Mobiliteit",    "Accijns",                 20,    340,
+  "Mobiliteit",    "Accijns",                 15,    210,
+  "Gebouwen",      "Energiebelasting",         4,    420,
+  "Gebouwen",      "Energiebelasting",         8,    330,
+  "Gebouwen",      "Energiebelasting",         6,    150,
+  "Landbouw",      "Energiebelasting",         3,    250,
+  "Landbouw",      "Energiebelasting",         4,    100,
+  "Landbouw",      "Geen",                    15,      0
 ) |>
+  mutate(sector = fct_inorder(sector)) |>
+  arrange(sector, desc(price)) |>
   mutate(xmax = cumsum(emission),
          xmin = xmax - emission)
 
@@ -29,14 +37,14 @@ sector_pos <- blocks |>
 p <- ggplot(filter(blocks, price > 0)) +
   geom_rect(aes(xmin = xmin, xmax = xmax, ymin = 0, ymax = price,
                 fill = instrument)) +
-  geom_vline(data = slice(sector_pos, -1), aes(xintercept = xmin),
+  geom_vline(data = filter(sector_pos, xmin > 0), aes(xintercept = xmin),
              colour = "grey60", linewidth = 0.2) +
   geom_hline(yintercept = 180, linetype = "dashed") +
-  geom_text(data = sector_pos, aes(x = x, y = 480, label = sector),
-            size = 1.8, angle = 90, hjust = 1) +
+  geom_text(data = sector_pos, aes(x = x, y = 490, label = sector),
+            size = 2, vjust = 1) +
   scale_fill_cpb_d() +
   scale_y_continuous(limits = c(0, 500), expand = c(0, 0)) +
-  scale_x_continuous(expand = c(0, 0)) +
+  scale_x_continuous(limits = c(0, max(blocks$xmax)), expand = c(0, 0)) +
   labs(title = "CO2-beprijzing van broeikasgasemissie, 2024",
        subtitle = "Effectieve CO2-prijs (euro per ton CO2-eq.)",
        x = "Cumulatieve emissie (Mton CO2-eq.)",
