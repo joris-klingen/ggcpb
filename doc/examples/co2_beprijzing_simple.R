@@ -39,17 +39,18 @@ p <- ggplot(filter(blocks, price > 0)) +
                 fill = instrument)) +
   geom_vline(data = filter(sector_pos, xmin > 0), aes(xintercept = xmin),
              colour = "grey60", linewidth = 0.2) +
-  geom_hline(yintercept = 180, linetype = "dashed") +
+  geom_hline(aes(yintercept = 180, linetype = "Externe kosten klimaat")) +
   geom_text(data = sector_pos, aes(x = x, y = 490, label = sector),
             size = 2, vjust = 1) +
   scale_fill_cpb_d() +
+  scale_linetype_manual(values = "dashed") +
   scale_y_continuous(limits = c(0, 500), expand = c(0, 0)) +
   scale_x_continuous(limits = c(0, max(blocks$xmax)), expand = c(0, 0)) +
   labs(title = "CO2-beprijzing van broeikasgasemissie, 2024",
        subtitle = "Effectieve CO2-prijs (euro per ton CO2-eq.)",
        x = "Cumulatieve emissie (Mton CO2-eq.)",
        y = NULL,
-       fill = NULL) +
+       fill = NULL, linetype = NULL) +
   theme_cpb()
 
 save_cpb("co2_beprijzing_simple.png", p, page = "full")
