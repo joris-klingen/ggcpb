@@ -37,8 +37,10 @@ p <- ggplot(filter(blocks, price > 0)) +
   scale_fill_cpb_d() +
   scale_y_continuous(limits = c(0, 500), expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
-  labs(x = "Cumulatieve emissie (Mton CO2-eq.)",
-       y = "Effectieve CO2-prijs (euro per ton)",
+  labs(title = "CO2-beprijzing van broeikasgasemissie, 2024",
+       subtitle = "Effectieve CO2-prijs (euro per ton CO2-eq.)",
+       x = "Cumulatieve emissie (Mton CO2-eq.)",
+       y = NULL,
        fill = NULL) +
   theme_cpb()
 
