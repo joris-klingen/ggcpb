@@ -7,11 +7,11 @@
 save_cpb(
   filename,
   plot = ggplot2::last_plot(),
-  page = c("half", "full", "small"),
-  preset = c("report", "presentation", "map"),
+  page = getOption("ggcpb.page", "half"),
+  preset = getOption("ggcpb.preset", "report"),
   height = NULL,
   width = NULL,
-  dpi = 300,
+  dpi = getOption("ggcpb.dpi", 300),
   device = ragg::agg_png,
   bg = cpb_bg,
   panel_size = NULL,
@@ -104,6 +104,21 @@ figure. \code{preset = "map"} instead draws the map as wide as the page
 allows and makes the figure as tall as that takes (8.7 cm for the
 Netherlands on a half page).
 }
+\section{Settings for a whole publication}{
+
+Set an option once and every figure takes this parameter setting. If
+a parameter value is filled in for a specific figure, that value always
+wins over the general option.
+\itemize{
+\item \code{ggcpb.page}: \code{page}, \code{"half"}, \code{"full"} or \code{"small"}.
+\item \code{ggcpb.preset}: \code{preset}.
+\item \code{ggcpb.dpi}: \code{dpi}.
+}
+
+\code{\link[=cpb_import_run]{cpb_import_run()}} takes \code{ggcpb.page} too.
+\preformatted{options(ggcpb.page = "full", ggcpb.dpi = 600)}
+}
+
 \examples{
 \dontrun{
 library(ggplot2)

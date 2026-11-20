@@ -1391,6 +1391,20 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #' colour scale applied. Returns a real ggplot object that can be
 #' extended further with `+`.
 #'
+#' @section Settings for a whole publication:
+#' Set an option once and every figure takes this parameter setting. If
+#' a parameter value is filled in for a specific figure, that value always
+#' wins over the general option.
+#'
+#' * `ggcpb.style`: `style`, `"dutch"` or `"english"`.
+#' * `ggcpb.legend`: `legend`, such as `"bottom"` or `"filled-empty"`.
+#'
+#' The other wrappers take the same options. [cpb_map()] takes `style` and
+#' keeps its own legend place. [save_cpb()] has options for the page, the
+#' size and the resolution.
+#' \preformatted{options(ggcpb.style = "english",
+#'         ggcpb.legend = "filled-empty")}
+#'
 #' @param data A data.frame or data.table with one row per bar segment.
 #' @param x,y Columns mapped to the x and y aesthetics (tidy eval).
 #' @param fill Optional column mapped to the fill aesthetic (tidy
@@ -1681,7 +1695,7 @@ cpb_col <- function(data, x, y, fill = NULL,
                     facet = NULL,
                     facet_ncol = NULL,
                     facet_scales = "fixed",
-                    legend = "bottom",
+                    legend = getOption("ggcpb.legend", "bottom"),
                     zeroline = TRUE,
                     minor = FALSE,
                     ticks = TRUE,
@@ -2049,7 +2063,7 @@ cpb_area <- function(data, x, y, fill,
                      facet = NULL,
                      facet_ncol = NULL,
                      facet_scales = "fixed",
-                     legend = "bottom",
+                     legend = getOption("ggcpb.legend", "bottom"),
                      zeroline = TRUE,
                      minor = FALSE,
                      ticks = TRUE,
@@ -2301,7 +2315,7 @@ cpb_line <- function(data, x, y, colour = NULL,
                      facet = NULL,
                      facet_ncol = NULL,
                      facet_scales = "fixed",
-                     legend = "bottom",
+                     legend = getOption("ggcpb.legend", "bottom"),
                      zeroline = NULL,
                      minor = FALSE,
                      ticks = TRUE,
@@ -2773,7 +2787,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
                     facet = NULL,
                     facet_ncol = NULL,
                     facet_scales = "fixed",
-                    legend = "bottom",
+                    legend = getOption("ggcpb.legend", "bottom"),
                     reverse_legend = FALSE,
                     legend_ncol = NULL,
                     legend_nrow = NULL,
@@ -3310,7 +3324,7 @@ cpb_scatter <- function(data, x, y, colour = NULL,
                         facet = NULL,
                         facet_ncol = NULL,
                         facet_scales = "fixed",
-                        legend = "bottom",
+                        legend = getOption("ggcpb.legend", "bottom"),
                         zeroline = NULL,
                         minor = FALSE,
                         ticks = TRUE,
@@ -3532,7 +3546,7 @@ cpb_hist <- function(data, x, fill = NULL,
                      facet = NULL,
                      facet_ncol = NULL,
                      facet_scales = "fixed",
-                     legend = "bottom",
+                     legend = getOption("ggcpb.legend", "bottom"),
                      zeroline = TRUE,
                      minor = FALSE,
                      ticks = TRUE,
@@ -3817,7 +3831,7 @@ cpb_dot <- function(data, x, y, lower, upper,
                     facet = NULL,
                     facet_ncol = NULL,
                     facet_scales = "fixed",
-                    legend = "bottom",
+                    legend = getOption("ggcpb.legend", "bottom"),
                     minor = FALSE,
                     ticks = TRUE,
                     flush_legend = TRUE,
@@ -4158,7 +4172,7 @@ cpb_donut <- function(data, fill, y,
                       reverse_legend = FALSE,
                       legend_ncol = NULL,
                       legend_nrow = NULL,
-                      legend = "bottom",
+                      legend = getOption("ggcpb.legend", "bottom"),
                       flush_legend = TRUE,
                       title = NULL,
                       subtitle = NULL,

@@ -712,7 +712,7 @@ cpb_import_csv <- function(params_csv, sep = ",", ..., simplify = TRUE) {
 #'   `page` in `params_csv`.
 #' @return Invisibly, the paths of the PNGs written.
 #' @export
-cpb_import_run <- function(dir = ".", page = "half") {
+cpb_import_run <- function(dir = ".", page = getOption("ggcpb.page", "half")) {
   params_csv <- file.path(dir, "params.csv")
   if (!file.exists(params_csv)) {
     stop("params.csv was not found in ", normalizePath(dir), ".", call. = FALSE)

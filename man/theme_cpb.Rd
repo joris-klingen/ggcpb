@@ -9,7 +9,7 @@ theme_cpb(
   background = TRUE,
   orientation = c("vertical", "horizontal"),
   grid = c("value", "both", "none", "x", "y"),
-  legend = "bottom",
+  legend = getOption("ggcpb.legend", "bottom"),
   minor = FALSE,
   ticks = TRUE,
   flush_legend = TRUE,

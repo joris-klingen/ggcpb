@@ -1,3 +1,7 @@
+# ggcpb (development version)
+
+* Options set the legend and the saving of a whole publication at once, as `ggcpb.style` does. The wrappers take `ggcpb.legend`. `save_cpb()` takes `ggcpb.page`, `ggcpb.preset` and `ggcpb.dpi`. An argument in the call wins.
+
 # ggcpb 0.3.0
 
 * **Breaking:** `cpb_col()` places columns next to each other by default (`position = "dodge"`). Before, they were stacked. Use `position = "stack"` to stack them.

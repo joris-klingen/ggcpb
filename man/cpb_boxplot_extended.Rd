@@ -51,7 +51,7 @@ cpb_boxplot_extended(
   facet = NULL,
   facet_ncol = NULL,
   facet_scales = "fixed",
-  legend = "bottom",
+  legend = getOption("ggcpb.legend", "bottom"),
   reverse_legend = FALSE,
   legend_ncol = NULL,
   legend_nrow = NULL,

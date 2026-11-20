@@ -47,7 +47,7 @@ cpb_line(
   facet = NULL,
   facet_ncol = NULL,
   facet_scales = "fixed",
-  legend = "bottom",
+  legend = getOption("ggcpb.legend", "bottom"),
   zeroline = NULL,
   minor = FALSE,
   ticks = TRUE,

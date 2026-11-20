@@ -4,7 +4,7 @@
 \alias{cpb_import_run}
 \title{Build and save every figure of a figure folder}
 \usage{
-cpb_import_run(dir = ".", page = "half")
+cpb_import_run(dir = ".", page = getOption("ggcpb.page", "half"))
 }
 \arguments{
 \item{dir}{The figure folder, holding \code{params.csv} and \verb{data/}.}

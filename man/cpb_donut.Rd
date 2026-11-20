@@ -22,7 +22,7 @@ cpb_donut(
   reverse_legend = FALSE,
   legend_ncol = NULL,
   legend_nrow = NULL,
-  legend = "bottom",
+  legend = getOption("ggcpb.legend", "bottom"),
   flush_legend = TRUE,
   title = NULL,
   subtitle = NULL,

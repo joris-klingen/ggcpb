@@ -1011,6 +1011,15 @@ In Excel there is no single setting for all figures. Add the row `style` to
 `params.csv` and give every figure the same value in its column, such as
 `english`. A blank cell uses the Dutch default.
 
+The legend and the page work in the same way. Set the option once and every
+figure takes it. A figure that sets its own value keeps it.
+
+```{r publication-options, eval = FALSE, echo = TRUE}
+options(ggcpb.legend = "filled-empty") # legend of the whole publication
+options(ggcpb.page = "full")           # page width when saving
+options(ggcpb.dpi = 600)               # resolution when saving
+```
+
 # Example code to create figures in R
 
 The code below creates the figures above in R. It first builds the data,

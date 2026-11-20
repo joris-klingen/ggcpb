@@ -47,7 +47,7 @@ cpb_col(
   facet = NULL,
   facet_ncol = NULL,
   facet_scales = "fixed",
-  legend = "bottom",
+  legend = getOption("ggcpb.legend", "bottom"),
   zeroline = TRUE,
   minor = FALSE,
   ticks = TRUE,
@@ -364,6 +364,23 @@ Thin wrapper around \code{\link[ggplot2:geom_col]{ggplot2::geom_col()}} with CPB
 colour scale applied. Returns a real ggplot object that can be
 extended further with \code{+}.
 }
+\section{Settings for a whole publication}{
+
+Set an option once and every figure takes this parameter setting. If
+a parameter value is filled in for a specific figure, that value always
+wins over the general option.
+\itemize{
+\item \code{ggcpb.style}: \code{style}, \code{"dutch"} or \code{"english"}.
+\item \code{ggcpb.legend}: \code{legend}, such as \code{"bottom"} or \code{"filled-empty"}.
+}
+
+The other wrappers take the same options. \code{\link[=cpb_map]{cpb_map()}} takes \code{style} and
+keeps its own legend place. \code{\link[=save_cpb]{save_cpb()}} has options for the page, the
+size and the resolution.
+\preformatted{options(ggcpb.style = "english",
+        ggcpb.legend = "filled-empty")}
+}
+
 \examples{
 library(ggplot2)
 df <- data.frame(

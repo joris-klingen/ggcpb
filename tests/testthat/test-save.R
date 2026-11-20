@@ -707,3 +707,18 @@ test_that("a faceted figure is as tall as its rows of panels", {
   # an explicit height wins
   expect_equal(height_of(two, height = 4), 4, tolerance = 0.01)
 })
+
+test_that("options set the page and the resolution of save_cpb()", {
+  withr::local_options(ggcpb.page = "full", ggcpb.dpi = 100)
+  df <- data.frame(x = 2021:2022, y = c(1, 2))
+  p <- cpb_col(df, x = x, y = y)
+  path <- withr::local_tempfile(fileext = ".png")
+  save_cpb(path, p)
+  size <- dim(png::readPNG(path))
+  # full page is 15.5 cm wide, at 100 dpi
+  expect_equal(size[2], round(15.5 / 2.54 * 100), tolerance = 0.01)
+
+  # an argument in the call wins over the option
+  save_cpb(path, p, page = "half")
+  expect_lt(dim(png::readPNG(path))[2], size[2])
+})

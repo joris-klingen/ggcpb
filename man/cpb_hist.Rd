@@ -27,7 +27,7 @@ cpb_hist(
   facet = NULL,
   facet_ncol = NULL,
   facet_scales = "fixed",
-  legend = "bottom",
+  legend = getOption("ggcpb.legend", "bottom"),
   zeroline = TRUE,
   minor = FALSE,
   ticks = TRUE,

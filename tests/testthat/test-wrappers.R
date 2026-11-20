@@ -2551,3 +2551,16 @@ test_that("cpb_box colours james boxes by palette position per group", {
   }))
   expect_true(all(unname(cpb_cols(c(7, 5, 2))) %in% cols))
 })
+
+test_that("an option sets the legend of every figure at once", {
+  df <- data.frame(x = rep(2021:2022, each = 2),
+                   y = c(1, 2, 3, 4), g = rep(c("a", "b"), 2))
+  withr::local_options(ggcpb.legend = "right")
+
+  p <- cpb_col(df, x = x, y = y, fill = g)
+  expect_equal(p$theme$legend.position, "right")
+
+  # an argument in the call wins over the option
+  p2 <- cpb_col(df, x = x, y = y, fill = g, legend = "bottom")
+  expect_equal(p2$theme$legend.position, "bottom")
+})

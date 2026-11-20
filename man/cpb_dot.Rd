@@ -48,7 +48,7 @@ cpb_dot(
   facet = NULL,
   facet_ncol = NULL,
   facet_scales = "fixed",
-  legend = "bottom",
+  legend = getOption("ggcpb.legend", "bottom"),
   minor = FALSE,
   ticks = TRUE,
   flush_legend = TRUE,
