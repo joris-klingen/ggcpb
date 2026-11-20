@@ -230,17 +230,20 @@ cpb_resolve_index <- function(value, palette, palette_supplied,
     if (!is_keyword) {
       # colour names, such as c("siren", "cold_turkey"), give palette positions
       known <- cpb_palette_names(palette)
-      pos <- if (is.null(known)) rep(NA_integer_, length(value)) else
-        match(value, known)
+      if (is.null(known)) {
+        stop("`", arg, "` \"", paste(value, collapse = "\", \""),
+             "\" is not recognised: the palette '", palette,
+             "' has no colour names. Use palette positions, or ",
+             "palette = \"qualitative\" for colour names.", call. = FALSE)
+      }
+      pos <- match(value, known)
       if (anyNA(pos)) {
         stop("`", arg, "` \"", paste(value[is.na(pos)], collapse = "\", \""),
              "\" is not recognised. Use a keyword (",
              paste0("\"", names(cpb_index_keywords), "\"", collapse = ", "),
-             "), colour names of the palette",
-             if (!is.null(known)) {
-               paste0(" (", paste(known, collapse = ", "), ")")
-             },
-             ", or a vector of palette positions.",
+             "), colour names of the palette (",
+             paste(known, collapse = ", "),
+             "), or a vector of palette positions.",
              if (identical(palette, "qualitative") &&
                    all(value[is.na(pos)] %in% cpb_palette_names("extended"))) {
                paste0(" The other colours need palette = \"extended\", ",

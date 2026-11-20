@@ -106,3 +106,25 @@ test_that("colour_index takes colour names, as cpb_cols() does", {
     "need palette = \"extended\""
   )
 })
+
+test_that("names with a palette that has none say so", {
+  md <- data.frame(prov = c("Groningen", "Fryslân", "Drenthe"),
+                   v = c("a", "b", "c"))
+  # the default palette of cpb_map() is a ramp without colour names
+  expect_error(
+    cpb_map(md, region = prov, value = v, level = "provincie",
+            colour_index = c("siren", "brown")),
+    "palette 'sequential' has no colour names"
+  )
+  expect_error(
+    cpb_line(d3, x = x, y = y, colour = g, palette = "blues",
+             colour_index = c("siren", "brown", "dorado")),
+    "palette = \"qualitative\" for colour names"
+  )
+  # with the qualitative palette the names work for a map too
+  expect_no_error(ggplot2::ggplot_build(
+    cpb_map(md, region = prov, value = v, level = "provincie",
+            palette = "qualitative",
+            colour_index = c("siren", "brown", "dorado"))
+  ))
+})
