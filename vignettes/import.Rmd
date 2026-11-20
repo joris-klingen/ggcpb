@@ -297,6 +297,27 @@ fig_one <- cpb_import_csv(params_one)
 fig_one
 ```
 
+# Settings for all figures
+
+`general_settings` can be used to define settings that apply to all figures, such as `style`,
+`legend` or `page`. To do so, set the value in the `id` row to `general_settings`,
+as shown in the example below. 
+
+| id | general_settings | a | b | c |
+|:---|:---|:---|:---|:---|
+| plot_type | | line | col | col |
+| legend | filled-empty | | | none |
+| page | full | | half | |
+| dpi | 600 | | | |
+
+For each parameter, a value set for a specific figure overrides the value in `general_settings`.
+If the cell is empty, the value from `general_settings` is used instead.
+
+In the example, figures a and b use the legend `filled-empty`, while figure c has no legend. Figure b is
+saved on a half page and the others on a full page.
+
+Each parameter file can contain at most one `general_settings` column. However, including a `general_settings` column is optional.
+
 # Handling problems
 
 A parameter can be left blank. In that case, the default value is

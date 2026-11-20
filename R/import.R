@@ -406,6 +406,33 @@ cpb_import_save_params <- function(p) {
   out
 }
 
+# The column whose `id` is `general_settings` holds the settings that every
+# figure takes. A figure's own value wins, and a blank cell takes the
+# general one. `id` and `create` belong to one figure and are not shared.
+# An empty figure column stays empty: it is not a figure.
+cpb_import_split_general <- function(figs) {
+  is_general <- vapply(figs, function(p) {
+    id <- p[["id"]]
+    !is.null(id) && identical(tolower(trimws(id)), "general_settings")
+  }, logical(1))
+  if (sum(is_general) > 1) {
+    stop("`params_csv` has ", sum(is_general), " columns with `id` = ",
+         "`general_settings`. Use one.", call. = FALSE)
+  }
+  general <- list()
+  if (any(is_general)) {
+    general <- figs[[which(is_general)]]
+    general <- general[!names(general) %in% c("id", "create")]
+  }
+  figs <- figs[!is_general]
+  if (length(general)) {
+    figs <- lapply(figs, function(p) {
+      if (length(p)) utils::modifyList(general, p) else p
+    })
+  }
+  list(figs = figs, general = general)
+}
+
 # Always (over)writes a plain-text run log next to params_csv, listing
 # every figure's outcome -- built (with any ignored/unknown parameter
 # names), skipped (and why), plus a one-line summary. A console
@@ -413,7 +440,8 @@ cpb_import_save_params <- function(p) {
 # triggered from a scheduled task or a .bat file may never show its
 # console at all, or may discard stderr entirely, so the log file is
 # the only outcome record guaranteed to survive an unattended run.
-cpb_import_write_log <- function(params_csv, data_dir, entries) {
+cpb_import_write_log <- function(params_csv, data_dir, entries,
+                                 general = list()) {
   log_path <- paste0(tools::file_path_sans_ext(params_csv), "_log.txt")
 
   header <- c(
@@ -421,6 +449,9 @@ cpb_import_write_log <- function(params_csv, data_dir, entries) {
            format(Sys.time(), "%Y-%m-%d %H:%M:%S")),
     paste0("data:   ", data_dir),
     paste0("params: ", params_csv),
+    if (length(general)) {
+      paste0("general settings: ", paste(names(general), collapse = ", "))
+    },
     ""
   )
 
@@ -520,6 +551,14 @@ cpb_import_write_log <- function(params_csv, data_dir, entries) {
 #' other column is one figure. Fields at the end of a row can be left
 #' out when they are blank.
 #'
+#' `general_settings` as the `id` of a column sets settings for all figures
+#' at once. If the value for a parameter is empty, a figure takes the value
+#' in `general_settings`. When a value is given for a specific figure, this
+#' value overrules `general_settings` for that figure only. The column
+#' `general_settings` is not a figure itself and does not count in the
+#' figure numbers. `id` and `create` are not shared. There can be only one
+#' such column, and it is optional.
+#'
 #' Every call also (over)writes a plain-text run log next to
 #' `params_csv`, named `<params_csv>_log.txt`: one line per figure
 #' (built, skipped and why, or built with any ignored parameter
@@ -563,6 +602,9 @@ cpb_import_csv <- function(params_csv, sep = ",", ..., simplify = TRUE) {
   extra_params <- list(...)
 
   figs <- cpb_import_read_params(params_csv, sep)
+  general <- cpb_import_split_general(figs)
+  figs <- general$figs
+  general <- general$general
   if (!any(lengths(figs) > 0)) {
     stop("`params_csv` defines no figures.", call. = FALSE)
   }
@@ -675,7 +717,7 @@ cpb_import_csv <- function(params_csv, sep = ",", ..., simplify = TRUE) {
   }
 
   entries <- entries[order(vapply(entries, function(e) e$row, numeric(1)))]
-  log_path <- cpb_import_write_log(params_csv, data_dir, entries)
+  log_path <- cpb_import_write_log(params_csv, data_dir, entries, general)
 
   # a partial batch (some figures built, some skipped or failed) is a
   # legitimate, useful result and must not error -- but coming back

@@ -92,6 +92,14 @@ In \code{params_csv} column 1 holds the parameter names, one per row. Every
 other column is one figure. Fields at the end of a row can be left
 out when they are blank.
 
+\code{general_settings} as the \code{id} of a column sets settings for all figures
+at once. If the value for a parameter is empty, a figure takes the value
+in \code{general_settings}. When a value is given for a specific figure, this
+value overrules \code{general_settings} for that figure only. The column
+\code{general_settings} is not a figure itself and does not count in the
+figure numbers. \code{id} and \code{create} are not shared. There can be only one
+such column, and it is optional.
+
 Every call also (over)writes a plain-text run log next to
 \code{params_csv}, named \verb{<params_csv>_log.txt}: one line per figure
 (built, skipped and why, or built with any ignored parameter

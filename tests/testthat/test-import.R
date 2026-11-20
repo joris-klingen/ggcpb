@@ -444,3 +444,98 @@ test_that("an invalid `page` skips the figure with a warning", {
   expect_warning(ps <- cpb_import_csv(params_csv), "half, full or small")
   expect_s3_class(ps, "ggplot")
 })
+
+# the column `general_settings` ----
+
+general_lines <- c(
+  "plot_type,,line,line,line",
+  "id,general_settings,a,b,c",
+  "x,jaar,jaar,jaar,jaar",
+  "y,waarde,waarde,waarde,waarde",
+  "data,koopkracht,,werkloosheid,",
+  "legend,right,,,none",
+  "page,full,,half,"
+)
+general_data <- c("koopkracht.csv", "werkloosheid.csv")
+
+test_that("a figure takes the general settings, and its own value wins", {
+  dir <- local_kit(general_lines, datasets = general_data)
+  ps <- cpb_import_csv(file.path(dir, "params.csv"))
+
+  # the general column is not a figure, and the plot type is its own
+  expect_length(ps, 3)
+  # blank cells take the general value, own cells win
+  expect_equal(ps[[1]]$theme$legend.position, "right")
+  expect_equal(ps[[3]]$theme$legend.position, "none")
+  expect_equal(attr(ps[[1]], "cpb_import_save")$page, "full")
+  expect_equal(attr(ps[[2]], "cpb_import_save")$page, "half")
+  # the data of figure b comes from its own cell
+  expect_named(ps, c("koopkracht_1", "werkloosheid", "koopkracht_3"))
+})
+
+test_that("figure numbers do not count the general column", {
+  dir <- local_kit(general_lines, datasets = general_data)
+  ps <- cpb_import_csv(file.path(dir, "params.csv"))
+  # a and c share a dataset, so they carry their figure number 1 and 3
+  expect_true(all(c("koopkracht_1", "koopkracht_3") %in% names(ps)))
+})
+
+test_that("id and create are not shared from the general column", {
+  dir <- local_kit(c(
+    "plot_type,line,line",
+    "id,general_settings,a",
+    "create,n,",
+    "x,jaar,jaar",
+    "y,waarde,waarde"
+  ), datasets = "data.csv")
+  ps <- cpb_import_csv(file.path(dir, "params.csv"))
+  expect_s3_class(ps, "ggplot")
+})
+
+test_that("an empty figure column stays empty with a general column", {
+  dir <- local_kit(c(
+    "plot_type,line,line,",
+    "id,general_settings,a,",
+    "x,jaar,jaar,",
+    "y,waarde,waarde,",
+    "legend,right,,"
+  ), datasets = "data.csv")
+  ps <- cpb_import_csv(file.path(dir, "params.csv"))
+  expect_s3_class(ps, "ggplot")
+})
+
+test_that("two general columns are an error", {
+  dir <- local_kit(c(
+    "plot_type,line,line,line",
+    "id,general_settings,General_Settings,a",
+    "x,jaar,jaar,jaar",
+    "y,waarde,waarde,waarde"
+  ), datasets = "data.csv")
+  expect_error(cpb_import_csv(file.path(dir, "params.csv")),
+               "general_settings")
+})
+
+test_that("a params.csv with only a general column has no figures", {
+  dir <- local_kit(c(
+    "plot_type,line",
+    "id,general_settings",
+    "legend,right"
+  ), datasets = "data.csv")
+  expect_error(cpb_import_csv(file.path(dir, "params.csv")), "no figures")
+})
+
+test_that("the run log names the general settings", {
+  dir <- local_kit(general_lines, datasets = general_data)
+  cpb_import_csv(file.path(dir, "params.csv"))
+  log <- readLines(file.path(dir, "params_log.txt"))
+  expect_true(any(grepl("general settings: .*legend", log)))
+})
+
+test_that("cpb_import_run saves with the general page", {
+  skip_on_cran()
+  dir <- local_kit(general_lines, datasets = general_data)
+  utils::capture.output(paths <- cpb_import_run(dir))
+  width <- function(f) dim(png::readPNG(f))[2]
+  # figure a is full (15.5 cm), figure b is half (7.5 cm)
+  expect_gt(width(paths[1]), width(paths[2]))
+})

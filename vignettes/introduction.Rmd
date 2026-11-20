@@ -996,28 +996,40 @@ save_cpb("heatmap.png", page = "half")
 
 # Set settings for the whole publication
 
-Some settings are the same for every figure of a publication. The main one
-is the `style`. Dutch is the default. An English report uses `english`.
+Some settings can be applied to all figures at once. One of them
+is the `style`. `dutch` is the default. The other option is `english`.
 It sets the number format and the words, such as the forecast label.
 
-In R, set it once at the start of the script. Every figure then uses it,
-unless a figure sets its own `style`.
+In Excel, add one column to `params.csv` with the `id` `general_settings`.
+It holds the settings of all figures. For each parameter, a value set for a specific figure overrides the value in `general_settings`.
+If the cell is empty, the value from `general_settings` is used instead. 
+This is how you make an exception.
+
+| id | general_settings | a | b | c |
+|:---|:---|:---|:---|:---|
+| plot_type | | line | col | col |
+| style | english | | | |
+| legend | filled-empty | | | none |
+| page | full | | half | |
+| dpi | 600 | | | |
+
+All three figures are English and saved at 600 dpi. Figures a and b have the
+legend `filled-empty`. Figure c has no legend. Figure b is saved on a half
+page and the others on a full page.
+
+In R, the options `ggcpb.style`, `ggcpb.legend`, `ggcpb.page`,
+`ggcpb.preset` and `ggcpb.dpi` can be used to define these settings that apply to all figures. The
+order of precedence is the figure itself, then `general_settings` in `params.csv`, then the option and
+then the default of ggcpb.  Set it once at the start of the script. Every figure then uses it,
+unless a figure sets its own `style` for example. The legend, the page and the
+resolution work in the same way. 
 
 ```{r publication-style, eval = FALSE, echo = TRUE}
-options(ggcpb.style = "dutch") # or "english"
-```
-
-In Excel there is no single setting for all figures. Add the row `style` to
-`params.csv` and give every figure the same value in its column, such as
-`english`. A blank cell uses the Dutch default.
-
-The legend and the page work in the same way. Set the option once and every
-figure takes it. A figure that sets its own value keeps it.
-
-```{r publication-options, eval = FALSE, echo = TRUE}
-options(ggcpb.legend = "filled-empty") # legend of the whole publication
-options(ggcpb.page = "full")           # page width when saving
-options(ggcpb.dpi = 600)               # resolution when saving
+options(ggcpb.style = "dutch")          # or "english"
+options(ggcpb.legend = "filled-empty")  # legend of the whole publication
+options(ggcpb.page = "full")            # page width when saving
+options(ggcpb.preset = "report")        # height when saving
+options(ggcpb.dpi = 600)                # resolution when saving
 ```
 
 # Example code to create figures in R
