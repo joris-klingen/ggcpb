@@ -11,9 +11,9 @@ cpb_cols(
 )
 }
 \arguments{
-\item{...}{One or more integer positions into \code{palette}, or for
-\code{"extended"} colour names such as \code{"apple"}. If empty, the full
-palette is returned in its original order.}
+\item{...}{One or more integer positions into \code{palette}, or colour
+names such as \code{"siren"} (for \code{"qualitative"} and \code{"extended"}). If
+empty, the full palette is returned in its original order.}
 
 \item{palette}{One of \code{"qualitative"} (the primary 9-colour discrete
 palette), \code{"discr"} (the alternate blue/pink-led 7-colour discrete

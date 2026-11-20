@@ -95,7 +95,8 @@ test_that("cpb_cols() finds extended colours by name", {
   expect_equal(cpb_cols("apple", "sun", palette = "extended"),
                c(apple = "#43B546", sun = "#FBAD1D"))
   expect_error(cpb_cols("nope", palette = "extended"), "unknown colour name")
-  expect_error(cpb_cols("apple"), "numeric positions")
+  # the qualitative palette has names too, but not this one
+  expect_error(cpb_cols("apple"), "unknown colour name")
 })
 
 test_that("more levels than a palette has: recycling warns", {
@@ -166,4 +167,14 @@ test_that("the other palettes give no warning", {
   expect_no_warning(cpb_pal("qualitative")(3))
   expect_no_warning(cpb_cols(1:2))
   expect_no_warning(cpb_tokens())
+})
+
+test_that("cpb_cols() finds the colours of the qualitative palette by name", {
+  expect_equal(cpb_cols("siren", "brown"),
+               c(siren = "#820050", brown = "#96827d"))
+  expect_equal(unname(cpb_cols("siren", "brown")), unname(cpb_cols(3, 8)))
+  expect_equal(cpb_cols("endeavour", reverse = TRUE)[[1]], cpb_cols(6)[[1]])
+  expect_error(cpb_cols("apple"), "unknown colour name")
+  # without names the output stays as it was
+  expect_equal(names(cpb_cols(1:2)), c("1", "2"))
 })

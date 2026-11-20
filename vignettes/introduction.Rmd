@@ -644,6 +644,9 @@ You may use these nine colours in a publication.
 You may not use the other eleven in a publication.
 Use them to explore or to test a figure.
 The names under the colours are the names in `cpb_cols(palette = "extended")`.
+The number between brackets is the position of the colour.
+Use the name or the position in `colour_index`.
+For example, `colour_index = c("siren", "brown")` is the same as `colour_index = c(3, 8)`.
 
 ```{r extended-palette, echo = FALSE, fig.width = 15.5 / 2.54, fig.height = 2.6, out.width = "100%"}
 ext <- cpb_cols(palette = "extended")
@@ -654,7 +657,9 @@ op <- par(mar = c(5, 0, 0.5, 0), bg = cpb_tokens()$bg)
 plot.new()
 plot.window(xlim = c(0.2, n + 1.4), ylim = c(0, 1.7))
 rect(x - 0.4, 0, x + 0.4, 1, col = ext, border = NA)
-text(x, -0.2, names(ext), srt = 90, adj = c(1, 0.5), cex = 0.6, xpd = NA)
+# the name and the position, as used by cpb_cols() and colour_index
+text(x, -0.2, paste0(names(ext), " [", seq_len(n), "]"), srt = 90,
+     adj = c(1, 0.5), cex = 0.6, xpd = NA)
 # a green frame around the colours for publication, a dark red one around
 # the colours for testing, both a little away from the colours
 rect(0.4, -0.12, 9.6, 1.12, border = "#2e8b3d", lwd = 2)
@@ -862,7 +867,7 @@ zakkans <- tibble(
 
 ```{r col-grouped}
 cpb_col(zakkans, x = cat, y = pct, fill = serie, group = grp,
-        colour_index = c(6, 2), width = 0.75,
+        colour_index = c("siren", "brown"), width = 0.75,
         value_breaks = seq(0, 12, 2), value_limits = c(0, 12),
         title = "VWO", ylab = "zakkans (%)")
 ```
@@ -873,7 +878,7 @@ cpb_col(zakkans, x = cat, y = pct, fill = serie, group = grp,
 
 ```{r par-col-grouped}
 ptab(plot_type = "col", title = "VWO", x = "cat", y = "pct", fill = "serie",
-     group = "grp", colour_index = "6;2", width = 0.75,
+     group = "grp", colour_index = "siren;brown", width = 0.75,
      value_breaks = "0;2;4;6;8;10;12", value_limits = "0;12",
      ylab = "zakkans (%)")
 ```

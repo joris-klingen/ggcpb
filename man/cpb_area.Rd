@@ -153,8 +153,9 @@ labelling function such as \code{\link[scales:label_number]{scales::label_number
 (20 categorical colours).}
 
 \item{colour_index}{Which house colours the series get. Either a vector
-of palette positions -- \code{c(2, 5, 6)}, forwarded to
-\code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} or \code{\link[=scale_colour_cpb_manual]{scale_colour_cpb_manual()}} -- or a keyword
+of palette positions, \code{c(2, 5, 6)}, or of colour names,
+\code{c("siren", "brown")}, forwarded to
+\code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} or \code{\link[=scale_colour_cpb_manual]{scale_colour_cpb_manual()}}, or a keyword
 naming a palette:
 \code{"discrete"} for the qualitative house palette (blue, magenta,
 taupe, ...) and \code{"continuous"} for the sequential ramp; the palette

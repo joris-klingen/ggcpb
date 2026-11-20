@@ -42,6 +42,9 @@ test_that("a keyword that contradicts `palette` is an error", {
 test_that("bad colour_index values are rejected clearly", {
   expect_error(cpb_line(d3, x = x, y = y, colour = g, colour_index = "rainbow"),
                "not recognised")
+  expect_error(cpb_line(d3, x = x, y = y, colour = g,
+                        colour_index = c("siren", "rainbow")),
+               "\"rainbow\" is not recognised")
   expect_error(cpb_line(d3, x = x, y = y, colour = g, colour_index = c(0, 2)),
                "positive whole numbers")
   expect_error(cpb_line(d3, x = x, y = y, colour = g, colour_index = c(1.5)),
@@ -76,4 +79,30 @@ test_that("cpb_map keeps its sequential default", {
   # new argument must not force "discrete" on every wrapper
   expect_equal(eval(formals(cpb_map)$palette), "sequential")
   expect_null(eval(formals(cpb_map)$colour_index))
+})
+
+test_that("colour_index takes colour names, as cpb_cols() does", {
+  fills <- function(...) {
+    unique(ggplot2::ggplot_build(
+      cpb_line(d3, x = x, y = y, colour = g, ...)
+    )$data[[1]]$colour)
+  }
+  expect_equal(fills(colour_index = c("siren", "brown", "endeavour")),
+               unname(cpb_cols(3, 8, 6)))
+  expect_equal(fills(colour_index = c("siren", "brown", "endeavour")),
+               fills(colour_index = c(3, 8, 6)))
+  # one name is a colour, not a keyword
+  d1 <- d3[d3$g == d3$g[1], ]
+  expect_equal(
+    unique(ggplot2::ggplot_build(
+      cpb_line(d1, x = x, y = y, colour_index = "endeavour")
+    )$data[[1]]$colour),
+    unname(cpb_cols(6))
+  )
+  # the other eleven colours need the extended palette
+  expect_error(
+    cpb_line(d3, x = x, y = y, colour = g,
+             colour_index = c("siren", "apple", "brown")),
+    "need palette = \"extended\""
+  )
 })

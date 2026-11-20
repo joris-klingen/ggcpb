@@ -115,9 +115,9 @@ cpb_warn_extended <- function(palette) {
 #' CPB source scripts), but without needing to know the internal
 #' object names.
 #'
-#' @param ... One or more integer positions into `palette`, or for
-#'   `"extended"` colour names such as `"apple"`. If empty, the full
-#'   palette is returned in its original order.
+#' @param ... One or more integer positions into `palette`, or colour
+#'   names such as `"siren"` (for `"qualitative"` and `"extended"`). If
+#'   empty, the full palette is returned in its original order.
 #' @inheritParams cpb_pal
 #' @param reverse If `TRUE`, reverse the palette before indexing.
 #' @return A character vector of hex colours, named by the position
@@ -140,16 +140,23 @@ cpb_cols <- function(...,
   # the full named palette keeps its colour names
   if (length(idx) == 0 && !is.null(names(cols))) return(cols)
   if (length(idx) == 0) idx <- seq_along(cols)
-  if (is.character(idx) && !is.null(names(cols))) {
-    unknown <- setdiff(idx, names(cols))
+  # a colour name finds its colour, also in the qualitative palette, which
+  # has no names in its own vector
+  named <- cols
+  if (is.null(names(named)) && !is.null(cpb_palette_names(palette))) {
+    pn <- cpb_palette_names(palette)
+    names(named) <- if (isTRUE(reverse)) rev(pn) else pn
+  }
+  if (is.character(idx) && !is.null(names(named))) {
+    unknown <- setdiff(idx, names(named))
     if (length(unknown)) {
       stop("cpb_cols(): unknown colour name(s) ",
            paste0("'", unknown, "'", collapse = ", "),
            "; the '", palette, "' palette has ",
-           paste(names(cols), collapse = ", "), ".",
+           paste(names(named), collapse = ", "), ".",
            call. = FALSE)
     }
-    return(cols[idx])
+    return(named[idx])
   }
   if (!is.numeric(idx)) {
     stop("cpb_cols(): indices passed via ... must be numeric positions ",
@@ -171,6 +178,18 @@ cpb_cols <- function(...,
 }
 
 # Colour/fill index resolution ----
+
+# The colour names of a palette, in the order of its positions. The nine
+# colours of the qualitative palette have the first nine names of the
+# extended palette. The ramps have no names (NULL).
+cpb_palette_names <- function(palette) {
+  nms <- names(cpb_colors_extended)
+  nms <- nms[nms != "na"]
+  switch(palette,
+         qualitative = nms[1:9],
+         extended = nms,
+         NULL)
+}
 
 # The keyword vocabulary for `colour_index`. "discrete"
 # and "continuous" are the two the house style is described in; the raw
@@ -203,16 +222,33 @@ cpb_resolve_index <- function(value, palette, palette_supplied,
   if (is.null(value)) return(list(index = NULL, palette = palette))
 
   if (is.character(value)) {
-    if (length(value) != 1L || is.na(value)) {
-      stop("`", arg, "` must be a single keyword (",
-           paste0("\"", names(cpb_index_keywords)[1:2], "\"",
-                  collapse = " or "),
-           ") or a vector of palette positions.", call. = FALSE)
+    if (!length(value) || anyNA(value)) {
+      stop("`", arg, "` must be a keyword, colour names or a vector of ",
+           "palette positions.", call. = FALSE)
     }
-    if (!value %in% names(cpb_index_keywords)) {
-      stop("`", arg, "` keyword \"", value, "\" is not recognised. Use one of ",
-           paste0("\"", names(cpb_index_keywords), "\"", collapse = ", "),
-           ", or a vector of palette positions.", call. = FALSE)
+    is_keyword <- length(value) == 1L && value %in% names(cpb_index_keywords)
+    if (!is_keyword) {
+      # colour names, such as c("siren", "brown"), give palette positions
+      known <- cpb_palette_names(palette)
+      pos <- if (is.null(known)) rep(NA_integer_, length(value)) else
+        match(value, known)
+      if (anyNA(pos)) {
+        stop("`", arg, "` \"", paste(value[is.na(pos)], collapse = "\", \""),
+             "\" is not recognised. Use a keyword (",
+             paste0("\"", names(cpb_index_keywords), "\"", collapse = ", "),
+             "), colour names of the palette",
+             if (!is.null(known)) {
+               paste0(" (", paste(known, collapse = ", "), ")")
+             },
+             ", or a vector of palette positions.",
+             if (identical(palette, "qualitative") &&
+                   all(value[is.na(pos)] %in% cpb_palette_names("extended"))) {
+               paste0(" The other colours need palette = \"extended\", ",
+                      "which is for testing only.")
+             },
+             call. = FALSE)
+      }
+      return(list(index = pos, palette = palette))
     }
     resolved <- unname(cpb_index_keywords[[value]])
     # a keyword *is* a palette choice, so it cannot also be given as one

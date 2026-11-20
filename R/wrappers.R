@@ -1553,8 +1553,9 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   (pink ramp), `\"blues\"` (blue ramp) or `\"extended\"`
 #'   (20 categorical colours).
 #' @param colour_index Which house colours the series get. Either a vector
-#'   of palette positions -- `c(2, 5, 6)`, forwarded to
-#'   [scale_fill_cpb_manual()] or [scale_colour_cpb_manual()] -- or a keyword
+#'   of palette positions, `c(2, 5, 6)`, or of colour names,
+#'   `c("siren", "brown")`, forwarded to
+#'   [scale_fill_cpb_manual()] or [scale_colour_cpb_manual()], or a keyword
 #'   naming a palette:
 #'   `"discrete"` for the qualitative house palette (blue, magenta,
 #'   taupe, ...) and `"continuous"` for the sequential ramp; the palette

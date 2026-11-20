@@ -611,3 +611,16 @@ test_that("a wrong value in the figure itself has no general note", {
   expect_false(grepl("from general_settings", skipped_detail(dir),
                      fixed = TRUE))
 })
+
+test_that("colour_index takes colour names in params.csv", {
+  dir <- local_kit(c(
+    "plot_type,line",
+    "x,jaar",
+    "y,waarde",
+    "colour,groep",
+    "colour_index,siren;brown"
+  ), datasets = "data.csv")
+  p <- figures_from_csv(file.path(dir, "params.csv"))
+  cols <- unique(ggplot2::ggplot_build(p)$data[[1]]$colour)
+  expect_equal(cols, unname(cpb_cols(3, 8)))
+})

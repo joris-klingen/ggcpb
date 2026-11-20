@@ -1,5 +1,6 @@
 # ggcpb 0.3.1
 
+* `colour_index` takes colour names, such as `c("siren", "brown")`, in every figure type and in `params.csv` (`siren;brown`). `cpb_cols()` finds the colours of the qualitative palette by name too, and the figure of the extended palette in the introduction shows the name and the position of each colour.
 * Any use of the extended palette warns: "palette = \"extended\" is only for testing, not for publication." Use the qualitative palette for a published figure.
 * **Breaking:** `cpb_import_csv()` is now `figures_from_csv()`, and `cpb_import_run()` is now `generate_figures_with_excel()`. The vignette `import` is now `generate_figures_with_excel`. The code is in `R/figures_from_csv.R`.
 * The HTML of the vignettes is in `inst/doc`, the only copy. The installed package shows it in the help, also after `install_github()`. The folder `doc/` is removed, and the README links to `inst/doc`.
