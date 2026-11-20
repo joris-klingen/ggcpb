@@ -960,7 +960,7 @@ cpb_ggsave_grob <- function(filename, grob, dpi, device, bg, width = NULL,
 #' * `ggcpb.preset`: `preset`.
 #' * `ggcpb.dpi`: `dpi`.
 #'
-#' [cpb_import_run()] takes `ggcpb.page` too.
+#' [generate_figures_with_excel()] takes `ggcpb.page` too.
 #' \preformatted{options(ggcpb.page = "full", ggcpb.dpi = 600)}
 #'
 #' @param filename Path to write to; passed to [ggplot2::ggsave()].

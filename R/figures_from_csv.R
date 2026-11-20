@@ -1,4 +1,4 @@
-# import.R
+# figures_from_csv.R
 #
 # Standalone CSV import: builds ready-to-use ggplot objects from a plain
 # datasets in a data folder and a params.csv (column 1 holds the parameter
@@ -113,7 +113,7 @@ cpb_import_sep_hint <- function(path, sep, actual_cols) {
     paste0(
       " Only ", actual_cols, " column(s) were found using ",
       "`sep = \"", sep, "\"`, but the first line looks like it might use a ",
-      best, " instead. Pass the matching `sep` to `cpb_import_csv()`, or ",
+      best, " instead. Pass the matching `sep` to `figures_from_csv()`, or ",
       "resave the file using \"", sep, "\" throughout."
     )
   } else {
@@ -149,7 +149,8 @@ cpb_import_read_data <- function(path, sep) {
     stop("The first row of the dataset does not look like column names ",
       "(found ", paste0("\"", names(data_df)[looks_numeric], "\"",
                         collapse = ", "),
-      "). `cpb_import_csv()` always reads the first row as the header; check ",
+      "). `figures_from_csv()` always reads the first row as the header; ",
+      "check ",
       "that a real header row is there, and that no other line comes ",
       "before it.", cpb_import_sep_hint(path, sep, ncol(data_df)),
       call. = FALSE
@@ -474,7 +475,7 @@ cpb_import_write_log <- function(params_csv, data_dir, entries,
   log_path <- paste0(tools::file_path_sans_ext(params_csv), "_log.txt")
 
   header <- c(
-    paste0("ggcpb cpb_import_csv log -- ",
+    paste0("ggcpb figures_from_csv log -- ",
            format(Sys.time(), "%Y-%m-%d %H:%M:%S")),
     paste0("data:   ", data_dir),
     paste0("params: ", params_csv),
@@ -537,7 +538,7 @@ cpb_import_write_log <- function(params_csv, data_dir, entries,
 #' figure (and every other dataset in the same list) is still built.
 #'
 #' The optional `page` parameter (`half`, `full` or `small`, default `half`)
-#' sets the page width a figure is saved at by [cpb_import_run()].
+#' sets the page width a figure is saved at by [generate_figures_with_excel()].
 #'
 #' Figures in the returned list are named after their dataset
 #' (`koopkracht` for `koopkracht.csv`). When several figures use the same
@@ -574,7 +575,7 @@ cpb_import_write_log <- function(params_csv, data_dir, entries,
 #'   `fill` of the others) into classes. `cut_labels` (`number`, `euro` or
 #'   `pct`) formats the class labels, as [cpb_cut()] does.
 #' * `page`, `height` (in cm), `preset`, `dpi` and `lock` say how
-#'   [cpb_import_run()] saves the figure, see [save_cpb()].
+#'   [generate_figures_with_excel()] saves the figure, see [save_cpb()].
 #'
 #' In `params_csv` column 1 holds the parameter names, one per row. Every
 #' other column is one figure. Fields at the end of a row can be left
@@ -619,11 +620,11 @@ cpb_import_write_log <- function(params_csv, data_dir, entries,
 #' @examples
 #' \dontrun{
 #' # datasets in ./data, named in the `data` column of params.csv
-#' ps <- cpb_import_csv("params.csv")
+#' ps <- figures_from_csv("params.csv")
 #' ps$koopkracht
 #' }
 #' @export
-cpb_import_csv <- function(params_csv, sep = ",", ..., simplify = TRUE) {
+figures_from_csv <- function(params_csv, sep = ",", ..., simplify = TRUE) {
   if (!file.exists(params_csv)) {
     stop("Parameters CSV file not found: ", params_csv, call. = FALSE)
   }
@@ -770,7 +771,7 @@ cpb_import_csv <- function(params_csv, sep = ",", ..., simplify = TRUE) {
 #' Build and save every figure of a figure folder
 #'
 #' What `generate_plot.bat` starts. Reads `params.csv` in `dir`,
-#' builds the figures with [cpb_import_csv()] (datasets
+#' builds the figures with [figures_from_csv()] (datasets
 #' from `dir/data`), and saves each as a PNG in `dir/generated`, named after
 #' its dataset. A PNG that already exists is replaced. Datasets or figures
 #' that fail, also when a figure only fails while it is drawn, are skipped,
@@ -783,14 +784,16 @@ cpb_import_csv <- function(params_csv, sep = ",", ..., simplify = TRUE) {
 #'   `page` in `params_csv`.
 #' @return Invisibly, the paths of the PNGs written.
 #' @export
-cpb_import_run <- function(dir = ".", page = getOption("ggcpb.page", "half")) {
+generate_figures_with_excel <- function(dir = ".",
+                                        page = getOption("ggcpb.page",
+                                                         "half")) {
   params_csv <- file.path(dir, "params.csv")
   if (!file.exists(params_csv)) {
     stop("params.csv was not found in ", normalizePath(dir), ".", call. = FALSE)
   }
   warns <- character(0)
   figs <- withCallingHandlers(
-    cpb_import_csv(params_csv = params_csv, simplify = FALSE),
+    figures_from_csv(params_csv = params_csv, simplify = FALSE),
     warning = function(w) {
       warns <<- c(warns, conditionMessage(w))
       invokeRestart("muffleWarning")

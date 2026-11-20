@@ -18,7 +18,7 @@ local_figs <- function(params_lines, data_lines = default_data) {
   file.path(dir, "params.csv")
 }
 
-test_that("cpb_import_csv builds a single figure from a one column params.csv",
+test_that("figures_from_csv builds one figure from a one column params.csv",
           {
             params_csv <- local_figs(c(
               "plot_type,line",
@@ -29,7 +29,7 @@ test_that("cpb_import_csv builds a single figure from a one column params.csv",
               "ylab,mld euro"
             ))
 
-            p <- cpb_import_csv(params_csv)
+            p <- figures_from_csv(params_csv)
 
             expect_s3_class(p, "ggplot")
             expect_true(inherits(p$layers[[1]]$geom, "GeomLine"))
@@ -37,7 +37,7 @@ test_that("cpb_import_csv builds a single figure from a one column params.csv",
             expect_true(!is.null(p$scales$get_scales("colour")))
           })
 
-test_that("cpb_import_csv builds several figures, skipping create = n", {
+test_that("figures_from_csv builds several figures, skipping create = n", {
   params_csv <- local_figs(c(
     "plot_type,col,col,line",
     "title,Eerste,Overgeslagen,Tweede",
@@ -46,7 +46,7 @@ test_that("cpb_import_csv builds several figures, skipping create = n", {
     "create,y,n,yes"
   ))
 
-  ps <- cpb_import_csv(params_csv)
+  ps <- figures_from_csv(params_csv)
 
   expect_type(ps, "list")
   expect_length(ps, 2)
@@ -56,7 +56,7 @@ test_that("cpb_import_csv builds several figures, skipping create = n", {
   expect_true(inherits(ps$data_3$layers[[1]]$geom, "GeomLine"))
 })
 
-test_that("cpb_import_csv resolves sec_y and passes sec_type through", {
+test_that("figures_from_csv resolves sec_y and passes sec_type through", {
   params_csv <- local_figs(c(
     "plot_type,col",
     "x,jaar",
@@ -65,7 +65,7 @@ test_that("cpb_import_csv resolves sec_y and passes sec_type through", {
     "sec_type,point"
   ))
 
-  p <- cpb_import_csv(params_csv)
+  p <- figures_from_csv(params_csv)
 
   is_point <- vapply(p$layers,
                      function(l) inherits(l$geom, "GeomPoint"), logical(1))
@@ -74,7 +74,7 @@ test_that("cpb_import_csv resolves sec_y and passes sec_type through", {
                           logical(1))))
 })
 
-test_that("cpb_import_csv splits a semicolon-delimited value into a vector", {
+test_that("figures_from_csv splits a semicolon-delimited value into a vector", {
   params_csv <- local_figs(c(
     "plot_type,line",
     "x,jaar",
@@ -83,10 +83,10 @@ test_that("cpb_import_csv splits a semicolon-delimited value into a vector", {
     "colour_index,6;2"
   ))
 
-  expect_no_error(cpb_import_csv(params_csv))
+  expect_no_error(figures_from_csv(params_csv))
 })
 
-test_that("cpb_import_csv drops unknown parameter names with a warning", {
+test_that("figures_from_csv drops unknown parameter names with a warning", {
   params_csv <- local_figs(c(
     "plot_type,line",
     "x,jaar",
@@ -94,11 +94,11 @@ test_that("cpb_import_csv drops unknown parameter names with a warning", {
     "this_is_not_a_param,banaan"
   ))
 
-  expect_no_error(suppressWarnings(cpb_import_csv(params_csv)))
-  expect_warning(cpb_import_csv(params_csv), "this_is_not_a_param")
+  expect_no_error(suppressWarnings(figures_from_csv(params_csv)))
+  expect_warning(figures_from_csv(params_csv), "this_is_not_a_param")
 })
 
-test_that("cpb_import_csv always (over)writes a run log next to params_csv", {
+test_that("figures_from_csv always (over)writes a run log next to params_csv", {
   params_csv <- local_figs(c(
     "plot_type,col,col",
     "title,Eerste,Overgeslagen",
@@ -108,7 +108,7 @@ test_that("cpb_import_csv always (over)writes a run log next to params_csv", {
   ))
   log_path <- paste0(tools::file_path_sans_ext(params_csv), "_log.txt")
 
-  cpb_import_csv(params_csv)
+  figures_from_csv(params_csv)
 
   expect_true(file.exists(log_path))
   log_text <- paste(readLines(log_path), collapse = "\n")
@@ -117,19 +117,19 @@ test_that("cpb_import_csv always (over)writes a run log next to params_csv", {
   expect_match(log_text, "2 figure\\(s\\) read, 1 skipped, 1 built")
 })
 
-test_that("cpb_import_csv skips a bad figure, errors if none is built", {
+test_that("figures_from_csv skips a bad figure, errors if none is built", {
   # a single-figure params.csv where that one figure is unbuildable: a
   # console warning() for the specific reason, and -- since nothing at
   # all was built -- a top-level error, not a silently empty result
   params_csv <- local_figs(c("plot_type,pie", "x,jaar", "y,mld"))
   expect_warning(
-    expect_error(cpb_import_csv(params_csv), "Unknown plot_type"),
+    expect_error(figures_from_csv(params_csv), "Unknown plot_type"),
     "Unknown plot_type"
   )
 
   params_csv <- local_figs(c("plot_type,line", "x,jaar", "y,doesnotexist"))
   expect_warning(
-    expect_error(cpb_import_csv(params_csv), "not a column in the data"),
+    expect_error(figures_from_csv(params_csv), "not a column in the data"),
     "not a column in the data"
   )
 
@@ -142,8 +142,8 @@ test_that("cpb_import_csv skips a bad figure, errors if none is built", {
     "x,jaar,jaar",
     "y,mld,doesnotexist"
   ))
-  expect_warning(cpb_import_csv(params_csv), "not a column in the data")
-  ps <- suppressWarnings(cpb_import_csv(params_csv))
+  expect_warning(figures_from_csv(params_csv), "not a column in the data")
+  ps <- suppressWarnings(figures_from_csv(params_csv))
   expect_s3_class(ps, "ggplot") # only one figure survived, so it is not a list
   expect_equal(ps$labels$title, "Goed")
 
@@ -153,16 +153,16 @@ test_that("cpb_import_csv skips a bad figure, errors if none is built", {
                                 "skipped \\(error: .*not a column"))
 })
 
-test_that("cpb_import_csv errors clearly when params.csv is missing", {
-  expect_error(cpb_import_csv("nope.csv"), "not found")
+test_that("figures_from_csv errors clearly when params.csv is missing", {
+  expect_error(figures_from_csv("nope.csv"), "not found")
 })
 
-test_that("cpb_import_csv applies ... overrides on top of params.csv", {
+test_that("figures_from_csv applies ... overrides on top of params.csv", {
   params_csv <- local_figs(c(
     "plot_type,line", "x,jaar", "y,mld", "colour,soort", "legend,bottom"
   ))
 
-  p <- cpb_import_csv(params_csv, legend = "right")
+  p <- figures_from_csv(params_csv, legend = "right")
 
   expect_equal(p$theme$legend.position, "right")
 })
@@ -174,49 +174,49 @@ test_that("the example folder ships ready to run", {
   expect_true(all(file.exists(file.path(kit_dir, kit_files))))
   expect_true(file.exists(file.path(kit_dir, "data", "koopkracht.csv")))
 
-  p <- cpb_import_csv(params_csv = file.path(kit_dir, "params.csv"))
+  p <- figures_from_csv(params_csv = file.path(kit_dir, "params.csv"))
   expect_type(p, "list")
 })
 
-test_that("cpb_import_csv errors clearly when the dataset has no header row", {
+test_that("figures_from_csv errors when the dataset has no header row", {
   params_csv <- local_figs(c("plot_type,line", "x,jaar", "y,koopkracht"),
                            data_lines = c("2020,A,2.0", "2021,B,3.0"))
 
-  expect_error(suppressWarnings(cpb_import_csv(params_csv)),
+  expect_error(suppressWarnings(figures_from_csv(params_csv)),
                "does not look like column names")
 })
 
-test_that("cpb_import_csv errors on a stray line above the header", {
+test_that("figures_from_csv errors on a stray line above the header", {
   params_csv <- local_figs(c("plot_type,line", "x,jaar", "y,koopkracht"),
                            data_lines = c("Dit is een titel regel",
                                           "jaar,groep,koopkracht",
                                           "2020,A,2.0", "2021,B,3.0"))
 
-  expect_error(suppressWarnings(cpb_import_csv(params_csv)),
+  expect_error(suppressWarnings(figures_from_csv(params_csv)),
                "no title, no blank line")
 })
 
-test_that("cpb_import_csv errors on a tab dataset with a comma sep", {
+test_that("figures_from_csv errors on a tab dataset with a comma sep", {
   params_csv <- local_figs(c("plot_type,line", "x,jaar", "y,koopkracht"),
                            data_lines = c("jaar\tgroep\tkoopkracht",
                                           "2020\tA\t2.0", "2021\tB\t3.0"))
 
-  expect_error(suppressWarnings(cpb_import_csv(params_csv)),
+  expect_error(suppressWarnings(figures_from_csv(params_csv)),
                "might use a tab instead")
 })
 
-test_that("cpb_import_csv errors on a tab params file with a comma sep", {
+test_that("figures_from_csv errors on a tab params file with a comma sep", {
   params_csv <- local_figs(c("plot_type\tline", "x\tjaar", "y\tmld"))
 
-  expect_error(cpb_import_csv(params_csv), "might use a tab instead")
+  expect_error(figures_from_csv(params_csv), "might use a tab instead")
 })
 
-test_that("cpb_import_csv reads both files when sep matches a tab pair", {
+test_that("figures_from_csv reads both files when sep matches a tab pair", {
   params_csv <- local_figs(c("plot_type\tline", "x\tjaar", "y\tkoopkracht"),
                            data_lines = c("jaar\tgroep\tkoopkracht",
                                           "2020\tA\t2.0", "2021\tB\t3.0"))
 
-  expect_no_error(cpb_import_csv(params_csv, sep = "\t"))
+  expect_no_error(figures_from_csv(params_csv, sep = "\t"))
 })
 
 # --- several datasets: params.csv plus a data/ folder -------------------
@@ -244,18 +244,18 @@ test_that("each figure reads the dataset named in `data`", {
     "y,waarde,waarde",
     "data,koopkracht.csv,werkloosheid.csv"
   ))
-  ps <- cpb_import_csv(params_csv = file.path(dir, "params.csv"))
+  ps <- figures_from_csv(params_csv = file.path(dir, "params.csv"))
   expect_named(ps, c("koopkracht", "werkloosheid"))
 })
 
 test_that("a blank or absent `data` reads data/data.csv", {
   dir <- local_kit(c("plot_type,line", "x,jaar", "y,waarde", "data,"))
-  p <- cpb_import_csv(params_csv = file.path(dir, "params.csv"))
+  p <- figures_from_csv(params_csv = file.path(dir, "params.csv"))
   expect_s3_class(p, "ggplot")
 
   dir <- local_kit(c("plot_type,line", "x,jaar", "y,waarde"))
-  ps <- cpb_import_csv(params_csv = file.path(dir, "params.csv"),
-                       simplify = FALSE)
+  ps <- figures_from_csv(params_csv = file.path(dir, "params.csv"),
+                         simplify = FALSE)
   expect_named(ps, "data")
 })
 
@@ -263,11 +263,13 @@ test_that("a missing data/data.csv skips the figure, no other dataset", {
   dir <- local_kit(c("plot_type,line", "x,jaar", "y,waarde"),
                    datasets = "koopkracht.csv")
   expect_error(
-    suppressWarnings(cpb_import_csv(params_csv = file.path(dir, "params.csv"))),
+    suppressWarnings(
+      figures_from_csv(params_csv = file.path(dir, "params.csv"))
+    ),
     "dataset not found"
   )
   expect_warning(
-    try(cpb_import_csv(params_csv = file.path(dir, "params.csv")),
+    try(figures_from_csv(params_csv = file.path(dir, "params.csv")),
         silent = TRUE),
     "dataset not found"
   )
@@ -286,7 +288,7 @@ test_that("a `data` list builds a figure per file, skips a missing one", {
   )
   params_csv <- file.path(dir, "params.csv")
   expect_warning(
-    ps <- cpb_import_csv(params_csv = params_csv),
+    ps <- figures_from_csv(params_csv = params_csv),
     "b.csv"
   )
   expect_named(ps, c("a", "c", "d"))
@@ -302,7 +304,7 @@ test_that("a dataset used by several figures gets the figure number", {
     "y,waarde,waarde,waarde",
     "data,koopkracht.csv,werkloosheid.csv,koopkracht.csv"
   ))
-  ps <- cpb_import_csv(params_csv = file.path(dir, "params.csv"))
+  ps <- figures_from_csv(params_csv = file.path(dir, "params.csv"))
   expect_named(ps, c("koopkracht_1", "werkloosheid", "koopkracht_3"))
 })
 
@@ -311,7 +313,7 @@ test_that("other CSV files in data/ are ignored unless named", {
     c("plot_type,line", "x,jaar", "y,waarde", "data,koopkracht.csv"),
     datasets = c("koopkracht.csv", "backup.csv")
   )
-  p <- cpb_import_csv(params_csv = file.path(dir, "params.csv"))
+  p <- figures_from_csv(params_csv = file.path(dir, "params.csv"))
   expect_s3_class(p, "ggplot")
 })
 
@@ -326,24 +328,24 @@ test_that("running the import twice replaces the PNGs", {
                pattern = "[.]png$")
   }
 
-  utils::capture.output(cpb_import_run(dir))
+  utils::capture.output(generate_figures_with_excel(dir))
   first <- png_files()
   expect_gt(length(first), 0)
   old <- file.info(file.path(dir, "generated", first))$mtime
 
   Sys.sleep(1.1)
-  utils::capture.output(cpb_import_run(dir))
+  utils::capture.output(generate_figures_with_excel(dir))
   expect_equal(png_files(), first)
   new <- file.info(file.path(dir, "generated", first))$mtime
   expect_true(all(new > old))
 })
 
-test_that("cpb_import_run lists skipped figures and still saves the others", {
+test_that("generate_figures_with_excel lists skipped figures, saves others", {
   dir <- local_kit(
     c("plot_type,line", "id,a", "x,jaar", "y,waarde", "data,a.csv;b.csv"),
     datasets = "a.csv"
   )
-  out <- utils::capture.output(cpb_import_run(dir))
+  out <- utils::capture.output(generate_figures_with_excel(dir))
   expect_true(file.exists(file.path(dir, "generated", "a.png")))
   expect_match(paste(out, collapse = "\n"), "b.csv")
 })
@@ -354,7 +356,7 @@ test_that("text columns keep the row order, a numeric fill is a category", {
     data_lines = c("groep,jaar,waarde",
                    "zeta,2024,1", "alfa,2024,2", "zeta,2021,3", "alfa,2021,4")
   )
-  p <- cpb_import_csv(params_csv)
+  p <- figures_from_csv(params_csv)
 
   expect_equal(levels(p$data$groep), c("zeta", "alfa"))
   expect_s3_class(p$data$jaar, "factor")
@@ -364,7 +366,7 @@ test_that("text columns keep the row order, a numeric fill is a category", {
 test_that("a numeric scatter colour stays a number", {
   params_csv <- local_figs(c("plot_type,scatter", "x,jaar", "y,mld",
                              "colour,heffing"))
-  p <- cpb_import_csv(params_csv)
+  p <- figures_from_csv(params_csv)
 
   expect_true(is.numeric(p$data$heffing))
 })
@@ -377,7 +379,7 @@ test_that("the .csv extension in `data` is optional", {
     "y,waarde,waarde,waarde",
     "data,koopkracht,werkloosheid.csv,koopkracht.CSV;werkloosheid"
   ))
-  ps <- cpb_import_csv(file.path(dir, "params.csv"))
+  ps <- figures_from_csv(file.path(dir, "params.csv"))
   # `koopkracht` and `koopkracht.CSV` are the same dataset, so it is shared
   expect_named(ps, c("koopkracht_1", "werkloosheid_2", "koopkracht_3",
                      "werkloosheid_3"))
@@ -391,7 +393,7 @@ test_that("figures keep their column number, an empty column is no figure", {
     "y,waarde,,waarde",
     "data,koopkracht,,koopkracht"
   ))
-  ps <- cpb_import_csv(file.path(dir, "params.csv"))
+  ps <- figures_from_csv(file.path(dir, "params.csv"))
   expect_named(ps, c("koopkracht_1", "koopkracht_3"))
 })
 
@@ -406,14 +408,14 @@ test_that("rows may stop early, a later row may be wider", {
   ))
   # the 5th and 6th rows have a second value, but no figure there has a
   # plot_type
-  ps <- suppressWarnings(cpb_import_csv(file.path(dir, "params.csv")))
+  ps <- suppressWarnings(figures_from_csv(file.path(dir, "params.csv")))
   expect_s3_class(ps, "ggplot")
   expect_equal(ps$labels$title, "Eerste")
 })
 
 test_that("a params.csv without a plot_type row is refused", {
   dir <- local_kit(c("x,jaar", "y,waarde"))
-  expect_error(cpb_import_csv(file.path(dir, "params.csv")), "plot_type")
+  expect_error(figures_from_csv(file.path(dir, "params.csv")), "plot_type")
 })
 
 test_that("`page` sets the width a figure is saved at, half by default", {
@@ -425,11 +427,11 @@ test_that("`page` sets the width a figure is saved at, half by default", {
     "data,koopkracht,werkloosheid",
     "page,,full"
   ))
-  expect_no_warning(ps <- cpb_import_csv(file.path(dir, "params.csv")))
+  expect_no_warning(ps <- figures_from_csv(file.path(dir, "params.csv")))
   expect_null(attr(ps$koopkracht, "cpb_import_save")$page)
   expect_equal(attr(ps$werkloosheid, "cpb_import_save")$page, "full")
 
-  utils::capture.output(cpb_import_run(dir))
+  utils::capture.output(generate_figures_with_excel(dir))
   px <- function(f) dim(png::readPNG(file.path(dir, "generated", f)))[2]
   expect_gt(px("werkloosheid.png"), 1.5 * px("koopkracht.png"))
 })
@@ -441,7 +443,7 @@ test_that("an invalid `page` skips the figure with a warning", {
     "y,mld,mld",
     "page,huge,"
   ))
-  expect_warning(ps <- cpb_import_csv(params_csv), "half, full or small")
+  expect_warning(ps <- figures_from_csv(params_csv), "half, full or small")
   expect_s3_class(ps, "ggplot")
 })
 
@@ -460,7 +462,7 @@ general_data <- c("koopkracht.csv", "werkloosheid.csv")
 
 test_that("a figure takes the general settings, and its own value wins", {
   dir <- local_kit(general_lines, datasets = general_data)
-  ps <- cpb_import_csv(file.path(dir, "params.csv"))
+  ps <- figures_from_csv(file.path(dir, "params.csv"))
 
   # the general column is not a figure, and the plot type is its own
   expect_length(ps, 3)
@@ -475,7 +477,7 @@ test_that("a figure takes the general settings, and its own value wins", {
 
 test_that("figure numbers do not count the general column", {
   dir <- local_kit(general_lines, datasets = general_data)
-  ps <- cpb_import_csv(file.path(dir, "params.csv"))
+  ps <- figures_from_csv(file.path(dir, "params.csv"))
   # a and c share a dataset, so they carry their figure number 1 and 3
   expect_true(all(c("koopkracht_1", "koopkracht_3") %in% names(ps)))
 })
@@ -488,7 +490,7 @@ test_that("id and create are not shared from the general column", {
     "x,jaar,jaar",
     "y,waarde,waarde"
   ), datasets = "data.csv")
-  ps <- cpb_import_csv(file.path(dir, "params.csv"))
+  ps <- figures_from_csv(file.path(dir, "params.csv"))
   expect_s3_class(ps, "ggplot")
 })
 
@@ -500,7 +502,7 @@ test_that("an empty figure column stays empty with a general column", {
     "y,waarde,waarde,",
     "legend,right,,"
   ), datasets = "data.csv")
-  ps <- cpb_import_csv(file.path(dir, "params.csv"))
+  ps <- figures_from_csv(file.path(dir, "params.csv"))
   expect_s3_class(ps, "ggplot")
 })
 
@@ -511,7 +513,7 @@ test_that("two general columns are an error", {
     "x,jaar,jaar,jaar",
     "y,waarde,waarde,waarde"
   ), datasets = "data.csv")
-  expect_error(cpb_import_csv(file.path(dir, "params.csv")),
+  expect_error(figures_from_csv(file.path(dir, "params.csv")),
                "general_settings")
 })
 
@@ -521,20 +523,20 @@ test_that("a params.csv with only a general column has no figures", {
     "id,general_settings",
     "legend,right"
   ), datasets = "data.csv")
-  expect_error(cpb_import_csv(file.path(dir, "params.csv")), "no figures")
+  expect_error(figures_from_csv(file.path(dir, "params.csv")), "no figures")
 })
 
 test_that("the run log names the general settings", {
   dir <- local_kit(general_lines, datasets = general_data)
-  cpb_import_csv(file.path(dir, "params.csv"))
+  figures_from_csv(file.path(dir, "params.csv"))
   log <- readLines(file.path(dir, "params_log.txt"))
   expect_true(any(grepl("general settings: .*legend", log)))
 })
 
-test_that("cpb_import_run saves with the general page", {
+test_that("generate_figures_with_excel saves with the general page", {
   skip_on_cran()
   dir <- local_kit(general_lines, datasets = general_data)
-  utils::capture.output(paths <- cpb_import_run(dir))
+  utils::capture.output(paths <- generate_figures_with_excel(dir))
   width <- function(f) dim(png::readPNG(f))[2]
   # figure a is full (15.5 cm), figure b is half (7.5 cm)
   expect_gt(width(paths[1]), width(paths[2]))
@@ -544,7 +546,7 @@ test_that("cpb_import_run saves with the general page", {
 
 # runs the import, the error of "nothing built" is not the point here
 run_quiet <- function(dir) {
-  try(suppressWarnings(cpb_import_csv(file.path(dir, "params.csv"))),
+  try(suppressWarnings(figures_from_csv(file.path(dir, "params.csv"))),
       silent = TRUE)
 }
 

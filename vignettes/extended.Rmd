@@ -61,7 +61,8 @@ repro <- function(fun, dataset, section, id) {
   if (!repro_noted) {
     cat("\nThe example data and `params.csv` are in the folder `examples` ",
         "of the installed package. Run the script again after every ",
-        "change to update the figures. The [import vignette](import.html) ",
+        "change to update the figures. The ",
+        "[import vignette](generate_figures_with_excel.html) ",
         "explains all settings per figure type.\n", sep = "")
     repro_noted <<- TRUE
   }
@@ -88,7 +89,7 @@ table.ptab td { overflow-wrap: anywhere; }
 This vignette extends the [introduction](introduction.html). It shows more
 options for the figure types, such as colours, columns, boxplots and maps.
 The parameters next to a figure work in Excel, as explained in the
-introduction and in the [import vignette](import.html). The same figures can
+introduction and in the [import vignette](generate_figures_with_excel.html). The same figures can
 be made in R. The last sections show what is possible in R only.
 
 # Column charts

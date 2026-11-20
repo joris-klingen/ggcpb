@@ -30,7 +30,7 @@ result <- tryCatch({
     stop("The ggcpb package is not installed. Install it in R first, ",
          "then run this script again.")
   }
-  ggcpb::cpb_import_run(script_dir)
+  ggcpb::generate_figures_with_excel(script_dir)
   "ok"
 }, error = function(e) {
   cat("Something went wrong and no figures were saved.\n\n")

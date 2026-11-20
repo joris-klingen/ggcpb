@@ -18,7 +18,7 @@ shows HTML files as source code. To read them offline, open the file in
 
 - **[Introduction](https://joris-klingen.github.io/ggcpb/inst/doc/introduction.html)** --
   `vignette("introduction")`: creating figures with Excel and/or R.
-- **[Import](https://joris-klingen.github.io/ggcpb/inst/doc/import.html)** -- `vignette("import")`: building
+- **[Import](https://joris-klingen.github.io/ggcpb/inst/doc/generate_figures_with_excel.html)** -- `vignette("generate_figures_with_excel")`: building
   figures from CSV files, with Excel and without R.
 - **[Extended information](https://joris-klingen.github.io/ggcpb/inst/doc/extended.html)** --
   `vignette("extended")`: extended information about colours, columns, 
@@ -56,7 +56,7 @@ This is the general workflow to create figures with ggcpb without using R:
    fails is skipped and listed at the end, and in `params_log.txt`. 
    The other figures are still saved.
 
-For more information, see the **[introduction](https://joris-klingen.github.io/ggcpb/inst/doc/introduction.html)** and **[import](https://joris-klingen.github.io/ggcpb/inst/doc/import.html)** vignettes. 
+For more information, see the **[introduction](https://joris-klingen.github.io/ggcpb/inst/doc/introduction.html)** and **[import](https://joris-klingen.github.io/ggcpb/inst/doc/generate_figures_with_excel.html)** vignettes. 
 
 ## Quick start in R
 

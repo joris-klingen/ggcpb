@@ -69,7 +69,8 @@ repro <- function(fun, dataset, section, id) {
   if (!repro_noted) {
     cat("\nThe example data and `params.csv` are in the folder `examples` ",
         "of the installed package. Run the script again after every ",
-        "change to update the figures. The [import vignette](import.html) ",
+        "change to update the figures. The ",
+        "[import vignette](generate_figures_with_excel.html) ",
         "explains all settings per figure type.\n", sep = "")
     repro_noted <<- TRUE
   }
@@ -157,7 +158,7 @@ one or more datasets drive everything.
 * `params.csv` describes your figures. Column 1 holds the parameter
   names, such as `title`, `x` and `data`. Every other column describes
   one figure. The row `data` names the dataset of the figure. All parameters 
-  and their descriptions are given in the [import vignette](import.html).
+  and their descriptions are given in the [import vignette](generate_figures_with_excel.html).
 * The folder `data` holds your datasets. Each dataset is its own CSV
   file with any name, such as `koopkracht.csv`. The first row holds the
   column names. The following rows are the observations per column.
@@ -173,7 +174,7 @@ two figures use the same dataset, the figure number is added, such as
 Run the script again after every change. This will update the figures. The
 import vignette gives a more detailed explanation
 and lists all settings per figure type.
-See [`vignette("import")`](import.html).
+See [`vignette("generate_figures_with_excel")`](generate_figures_with_excel.html).
 
 ## Use ggcpb in R
 

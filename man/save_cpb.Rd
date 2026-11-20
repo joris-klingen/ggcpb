@@ -115,7 +115,7 @@ wins over the general option.
 \item \code{ggcpb.dpi}: \code{dpi}.
 }
 
-\code{\link[=cpb_import_run]{cpb_import_run()}} takes \code{ggcpb.page} too.
+\code{\link[=generate_figures_with_excel]{generate_figures_with_excel()}} takes \code{ggcpb.page} too.
 \preformatted{options(ggcpb.page = "full", ggcpb.dpi = 600)}
 }
 

@@ -38,7 +38,7 @@ test_that("every plot type can be built from params.csv", {
   ), list(series = series, box = quantiles, dot = estimates, donut = shares,
           map = map_data))
 
-  expect_no_warning(ps <- cpb_import_csv(params_csv))
+  expect_no_warning(ps <- figures_from_csv(params_csv))
   types <- c("col", "area", "line", "box", "dot", "scatter", "hist",
              "donut", "map", "boxplot_extended")
   expect_length(ps, length(types))
@@ -53,7 +53,7 @@ test_that("cut puts numbers into classes with Dutch labels", {
     "cut,-Inf;2;3;Inf",
     "cut_labels,pct"
   ), list(data = series))
-  p <- cpb_import_csv(params_csv)
+  p <- figures_from_csv(params_csv)
   # the numbers stay on the y axis, the classes set the colours
   expect_true(is.numeric(p$data$waarde))
   classes <- p$data$.cpb_classes_waarde
@@ -68,7 +68,7 @@ test_that("cut labels follow the style of the figure", {
     "cut,-Inf;2.5;Inf",
     "style,english"
   ), list(data = series))
-  p <- cpb_import_csv(params_csv)
+  p <- figures_from_csv(params_csv)
   expect_equal(levels(p$data$.cpb_classes_waarde),
                c("below 2.5", "2.5 and above"))
 })
@@ -78,14 +78,14 @@ test_that("cut needs the column that sets the colours, and known labels", {
                                "cut,0;2;Inf"),
                              list(data = series))
   expect_warning(
-    expect_error(cpb_import_csv(params_csv), "nothing built|No figures"),
+    expect_error(figures_from_csv(params_csv), "nothing built|No figures"),
     "needs a `fill` column"
   )
   params_csv <- local_folder(c("plot_type,col", "x,jaar", "y,waarde",
                                "fill,waarde", "cut,0;2;Inf",
                                "cut_labels,dollar"),
                              list(data = series))
-  expect_warning(try(cpb_import_csv(params_csv), silent = TRUE),
+  expect_warning(try(figures_from_csv(params_csv), silent = TRUE),
                  "number, euro or pct")
 })
 
@@ -93,7 +93,7 @@ test_that("x_labels can name a formatter", {
   params_csv <- local_folder(c("plot_type,scatter", "x,inkomen", "y,y",
                                "x_labels,euro"),
                              list(data = c("inkomen,y", "1000,1", "3000,2")))
-  p <- cpb_import_csv(params_csv)
+  p <- figures_from_csv(params_csv)
   labels <- ggplot2::ggplot_build(p)$layout$panel_params[[1]]$x$get_labels()
   expect_true(all(grepl("€", stats::na.omit(labels))))
 })
@@ -108,7 +108,7 @@ test_that("a column of dates becomes a Date column, ISO or day-month-year", {
     iso = c("maand,waarde", "2024-01-01,1", "2024-02-01,2", "2024-03-01,3"),
     dmy = c("maand,waarde", "1-1-2024,1", "1-2-2024,2", "1-3-2024,3")
   ))
-  ps <- cpb_import_csv(params_csv)
+  ps <- figures_from_csv(params_csv)
   expect_s3_class(ps$iso$data$maand, "Date")
   expect_s3_class(ps$dmy$data$maand, "Date")
   expect_equal(ps$dmy$data$maand[2], as.Date("2024-02-01"))
@@ -118,7 +118,7 @@ test_that("text that only looks like a date stays text", {
   params_csv <- local_folder(c("plot_type,col", "x,code", "y,waarde"),
                              list(data = c("code,waarde", "2024-13-45,1",
                                            "2024-01-01,2")))
-  p <- cpb_import_csv(params_csv)
+  p <- figures_from_csv(params_csv)
   expect_s3_class(p$data$code, "factor")
 })
 
@@ -126,7 +126,7 @@ test_that("a written \\n is a line break, and Inf is a number", {
   params_csv <- local_folder(c("plot_type,line", "x,jaar", "y,waarde",
                                "title,Eerste regel\\ntweede regel"),
                              list(data = series))
-  p <- cpb_import_csv(params_csv)
+  p <- figures_from_csv(params_csv)
   expect_equal(p$labels$title, "Eerste regel\ntweede regel")
   expect_identical(cpb_import_coerce("-Inf;0;Inf"), c(-Inf, 0, Inf))
   expect_identical(cpb_import_coerce("1.5e2"), 150)
@@ -139,7 +139,7 @@ test_that("dot_labels takes name:value pairs", {
     "box_style,dot",
     "dot_labels,p5:onderste 5%;p95:bovenste 5%"
   ), list(data = quantiles))
-  expect_no_error(p <- cpb_import_csv(params_csv))
+  expect_no_error(p <- figures_from_csv(params_csv))
   expect_s3_class(p, "ggplot")
   expect_identical(cpb_import_named("p5:a;p95:b"), c(p5 = "a", p95 = "b"))
   expect_error(cpb_import_named("p5;p95:b"), "name:value")
@@ -154,12 +154,12 @@ test_that("height, preset, dpi and lock say how a figure is saved", {
     "dpi,,150",
     "lock,,FALSE"
   ), list(a = series, b = series))
-  ps <- cpb_import_csv(params_csv)
+  ps <- figures_from_csv(params_csv)
   expect_equal(attr(ps$a, "cpb_import_save")$height, 10 / 2.54)
   expect_equal(attr(ps$b, "cpb_import_save")$dpi, 150)
   expect_false(attr(ps$b, "cpb_import_save")$lock)
 
-  utils::capture.output(cpb_import_run(dirname(params_csv)))
+  utils::capture.output(generate_figures_with_excel(dirname(params_csv)))
   png_dim <- function(f) {
     dim(png::readPNG(file.path(dirname(params_csv), "generated", f)))
   }
@@ -175,7 +175,7 @@ test_that("an invalid save parameter skips the figure with a warning", {
                              list(a = series, b = series))
   w <- character(0)
   withCallingHandlers(
-    try(cpb_import_csv(params_csv), silent = TRUE),
+    try(figures_from_csv(params_csv), silent = TRUE),
     warning = function(cnd) {
       w <<- c(w, conditionMessage(cnd))
       invokeRestart("muffleWarning")
@@ -185,7 +185,7 @@ test_that("an invalid save parameter skips the figure with a warning", {
   expect_true(any(grepl("one positive number", w)))
 })
 
-test_that("cpb_import_run saves the other figures when one fails to draw", {
+test_that("generate_figures_with_excel saves the others when one fails", {
   # two boxes on one category draw an error only when the figure is drawn
   params_csv <- local_folder(c(
     "plot_type,boxplot_extended,line",
@@ -193,7 +193,7 @@ test_that("cpb_import_run saves the other figures when one fails to draw", {
     "x,groep,jaar", "y,,waarde",
     "p5,p5", "p25,p25", "p50,p50", "p75,p75", "p95,p95"
   ), list(broken = c(quantiles, "A,1,2,3,4,5"), ok = series))
-  out <- utils::capture.output(cpb_import_run(dirname(params_csv)))
+  out <- utils::capture.output(generate_figures_with_excel(dirname(params_csv)))
   generated <- file.path(dirname(params_csv), "generated")
   expect_true(file.exists(file.path(generated, "ok.png")))
   expect_false(file.exists(file.path(generated, "broken.png")))

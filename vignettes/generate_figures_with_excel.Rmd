@@ -197,16 +197,16 @@ Next to `page`, four parameters say how a figure is saved:
 
 # Creating the figures using R
 
-Pass the parameter file to `cpb_import_csv()`. The datasets are read
+Pass the parameter file to `figures_from_csv()`. The datasets are read
 from the `data` folder next to it:
 
 ```{r build, results = "hide"}
 figure_dir <- file.path(tempdir(), "figures")
 params_csv <- file.path(figure_dir, "params.csv")
-figs <- cpb_import_csv(params_csv)
+figs <- figures_from_csv(params_csv)
 ```
 
-When the parameter file contains multiple figures, `cpb_import_csv()`
+When the parameter file contains multiple figures, `figures_from_csv()`
 returns a named list. The names come from the datasets. Here the two
 figures use different datasets, so they are called `koopkracht` and
 `werkloosheid`.
@@ -285,12 +285,12 @@ writeLines(c(
 cat(readLines(params_one), sep = "\n")
 ```
 
-When the parameter file describes one figure, `cpb_import_csv()` returns
+When the parameter file describes one figure, `figures_from_csv()` returns
 that figure directly rather than a named list. Use `simplify = FALSE`
 to always get a named list.
 
 ```{r one-figure-build, results = "hide"}
-fig_one <- cpb_import_csv(params_one)
+fig_one <- figures_from_csv(params_one)
 ```
 
 ```{r one-figure-show, echo = FALSE}
@@ -331,7 +331,7 @@ referenced by a parameter does not exist in the dataset, that
 figure is skipped. Other figures in the same parameter file are still
 created.
 
-Each call to `cpb_import_csv()` also writes a log file next to the
+Each call to `figures_from_csv()` also writes a log file next to the
 parameter file. The log records parameter problems and
 figures that were created or skipped.
 
