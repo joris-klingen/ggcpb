@@ -73,7 +73,7 @@ literal_examples <- c(
   box_labels       = "TRUE",
   dot_labels       = "p5:bottom 5%;p95:top 5%",
   zeroline         = "TRUE",
-  colour_index     = "`2;6`, `continuous`",
+  colour_index     = "`2;6`, `siren;cold_turkey`, `continuous`",
   x_labels         = "`euro`, `number`, `pct` or labels such as `a;b;c`",
   sec_axis_labels  = "`pct`, `number`, `euro` or labels such as `a;b;c`",
   border_colour    = "white",
@@ -155,11 +155,15 @@ descriptions <- c(
     "labels. With a;b;c the ticks get the labels a, b and c, so use as ",
     "many labels as ticks (see sec_at)."
   ),
-  palette = "The colour set used for the categories.",
+  palette = paste0(
+    "The colour set used for the categories. `extended` is for testing ",
+    "only, not for publication."
+  ),
   colour_index = paste0(
-    "Which house colours to use, by number. The first number is for the ",
-    "first category. `continuous` gives a ramp from light to dark, for ",
-    "ordered classes."
+    "Which house colours to use, by number or by name. The first is for ",
+    "the first category. The names are in `cpb_cols()`, for example ",
+    "`siren`. `continuous` gives a ramp from light to dark, for ordered ",
+    "classes."
   ),
   pct_axis = "TRUE writes the values on the axis as percentages.",
   value_accuracy = paste0(
