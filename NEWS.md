@@ -3,6 +3,7 @@
 * The HTML of the vignettes is in `inst/doc`, the only copy. The installed package shows it in the help, also after `install_github()`. The folder `doc/` is removed, and the README links to `inst/doc`.
 * The column `general_settings` in `params.csv` holds the settings of all figures. A figure takes them when its own cell is blank, and its own value wins. The column is not a figure.
 * Options set the legend and the saving of a whole publication at once, as `ggcpb.style` does. The wrappers take `ggcpb.legend`. `save_cpb()` takes `ggcpb.page`, `ggcpb.preset` and `ggcpb.dpi`. An argument in the call wins.
+* A figure without a required parameter, such as `y` for a line, says so: "`y` is required for plot_type = \"line\"". When an invalid value comes from `general_settings`, the message ends with "(from general_settings)".
 
 # ggcpb 0.3.0
 

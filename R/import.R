@@ -254,6 +254,7 @@ cpb_import_read_params <- function(params_csv, sep) {
 # dropped silently, so the wrapper's own default applies -- a typo or an
 # irrelevant column in params.csv never breaks the import.
 cpb_import_build_one <- function(params, data_df, extra_params) {
+  inherited <- attr(params, "general")
   plot_type <- tolower(trimws(params[["plot_type"]]))
   if (is.null(plot_type) || !nzchar(plot_type)) {
     stop("Every figure in `params_csv` needs a `plot_type`.", call. = FALSE)
@@ -268,13 +269,28 @@ cpb_import_build_one <- function(params, data_df, extra_params) {
   col_args <- cpb_import_col_args[[plot_type]]
   valid_args <- names(formals(fn))
 
+  # the arguments without a default must be given
+  fmls <- formals(fn)
+  required <- setdiff(
+    names(fmls)[vapply(fmls, function(a) is.symbol(a) && !nzchar(a),
+                       logical(1))],
+    c("data", "...")
+  )
+  missing_req <- required[!required %in% names(params)]
+  if (length(missing_req)) {
+    stop("`", missing_req[1], "` is required for plot_type = \"", plot_type,
+         "\".", call. = FALSE)
+  }
+
   params[["plot_type"]] <- NULL
   params[["create"]] <- NULL
   params[["id"]] <- NULL
   params[["data"]] <- NULL
   # how the figure is saved: not arguments of the wrapper
-  save <- cpb_import_save_params(params[intersect(names(params),
-                                                  cpb_import_save_args)])
+  save <- cpb_import_save_params(
+    params[intersect(names(params), cpb_import_save_args)],
+    inherited
+  )
   params[cpb_import_save_args] <- NULL
   cut <- params[["cut"]]
   cut_labels <- params[["cut_labels"]]
@@ -298,7 +314,8 @@ cpb_import_build_one <- function(params, data_df, extra_params) {
     target_arg <- cpb_import_cut_target(plot_type)
     target <- params[[target_arg]]
     if (is.null(target) || !target %in% names(data_df)) {
-      stop("`cut` needs a `", cpb_import_cut_target(plot_type), "` column.",
+      stop("`cut` needs a `", cpb_import_cut_target(plot_type), "` column",
+           cpb_import_from(c("cut", target_arg), inherited), ".",
            call. = FALSE)
     }
     labeller <- if (is.null(cut_labels)) {
@@ -308,7 +325,7 @@ cpb_import_build_one <- function(params, data_df, extra_params) {
     }
     if (is.null(labeller)) {
       stop("`cut_labels` must be number, euro or pct, not \"", cut_labels,
-           "\".", call. = FALSE)
+           "\"", cpb_import_from("cut_labels", inherited), ".", call. = FALSE)
     }
     classes <- paste0(".cpb_classes_", target)
     # the open ends in the language of the figure
@@ -342,7 +359,8 @@ cpb_import_build_one <- function(params, data_df, extra_params) {
     if (nm %in% col_args) {
       if (!val %in% names(data_df)) {
         stop("plot_type = \"", plot_type, "\": `", nm, " = \"", val,
-          "\"` is not a column in the data.",
+          "\"` is not a column in the data", cpb_import_from(nm, inherited),
+          ".",
           call. = FALSE
         )
       }
@@ -369,20 +387,21 @@ cpb_import_build_one <- function(params, data_df, extra_params) {
 
 # The save parameters of one figure, checked: page (half, full, small),
 # height in cm, preset (report, presentation, map), dpi and lock.
-cpb_import_save_params <- function(p) {
+cpb_import_save_params <- function(p, inherited = NULL) {
+  from <- function(nm) cpb_import_from(nm, inherited)
   out <- list()
   if (!is.null(p$page)) {
     out$page <- tolower(trimws(p$page))
     if (!out$page %in% c("half", "full", "small")) {
-      stop("`page` must be half, full or small, not \"", out$page, "\".",
-           call. = FALSE)
+      stop("`page` must be half, full or small, not \"", out$page, "\"",
+           from("page"), ".", call. = FALSE)
     }
   }
   if (!is.null(p$preset)) {
     out$preset <- tolower(trimws(p$preset))
     if (!out$preset %in% c("report", "presentation", "map")) {
       stop("`preset` must be report, presentation or map, not \"",
-           out$preset, "\".", call. = FALSE)
+           out$preset, "\"", from("preset"), ".", call. = FALSE)
     }
   }
   for (nm in c("height", "dpi")) {
@@ -390,7 +409,7 @@ cpb_import_save_params <- function(p) {
       v <- cpb_import_coerce(p[[nm]])
       if (!is.numeric(v) || length(v) != 1 || v <= 0) {
         stop("`", nm, "` must be one positive number, not \"", p[[nm]],
-             "\".", call. = FALSE)
+             "\"", from(nm), ".", call. = FALSE)
       }
       out[[nm]] <- v
     }
@@ -400,10 +419,16 @@ cpb_import_save_params <- function(p) {
   if (!is.null(p$lock)) {
     out$lock <- cpb_import_coerce(p$lock)
     if (!is.logical(out$lock)) {
-      stop("`lock` must be TRUE or FALSE.", call. = FALSE)
+      stop("`lock` must be TRUE or FALSE", from("lock"), ".", call. = FALSE)
     }
   }
   out
+}
+
+# " (from general_settings)" when one of the parameters has its value from
+# the column general_settings, else nothing.
+cpb_import_from <- function(nms, inherited) {
+  if (any(nms %in% inherited)) " (from general_settings)" else ""
 }
 
 # The column whose `id` is `general_settings` holds the settings that every
@@ -427,7 +452,11 @@ cpb_import_split_general <- function(figs) {
   figs <- figs[!is_general]
   if (length(general)) {
     figs <- lapply(figs, function(p) {
-      if (length(p)) utils::modifyList(general, p) else p
+      if (!length(p)) return(p)
+      out <- utils::modifyList(general, p)
+      # the names that came from general_settings, for the error messages
+      attr(out, "general") <- setdiff(names(general), names(p))
+      out
     })
   }
   list(figs = figs, general = general)

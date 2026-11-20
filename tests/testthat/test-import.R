@@ -539,3 +539,73 @@ test_that("cpb_import_run saves with the general page", {
   # figure a is full (15.5 cm), figure b is half (7.5 cm)
   expect_gt(width(paths[1]), width(paths[2]))
 })
+
+# the clear messages
+
+# runs the import, the error of "nothing built" is not the point here
+run_quiet <- function(dir) {
+  try(suppressWarnings(cpb_import_csv(file.path(dir, "params.csv"))),
+      silent = TRUE)
+}
+
+skipped_detail <- function(dir) {
+  log <- readLines(file.path(dir, "params_log.txt"))
+  paste(log, collapse = "\n")
+}
+
+test_that("a missing required parameter is named", {
+  dir <- local_kit(c(
+    "plot_type,line,col",
+    "id,a,b",
+    "x,jaar,jaar",
+    "y,,waarde"
+  ), datasets = "data.csv")
+  run_quiet(dir)
+  expect_match(skipped_detail(dir),
+               "`y` is required for plot_type = \"line\"", fixed = TRUE)
+})
+
+test_that("an invalid general value says it comes from general_settings", {
+  dir <- local_kit(c(
+    "plot_type,,line,line",
+    "id,general_settings,a,b",
+    "x,jaar,jaar,jaar",
+    "y,waarde,waarde,waarde",
+    "page,huge,,half"
+  ), datasets = "data.csv")
+  run_quiet(dir)
+  log <- skipped_detail(dir)
+  expect_match(
+    log,
+    "`page` must be half, full or small, not \"huge\" (from general_settings)",
+    fixed = TRUE
+  )
+  # figure b has its own page, so it is built
+  expect_match(log, "1 built")
+})
+
+test_that("a wrong column from general_settings says so", {
+  dir <- local_kit(c(
+    "plot_type,,line,line",
+    "id,general_settings,a,b",
+    "x,jaar,jaar,jaar",
+    "y,bestaatniet,,waarde"
+  ), datasets = "data.csv")
+  run_quiet(dir)
+  expect_match(skipped_detail(dir),
+               "not a column in the data (from general_settings)",
+               fixed = TRUE)
+})
+
+test_that("a wrong value in the figure itself has no general note", {
+  dir <- local_kit(c(
+    "plot_type,,line",
+    "id,general_settings,a",
+    "x,jaar,jaar",
+    "y,waarde,waarde",
+    "page,,huge"
+  ), datasets = "data.csv")
+  run_quiet(dir)
+  expect_false(grepl("from general_settings", skipped_detail(dir),
+                     fixed = TRUE))
+})
