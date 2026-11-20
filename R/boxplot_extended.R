@@ -36,6 +36,7 @@
 #' visually checked.
 #'
 #' @inheritParams cpb_box
+#' @inheritParams cpb_col
 #' @param box_style One of `"modern"` (default here), `"ggcpb"`,
 #'   `"james"`, or `"dot"`; see [cpb_box()].
 #' @param value_axis Where the value axis is drawn, `"top"` or
@@ -89,13 +90,6 @@
 #'   `NULL` (default) picks `"right"` when the value axis is at the
 #'   top, and `"left"` otherwise (`orientation = "vertical"`,
 #'   `value_axis = "bottom"`).
-#' @param style Formatting style: `"dutch"` (default, `.` thousands, `,`
-#' decimal)
-#'   or `"english"` (`,` thousands, `.` decimal, English forecast / axis
-#'   labels).
-#'   Taken from `getOption("ggcpb.style")`, so an English report can set
-#'   `options(ggcpb.style = "english")` once rather than passing `style` to
-#'   every figure and risking a stray Dutch decimal comma.
 #' @param ... Further arguments passed to both [ggplot2::geom_errorbar()]
 #'   and [ggplot2::geom_boxplot()], as in [cpb_box()].
 #' @return A `ggplot` object.

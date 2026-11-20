@@ -65,8 +65,7 @@ scale_color_cpb_d <- scale_colour_cpb_d
 #' to its darkest entry.
 #'
 #' @param reverse If `TRUE`, reverse the ramp (dark -> light).
-#' @param na.value Colour used for `NA` values; defaults to the CPB NA
-#'   colour (`"lightgrey"`).
+#' @inheritParams scale_fill_cpb_d
 #' @param ... Passed through to [ggplot2::scale_fill_gradientn()] /
 #'   [ggplot2::scale_colour_gradientn()].
 #' @return A ggplot2 `Scale` object.
@@ -108,8 +107,7 @@ scale_color_cpb_c <- scale_colour_cpb_c
 #'   order the resulting scale should use them. If `NULL` (default),
 #'   the full palette is used in its original order.
 #' @inheritParams cpb_pal
-#' @param na.value Colour used for `NA` values; defaults to the CPB NA
-#'   colour (`"lightgrey"`).
+#' @inheritParams scale_fill_cpb_d
 #' @param ... Passed through to [ggplot2::scale_fill_manual()] /
 #'   [ggplot2::scale_colour_manual()].
 #' @return A ggplot2 `Scale` object.

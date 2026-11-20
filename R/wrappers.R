@@ -2197,6 +2197,7 @@ cpb_area <- function(data, x, y, fill,
 #' @param data A data.frame or data.table with one row per x x group
 #'   combination.
 #' @inheritParams cpb_col
+#' @inheritParams cpb_area
 #' @param colour Optional column mapped to the colour aesthetic (tidy
 #'   eval); if omitted, a single line is drawn in `line_colour`.
 #'   Cannot be combined with `sec_y`: both would need the colour
@@ -2236,10 +2237,6 @@ cpb_area <- function(data, x, y, fill,
 #'   `"qualitative"` (default), `"discr"`, `"sequential"`
 #'   (pink ramp), `\"blues\"` (blue ramp) or `\"extended\"`
 #'   (20 categorical colours).
-#' @param x_lim Optional length-2 vector zooming the `x` axis to a
-#'   range, without dropping data -- applied as a coordinate-system
-#'   zoom ([ggplot2::coord_cartesian()] `xlim`). `NULL` (default) shows
-#'   the full range.
 #' @param reverse_legend If `TRUE`, reverse the colour legend order
 #'   via `guide_legend(reverse = TRUE)`. Defaults to `FALSE`: unlike
 #'   the stacked wrappers, line order carries no stacking convention.
@@ -2252,14 +2249,10 @@ cpb_area <- function(data, x, y, fill,
 #'   white rectangle (drawn underneath the data) and labelled with
 #'   `forecast_label`, the house convention for marking predicted
 #'   values.
-#' @param legend Legend position, forwarded to [theme_cpb()].
 #' @param zeroline If `TRUE`, draw a solid black line at zero on the
 #'   value axis underneath the data lines. `NULL` (default) draws it
 #'   automatically when the `y` data spans (or touches) zero, the
 #'   house bold-axis-if-zero convention.
-#' @param title,subtitle Plot title/subtitle.
-#' @param xlab Axis title override. Defaults to `NULL` (no axis
-#'   title), matching CPB house style.
 #' @param ylab Label for the value (y) axis. Following CPB house style
 #'   it is rendered as the plot *subtitle* -- a left-aligned italic
 #'   caption above the panel (e.g. the unit, `"%"`) -- unless an
@@ -2682,6 +2675,8 @@ cpb_line <- function(data, x, y, colour = NULL,
 #'   errorbars in the `"ggcpb"` style. Defaults to `0.25`, matching
 #'   the thin strokes of the published CPB distributional figures.
 #' @inheritParams cpb_col
+#' @inheritParams cpb_area
+#' @inheritParams cpb_line
 #' @param colour_index Which house colours the series get, as for
 #'   [cpb_col()]. For the `"james"` and `"modern"` styles, which have no
 #'   `fill` mapping, the positions colour the boxes instead: one position
@@ -2705,28 +2700,18 @@ cpb_line <- function(data, x, y, colour = NULL,
 #'   aesthetic). With no `fill` mapping the boxes get their own legend
 #'   key too (a plain square in `fill_colour`), so both series are
 #'   always named in the legend.
-#' @param sec_type How `sec_y` is drawn: `"line"` (default), `"point"`
-#'   (markers only, no connecting line), or `"col"` (thin bars).
 #' @param sec_limits Length-2 numeric vector giving the range the
 #'   secondary axis spans. `NULL` (default) uses zero to the maximum of
 #'   `sec_y`. `sec_y` is placed by mapping this range linearly onto
 #'   the primary (p5-p95) range, so the two axes always start together.
-#' @param sec_colour Colour for `sec_y`; defaults to `NULL`, which
-#'   resolves to the CPB pink (`cpb_cols(2)`, `"#e6006e"`).
-#' @param sec_linewidth Line width; only used when `sec_type = "line"`.
-#'   Defaults to `0.55`.
 #' @param reverse_legend If `TRUE`, reverse the fill legend order via
 #'   `guide_legend(reverse = TRUE)`. Defaults to `FALSE`; useful when
 #'   the fill levels were reversed to control the dodge order under
 #'   `coord_flip()`.
-#' @param legend Legend position, forwarded to [theme_cpb()].
 #' @param zeroline If `TRUE`, draw a solid black line at zero on the
 #'   value axis underneath the boxes. `NULL` (default) draws it
 #'   automatically when the p5-p95 data spans (or touches) zero, the
 #'   house bold-axis-if-zero convention.
-#' @param title,subtitle Plot title/subtitle.
-#' @param xlab Axis title override. Defaults to `NULL` (no axis
-#'   title), matching CPB house style.
 #' @param ylab Label for the value axis (the `y` aesthetic). When
 #'   `orientation = "horizontal"` it is drawn as the bottom axis title
 #'   (after `coord_flip()`). When `"vertical"`, CPB house style renders
@@ -3252,6 +3237,7 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
 #' @param data A data.frame or data.table with one row per point.
 #' @inheritParams cpb_col
 #' @inheritParams cpb_line
+#' @inheritParams cpb_area
 #' @param colour Optional column mapped to the colour aesthetic (tidy
 #'   eval). A numeric column gets the continuous CPB gradient
 #'   ([scale_colour_cpb_c()]); a discrete column gets the discrete CPB
@@ -3276,22 +3262,14 @@ cpb_box <- function(data, x, p5, p25, p50, p75, p95,
 #'   [label_number_nl()]. Use this instead of adding your own
 #'   `scale_x_continuous()`, which replaces the ticks and with them the
 #'   labelled ends of the axis.
-#' @param forecast_x Optional x value where the forecast window
-#'   starts; overlaid and labelled as in [cpb_line()].
 #' @param reverse_legend If `TRUE`, reverse the colour legend order
 #'   via `guide_legend(reverse = TRUE)` (discrete `colour` only).
 #'   Defaults to `FALSE`.
-#' @param legend Legend position, forwarded to [theme_cpb()].
 #' @param zeroline If `TRUE`, draw a solid black line at zero on the
 #'   value axis underneath the points. `NULL` (default) draws it
 #'   automatically when the `y` data spans (or touches) zero.
-#' @param title,subtitle Plot title/subtitle.
 #' @param xlab Axis title override. Defaults to `NULL`, matching CPB
 #'   house style.
-#' @param ylab Label for the value (y) axis. Following CPB house style
-#'   it is rendered as the plot *subtitle* -- a left-aligned italic
-#'   caption above the panel -- unless an explicit `subtitle` is also
-#'   given, in which case it falls back to a rotated y-axis title.
 #' @param ... Further arguments passed to [ggplot2::geom_point()].
 #' @return A `ggplot` object.
 #' @examples
@@ -3498,6 +3476,8 @@ cpb_hist_bin_args <- function(xvals, binwidth, bins, dots, facet_scales) {
 #' @param position Position adjustment for grouped histograms;
 #'   defaults to `"stack"`.
 #' @inheritParams cpb_col
+#' @inheritParams cpb_area
+#' @inheritParams cpb_scatter
 #' @param x_lim Optional length-2 vector zooming the `x` axis to a
 #'   range, without dropping data. Bins are computed from the full
 #'   data first, so this only ever changes what is visible, never the
@@ -3505,14 +3485,8 @@ cpb_hist_bin_args <- function(xvals, binwidth, bins, dots, facet_scales) {
 #' @param x_lim_follow_data If `TRUE`, the `x` axis ends exactly at the
 #'   outer bin edges instead of on round values. Both ends are still
 #'   labelled. Defaults to `FALSE`. Ignored when `x_lim` is set.
-#' @param reverse_legend If `TRUE`, reverse the fill legend
-#'   order via `guide_legend(reverse = TRUE)`. Defaults to `FALSE`.
-#' @param legend Legend position, forwarded to [theme_cpb()].
 #' @param zeroline If `TRUE` (default), draw a solid black line at
 #'   zero on the count axis on top of the bars.
-#' @param title,subtitle Plot title/subtitle.
-#' @param xlab Axis title override. Defaults to `NULL`, matching CPB
-#'   house style.
 #' @param ylab Label for the histogram (y) axis, rendered as the plot
 #'   *subtitle* (e.g. `"aantal"`) unless an explicit `subtitle` is
 #'   also given.
@@ -3717,8 +3691,6 @@ cpb_hist <- function(data, x, fill = NULL,
 #' @param group Optional column (tidy eval) assigning each `x` category
 #'   to a group; every group gets its name as a bold heading row above
 #'   its categories, exactly as in [cpb_box()].
-#' @param group_gap Extra gap between group blocks, in category widths;
-#'   defaults to `0.7`.
 #' @param symbol_size Symbol size; defaults to `1.4`.
 #' @param linewidth Interval line width; defaults to `0.4`.
 #' @param cap_width Width of the interval end caps, in category widths;
@@ -3733,19 +3705,15 @@ cpb_hist <- function(data, x, fill = NULL,
 #'   and `colour` to be unset (both need the colour aesthetic and its
 #'   one legend); the primary points stay plain and unlabelled in
 #'   `symbol_colour`, and only `sec_y` gets a legend key.
-#' @param sec_type How `sec_y` is drawn: `"line"` (default), `"point"`
-#'   (markers only, no connecting line), or `"col"` (thin bars).
 #' @param sec_limits Length-2 numeric vector giving the range the
 #'   secondary axis spans. `NULL` (default) uses zero to the maximum of
 #'   `sec_y`. `sec_y` is placed by mapping this range linearly onto
+#' @inheritParams cpb_area
+#' @inheritParams cpb_box
 #'   the primary (lower-upper) range, so the two axes always start
 #'   together.
 #' @inheritParams cpb_col
 #' @inheritParams cpb_line
-#' @param sec_colour Colour for `sec_y`; defaults to `NULL`, which
-#'   resolves to the CPB pink (`cpb_cols(2)`, `"#e6006e"`).
-#' @param sec_linewidth Line width; only used when `sec_type = "line"`.
-#'   Defaults to `0.55`.
 #' @param sec_symbol_size Symbol size; only used when `sec_type = "point"`
 #'   (the main marker) or `sec_type = "line"` with `sec_points = TRUE`
 #'   (a smaller marker decorating the line, at 0.7x this). Defaults to
@@ -3753,15 +3721,6 @@ cpb_hist <- function(data, x, fill = NULL,
 #' @param sec_col_width Column width; only used when `sec_type = "col"`,
 #'   drawn narrow enough not to visually compete with the point/interval
 #'   marks. Defaults to `0.3`.
-#' @param palette CPB palette to use for `colour`; one of
-#'   `"qualitative"` (default), `"discr"`, `"sequential"`
-#'   (pink ramp), `\"blues\"` (blue ramp) or `\"extended\"`
-#'   (20 categorical colours).
-#' @param x_lim Optional length-2 vector zooming the category (`x`)
-#'   axis to a range, without dropping data -- applied as a
-#'   coordinate-system zoom ([ggplot2::coord_cartesian()] /
-#'   [ggplot2::coord_flip()] `xlim`). `NULL` (default) shows the full
-#'   range.
 #' @param zeroline Draw a solid black reference
 #'   line at zero on the value axis -- the line the intervals are read
 #'   against. `NULL` (default) draws it only when zero is on the axis.
@@ -3771,10 +3730,8 @@ cpb_hist <- function(data, x, fill = NULL,
 #' @param facet Optional column (tidy eval) to facet by.
 #' @param facet_scales Whether facet axis ranges are shared; passed to
 #'   [ggplot2::facet_wrap()].
-#' @param legend Legend position, forwarded to [theme_cpb()].
 #' @param minor,ticks,flush_legend,axis_text_size,grid_colour,grid_linewidth
 #'   Passed through to [theme_cpb()].
-#' @param title,subtitle Plot title/subtitle.
 #' @param xlab Label for the value axis (drawn at the bottom, where the
 #'   value axis lands after `coord_flip()`).
 #' @param ylab Label for the category axis. Following CPB house style
@@ -4124,8 +4081,7 @@ cpb_dot <- function(data, x, y, lower, upper,
 #'   to [save_cpb()] as its `panel_size` (which can still override it
 #'   at save time).
 #' @inheritParams cpb_col
-#' @param reverse_legend If `TRUE`, reverse the fill legend order via
-#'   `guide_legend(reverse = TRUE)`. Defaults to `FALSE`.
+#' @inheritParams cpb_area
 #' @param legend_ncol Number of columns to lay the legend keys out in,
 #'   passed to `guide_legend(ncol = ...)`. `NULL` (default) keeps
 #'   ggplot2's own single-row/column layout.
@@ -4133,13 +4089,11 @@ cpb_dot <- function(data, x, y, lower, upper,
 #'   passed to `guide_legend(nrow = ...)`. Combine with `legend_ncol`
 #'   to pin both dimensions of the grid at once. `NULL` (default) keeps
 #'   ggplot2's own sizing.
-#' @param legend Legend position, forwarded to [theme_cpb()].
 #' @param flush_legend Forwarded to [theme_cpb()] for
 #'   per-figure deviations from the house defaults. Unlike the other
 #'   wrappers, `minor`, `ticks`, `axis_text_size`, `grid_colour` and
 #'   `grid_linewidth` are not exposed here: a donut draws no axis or
 #'   gridlines for them to affect.
-#' @param title,subtitle Plot title/subtitle.
 #' @param style Formatting style for the percentages: `"dutch"`
 #'   (default, `,` decimal) or `"english"` (`.` decimal). Taken from
 #'   `getOption("ggcpb.style")`, so an English report can set

@@ -50,12 +50,7 @@ label_euro_nl <- function(accuracy = NULL,
 #'   proportions in `[0, 1]`.
 #' @param accuracy Rounding accuracy; `1` (default) rounds to whole
 #'   percentage points.
-#' @param style Formatting style: `"dutch"` (default, `.` thousands, `,`
-#' decimal)
-#'   or `"english"` (`,` thousands, `.` decimal). Taken from
-#'   `getOption("ggcpb.style")`, so an English report can set
-#'   `options(ggcpb.style = "english")` once rather than passing `style`
-#'   to every call.
+#' @inheritParams label_euro_nl
 #' @param ... Further arguments passed to [scales::label_percent()].
 #' @return A labelling function suitable for `scale_*(labels = ...)`.
 #' @examples
@@ -82,12 +77,7 @@ label_pct_nl <- function(scale = 1, accuracy = 1,
 #'
 #' @param accuracy Accuracy passed to [scales::label_number()]; `NULL`
 #'   (default) automatically calculates the required decimal precision.
-#' @param style Formatting style: `"dutch"` (default, `.` thousands, `,`
-#' decimal)
-#'   or `"english"` (`,` thousands, `.` decimal). Taken from
-#'   `getOption("ggcpb.style")`, so an English report can set
-#'   `options(ggcpb.style = "english")` once rather than passing `style`
-#'   to every call.
+#' @inheritParams label_euro_nl
 #' @param ... Further arguments passed to [scales::label_number()].
 #' @return A labelling function suitable for `scale_*(labels = ...)`.
 #' @examples
