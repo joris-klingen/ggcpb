@@ -1,5 +1,6 @@
 # ggcpb 0.3.1
 
+* Any use of the extended palette warns: "palette = \"extended\" is only for testing, not for publication." Use the qualitative palette for a published figure.
 * **Breaking:** `cpb_import_csv()` is now `figures_from_csv()`, and `cpb_import_run()` is now `generate_figures_with_excel()`. The vignette `import` is now `generate_figures_with_excel`. The code is in `R/figures_from_csv.R`.
 * The HTML of the vignettes is in `inst/doc`, the only copy. The installed package shows it in the help, also after `install_github()`. The folder `doc/` is removed, and the README links to `inst/doc`.
 * The column `general_settings` in `params.csv` holds the settings of all figures. A figure takes them when its own cell is blank, and its own value wins. The column is not a figure.

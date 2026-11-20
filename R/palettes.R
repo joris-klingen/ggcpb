@@ -18,7 +18,8 @@
 #'   `"blues"` (the 6-colour light-to-dark blue ramp for classed fills),
 #'   or `"extended"` (20 categorical colours: the nine of
 #'   `"qualitative"` first, in the same positions as in [cpb_cols()],
-#'   then eleven more).
+#'   then eleven more). Use `"extended"` for testing only, not
+#'   for publication: it gives a warning.
 #'   Ramps are interpolated to any number of levels.
 #' @details For `"sequential"`, up to six levels take the darkest
 #'   swatches of the ramp: `n` levels get the `n` darkest, still ordered
@@ -41,6 +42,7 @@ cpb_pal <- function(palette = c("qualitative", "discr", "sequential",
                                 "blues", "extended"),
                     reverse = FALSE) {
   palette <- match.arg(palette)
+  cpb_warn_extended(palette)
   cols <- cpb_palette_colours(palette)
   # the qualitative swatches are stored in their own (CPB source-script)
   # order; series cycle through them in the order the published figures
@@ -82,7 +84,7 @@ cpb_pal <- function(palette = c("qualitative", "discr", "sequential",
           "cpb_pal(): the '", palette, "' palette only has ", length(cols),
           " colours; recycling to fill ", n, " requested levels.",
           if (!identical(palette, "extended")) {
-            ' Use palette = "extended" for up to 20 colours.'
+            ' Use palette = "extended" (for testing only) for up to 20 colours.'
           },
           call. = FALSE
         )
@@ -91,6 +93,17 @@ cpb_pal <- function(palette = c("qualitative", "discr", "sequential",
       unname(cols[seq_len(n)])
     }
   }
+}
+
+# The extended palette is for testing, not for publication. The warning is
+# given where a user picks the palette, not where the package reads it.
+cpb_warn_extended <- function(palette) {
+  if (identical(palette, "extended")) {
+    warning("palette = \"extended\" is only for testing, not for ",
+            "publication. Use the \"qualitative\" palette for a published ",
+            "figure.", call. = FALSE)
+  }
+  invisible(palette)
 }
 
 #' Pull specific CPB palette swatches by position
@@ -107,7 +120,8 @@ cpb_pal <- function(palette = c("qualitative", "discr", "sequential",
 #'   palette is returned in its original order.
 #' @param palette One of `"qualitative"` (default), `"discr"`,
 #'   `"sequential"` (pink ramp), `"blues"` (blue ramp) or `"extended"`
-#'   (20 categorical colours).
+#'   (20 categorical colours, for testing only: it gives a
+#'   warning).
 #' @param reverse If `TRUE`, reverse the palette before indexing.
 #' @return A character vector of hex colours, named by the position
 #'   (or colour name) they were drawn from.
@@ -121,6 +135,7 @@ cpb_cols <- function(...,
                                  "extended"),
                      reverse = FALSE) {
   palette <- match.arg(palette)
+  cpb_warn_extended(palette)
   cols <- cpb_palette_colours(palette)
   if (isTRUE(reverse)) cols <- rev(cols)
 

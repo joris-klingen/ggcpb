@@ -12,7 +12,8 @@
 #'
 #' @param palette One of `"qualitative"` (default), `"discr"`,
 #'   `"sequential"` (pink ramp), `"blues"` (blue ramp) or `"extended"`
-#'   (20 categorical colours).
+#'   (20 categorical colours, for testing only: it gives a
+#'   warning).
 #' @param reverse If `TRUE`, reverse the palette order.
 #' @param na.value Colour used for `NA` values; defaults to the CPB NA
 #'   colour (`"lightgrey"`).
@@ -111,7 +112,8 @@ scale_color_cpb_c <- scale_colour_cpb_c
 #'   the full palette is used in its original order.
 #' @param palette One of `"qualitative"` (default), `"discr"`,
 #'   `"sequential"` (pink ramp), `"blues"` (blue ramp) or `"extended"`
-#'   (20 categorical colours).
+#'   (20 categorical colours, for testing only: it gives a
+#'   warning).
 #' @param na.value Colour used for `NA` values; defaults to the CPB NA
 #'   colour (`"lightgrey"`).
 #' @param ... Passed through to [ggplot2::scale_fill_manual()] /
@@ -129,6 +131,7 @@ scale_fill_cpb_manual <- function(
   na.value = cpb_na,
   ...) {
   palette <- match.arg(palette)
+  cpb_warn_extended(palette)
   cols <- cpb_palette_colours(palette)
   if (!is.null(index)) cols <- cols[index]
   ggplot2::scale_fill_manual(values = unname(cols), na.value = na.value, ...)
@@ -142,6 +145,7 @@ scale_colour_cpb_manual <- function(
   na.value = cpb_na,
   ...) {
   palette <- match.arg(palette)
+  cpb_warn_extended(palette)
   cols <- cpb_palette_colours(palette)
   if (!is.null(index)) cols <- cols[index]
   ggplot2::scale_colour_manual(values = unname(cols), na.value = na.value, ...)

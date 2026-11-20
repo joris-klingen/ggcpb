@@ -79,6 +79,7 @@ test_that("cpb_cols errors on an out-of-range index", {
 })
 
 test_that("the extended palette has 20 colours, led by the house nine", {
+  withr::local_options(warn = -1) # the extended palette warns, tested below
   ext <- cpb_pal("extended")(20)
   expect_length(ext, 20)
   expect_equal(anyDuplicated(toupper(ext)), 0L)
@@ -90,6 +91,7 @@ test_that("the extended palette has 20 colours, led by the house nine", {
 })
 
 test_that("cpb_cols() finds extended colours by name", {
+  withr::local_options(warn = -1)
   expect_equal(cpb_cols("apple", "sun", palette = "extended"),
                c(apple = "#43B546", sun = "#FBAD1D"))
   expect_error(cpb_cols("nope", palette = "extended"), "unknown colour name")
@@ -101,26 +103,67 @@ test_that("more levels than a palette has: recycling warns", {
                  fixed = TRUE)
   expect_warning(cpb_pal("discr")(8), 'palette = "extended"', fixed = TRUE)
   # extended itself has nothing larger to suggest
-  w <- tryCatch(cpb_pal("extended")(21),
-                warning = function(w) conditionMessage(w))
-  expect_false(grepl("Use palette", w, fixed = TRUE))
+  ws <- character(0)
+  withCallingHandlers(
+    cpb_pal("extended")(21),
+    warning = function(w) {
+      ws <<- c(ws, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_false(any(grepl("Use palette", ws, fixed = TRUE)))
 
   d <- data.frame(x = rep(1:3, 12),
                   g = rep(sprintf("s%02d", 1:12), each = 3), y = 1:36)
   build <- function(p) ggplot2::ggplot_build(p)
   expect_warning(build(cpb_line(d, x = x, y = y, colour = g)),
                  'palette = "extended"', fixed = TRUE)
-  p <- cpb_line(d, x = x, y = y, colour = g, palette = "extended")
-  expect_no_warning(b <- build(p))
-  expect_length(unique(b$data[[1]]$colour), 12)
-  expect_length(
-    unique(build(cpb_col(d, x = x, y = y, fill = g,
-                         colour_index = "extended"))$data[[1]]$fill), 12
+  # 12 series fit in the extended palette: no recycling
+  p <- suppressWarnings(
+    cpb_line(d, x = x, y = y, colour = g, palette = "extended")
   )
+  ws <- character(0)
+  b <- withCallingHandlers(
+    build(p),
+    warning = function(w) {
+      ws <<- c(ws, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_false(any(grepl("recycling", ws, fixed = TRUE)))
+  expect_length(unique(b$data[[1]]$colour), 12)
+  b2 <- suppressWarnings(build(
+    cpb_col(d, x = x, y = y, fill = g, colour_index = "extended")
+  ))
+  expect_length(unique(b2$data[[1]]$fill), 12)
 })
 
 test_that("cpb_cols() with no arguments keeps the extended colour names", {
+  withr::local_options(warn = -1)
   expect_equal(names(cpb_cols(palette = "extended"))[c(1, 11, 20)],
                c("mauvelous", "apple", "kaitoke_green"))
   expect_equal(names(cpb_cols(1:2, palette = "extended")), c("1", "2"))
+})
+
+test_that("any use of the extended palette warns: testing only", {
+  msg <- "only for testing, not for publication"
+  expect_warning(cpb_pal("extended")(3), msg)
+  expect_warning(cpb_cols(1:2, palette = "extended"), msg)
+  expect_warning(cpb_cols(palette = "extended"), msg)
+  expect_warning(scale_fill_cpb_manual(palette = "extended"), msg)
+  expect_warning(scale_colour_cpb_manual(index = 1:3, palette = "extended"),
+                 msg)
+  d <- data.frame(x = 1:6, y = 1:6, g = rep(c("a", "b"), 3))
+  expect_warning(
+    cpb_line(d, x = x, y = y, colour = g, palette = "extended"), msg
+  )
+  expect_warning(
+    cpb_col(d, x = x, y = y, fill = g, colour_index = "extended"), msg
+  )
+})
+
+test_that("the other palettes give no warning", {
+  expect_no_warning(cpb_pal("qualitative")(3))
+  expect_no_warning(cpb_cols(1:2))
+  expect_no_warning(cpb_tokens())
 })

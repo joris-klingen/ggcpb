@@ -17,7 +17,8 @@ palette is returned in its original order.}
 
 \item{palette}{One of \code{"qualitative"} (default), \code{"discr"},
 \code{"sequential"} (pink ramp), \code{"blues"} (blue ramp) or \code{"extended"}
-(20 categorical colours).}
+(20 categorical colours, for testing only: it gives a
+warning).}
 
 \item{reverse}{If \code{TRUE}, reverse the palette before indexing.}
 }
