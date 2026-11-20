@@ -118,10 +118,7 @@ cpb_warn_extended <- function(palette) {
 #' @param ... One or more integer positions into `palette`, or for
 #'   `"extended"` colour names such as `"apple"`. If empty, the full
 #'   palette is returned in its original order.
-#' @param palette One of `"qualitative"` (default), `"discr"`,
-#'   `"sequential"` (pink ramp), `"blues"` (blue ramp) or `"extended"`
-#'   (20 categorical colours, for testing only: it gives a
-#'   warning).
+#' @inheritParams cpb_pal
 #' @param reverse If `TRUE`, reverse the palette before indexing.
 #' @return A character vector of hex colours, named by the position
 #'   (or colour name) they were drawn from.

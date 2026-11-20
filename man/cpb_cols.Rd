@@ -15,10 +15,15 @@ cpb_cols(
 \code{"extended"} colour names such as \code{"apple"}. If empty, the full
 palette is returned in its original order.}
 
-\item{palette}{One of \code{"qualitative"} (default), \code{"discr"},
-\code{"sequential"} (pink ramp), \code{"blues"} (blue ramp) or \code{"extended"}
-(20 categorical colours, for testing only: it gives a
-warning).}
+\item{palette}{One of \code{"qualitative"} (the primary 9-colour discrete
+palette), \code{"discr"} (the alternate blue/pink-led 7-colour discrete
+palette), \code{"sequential"} (the 6-colour light-to-dark pink ramp), or
+\code{"blues"} (the 6-colour light-to-dark blue ramp for classed fills),
+or \code{"extended"} (20 categorical colours: the nine of
+\code{"qualitative"} first, in the same positions as in \code{\link[=cpb_cols]{cpb_cols()}},
+then eleven more). Use \code{"extended"} for testing only, not
+for publication: it gives a warning.
+Ramps are interpolated to any number of levels.}
 
 \item{reverse}{If \code{TRUE}, reverse the palette before indexing.}
 }

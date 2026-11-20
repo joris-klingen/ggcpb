@@ -10,10 +10,7 @@
 #'
 #' Discrete ggplot2 scales drawing from a CPB palette via [cpb_pal()].
 #'
-#' @param palette One of `"qualitative"` (default), `"discr"`,
-#'   `"sequential"` (pink ramp), `"blues"` (blue ramp) or `"extended"`
-#'   (20 categorical colours, for testing only: it gives a
-#'   warning).
+#' @inheritParams cpb_pal
 #' @param reverse If `TRUE`, reverse the palette order.
 #' @param na.value Colour used for `NA` values; defaults to the CPB NA
 #'   colour (`"lightgrey"`).
@@ -110,10 +107,7 @@ scale_color_cpb_c <- scale_colour_cpb_c
 #' @param index Integer vector of positions into `palette`, in the
 #'   order the resulting scale should use them. If `NULL` (default),
 #'   the full palette is used in its original order.
-#' @param palette One of `"qualitative"` (default), `"discr"`,
-#'   `"sequential"` (pink ramp), `"blues"` (blue ramp) or `"extended"`
-#'   (20 categorical colours, for testing only: it gives a
-#'   warning).
+#' @inheritParams cpb_pal
 #' @param na.value Colour used for `NA` values; defaults to the CPB NA
 #'   colour (`"lightgrey"`).
 #' @param ... Passed through to [ggplot2::scale_fill_manual()] /
