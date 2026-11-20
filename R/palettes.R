@@ -228,7 +228,7 @@ cpb_resolve_index <- function(value, palette, palette_supplied,
     }
     is_keyword <- length(value) == 1L && value %in% names(cpb_index_keywords)
     if (!is_keyword) {
-      # colour names, such as c("siren", "brown"), give palette positions
+      # colour names, such as c("siren", "cold_turkey"), give palette positions
       known <- cpb_palette_names(palette)
       pos <- if (is.null(known)) rep(NA_integer_, length(value)) else
         match(value, known)

@@ -646,7 +646,7 @@ Use them to explore or to test a figure.
 The names under the colours are the names in `cpb_cols(palette = "extended")`.
 The number between brackets is the position of the colour.
 Use the name or the position in `colour_index`.
-For example, `colour_index = c("siren", "brown")` is the same as `colour_index = c(3, 8)`.
+For example, `colour_index = c("siren", "cold_turkey")` (shown in example [2.15](#grouped-categories)) or `colour_index = c(6, 5, 2, 4)` (shown in example [2.8](#donut-chart)).
 
 ```{r extended-palette, echo = FALSE, fig.width = 15.5 / 2.54, fig.height = 2.6, out.width = "100%"}
 ext <- cpb_cols(palette = "extended")
@@ -867,7 +867,7 @@ zakkans <- tibble(
 
 ```{r col-grouped}
 cpb_col(zakkans, x = cat, y = pct, fill = serie, group = grp,
-        colour_index = c("siren", "brown"), width = 0.75,
+        colour_index = c("siren", "cold_turkey"), width = 0.75,
         value_breaks = seq(0, 12, 2), value_limits = c(0, 12),
         title = "VWO", ylab = "zakkans (%)")
 ```
@@ -878,7 +878,7 @@ cpb_col(zakkans, x = cat, y = pct, fill = serie, group = grp,
 
 ```{r par-col-grouped}
 ptab(plot_type = "col", title = "VWO", x = "cat", y = "pct", fill = "serie",
-     group = "grp", colour_index = "siren;brown", width = 0.75,
+     group = "grp", colour_index = "siren;cold_turkey", width = 0.75,
      value_breaks = "0;2;4;6;8;10;12", value_limits = "0;12",
      ylab = "zakkans (%)")
 ```

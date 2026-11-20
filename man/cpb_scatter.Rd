@@ -69,7 +69,7 @@ one of \code{"qualitative"} (default), \code{"discr"}, \code{"sequential"}
 
 \item{colour_index}{Which house colours the series get. Either a vector
 of palette positions, \code{c(2, 5, 6)}, or of colour names,
-\code{c("siren", "brown")}, forwarded to
+\code{c("siren", "cold_turkey")}, forwarded to
 \code{\link[=scale_fill_cpb_manual]{scale_fill_cpb_manual()}} or \code{\link[=scale_colour_cpb_manual]{scale_colour_cpb_manual()}}, or a keyword
 naming a palette:
 \code{"discrete"} for the qualitative house palette (blue, magenta,

@@ -1554,7 +1554,7 @@ cpb_forecast_label <- function(forecast_x, xvals, label, style = "dutch") {
 #'   (20 categorical colours).
 #' @param colour_index Which house colours the series get. Either a vector
 #'   of palette positions, `c(2, 5, 6)`, or of colour names,
-#'   `c("siren", "brown")`, forwarded to
+#'   `c("siren", "cold_turkey")`, forwarded to
 #'   [scale_fill_cpb_manual()] or [scale_colour_cpb_manual()], or a keyword
 #'   naming a palette:
 #'   `"discrete"` for the qualitative house palette (blue, magenta,
