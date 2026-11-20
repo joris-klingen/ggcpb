@@ -8,9 +8,8 @@ Rplots.pdf
 inst/examples/output
 inst/examples/generated
 inst/examples/params_log.txt
-# tools/render_vignettes.R writes the HTML of the vignettes in inst/doc/,
-# which is tracked. doc/ holds only throwaway output of
-# devtools::build_vignettes().
+# doc/ and Meta/ appear only after devtools::build_vignettes(), which this
+# package does not use. The vignettes are in inst/doc/, see tools/.
 /doc/
 Meta/
 # reference material: the internal originals stay untracked; only the
