@@ -3,18 +3,15 @@
 .RData
 .Ruserdata
 .DS_Store
-inst/doc
 reports/
 Rplots.pdf
 inst/examples/output
 inst/examples/generated
 inst/examples/params_log.txt
-# tools/render_vignettes.R writes the HTML of the vignettes in doc/. Those
-# are tracked, so they can be read without installing the package. The
-# throwaway R/Rmd copies devtools::build_vignettes() also drops in doc/ are
-# not.
-doc/*.R
-doc/*.Rmd
+# tools/render_vignettes.R writes the HTML of the vignettes in inst/doc/,
+# which is tracked. doc/ holds only throwaway output of
+# devtools::build_vignettes().
+/doc/
 Meta/
 # reference material: the internal originals stay untracked; only the
 # anonymised plot snippets and the (already published) reference PNGs are
@@ -34,5 +31,5 @@ ggcpb.Rproj
 # testthat writes failing tests here during a run
 /tests/testthat/_problems/
 
-# Rendered vignettes are written to doc/, not to vignettes/
+# Rendered vignettes are written to inst/doc/, not to vignettes/
 vignettes/*.html

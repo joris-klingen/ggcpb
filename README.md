@@ -4,23 +4,23 @@
 CPB house style from Excel or from R. 
 
 **New to ggcpb? Start with the
-[Introduction](https://joris-klingen.github.io/ggcpb/doc/introduction.html).**
+[Introduction](https://joris-klingen.github.io/ggcpb/inst/doc/introduction.html).**
 It shows how to create figures with Excel and/or R.
 
 > **Status: in development.** 
 
 ## Documentation
 
-The documentation is three HTML files in the [doc/](doc/) folder.
+The documentation is three HTML files in the [inst/doc/](inst/doc/) folder.
 The links below open the rendered pages in your browser. GitHub itself
 shows HTML files as source code. To read them offline, open the file in
-[doc/](doc/), choose "Download raw file" and open it in your browser.
+[inst/doc/](inst/doc/), choose "Download raw file" and open it in your browser.
 
-- **[Introduction](https://joris-klingen.github.io/ggcpb/doc/introduction.html)** --
+- **[Introduction](https://joris-klingen.github.io/ggcpb/inst/doc/introduction.html)** --
   `vignette("introduction")`: creating figures with Excel and/or R.
-- **[Import](https://joris-klingen.github.io/ggcpb/doc/import.html)** -- `vignette("import")`: building
+- **[Import](https://joris-klingen.github.io/ggcpb/inst/doc/import.html)** -- `vignette("import")`: building
   figures from CSV files, with Excel and without R.
-- **[Extended information](https://joris-klingen.github.io/ggcpb/doc/extended.html)** --
+- **[Extended information](https://joris-klingen.github.io/ggcpb/inst/doc/extended.html)** --
   `vignette("extended")`: extended information about colours, columns, 
   boxplot styles and maps, and extra functionalities in R.
 
@@ -56,7 +56,7 @@ This is the general workflow to create figures with ggcpb without using R:
    fails is skipped and listed at the end, and in `params_log.txt`. 
    The other figures are still saved.
 
-For more information, see the **[introduction](https://joris-klingen.github.io/ggcpb/doc/introduction.html)** and **[import](https://joris-klingen.github.io/ggcpb/doc/import.html)** vignettes. 
+For more information, see the **[introduction](https://joris-klingen.github.io/ggcpb/inst/doc/introduction.html)** and **[import](https://joris-klingen.github.io/ggcpb/inst/doc/import.html)** vignettes. 
 
 ## Quick start in R
 

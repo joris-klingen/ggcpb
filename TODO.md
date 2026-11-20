@@ -21,7 +21,7 @@ or dropped.
    public and the fonts are not in it. Decide what the license is, then
    correct the file.
 3. **Documentation**: the README tells users to download the HTML from
-   `doc/`. No GitHub Pages for now. The workflow is on the branch
+   `inst/doc/`. No GitHub Pages for now. The workflow is on the branch
    `github-pages`.
 4. **CI**: push, and watch the first run. The `lintr` job, Windows and
    ggplot2 3.5.2 have not run on these changes yet.
